@@ -21,6 +21,9 @@ type Job = {
   notes: string | null;
   status: string | null;
   client_name: string | null;
+  materials_cost?: number | null;
+  labour_hours?: number | null;
+  hourly_rate?: number | null;
 };
 
 type RefOpt = { id: string; label: string };
@@ -32,6 +35,11 @@ type Props = {
   createJobAction: (formData: FormData) => Promise<void>;
   updateJobAction: (formData: FormData) => Promise<void>;
   updateJobStatusAction: (formData: FormData) => Promise<void>;
+  createInvoiceFromJobAction: (formData: FormData) => Promise<void>;
+  updateJobScheduleAction: (formData: FormData) => Promise<void>;
+  updateJobEmployeeAction: (formData: FormData) => Promise<void>;
+  uploadJobPhotoAction: (formData: FormData) => Promise<void>;
+  jobPhotosByJob: Record<string, Array<{ url: string; label: "before" | "after" }>>;
 };
 
 const empty = {
@@ -48,7 +56,11 @@ const empty = {
   suburb: "",
   state: "",
   priority: "normal",
-  notes: ""
+  notes: "",
+  materials_cost: "0",
+  labour_hours: "0",
+  hourly_rate: "0",
+  revenue_amount: "0"
 };
 
 function toDateKey(input: Date) {
@@ -80,7 +92,12 @@ export default function JobsManager({
   employees,
   createJobAction,
   updateJobAction,
-  updateJobStatusAction
+  updateJobStatusAction,
+  createInvoiceFromJobAction,
+  updateJobScheduleAction,
+  updateJobEmployeeAction,
+  uploadJobPhotoAction,
+  jobPhotosByJob
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -100,6 +117,9 @@ export default function JobsManager({
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  const [activeTab, setActiveTab] = useState<"details" | "photos">("details");
+  const [photoLabel, setPhotoLabel] = useState<"before" | "after">("before");
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
 
   const statusClasses: Record<string, string> = {
     scheduled: "bg-blue-100 text-blue-700",
@@ -224,9 +244,65 @@ export default function JobsManager({
     }
   };
 
+  const quickUpdateSchedule = async (id: string, scheduledDate: string) => {
+    const fd = new FormData();
+    fd.set("id", id);
+    fd.set("scheduled_date", scheduledDate);
+    try {
+      await updateJobScheduleAction(fd);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setToast({ type: "error", message: "Unable to reschedule job" });
+    }
+  };
+
+  const quickAssignEmployee = async (id: string, employeeId: string) => {
+    const fd = new FormData();
+    fd.set("id", id);
+    fd.set("employee_id", employeeId);
+    try {
+      await updateJobEmployeeAction(fd);
+      if (typeof window !== "undefined" && "Notification" in window) {
+        if (Notification.permission === "granted") {
+          new Notification("SERVLO", { body: "Job assignment updated." });
+        } else if (Notification.permission !== "denied") {
+          const permission = await Notification.requestPermission();
+          if (permission === "granted") {
+            new Notification("SERVLO", { body: "Job assignment updated." });
+          }
+        }
+      }
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setToast({ type: "error", message: "Unable to assign employee" });
+    }
+  };
+
+  const uploadPhotos = async () => {
+    if (!editing || !values.id || selectedPhotos.length === 0) return;
+    const fd = new FormData();
+    fd.set("job_id", values.id);
+    fd.set("photo_label", photoLabel);
+    for (const file of selectedPhotos) {
+      fd.append("photos", file);
+    }
+    try {
+      await uploadJobPhotoAction(fd);
+      setSelectedPhotos([]);
+      setToast({ type: "success", message: "Photos uploaded" });
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setToast({ type: "error", message: "Unable to upload photos" });
+    }
+  };
+
   function startAdd() {
     setEditing(false);
     setValues(empty);
+    setActiveTab("details");
     setOpen(true);
   }
 
@@ -247,7 +323,13 @@ export default function JobsManager({
       state: job.state ?? "",
       priority: job.priority ?? "normal",
       notes: job.notes ?? ""
+      ,
+      materials_cost: String(job.materials_cost ?? 0),
+      labour_hours: String(job.labour_hours ?? 0),
+      hourly_rate: String(job.hourly_rate ?? 0),
+      revenue_amount: "0"
     });
+    setActiveTab("details");
     setOpen(true);
   }
 
@@ -409,6 +491,10 @@ export default function JobsManager({
                           <button
                             key={job.id}
                             type="button"
+                            draggable
+                            onDragStart={(event) => {
+                              event.dataTransfer.setData("text/job-id", job.id);
+                            }}
                             onClick={() => startEdit(job)}
                             className={`block w-full truncate rounded px-2 py-1 text-left text-xs ${
                               statusClasses[normalizeStatus(job.status)] ?? statusClasses.scheduled
@@ -442,7 +528,15 @@ export default function JobsManager({
                   const jobsOnDate = jobsByDate.get(dateKey) ?? [];
 
                   return (
-                    <div key={dateKey} className="min-h-[120px] rounded border p-2">
+                    <div
+                      key={dateKey}
+                      className="min-h-[120px] rounded border p-2"
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        const jobId = event.dataTransfer.getData("text/job-id");
+                        if (jobId) quickUpdateSchedule(jobId, dateKey);
+                      }}
+                    >
                       <p className="mb-2 text-xs font-semibold text-slate-600">{date.getDate()}</p>
                       <div className="space-y-1">
                         {jobsOnDate.map((job) => (
@@ -469,11 +563,11 @@ export default function JobsManager({
       ) : (
         <div className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
           <table className="w-full min-w-[700px] text-sm">
-            <thead><tr className="border-b text-left"><th className="px-2 py-2">Title</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Date</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Priority</th><th className="px-2 py-2">Actions</th></tr></thead>
+            <thead><tr className="border-b text-left"><th className="px-2 py-2">Title</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Date</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Priority</th><th className="px-2 py-2">Employee</th><th className="px-2 py-2">Actions</th></tr></thead>
             <tbody>
               {filteredJobs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-2 py-6 text-center text-sm text-slate-500">
+                  <td colSpan={7} className="px-2 py-6 text-center text-sm text-slate-500">
                     <div className="flex flex-col items-center gap-3">
                       <p>No jobs yet. Add your first job to get started.</p>
                       <button onClick={startAdd} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
@@ -503,7 +597,31 @@ export default function JobsManager({
                       </select>
                     </td>
                     <td className="px-2 py-2 capitalize">{(job.priority ?? "normal").replace("normal", "medium")}</td>
-                    <td className="px-2 py-2"><button onClick={() => startEdit(job)} className="rounded border px-2 py-1 text-xs">Edit</button></td>
+                    <td className="px-2 py-2">
+                      <select
+                        value={job.employee_id ?? ""}
+                        onChange={(e) => quickAssignEmployee(job.id, e.target.value)}
+                        className="h-8 rounded border px-2 text-xs"
+                      >
+                        <option value="">Unassigned</option>
+                        {employees.map((employee) => (
+                          <option key={employee.id} value={employee.id}>
+                            {employee.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-2 py-2 space-x-2">
+                      <button onClick={() => startEdit(job)} className="rounded border px-2 py-1 text-xs">Edit</button>
+                      {normalizeStatus(job.status) === "completed" ? (
+                        <form action={createInvoiceFromJobAction} className="inline">
+                          <input type="hidden" name="job_id" value={job.id} />
+                          <button type="submit" className="rounded bg-[#1e3a5f] px-2 py-1 text-xs text-white">
+                            Create Invoice
+                          </button>
+                        </form>
+                      ) : null}
+                    </td>
                   </tr>
                 ))
               )}
@@ -516,8 +634,14 @@ export default function JobsManager({
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
             <h2 className="text-lg font-semibold text-[#1e3a5f]">{editing ? "Edit Job" : "Add Job"}</h2>
+            <div className="mt-3 rounded-md border bg-white p-1 text-sm w-fit">
+              <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[#3b82f6] text-white" : ""}`}>Details</button>
+              <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[#3b82f6] text-white" : ""}`}>Photos</button>
+            </div>
             <form action={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
+              {activeTab === "details" ? (
+                <>
               <input name="title" value={values.title} onChange={(e) => setValues((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="h-10 rounded border px-3" />
               <input name="job_type" value={values.job_type} onChange={(e) => setValues((p) => ({ ...p, job_type: e.target.value }))} placeholder="Job type" className="h-10 rounded border px-3" />
               <select name="client_id" value={values.client_id} onChange={(e) => setValues((p) => ({ ...p, client_id: e.target.value }))} className="h-10 rounded border px-3"><option value="">Client</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
@@ -531,10 +655,68 @@ export default function JobsManager({
               <input name="state" value={values.state} onChange={(e) => setValues((p) => ({ ...p, state: e.target.value }))} placeholder="State" className="h-10 rounded border px-3" />
               <textarea name="description" value={values.description} onChange={(e) => setValues((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="min-h-20 rounded border px-3 py-2 sm:col-span-2" />
               <textarea name="notes" value={values.notes} onChange={(e) => setValues((p) => ({ ...p, notes: e.target.value }))} placeholder="Notes" className="min-h-20 rounded border px-3 py-2 sm:col-span-2" />
+              <div className="sm:col-span-2 rounded border p-3">
+                <p className="mb-2 text-sm font-semibold text-[#1e3a5f]">Costs</p>
+                <div className="grid gap-2 sm:grid-cols-4">
+                  <input type="number" step="0.01" name="materials_cost" value={values.materials_cost} onChange={(e) => setValues((p) => ({ ...p, materials_cost: e.target.value }))} placeholder="Materials cost" className="h-10 rounded border px-3" />
+                  <input type="number" step="0.1" name="labour_hours" value={values.labour_hours} onChange={(e) => setValues((p) => ({ ...p, labour_hours: e.target.value }))} placeholder="Labour hours" className="h-10 rounded border px-3" />
+                  <input type="number" step="0.01" name="hourly_rate" value={values.hourly_rate} onChange={(e) => setValues((p) => ({ ...p, hourly_rate: e.target.value }))} placeholder="Hourly rate" className="h-10 rounded border px-3" />
+                  <input type="number" step="0.01" value={values.revenue_amount} onChange={(e) => setValues((p) => ({ ...p, revenue_amount: e.target.value }))} placeholder="Revenue" className="h-10 rounded border px-3" />
+                </div>
+                {(() => {
+                  const revenue = Number(values.revenue_amount || 0);
+                  const costs = Number(values.materials_cost || 0) + Number(values.labour_hours || 0) * Number(values.hourly_rate || 0);
+                  const profit = revenue - costs;
+                  const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+                  return (
+                    <p className="mt-2 text-sm text-slate-600">
+                      Profit margin: ${profit.toFixed(2)} ({margin.toFixed(1)}%)
+                    </p>
+                  );
+                })()}
+              </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
                 <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">{editing ? "Save Changes" : "Create Job"}</button>
               </div>
+                </>
+              ) : null}
+              {activeTab === "photos" ? (
+                <div className="sm:col-span-2 space-y-3">
+                  {!editing ? <p className="text-sm text-slate-500">Save the job first, then upload photos.</p> : null}
+                  {editing ? (
+                    <div className="space-y-2">
+                      <select
+                        value={photoLabel}
+                        onChange={(e) => setPhotoLabel(e.target.value === "after" ? "after" : "before")}
+                        className="h-10 rounded border px-3 text-sm"
+                      >
+                        <option value="before">Before</option>
+                        <option value="after">After</option>
+                      </select>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="block w-full text-sm"
+                        onChange={(e) => setSelectedPhotos(Array.from(e.target.files ?? []))}
+                      />
+                      <button type="button" onClick={uploadPhotos} className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">Upload Photos</button>
+                    </div>
+                  ) : null}
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                    {(jobPhotosByJob[values.id] ?? []).map((photo, idx) => (
+                      <div key={`${photo.url}-${idx}`} className="rounded border p-2">
+                        <img src={photo.url} alt={`Job photo ${idx + 1}`} className="h-24 w-full rounded object-cover" />
+                        <p className="mt-1 text-xs font-medium capitalize text-slate-600">{photo.label}</p>
+                      </div>
+                    ))}
+                    {(jobPhotosByJob[values.id] ?? []).length === 0 ? (
+                      <p className="text-sm text-slate-500">No photos uploaded yet.</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </form>
           </div>
         </div>

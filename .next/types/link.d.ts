@@ -41,6 +41,7 @@ declare namespace __next_route_internal_types__ {
     | `/dashboard/billing`
     | `/dashboard/client`
     | `/dashboard/client/profile`
+    | `/dashboard/employee`
     | `/dashboard/employee/clock`
     | `/dashboard/employee/jobs`
     | `/dashboard/employee/timesheets`
@@ -53,6 +54,7 @@ declare namespace __next_route_internal_types__ {
     | `/dashboard/owner/settings`
   type DynamicRoutes<T extends string = string> = 
     | `/dashboard/owner/clients/${SafeSlug<T>}`
+    | `/portal/${SafeSlug<T>}`
 
   type RouteImpl<T> = 
     | StaticRoutes

@@ -24,6 +24,9 @@
     "[project]/.cursor/projects/empty-window/servlo/src/app/dashboard/employee/jobs/page": [
       "static/media/e8f2fbee2754df70-s.p.0fzkl03jw-sdz.woff2"
     ],
+    "[project]/.cursor/projects/empty-window/servlo/src/app/dashboard/employee/page": [
+      "static/media/e8f2fbee2754df70-s.p.0fzkl03jw-sdz.woff2"
+    ],
     "[project]/.cursor/projects/empty-window/servlo/src/app/dashboard/employee/timesheets/page": [
       "static/media/e8f2fbee2754df70-s.p.0fzkl03jw-sdz.woff2"
     ],
@@ -55,6 +58,9 @@
       "static/media/e8f2fbee2754df70-s.p.0fzkl03jw-sdz.woff2"
     ],
     "[project]/.cursor/projects/empty-window/servlo/src/app/page": [
+      "static/media/e8f2fbee2754df70-s.p.0fzkl03jw-sdz.woff2"
+    ],
+    "[project]/.cursor/projects/empty-window/servlo/src/app/portal/[token]/page": [
       "static/media/e8f2fbee2754df70-s.p.0fzkl03jw-sdz.woff2"
     ]
   },

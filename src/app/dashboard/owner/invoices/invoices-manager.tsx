@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import jsPDF from "jspdf";
 
 type Invoice = {
   id: string;
@@ -20,6 +21,12 @@ type Props = {
   clients: ClientRef[];
   createInvoiceAction: (formData: FormData) => Promise<void>;
   updateInvoiceAction: (formData: FormData) => Promise<void>;
+  prefill?: {
+    prefill_client_id?: string;
+    prefill_title?: string;
+    prefill_date?: string;
+    prefill_job_id?: string;
+  };
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
@@ -28,7 +35,8 @@ export default function InvoicesManager({
   invoices,
   clients,
   createInvoiceAction,
-  updateInvoiceAction
+  updateInvoiceAction,
+  prefill
 }: Props) {
   const getStatusBadge = (invoice: Invoice) => {
     const status = (invoice.status ?? "").toLowerCase();
@@ -46,6 +54,23 @@ export default function InvoicesManager({
   const [dueDate, setDueDate] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([{ ...emptyLine }]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!prefill?.prefill_client_id) return;
+    setEditingId("");
+    setClientId(prefill.prefill_client_id);
+    setIssueDate(prefill.prefill_date?.slice(0, 10) ?? "");
+    setDueDate(prefill.prefill_date?.slice(0, 10) ?? "");
+    setLineItems([
+      {
+        ...emptyLine,
+        description: prefill.prefill_title ?? "Job invoice",
+        quantity: 1,
+        unit_price: 0
+      }
+    ]);
+    setOpen(true);
+  }, [prefill]);
 
   const subTotal = useMemo(
     () => lineItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0),
@@ -99,6 +124,20 @@ export default function InvoicesManager({
   });
   const nextInvoiceNumber = `INV-${String(invoices.length + 1).padStart(3, "0")}`;
 
+  const downloadPdf = (invoice: Invoice) => {
+    const doc = new jsPDF();
+    doc.text("SERVLO Invoice", 14, 20);
+    doc.text(`Invoice #: ${invoice.invoice_number ?? "-"}`, 14, 32);
+    doc.text(`Amount: $${Number(invoice.amount ?? 0).toFixed(2)}`, 14, 42);
+    doc.text(
+      `Due: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}`,
+      14,
+      52
+    );
+    doc.text(`Status: ${getStatusBadge(invoice).label}`, 14, 62);
+    doc.save(`${invoice.invoice_number ?? "invoice"}.pdf`);
+  };
+
   return (
     <div className="space-y-4">
       {toast ? (
@@ -134,7 +173,10 @@ export default function InvoicesManager({
                     {getStatusBadge(invoice).label}
                   </span>
                 </td>
-                <td className="px-2 py-2"><button onClick={() => startEdit(invoice)} className="rounded border px-2 py-1 text-xs">Edit</button></td>
+                <td className="px-2 py-2 space-x-2">
+                  <button onClick={() => startEdit(invoice)} className="rounded border px-2 py-1 text-xs">Edit</button>
+                  <button onClick={() => downloadPdf(invoice)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
+                </td>
               </tr>
             ))}
           </tbody>

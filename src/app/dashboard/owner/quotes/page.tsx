@@ -143,11 +143,11 @@ export default async function OwnerQuotesPage() {
       .maybeSingle();
     if (!quote) return;
 
-    const { data: existingQuoteNumbers } = await sb
+    const { data: existingInvoiceNumbers } = await sb
       .from("invoices")
-      .select("quote_number")
+      .select("invoice_number")
       .eq("owner_id", owner.id);
-    const invoiceNumber = getNextNumber(existingQuoteNumbers ?? [], "quote_number", "INV");
+    const invoiceNumber = getNextNumber(existingInvoiceNumbers ?? [], "invoice_number", "INV");
 
     const { error: invoiceError } = await sb.from("invoices").insert({
       owner_id: owner.id,

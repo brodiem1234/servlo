@@ -1,0 +1,29 @@
+{
+  "node": {
+    "00a63eff4941e52b3f638b68bc3baa5da1b06325d3": {
+      "workers": {
+        "app/dashboard/employee/page": {
+          "moduleId": 60744,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_1",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/employee/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_1",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/employee/page.tsx"
+    },
+    "00ad50c02c17e8efa5b59f7a48defa21e1a2cae3cf": {
+      "workers": {
+        "app/dashboard/employee/page": {
+          "moduleId": 60744,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/employee/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/employee/page.tsx"
+    }
+  },
+  "edge": {}
+}

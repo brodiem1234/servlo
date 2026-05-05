@@ -29,6 +29,14 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/dashboard/owner/clients/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/portal/[token]",
+      "regex": "^/portal/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPtoken": "nxtPtoken"
+      },
+      "namedRegex": "^/portal/(?<nxtPtoken>[^/]+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -97,6 +105,12 @@
       "regex": "^/dashboard/client/profile(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/dashboard/client/profile(?:/)?$"
+    },
+    {
+      "page": "/dashboard/employee",
+      "regex": "^/dashboard/employee(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/employee(?:/)?$"
     },
     {
       "page": "/dashboard/employee/clock",

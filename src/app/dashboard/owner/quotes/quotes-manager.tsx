@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import jsPDF from "jspdf";
 
 type Quote = {
   id: string;
@@ -80,6 +81,16 @@ export default function QuotesManager({
     }
   };
 
+  const downloadPdf = (quote: Quote) => {
+    const doc = new jsPDF();
+    doc.text("SERVLO Quote", 14, 20);
+    doc.text(`Quote #: ${quote.quote_number ?? "-"}`, 14, 32);
+    doc.text(`Client: ${quote.client_name ?? "-"}`, 14, 42);
+    doc.text(`Total: $${Number(quote.total ?? 0).toFixed(2)}`, 14, 52);
+    doc.text(`Status: ${quote.status ?? "draft"}`, 14, 62);
+    doc.save(`${quote.quote_number ?? "quote"}.pdf`);
+  };
+
   return (
     <div className="space-y-4">
       {toast ? (
@@ -121,6 +132,7 @@ export default function QuotesManager({
                 </td>
                 <td className="px-2 py-2 flex gap-2">
                   <button onClick={() => startEdit(quote)} className="rounded border px-2 py-1 text-xs">Edit</button>
+                  <button onClick={() => downloadPdf(quote)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
                   <form action={acceptQuoteAction}>
                     <input type="hidden" name="quote_id" value={quote.id} />
                     <button type="submit" className="rounded bg-emerald-600 px-2 py-1 text-xs text-white">Accept</button>

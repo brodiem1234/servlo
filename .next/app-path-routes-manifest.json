@@ -10,6 +10,7 @@
   "/dashboard/client/profile/page": "/dashboard/client/profile",
   "/dashboard/employee/clock/page": "/dashboard/employee/clock",
   "/dashboard/employee/jobs/page": "/dashboard/employee/jobs",
+  "/dashboard/employee/page": "/dashboard/employee",
   "/dashboard/employee/timesheets/page": "/dashboard/employee/timesheets",
   "/dashboard/owner/clients/[id]/page": "/dashboard/owner/clients/[id]",
   "/dashboard/owner/clients/page": "/dashboard/owner/clients",
@@ -20,5 +21,6 @@
   "/dashboard/owner/quotes/page": "/dashboard/owner/quotes",
   "/dashboard/owner/settings/page": "/dashboard/owner/settings",
   "/dashboard/page": "/dashboard",
-  "/page": "/"
+  "/page": "/",
+  "/portal/[token]/page": "/portal/[token]"
 }

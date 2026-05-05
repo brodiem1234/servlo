@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import ClientsManager from "./clients-manager";
+import PortalShareButton from "./portal-share-button";
+import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
 
 type ClientsPageProps = {
   searchParams?: {
@@ -162,13 +164,14 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         notes: string | null;
         status?: string | null;
         source?: string | null;
+        portal_token?: string | null;
         created_at: string | null;
       }>
     | null = null;
 
   const primaryClientsQuery = await supabase
     .from("clients")
-    .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, created_at")
+    .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at")
     .eq("owner_id", user.id)
     .order(sort, { ascending: true });
 
@@ -242,6 +245,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       phone: String(formData.get("phone") ?? ""),
       status: String(formData.get("status") ?? "active"),
       source: String(formData.get("source") ?? "other"),
+      portal_token: crypto.randomUUID(),
       company_name: String(formData.get("company_name") ?? ""),
       abn: String(formData.get("abn") ?? ""),
       address: String(formData.get("address") ?? ""),
@@ -380,6 +384,33 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     return { ok: true };
   }
 
+  async function sendPortalEmailAction(formData: FormData) {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) return;
+    const clientId = String(formData.get("client_id") ?? "");
+    const { data: client } = await sb
+      .from("clients")
+      .select("full_name, email, portal_token")
+      .eq("id", clientId)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (!client?.email || !client.portal_token) return;
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`;
+    await sendEmail(
+      client.email,
+      "Your SERVLO Client Portal",
+      portalShareEmailTemplate({
+        clientName: client.full_name ?? "there",
+        portalUrl
+      })
+    );
+    revalidatePath("/dashboard/owner/clients");
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -422,6 +453,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
                 <th className="px-2 py-2">Invoiced</th>
                 <th className="px-2 py-2">Last job</th>
                 <th className="px-2 py-2">Created</th>
+                <th className="px-2 py-2">Portal</th>
               </tr>
             </thead>
             <tbody>
@@ -446,11 +478,26 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
                   <td className="px-2 py-2">
                     {client.created_at ? new Date(client.created_at).toLocaleDateString("en-AU") : "-"}
                   </td>
+                  <td className="px-2 py-2">
+                    {client.portal_token ? (
+                      <div className="flex items-center gap-2">
+                        <PortalShareButton
+                          url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`}
+                        />
+                        <form action={sendPortalEmailAction}>
+                          <input type="hidden" name="client_id" value={client.id} />
+                          <button type="submit" className="rounded border px-2 py-1 text-xs">Email Portal</button>
+                        </form>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
                 </tr>
               ))}
               {(clients ?? []).length === 0 ? (
                 <tr>
-                  <td className="px-2 py-4 text-slate-500" colSpan={9}>
+                  <td className="px-2 py-4 text-slate-500" colSpan={10}>
                     No clients yet.
                   </td>
                 </tr>
@@ -478,6 +525,13 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
                       : "-"}
                   </span>
                 </p>
+              </div>
+              <div className="mt-3">
+                {client.portal_token ? (
+                  <PortalShareButton
+                    url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`}
+                  />
+                ) : null}
               </div>
             </a>
           ))}

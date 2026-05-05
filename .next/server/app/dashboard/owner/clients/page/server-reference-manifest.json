@@ -24,6 +24,18 @@
       "exportedName": "$$RSC_SERVER_ACTION_0",
       "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/clients/page.tsx"
     },
+    "40b256f657cdfae6340407d6c9079cb8e0de852734": {
+      "workers": {
+        "app/dashboard/owner/clients/page": {
+          "moduleId": 82656,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_2",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/clients/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_2",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/clients/page.tsx"
+    },
     "40c99283a2594f88da7ccb701c75255576881b204d": {
       "workers": {
         "app/dashboard/owner/clients/page": {

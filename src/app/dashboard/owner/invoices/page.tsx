@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import InvoicesManager from "./invoices-manager";
+import { invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
 
 function getNextNumber(existing: Array<{ invoice_number: string | null }>, prefix: string) {
   const max = existing.reduce((highest, item) => {
@@ -15,7 +16,16 @@ function getNextNumber(existing: Array<{ invoice_number: string | null }>, prefi
   return `${prefix}-${String(max + 1).padStart(3, "0")}`;
 }
 
-export default async function OwnerInvoicesPage() {
+type InvoicesPageProps = {
+  searchParams?: {
+    prefill_client_id?: string;
+    prefill_title?: string;
+    prefill_date?: string;
+    prefill_job_id?: string;
+  };
+};
+
+export default async function OwnerInvoicesPage({ searchParams }: InvoicesPageProps) {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
@@ -81,6 +91,24 @@ export default async function OwnerInvoicesPage() {
       );
       if (itemsError) throw new Error(itemsError.message);
     }
+    const clientId = String(formData.get("client_id") ?? "") || null;
+    if (clientId) {
+      const { data: client } = await sb.from("clients").select("email, full_name").eq("id", clientId).maybeSingle();
+      if (client?.email) {
+        const payNowUrl = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || `${process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au"}/dashboard/client`;
+        await sendEmail(
+          client.email,
+          `Invoice ${invoiceNumber} from SERVLO`,
+          invoiceReminderEmailTemplate({
+            clientName: client.full_name ?? "there",
+            invoiceNumber,
+            amount: `$${total.toFixed(2)}`,
+            dueDate: String(formData.get("due_date") ?? "-"),
+            payNowUrl
+          })
+        );
+      }
+    }
     revalidatePath("/dashboard/owner/invoices");
   }
 
@@ -113,6 +141,7 @@ export default async function OwnerInvoicesPage() {
         clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         createInvoiceAction={createInvoiceAction}
         updateInvoiceAction={updateInvoiceAction}
+        prefill={searchParams}
       />
     </section>
   );

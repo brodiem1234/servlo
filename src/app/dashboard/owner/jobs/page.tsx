@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import JobsManager from "./jobs-manager";
+import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
 
 export default async function OwnerJobsPage() {
   const { user } = await getOwnerContext();
@@ -13,13 +14,29 @@ export default async function OwnerJobsPage() {
     supabase
       .from("jobs")
       .select(
-        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, clients:clients(full_name)"
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, clients:clients(full_name)"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
     supabase.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name"),
     supabase.from("employees").select("id, full_name").eq("owner_id", user.id).order("full_name")
   ]);
+
+  const photoUrlsByJob: Record<string, Array<{ url: string; label: "before" | "after" }>> = {};
+  const jobIds = (jobs ?? []).map((job) => job.id);
+  if (jobIds.length > 0) {
+    const { data: photoRows } = await supabase
+      .from("job_photos")
+      .select("job_id, storage_path, label")
+      .in("job_id", jobIds);
+    for (const row of photoRows ?? []) {
+      const { data } = supabase.storage.from("job-photos").getPublicUrl(row.storage_path);
+      const label: "before" | "after" = row.label === "after" ? "after" : "before";
+      const current = photoUrlsByJob[row.job_id] ?? [];
+      current.push({ url: data.publicUrl, label });
+      photoUrlsByJob[row.job_id] = current;
+    }
+  }
 
   async function createJobAction(formData: FormData) {
     "use server";
@@ -40,7 +57,10 @@ export default async function OwnerJobsPage() {
       suburb: String(formData.get("suburb") ?? ""),
       state: String(formData.get("state") ?? ""),
       priority: String(formData.get("priority") ?? "normal"),
-      notes: String(formData.get("notes") ?? "")
+      notes: String(formData.get("notes") ?? ""),
+      materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
+      labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
+      hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0
     });
     if (error) throw new Error(error.message);
     revalidatePath("/dashboard/owner/jobs");
@@ -67,7 +87,10 @@ export default async function OwnerJobsPage() {
         suburb: String(formData.get("suburb") ?? ""),
         state: String(formData.get("state") ?? ""),
         priority: String(formData.get("priority") ?? "normal"),
-        notes: String(formData.get("notes") ?? "")
+        notes: String(formData.get("notes") ?? ""),
+        materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
+        labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
+        hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0
       })
       .eq("id", id)
       .eq("owner_id", owner.id);
@@ -87,6 +110,106 @@ export default async function OwnerJobsPage() {
     revalidatePath("/dashboard/owner/jobs");
   }
 
+  async function createInvoiceFromJobAction(formData: FormData) {
+    "use server";
+    const { user: owner } = await getOwnerContext();
+    if (!owner) redirect("/auth/login");
+    const jobId = String(formData.get("job_id") ?? "");
+    const sb = await createClient();
+    const { data: job } = await sb
+      .from("jobs")
+      .select("id, title, client_id, scheduled_date")
+      .eq("id", jobId)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (!job) return;
+    const query = new URLSearchParams({
+      prefill_client_id: String(job.client_id ?? ""),
+      prefill_title: String(job.title ?? ""),
+      prefill_date: String(job.scheduled_date ?? ""),
+      prefill_job_id: String(job.id)
+    });
+    redirect(`/dashboard/owner/invoices?${query.toString()}`);
+  }
+
+  async function updateJobScheduleAction(formData: FormData) {
+    "use server";
+    const { user: owner } = await getOwnerContext();
+    if (!owner) redirect("/auth/login");
+    const id = String(formData.get("id") ?? "");
+    const scheduledDate = String(formData.get("scheduled_date") ?? "");
+    const sb = await createClient();
+    const { error } = await sb
+      .from("jobs")
+      .update({ scheduled_date: scheduledDate || null })
+      .eq("id", id)
+      .eq("owner_id", owner.id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/dashboard/owner/jobs");
+  }
+
+  async function updateJobEmployeeAction(formData: FormData) {
+    "use server";
+    const { user: owner } = await getOwnerContext();
+    if (!owner) redirect("/auth/login");
+    const id = String(formData.get("id") ?? "");
+    const employeeId = String(formData.get("employee_id") ?? "") || null;
+    const sb = await createClient();
+    const { data: updatedJob, error } = await sb
+      .from("jobs")
+      .update({ employee_id: employeeId })
+      .eq("id", id)
+      .eq("owner_id", owner.id)
+      .select("title, scheduled_date")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (employeeId) {
+      const { data: employee } = await sb.from("employees").select("full_name, email").eq("id", employeeId).maybeSingle();
+      if (employee?.email) {
+        await sendEmail(
+          employee.email,
+          `New job assignment: ${updatedJob?.title ?? "SERVLO job"}`,
+          employeeAssignmentEmailTemplate({
+            employeeName: employee.full_name ?? "there",
+            jobTitle: updatedJob?.title ?? "SERVLO job",
+            scheduledDate: updatedJob?.scheduled_date
+              ? new Date(updatedJob.scheduled_date).toLocaleDateString("en-AU")
+              : "-"
+          })
+        );
+      }
+    }
+    revalidatePath("/dashboard/owner/jobs");
+  }
+
+  async function uploadJobPhotoAction(formData: FormData) {
+    "use server";
+    const { user: owner } = await getOwnerContext();
+    if (!owner) redirect("/auth/login");
+    const jobId = String(formData.get("job_id") ?? "");
+    const label = String(formData.get("photo_label") ?? "before").toLowerCase() === "after" ? "after" : "before";
+    const files = formData.getAll("photos").filter((entry): entry is File => entry instanceof File);
+    const sb = await createClient();
+
+    for (const file of files) {
+      if (!file.name) continue;
+      const bytes = await file.arrayBuffer();
+      const path = `${jobId}/${label}-${Date.now()}-${file.name}`;
+      const { error } = await sb.storage.from("job-photos").upload(path, bytes, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false
+      });
+      if (error) throw new Error(error.message);
+      await sb.from("job_photos").insert({
+        job_id: jobId,
+        owner_id: owner.id,
+        storage_path: path,
+        label
+      });
+    }
+    revalidatePath("/dashboard/owner/jobs");
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -102,6 +225,11 @@ export default async function OwnerJobsPage() {
         createJobAction={createJobAction}
         updateJobAction={updateJobAction}
         updateJobStatusAction={updateJobStatusAction}
+        createInvoiceFromJobAction={createInvoiceFromJobAction}
+        updateJobScheduleAction={updateJobScheduleAction}
+        updateJobEmployeeAction={updateJobEmployeeAction}
+        uploadJobPhotoAction={uploadJobPhotoAction}
+        jobPhotosByJob={photoUrlsByJob}
       />
     </section>
   );
