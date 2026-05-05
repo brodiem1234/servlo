@@ -1,3 +1,0 @@
-module.exports=[91318,a=>{"use strict";var b=a.i(38728);a.s(["default",0,function(){return(0,b.jsx)("div",{className:"flex min-h-[40vh] items-center justify-center",children:(0,b.jsx)("div",{className:"h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#3b82f6]"})})}])},53862,a=>{a.n(a.i(91318))}];
-
-//# sourceMappingURL=_cursor_projects_empty-window_servlo_src_app_dashboard_owner_loading_tsx_0w79d9f._.js.map

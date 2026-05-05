@@ -31,23 +31,24 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
   useEffect(() => {
     const saved = (localStorage.getItem("servlo-theme") as "dark" | "light" | null) ?? "dark";
     setTheme(saved);
-    document.documentElement.setAttribute("data-theme", saved);
+    document.documentElement.classList.toggle("dark", saved === "dark");
   }, []);
 
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     localStorage.setItem("servlo-theme", next);
-    document.documentElement.setAttribute("data-theme", next);
+    document.documentElement.classList.toggle("dark", next === "dark");
   };
 
   return (
     <div className="dashboard-theme min-h-screen bg-[#f8fafc] text-[#1e3a5f]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform bg-[#0d1a26] px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
+          style={{ background: "var(--sidebar-bg)" }}
         >
           <div className="mb-6">
             <div className="flex items-center gap-2">
@@ -85,7 +86,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               >
                 <Menu size={18} />
               </button>
-              <p className="text-sm font-semibold text-[#1e3a5f] md:text-base">{businessName}</p>
+              <p className="text-sm font-semibold md:text-base" style={{ color: "var(--text-primary)" }}>{businessName}</p>
             </div>
             <div className="flex items-center gap-2">
               <button

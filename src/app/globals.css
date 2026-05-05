@@ -52,132 +52,128 @@
   }
 }
 
-/* Dashboard/Auth theming */
+/* globals.css */
 :root {
-  --servlo-bg-dark: #0f1e2e;
-  --servlo-card-dark: #1a2f45;
-  --servlo-input-dark: #162436;
-  --servlo-border-dark: #2a4a6b;
-  --servlo-text-dark: #f0f4f8;
-  --servlo-text-muted-dark: #94a3b8;
-  --servlo-sidebar-dark: #0d1a26;
-  --servlo-accent: #0db8c8;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #1e3a5f;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --input-bg: #ffffff;
+  --accent: #0db8c8;
+  --sidebar-bg: #1e3a5f;
 }
 
-[data-theme="dark"] .dashboard-theme {
-  background: var(--servlo-bg-dark);
-  color: var(--servlo-text-dark);
+:root.dark {
+  --bg-primary: #0d1a2e;
+  --bg-secondary: #0f1e2e;
+  --bg-card: #1a2f45;
+  --text-primary: #f0f4f8;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border: #2a4a6b;
+  --input-bg: #162436;
+  --accent: #0db8c8;
+  --sidebar-bg: #0d1a26;
 }
 
-[data-theme="dark"] .dashboard-theme .dashboard-card,
-[data-theme="dark"] .dashboard-theme .dashboard-panel {
-  background: var(--servlo-card-dark) !important;
-  border-color: var(--servlo-border-dark) !important;
-  color: var(--servlo-text-dark);
+.dashboard-theme,
+.auth-theme {
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-[data-theme="dark"] .dashboard-theme .dashboard-input,
-[data-theme="dark"] .dashboard-theme input,
-[data-theme="dark"] .dashboard-theme select,
-[data-theme="dark"] .dashboard-theme textarea {
-  background: var(--servlo-input-dark) !important;
-  border-color: var(--servlo-border-dark) !important;
-  color: var(--servlo-text-dark) !important;
+.dashboard-theme .bg-white,
+.dashboard-theme .dashboard-card,
+.dashboard-theme .dashboard-panel,
+.auth-theme .auth-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
 }
 
-[data-theme="dark"] .dashboard-theme input::placeholder,
-[data-theme="dark"] .dashboard-theme textarea::placeholder {
-  color: var(--servlo-text-muted-dark);
+.dashboard-theme input,
+.dashboard-theme select,
+.dashboard-theme textarea,
+.auth-theme input,
+.auth-theme select,
+.auth-theme textarea {
+  background: var(--input-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] .dashboard-theme .text-slate-500,
-[data-theme="dark"] .dashboard-theme .text-slate-600,
-[data-theme="dark"] .dashboard-theme .text-slate-700 {
-  color: var(--servlo-text-muted-dark) !important;
+.dashboard-theme input::placeholder,
+.dashboard-theme textarea::placeholder,
+.auth-theme input::placeholder,
+.auth-theme textarea::placeholder {
+  color: var(--text-muted);
 }
 
-[data-theme="dark"] .dashboard-theme .text-slate-900 {
-  color: var(--servlo-text-dark) !important;
+.dashboard-theme table tbody tr:hover {
+  background: var(--input-bg) !important;
 }
 
-[data-theme="dark"] .dashboard-theme .bg-white {
-  background: var(--servlo-card-dark) !important;
+.dashboard-theme thead tr {
+  background: color-mix(in oklab, var(--bg-card) 88%, #000 12%);
 }
 
-[data-theme="dark"] .dashboard-theme table tbody tr {
-  background: var(--servlo-card-dark);
+.dashboard-theme label,
+.auth-theme label {
+  color: var(--text-secondary) !important;
 }
 
-[data-theme="dark"] .dashboard-theme table tbody tr:hover {
-  background: var(--servlo-input-dark) !important;
+.dashboard-theme h1,
+.dashboard-theme h2,
+.dashboard-theme h3,
+.dashboard-theme h4,
+.auth-theme h1,
+.auth-theme h2,
+.auth-theme h3,
+.auth-theme h4 {
+  color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] .dashboard-theme thead tr {
-  background: #13273a;
-  color: var(--servlo-text-dark);
+.dashboard-theme p,
+.dashboard-theme span,
+.dashboard-theme td,
+.dashboard-theme th,
+.auth-theme p,
+.auth-theme span {
+  color: var(--text-secondary);
 }
 
-[data-theme="dark"] .dashboard-theme .dashboard-primary {
-  background: var(--servlo-accent) !important;
+.dashboard-theme a,
+.auth-theme a {
+  color: var(--accent);
+}
+
+.dashboard-theme .text-white,
+.dashboard-theme .text-slate-100,
+.dashboard-theme .text-\[\#1e3a5f\],
+.auth-theme .text-white,
+.auth-theme .text-slate-100,
+.auth-theme .text-\[\#1e3a5f\] {
+  color: var(--text-primary) !important;
+}
+
+.dashboard-theme .text-slate-200,
+.dashboard-theme .text-slate-300,
+.dashboard-theme .text-slate-400,
+.dashboard-theme .text-slate-500,
+.dashboard-theme .text-slate-600,
+.dashboard-theme .text-\[\#64748b\],
+.auth-theme .text-slate-200,
+.auth-theme .text-slate-300,
+.auth-theme .text-slate-400,
+.auth-theme .text-slate-500,
+.auth-theme .text-slate-600,
+.auth-theme .text-\[\#64748b\] {
+  color: var(--text-secondary) !important;
+}
+
+.dashboard-theme .dashboard-primary {
+  background: var(--accent) !important;
   color: #fff !important;
-}
-
-[data-theme="dark"] .dashboard-theme .dashboard-primary:hover {
-  background: #0a9dab !important;
-}
-
-[data-theme="dark"] .dashboard-theme .dashboard-outline {
-  border-color: var(--servlo-accent) !important;
-  color: var(--servlo-text-dark) !important;
-}
-
-[data-theme="dark"] .auth-theme {
-  background: var(--servlo-bg-dark);
-  color: var(--servlo-text-dark);
-}
-
-[data-theme="dark"] .auth-theme .auth-card {
-  background: var(--servlo-card-dark) !important;
-  border-color: var(--servlo-border-dark) !important;
-}
-
-[data-theme="dark"] .auth-theme input,
-[data-theme="dark"] .auth-theme select,
-[data-theme="dark"] .auth-theme textarea {
-  background: var(--servlo-input-dark) !important;
-  border-color: var(--servlo-border-dark) !important;
-  color: var(--servlo-text-dark) !important;
-}
-
-[data-theme="dark"] .auth-theme .text-\[\#64748b\] {
-  color: var(--servlo-text-muted-dark) !important;
-}
-
-/* Dark mode text visibility */
-[data-theme="dark"] label {
-  color: #cbd5e1 !important;
-}
-
-[data-theme="dark"] h1,
-[data-theme="dark"] h2,
-[data-theme="dark"] h3,
-[data-theme="dark"] h4 {
-  color: #f0f4f8 !important;
-}
-
-[data-theme="dark"] p,
-[data-theme="dark"] span,
-[data-theme="dark"] td,
-[data-theme="dark"] th {
-  color: #e2e8f0;
-}
-
-[data-theme="dark"] a {
-  color: #0db8c8;
-}
-
-[data-theme="light"] .dashboard-theme,
-[data-theme="light"] .auth-theme {
-  background: #f8fafc;
-  color: #1e3a5f;
 }
