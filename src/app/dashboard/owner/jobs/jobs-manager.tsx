@@ -105,7 +105,7 @@ export default function JobsManager({
   const [view, setView] = useState<"list" | "calendar">("list");
   const [calendarView, setCalendarView] = useState<"today" | "week" | "month">("month");
   const [values, setValues] = useState(empty);
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [toast, setToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -365,10 +365,10 @@ export default function JobsManager({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="rounded-md border bg-white p-1 text-sm">
-          <button onClick={() => setView("list")} className={`rounded px-3 py-1 ${view === "list" ? "bg-[#3b82f6] text-white" : ""}`}>List View</button>
-          <button onClick={() => setView("calendar")} className={`rounded px-3 py-1 ${view === "calendar" ? "bg-[#3b82f6] text-white" : ""}`}>Calendar View</button>
+          <button onClick={() => setView("list")} className={`rounded px-3 py-1 ${view === "list" ? "bg-[#0db8c8] text-white" : ""}`}>List View</button>
+          <button onClick={() => setView("calendar")} className={`rounded px-3 py-1 ${view === "calendar" ? "bg-[#0db8c8] text-white" : ""}`}>Calendar View</button>
         </div>
-        <button onClick={startAdd} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">Add Job</button>
+        <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">Add Job</button>
       </div>
       <div className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-4">
         <input
@@ -408,7 +408,11 @@ export default function JobsManager({
       {toast ? (
         <div
           className={`rounded-md px-3 py-2 text-sm ${
-            toast.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            toast.type === "success"
+              ? "bg-green-50 text-[#22c55e]"
+              : toast.type === "error"
+                ? "bg-red-50 text-[#ef4444]"
+                : "bg-cyan-50 text-[#0db8c8]"
           }`}
         >
           {toast.message}
@@ -417,9 +421,9 @@ export default function JobsManager({
       {view === "calendar" ? (
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <div className="mb-3 rounded-md border bg-white p-1 text-sm w-fit">
-            <button onClick={() => setCalendarView("today")} className={`rounded px-3 py-1 ${calendarView === "today" ? "bg-[#3b82f6] text-white" : ""}`}>Today</button>
-            <button onClick={() => setCalendarView("week")} className={`rounded px-3 py-1 ${calendarView === "week" ? "bg-[#3b82f6] text-white" : ""}`}>Week</button>
-            <button onClick={() => setCalendarView("month")} className={`rounded px-3 py-1 ${calendarView === "month" ? "bg-[#3b82f6] text-white" : ""}`}>Month</button>
+            <button onClick={() => setCalendarView("today")} className={`rounded px-3 py-1 ${calendarView === "today" ? "bg-[#0db8c8] text-white" : ""}`}>Today</button>
+            <button onClick={() => setCalendarView("week")} className={`rounded px-3 py-1 ${calendarView === "week" ? "bg-[#0db8c8] text-white" : ""}`}>Week</button>
+            <button onClick={() => setCalendarView("month")} className={`rounded px-3 py-1 ${calendarView === "month" ? "bg-[#0db8c8] text-white" : ""}`}>Month</button>
           </div>
           <div className="mb-4 flex items-center justify-between gap-2">
             <button
@@ -570,7 +574,7 @@ export default function JobsManager({
                   <td colSpan={7} className="px-2 py-6 text-center text-sm text-slate-500">
                     <div className="flex flex-col items-center gap-3">
                       <p>No jobs yet. Add your first job to get started.</p>
-                      <button onClick={startAdd} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
+                      <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
                         Add your first job
                       </button>
                     </div>
@@ -616,7 +620,7 @@ export default function JobsManager({
                       {normalizeStatus(job.status) === "completed" ? (
                         <form action={createInvoiceFromJobAction} className="inline">
                           <input type="hidden" name="job_id" value={job.id} />
-                          <button type="submit" className="rounded bg-[#1e3a5f] px-2 py-1 text-xs text-white">
+                          <button type="submit" className="rounded bg-[#0db8c8] px-2 py-1 text-xs text-white hover:bg-[#0a9dab]">
                             Create Invoice
                           </button>
                         </form>
@@ -635,8 +639,8 @@ export default function JobsManager({
           <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
             <h2 className="text-lg font-semibold text-[#1e3a5f]">{editing ? "Edit Job" : "Add Job"}</h2>
             <div className="mt-3 rounded-md border bg-white p-1 text-sm w-fit">
-              <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[#3b82f6] text-white" : ""}`}>Details</button>
-              <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[#3b82f6] text-white" : ""}`}>Photos</button>
+              <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[#0db8c8] text-white" : ""}`}>Details</button>
+              <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[#0db8c8] text-white" : ""}`}>Photos</button>
             </div>
             <form action={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
@@ -677,7 +681,7 @@ export default function JobsManager({
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">{editing ? "Save Changes" : "Create Job"}</button>
+                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editing ? "Save Changes" : "Create Job"}</button>
               </div>
                 </>
               ) : null}
@@ -701,7 +705,7 @@ export default function JobsManager({
                         className="block w-full text-sm"
                         onChange={(e) => setSelectedPhotos(Array.from(e.target.files ?? []))}
                       />
-                      <button type="button" onClick={uploadPhotos} className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">Upload Photos</button>
+                      <button type="button" onClick={uploadPhotos} className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Upload Photos</button>
                     </div>
                   ) : null}
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-3">

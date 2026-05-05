@@ -143,13 +143,13 @@ export default function InvoicesManager({
       {toast ? (
         <div
           className={`rounded-md px-3 py-2 text-sm ${
-            toast.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            toast.type === "success" ? "bg-green-50 text-[#22c55e]" : "bg-red-50 text-[#ef4444]"
           }`}
         >
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startCreate} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
+      <button onClick={startCreate} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
         New Invoice
       </button>
       <article className="rounded-xl border border-red-200 bg-red-50 p-4">
@@ -158,7 +158,7 @@ export default function InvoicesManager({
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
         <table className="w-full min-w-[700px] text-sm">
           <thead>
-            <tr className="border-b text-left text-slate-500">
+            <tr className="border-b text-left text-[#1e3a5f]">
               <th className="px-2 py-2">Invoice #</th><th className="px-2 py-2">Amount</th><th className="px-2 py-2">Due</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th>
             </tr>
           </thead>
@@ -223,7 +223,7 @@ export default function InvoicesManager({
               ) : null}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">{editingId ? "Save" : "Create Invoice"}</button>
+                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editingId ? "Save" : "Create Invoice"}</button>
               </div>
             </form>
           </div>

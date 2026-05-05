@@ -96,18 +96,18 @@ export default function QuotesManager({
       {toast ? (
         <div
           className={`rounded-md px-3 py-2 text-sm ${
-            toast.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            toast.type === "success" ? "bg-green-50 text-[#22c55e]" : "bg-red-50 text-[#ef4444]"
           }`}
         >
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startNew} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
+      <button onClick={startNew} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
         New Quote
       </button>
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
         <table className="w-full min-w-[720px] text-sm">
-          <thead><tr className="border-b text-left text-slate-500"><th className="px-2 py-2">Quote #</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Total</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
+          <thead><tr className="border-b text-left text-[#1e3a5f]"><th className="px-2 py-2">Quote #</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Total</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
           <tbody>
             {quotes.map((quote) => (
               <tr key={quote.id} className="border-b hover:bg-slate-50">
@@ -135,11 +135,11 @@ export default function QuotesManager({
                   <button onClick={() => downloadPdf(quote)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
                   <form action={acceptQuoteAction}>
                     <input type="hidden" name="quote_id" value={quote.id} />
-                    <button type="submit" className="rounded bg-emerald-600 px-2 py-1 text-xs text-white">Accept</button>
+                    <button type="submit" className="rounded bg-[#22c55e] px-2 py-1 text-xs text-white">Accept</button>
                   </form>
                   <form action={convertToInvoiceAction}>
                     <input type="hidden" name="quote_id" value={quote.id} />
-                    <button type="submit" className="rounded bg-[#1e3a5f] px-2 py-1 text-xs text-white">
+                    <button type="submit" className="rounded bg-[#0db8c8] px-2 py-1 text-xs text-white hover:bg-[#0a9dab]">
                       Convert to Invoice
                     </button>
                   </form>
@@ -185,7 +185,7 @@ export default function QuotesManager({
               ) : null}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">{editingId ? "Save" : "Create Quote"}</button>
+                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editingId ? "Save" : "Create Quote"}</button>
               </div>
             </form>
           </div>

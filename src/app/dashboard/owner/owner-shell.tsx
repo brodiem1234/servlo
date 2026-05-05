@@ -28,7 +28,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
   const [alertsOpen, setAlertsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-[#f8fafc] text-[#1e3a5f]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
           className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform bg-[#1e3a5f] px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
@@ -40,7 +40,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <Image src="/logo.png" alt="SERVLO" width={36} height={36} />
               <p className="text-xl font-bold tracking-wide">SERVLO</p>
             </div>
-            <div className="mt-2 h-[2px] w-full bg-[#3b82f6]" />
+            <div className="mt-2 h-[2px] w-full bg-[#0db8c8]" />
           </div>
           <nav className="grid gap-2">
             {ownerNav.map((item) => {
@@ -51,7 +51,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={`rounded-md px-3 py-2 text-sm font-medium ${
-                    active ? "bg-[#3b82f6] text-white" : "hover:bg-[#2d5b8d]"
+                    active ? "bg-[#0db8c8] text-white" : "hover:bg-[#28507c]"
                   }`}
                 >
                   {item.label}
@@ -83,20 +83,20 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                 >
                   <Bell size={16} />
                   {alerts.length > 0 ? (
-                    <span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] text-white">
+                    <span className="absolute -right-1 -top-1 rounded-full bg-[#ef4444] px-1.5 text-[10px] text-white">
                       {alerts.length}
                     </span>
                   ) : null}
                 </button>
                 {alertsOpen ? (
                   <div className="absolute right-0 z-40 mt-2 w-80 rounded-md border bg-white p-2 shadow-lg">
-                    <p className="px-2 py-1 text-xs font-semibold text-slate-500">Notifications</p>
+                    <p className="px-2 py-1 text-xs font-semibold text-[#64748b]">Notifications</p>
                     <div className="max-h-72 overflow-auto">
                       {alerts.length === 0 ? (
-                        <p className="px-2 py-2 text-sm text-slate-500">No new alerts.</p>
+                        <p className="px-2 py-2 text-sm text-[#64748b]">No new alerts.</p>
                       ) : (
                         alerts.map((alert) => (
-                          <p key={alert.id} className="rounded px-2 py-2 text-sm hover:bg-slate-50">
+                          <p key={alert.id} className="rounded px-2 py-2 text-sm hover:bg-[#f1f5f9]">
                             {alert.text}
                           </p>
                         ))
@@ -108,7 +108,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="rounded-md bg-[#1e3a5f] px-4 py-2 text-sm font-medium text-white hover:bg-[#274d7c]"
+                  className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]"
                 >
                   Sign Out
                 </button>
@@ -144,7 +144,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center py-2 text-xs ${
-                  active ? "text-[#3b82f6]" : "text-slate-500"
+                  active ? "text-[#0db8c8]" : "text-[#64748b]"
                 }`}
               >
                 <Icon size={16} />
