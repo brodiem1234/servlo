@@ -8,6 +8,7 @@ type LoginPageProps = {
   searchParams?: {
     error?: string;
     success?: string;
+    email?: string;
   };
 };
 
@@ -22,7 +23,20 @@ async function signIn(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.user) {
-    redirect("/auth/login?error=Invalid%20email%20or%20password");
+    const rawMessage = error?.message ?? "Unable to sign in";
+    const lowerMessage = rawMessage.toLowerCase();
+    let message = rawMessage;
+    if (lowerMessage.includes("invalid login credentials")) {
+      message = "Incorrect email or password";
+    } else if (lowerMessage.includes("email not confirmed")) {
+      message = "Please verify your email before logging in";
+    }
+
+    const query = new URLSearchParams({
+      error: message,
+      email
+    });
+    redirect(`/auth/login?${query.toString()}`);
   }
 
   const cookieStore = await cookies();
@@ -60,6 +74,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const rememberedEmail = cookieStore.get("servlo_remember_email")?.value ?? "";
   const rememberedPassword = cookieStore.get("servlo_remember_password")?.value ?? "";
   const rememberedChecked = cookieStore.get("servlo_persist_session")?.value === "true";
+  const emailValue = searchParams?.email ?? rememberedEmail;
 
   return (
     <main className="min-h-screen bg-sky-50 px-6 py-16">
@@ -69,11 +84,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           Welcome back. Access your dashboard and continue managing your business.
         </p>
 
-        {searchParams?.error ? (
-          <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {searchParams.error}
-          </p>
-        ) : null}
         {searchParams?.success ? (
           <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
             {searchParams.success}
@@ -89,7 +99,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               id="email"
               name="email"
               type="email"
-              defaultValue={rememberedEmail}
+              defaultValue={emailValue}
               required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
             />
@@ -116,6 +126,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             />
             Remember me
           </label>
+          {searchParams?.error ? (
+            <p className="text-sm text-red-700">{searchParams.error}</p>
+          ) : null}
           <Button type="submit" className="w-full bg-sky-700 hover:bg-sky-800">
             Sign in
           </Button>
