@@ -83,6 +83,12 @@
       "namedRegex": "^/auth/signup(?:/)?$"
     },
     {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
       "page": "/dashboard",
       "regex": "^/dashboard(?:/)?$",
       "routeKeys": {},
@@ -171,6 +177,18 @@
       "regex": "^/dashboard/owner/settings(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/dashboard/owner/settings(?:/)?$"
+    },
+    {
+      "page": "/privacy",
+      "regex": "^/privacy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/privacy(?:/)?$"
+    },
+    {
+      "page": "/terms",
+      "regex": "^/terms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/terms(?:/)?$"
     }
   ],
   "dataRoutes": [],

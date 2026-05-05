@@ -5,6 +5,7 @@
   "/api/stripe/webhook/route": "/api/stripe/webhook",
   "/auth/login/page": "/auth/login",
   "/auth/signup/page": "/auth/signup",
+  "/contact/page": "/contact",
   "/dashboard/billing/page": "/dashboard/billing",
   "/dashboard/client/page": "/dashboard/client",
   "/dashboard/client/profile/page": "/dashboard/client/profile",
@@ -22,5 +23,7 @@
   "/dashboard/owner/settings/page": "/dashboard/owner/settings",
   "/dashboard/page": "/dashboard",
   "/page": "/",
-  "/portal/[token]/page": "/portal/[token]"
+  "/portal/[token]/page": "/portal/[token]",
+  "/privacy/page": "/privacy",
+  "/terms/page": "/terms"
 }

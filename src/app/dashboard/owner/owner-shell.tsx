@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Briefcase, FileText, Home, Menu, Users } from "lucide-react";
+import { Bell, Briefcase, FileText, Home, Menu, Users } from "lucide-react";
 
 const ownerNav = [
   { href: "/dashboard/owner", label: "Dashboard" },
@@ -18,12 +18,14 @@ const ownerNav = [
 type Props = {
   businessName: string;
   signOutAction: (formData: FormData) => Promise<void>;
+  alerts: Array<{ id: string; text: string }>;
   children: React.ReactNode;
 };
 
-export default function OwnerShell({ businessName, signOutAction, children }: Props) {
+export default function OwnerShell({ businessName, signOutAction, alerts, children }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [alertsOpen, setAlertsOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -71,14 +73,47 @@ export default function OwnerShell({ businessName, signOutAction, children }: Pr
               </button>
               <p className="text-sm font-semibold text-[#1e3a5f] md:text-base">{businessName}</p>
             </div>
-            <form action={signOutAction}>
-              <button
-                type="submit"
-                className="rounded-md bg-[#1e3a5f] px-4 py-2 text-sm font-medium text-white hover:bg-[#274d7c]"
-              >
-                Sign Out
-              </button>
-            </form>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button
+                  type="button"
+                  className="relative rounded border p-2"
+                  onClick={() => setAlertsOpen((prev) => !prev)}
+                  aria-label="Notifications"
+                >
+                  <Bell size={16} />
+                  {alerts.length > 0 ? (
+                    <span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] text-white">
+                      {alerts.length}
+                    </span>
+                  ) : null}
+                </button>
+                {alertsOpen ? (
+                  <div className="absolute right-0 z-40 mt-2 w-80 rounded-md border bg-white p-2 shadow-lg">
+                    <p className="px-2 py-1 text-xs font-semibold text-slate-500">Notifications</p>
+                    <div className="max-h-72 overflow-auto">
+                      {alerts.length === 0 ? (
+                        <p className="px-2 py-2 text-sm text-slate-500">No new alerts.</p>
+                      ) : (
+                        alerts.map((alert) => (
+                          <p key={alert.id} className="rounded px-2 py-2 text-sm hover:bg-slate-50">
+                            {alert.text}
+                          </p>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="rounded-md bg-[#1e3a5f] px-4 py-2 text-sm font-medium text-white hover:bg-[#274d7c]"
+                >
+                  Sign Out
+                </button>
+              </form>
+            </div>
           </header>
 
           <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>

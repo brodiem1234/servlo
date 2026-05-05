@@ -1,0 +1,17 @@
+{
+  "node": {
+    "40c34c21f5ecd3826ae197f0d2ccf061cee703d69c": {
+      "workers": {
+        "app/contact/page": {
+          "moduleId": 1632,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/contact/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/contact/page.tsx"
+    }
+  },
+  "edge": {}
+}

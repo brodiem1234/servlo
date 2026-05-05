@@ -17,14 +17,27 @@ export async function getOwnerContext() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, trial_end, subscription_tier")
+    .select("business_name, trial_start, trial_end, subscription_tier, subscription_status")
     .eq("id", user.id)
     .maybeSingle();
+
+  let trialEnd = profile?.trial_end ?? null;
+  if (!trialEnd) {
+    if (profile?.trial_start) {
+      const fallback = new Date(profile.trial_start);
+      fallback.setDate(fallback.getDate() + 30);
+      trialEnd = fallback.toISOString();
+    } else if ((profile?.subscription_status ?? "trialing") === "trialing") {
+      const fallback = new Date();
+      fallback.setDate(fallback.getDate() + 30);
+      trialEnd = fallback.toISOString();
+    }
+  }
 
   return {
     user,
     businessName: profile?.business_name ?? "SERVLO Business",
-    trialEnd: profile?.trial_end ?? null,
+    trialEnd,
     subscriptionTier: profile?.subscription_tier ?? "solo"
   };
 }

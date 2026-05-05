@@ -24,6 +24,18 @@
       "filename": ".cursor/projects/empty-window/servlo/src/app/auth/signup/page.tsx",
       "exportedName": "$$RSC_SERVER_ACTION_0"
     },
+    "40c34c21f5ecd3826ae197f0d2ccf061cee703d69c": {
+      "workers": {
+        "app/contact/page": {
+          "moduleId": 1632,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/contact/page.tsx"
+        }
+      },
+      "filename": ".cursor/projects/empty-window/servlo/src/app/contact/page.tsx",
+      "exportedName": "$$RSC_SERVER_ACTION_0"
+    },
     "008ef488b3cdd73ca2a2a58160d461c32bbc1357d7": {
       "workers": {
         "app/dashboard/client/page": {

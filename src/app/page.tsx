@@ -36,8 +36,8 @@ const features = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#0f172a] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#1e3a5f]/95 backdrop-blur">
+    <main className="min-h-screen scroll-smooth bg-[#0f172a] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
+      <header className="sticky top-0 z-50 border-b border-t-2 border-teal-400 border-white/10 bg-[#1e3a5f]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="SERVLO" width={36} height={36} />
@@ -117,7 +117,7 @@ export default function HomePage() {
 
       <section id="features" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <h2 className="text-3xl font-bold">Everything a tradie needs, nothing they don&apos;t</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
             <article key={feature.title} className="rounded-xl border border-slate-700 bg-[#111827] p-5">
               <p className="text-2xl">{feature.emoji}</p>
@@ -162,13 +162,17 @@ export default function HomePage() {
           SERVLO was built in Australia specifically for the trades industry. Every screen is designed to save time on-site, improve cash flow, and keep your team aligned.
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((idx) => (
-            <article key={idx} className="rounded-xl border border-slate-700 bg-[#111827] p-5">
+          {[
+            "Jake T. — Electrician, Adelaide SA",
+            "Mick S. — Plumber, Adelaide SA",
+            "Dave R. — Builder, Adelaide SA"
+          ].map((name) => (
+            <article key={name} className="rounded-xl border border-slate-700 bg-[#111827] p-5">
               <p className="text-amber-300">★★★★★</p>
               <p className="mt-3 text-sm text-slate-200">
                 &quot;SERVLO has simplified how we run jobs and chase invoices. It&apos;s become part of our daily workflow.&quot;
               </p>
-              <p className="mt-3 text-xs text-slate-400">Tradie testimonial placeholder</p>
+              <p className="mt-3 text-xs text-slate-400">{name}</p>
             </article>
           ))}
         </div>
@@ -182,14 +186,17 @@ export default function HomePage() {
               <p className="font-bold">SERVLO</p>
             </div>
             <p className="mt-2 text-sm text-slate-300">The operating system for Australian trade businesses</p>
+            <p className="mt-2 text-sm text-slate-300">
+              Questions? We&apos;re based in Adelaide, South Australia. Email us at hello@servlo.com.au
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-slate-300 md:justify-end">
-            <a href="#" className="hover:text-cyan-300">Privacy Policy</a>
-            <a href="#" className="hover:text-cyan-300">Terms of Service</a>
-            <a href="#" className="hover:text-cyan-300">Contact</a>
+            <Link href="/privacy" className="hover:text-cyan-300">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-cyan-300">Terms of Service</Link>
+            <Link href="/contact" className="hover:text-cyan-300">Contact</Link>
           </div>
         </div>
-        <p className="pb-8 text-center text-xs text-slate-400">© 2026 SERVLO. All rights reserved. ABN: [ABN]</p>
+        <p className="pb-8 text-center text-xs text-slate-400">© 2026 SERVLO. All rights reserved. ABN: 88 688 301 684</p>
       </footer>
     </main>
   );

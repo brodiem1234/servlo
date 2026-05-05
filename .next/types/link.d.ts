@@ -37,6 +37,7 @@ declare namespace __next_route_internal_types__ {
     | `/api/stripe/webhook`
     | `/auth/login`
     | `/auth/signup`
+    | `/contact`
     | `/dashboard`
     | `/dashboard/billing`
     | `/dashboard/client`
@@ -52,6 +53,8 @@ declare namespace __next_route_internal_types__ {
     | `/dashboard/owner/jobs`
     | `/dashboard/owner/quotes`
     | `/dashboard/owner/settings`
+    | `/privacy`
+    | `/terms`
   type DynamicRoutes<T extends string = string> = 
     | `/dashboard/owner/clients/${SafeSlug<T>}`
     | `/portal/${SafeSlug<T>}`

@@ -123,6 +123,19 @@ export default async function OwnerDashboardPage() {
         <p className="text-sm text-slate-600">Track operational performance in real time.</p>
       </div>
 
+      {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? (
+        <article className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
+          <h2 className="text-lg font-semibold text-[#1e3a5f]">Getting Started Checklist</h2>
+          <ul className="mt-3 space-y-2 text-sm text-slate-700">
+            <li>1. <a href="/dashboard/owner/clients" className="font-medium text-[#1e3a5f] underline">Add your first client</a></li>
+            <li>2. <a href="/dashboard/owner/jobs" className="font-medium text-[#1e3a5f] underline">Create your first job</a></li>
+            <li>3. <a href="/dashboard/owner/quotes" className="font-medium text-[#1e3a5f] underline">Send your first quote</a></li>
+            <li>4. <a href="/dashboard/owner/invoices" className="font-medium text-[#1e3a5f] underline">Create your first invoice</a></li>
+            <li>5. <a href="/dashboard/owner/settings" className="font-medium text-[#1e3a5f] underline">Complete your business settings</a></li>
+          </ul>
+        </article>
+      ) : null}
+
       <div className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[#1e3a5f]">Quick Actions</h2>
         <div className="mt-3 flex flex-wrap gap-2">

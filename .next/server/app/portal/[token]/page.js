@@ -10,6 +10,7 @@ R.c("server/chunks/ssr/0_vy_next_dist_client_components_builtin_forbidden_09alao
 R.c("server/chunks/ssr/0_vy_next_dist_client_components_builtin_unauthorized_11unkwv.js")
 R.c("server/chunks/ssr/0_vy_next_dist_client_components_builtin_global-error_0o9lz4z.js")
 R.c("server/chunks/ssr/_cursor_projects_empty-window_servlo_07xpm0j._.js")
-R.c("server/chunks/ssr/0_vy_0ma450b._.js")
+R.c("server/chunks/ssr/_cursor_projects_empty-window_servlo_019lwx-._.js")
+R.c("server/chunks/ssr/0_vy_next_dist_05d.zhx._.js")
 R.m(84661)
 module.exports=R.m(84661).exports
