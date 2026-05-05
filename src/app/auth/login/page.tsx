@@ -16,7 +16,7 @@ async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.user) {
@@ -86,3 +86,4 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
     </main>
   );
 }
+

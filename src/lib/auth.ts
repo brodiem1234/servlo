@@ -5,3 +5,4 @@ export function canAccessPath(role: UserRole, pathname: string) {
   if (pathname.startsWith("/dashboard/owner")) return false;
   return true;
 }
+

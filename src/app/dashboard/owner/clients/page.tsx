@@ -18,7 +18,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   const view = searchParams?.view === "list" ? "list" : "card";
   const sort = searchParams?.sort === "created_at" ? "created_at" : "full_name";
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: clients } = await supabase
     .from("clients")
     .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
@@ -150,3 +150,4 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     </section>
   );
 }
+

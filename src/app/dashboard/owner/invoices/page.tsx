@@ -8,7 +8,7 @@ export default async function OwnerInvoicesPage() {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: invoices }, { data: clients }] = await Promise.all([
     supabase
       .from("invoices")
@@ -106,3 +106,4 @@ export default async function OwnerInvoicesPage() {
     </section>
   );
 }
+

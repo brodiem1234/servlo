@@ -8,7 +8,7 @@ export type OwnerMetric = {
 };
 
 export async function getOwnerContext() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -30,7 +30,7 @@ export async function getOwnerContext() {
 }
 
 export async function getOwnerDashboardData(ownerId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [{ data: jobs }, { data: clients }, { data: invoices }] = await Promise.all([
     supabase
@@ -83,3 +83,4 @@ export async function getOwnerDashboardData(ownerId: string) {
     recentInvoices: safeInvoices.slice(0, 5)
   };
 }
+

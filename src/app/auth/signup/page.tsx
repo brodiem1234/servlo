@@ -33,7 +33,7 @@ async function signUp(formData: FormData) {
   const phoneNumber = String(formData.get("phone_number") ?? "").trim();
   const tradeType = String(formData.get("trade_type") ?? "").trim();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -247,3 +247,4 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
     </main>
   );
 }
+

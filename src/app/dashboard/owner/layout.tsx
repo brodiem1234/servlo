@@ -5,7 +5,7 @@ import OwnerShell from "./owner-shell";
 
 async function signOut() {
   "use server";
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/auth/login");
 }
@@ -19,3 +19,4 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
 
   return <OwnerShell businessName={businessName} signOutAction={signOut}>{children}</OwnerShell>;
 }
+

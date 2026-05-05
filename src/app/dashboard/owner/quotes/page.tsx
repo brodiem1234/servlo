@@ -8,7 +8,7 @@ export default async function OwnerQuotesPage() {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: quotes }, { data: clients }] = await Promise.all([
     supabase
       .from("quotes")
@@ -127,3 +127,4 @@ export default async function OwnerQuotesPage() {
     </section>
   );
 }
+

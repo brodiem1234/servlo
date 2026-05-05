@@ -8,7 +8,7 @@ export default async function OwnerEmployeesPage() {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: employees } = await supabase
     .from("employees")
     .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role")
@@ -69,3 +69,4 @@ export default async function OwnerEmployeesPage() {
     </section>
   );
 }
+

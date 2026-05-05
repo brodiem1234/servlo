@@ -7,7 +7,7 @@ export default async function OwnerSettingsPage() {
   const { user, businessName, trialEnd, subscriptionTier } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("business_name, abn, phone, address")
@@ -78,3 +78,4 @@ export default async function OwnerSettingsPage() {
     </section>
   );
 }
+

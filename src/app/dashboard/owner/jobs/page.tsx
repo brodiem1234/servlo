@@ -8,7 +8,7 @@ export default async function OwnerJobsPage() {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const [{ data: jobs }, { data: clients }, { data: employees }] = await Promise.all([
     supabase
       .from("jobs")
@@ -90,3 +90,4 @@ export default async function OwnerJobsPage() {
     </section>
   );
 }
+
