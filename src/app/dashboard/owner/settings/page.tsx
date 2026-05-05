@@ -63,7 +63,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           <input name="phone" defaultValue={profile?.phone ?? ""} className="h-10 rounded border px-3" placeholder="Phone" />
           <input name="address" defaultValue={profile?.address ?? ""} className="h-10 rounded border px-3" placeholder="Address" />
           <div className="sm:col-span-2">
-            <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">Save Business Profile</button>
+            <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Save Business Profile</button>
           </div>
         </form>
       </article>
@@ -83,7 +83,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         <h2 className="text-lg font-semibold text-[#1e3a5f]">Account</h2>
         <form action={changePassword} className="mt-3 flex flex-col gap-3 sm:max-w-md">
           <input name="new_password" type="password" minLength={8} required className="h-10 rounded border px-3" placeholder="New password" />
-          <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">Change Password</button>
+          <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Change Password</button>
         </form>
       </article>
     </section>

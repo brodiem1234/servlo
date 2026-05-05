@@ -21,20 +21,20 @@ export default async function ClientProfilePage() {
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-slate-500">Full name</dt>
-            <dd className="font-medium text-slate-900">{profile?.full_name ?? "-"}</dd>
+            <dt className="text-[#64748b]">Full name</dt>
+            <dd className="font-medium text-[#1e3a5f]">{profile?.full_name ?? "-"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Email</dt>
-            <dd className="font-medium text-slate-900">{profile?.email ?? user.email ?? "-"}</dd>
+            <dt className="text-[#64748b]">Email</dt>
+            <dd className="font-medium text-[#1e3a5f]">{profile?.email ?? user.email ?? "-"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Phone</dt>
-            <dd className="font-medium text-slate-900">{profile?.phone ?? "-"}</dd>
+            <dt className="text-[#64748b]">Phone</dt>
+            <dd className="font-medium text-[#1e3a5f]">{profile?.phone ?? "-"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Business</dt>
-            <dd className="font-medium text-slate-900">{profile?.business_name ?? "-"}</dd>
+            <dt className="text-[#64748b]">Business</dt>
+            <dd className="font-medium text-[#1e3a5f]">{profile?.business_name ?? "-"}</dd>
           </div>
         </dl>
       </article>

@@ -78,25 +78,25 @@ export default function EmployeesManager({
       {toast ? (
         <div
           className={`rounded-md px-3 py-2 text-sm ${
-            toast.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            toast.type === "success" ? "bg-green-50 text-[#22c55e]" : "bg-red-50 text-[#ef4444]"
           }`}
         >
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startAdd} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
+      <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
         Add Employee
       </button>
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
         <table className="w-full min-w-[760px] text-sm">
           <thead>
-            <tr className="border-b text-left text-slate-500">
+            <tr className="border-b text-left text-[#1e3a5f]">
               <th className="px-2 py-2">Name</th><th className="px-2 py-2">Email</th><th className="px-2 py-2">Phone</th><th className="px-2 py-2">Trade</th><th className="px-2 py-2">Rate</th><th className="px-2 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {employees.map((employee) => (
-              <tr key={employee.id} className="border-b hover:bg-slate-50">
+              <tr key={employee.id} className="border-b hover:bg-[#f1f5f9]">
                 <td className="px-2 py-2 font-medium">{employee.full_name ?? "-"}</td>
                 <td className="px-2 py-2">{employee.email ?? "-"}</td>
                 <td className="px-2 py-2">{employee.phone ?? "-"}</td>
@@ -141,7 +141,7 @@ export default function EmployeesManager({
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">{editing ? "Save Changes" : "Create Employee"}</button>
+                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editing ? "Save Changes" : "Create Employee"}</button>
               </div>
             </form>
           </div>

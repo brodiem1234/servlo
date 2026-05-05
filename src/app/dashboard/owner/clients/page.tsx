@@ -443,7 +443,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         <div className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
           <table className="w-full min-w-[620px] text-sm">
             <thead>
-              <tr className="border-b text-left text-slate-500">
+              <tr className="border-b text-left text-[#1e3a5f]">
                 <th className="px-2 py-2">Name</th>
                 <th className="px-2 py-2">Email</th>
                 <th className="px-2 py-2">Phone</th>
@@ -458,7 +458,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
             </thead>
             <tbody>
               {(clients ?? []).map((client) => (
-                <tr key={client.id} className="border-b hover:bg-slate-50">
+                <tr key={client.id} className="border-b hover:bg-[#f1f5f9]">
                   <td className="px-2 py-2 font-medium">
                     <a className="text-[#1e3a5f] hover:underline" href={`/dashboard/owner/clients/${client.id}`}>
                       {client.full_name ?? "-"}
@@ -497,7 +497,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
               ))}
               {(clients ?? []).length === 0 ? (
                 <tr>
-                  <td className="px-2 py-4 text-slate-500" colSpan={10}>
+                  <td className="px-2 py-4 text-[#64748b]" colSpan={10}>
                     No clients yet.
                   </td>
                 </tr>
@@ -508,11 +508,11 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {(clients ?? []).map((client) => (
-            <a key={client.id} href={`/dashboard/owner/clients/${client.id}`} className="rounded-xl border bg-white p-4 shadow-sm hover:bg-slate-50">
+            <a key={client.id} href={`/dashboard/owner/clients/${client.id}`} className="rounded-xl border bg-white p-4 shadow-sm hover:bg-[#f1f5f9]">
               <p className="font-semibold text-[#1e3a5f]">{client.full_name ?? "Unnamed client"}</p>
-              <p className="mt-1 text-sm text-slate-600">{client.email ?? "No email"}</p>
-              <p className="text-sm text-slate-600">{client.phone ?? "No phone"}</p>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
+              <p className="mt-1 text-sm text-[#64748b]">{client.email ?? "No email"}</p>
+              <p className="text-sm text-[#64748b]">{client.phone ?? "No phone"}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-[#64748b]">
                 <p>Status: <span className="font-medium capitalize">{client.status ?? "active"}</span></p>
                 <p>Source: <span className="font-medium capitalize">{client.source ?? "other"}</span></p>
                 <p>Jobs: <span className="font-medium">{metricsByClient.get(client.id)?.totalJobs ?? 0}</span></p>
@@ -536,7 +536,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
             </a>
           ))}
           {(clients ?? []).length === 0 ? (
-            <p className="text-sm text-slate-500">No clients yet.</p>
+            <p className="text-sm text-[#64748b]">No clients yet.</p>
           ) : null}
         </div>
       )}

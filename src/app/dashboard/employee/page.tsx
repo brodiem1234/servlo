@@ -81,16 +81,16 @@ export default async function EmployeeDashboardPage() {
   return (
     <section className="space-y-6">
       <h1 className="text-2xl font-bold text-[#1e3a5f]">Employee Dashboard</h1>
-      <p className="text-sm text-slate-600">Welcome {profile?.full_name ?? user.email}</p>
+      <p className="text-sm text-[#64748b]">Welcome {profile?.full_name ?? user.email}</p>
 
       <div className="flex gap-2">
         <form action={clockInAction}>
-          <button type="submit" className="rounded bg-green-600 px-6 py-3 text-base font-semibold text-white">
+          <button type="submit" className="rounded bg-[#0db8c8] px-6 py-3 text-base font-semibold text-white hover:bg-[#0a9dab]">
             Clock In
           </button>
         </form>
         <form action={clockOutAction}>
-          <button type="submit" className="rounded bg-red-600 px-6 py-3 text-base font-semibold text-white">
+          <button type="submit" className="rounded border border-[#1e3a5f] bg-white px-6 py-3 text-base font-semibold text-[#1e3a5f]">
             Clock Out
           </button>
         </form>
@@ -103,10 +103,10 @@ export default async function EmployeeDashboardPage() {
             {(todayJobs ?? []).map((job) => (
               <div key={job.id} className="rounded border p-2">
                 <p className="font-medium">{job.title ?? "Job"}</p>
-                <p className="text-slate-600">{job.scheduled_start ?? "--:--"} · {job.status ?? "scheduled"}</p>
+                <p className="text-[#64748b]">{job.scheduled_start ?? "--:--"} · {job.status ?? "scheduled"}</p>
               </div>
             ))}
-            {(todayJobs ?? []).length === 0 ? <p className="text-slate-500">No jobs today.</p> : null}
+            {(todayJobs ?? []).length === 0 ? <p className="text-[#64748b]">No jobs today.</p> : null}
           </div>
         </article>
 
@@ -116,12 +116,12 @@ export default async function EmployeeDashboardPage() {
             {(weekJobs ?? []).map((job) => (
               <div key={job.id} className="rounded border p-2">
                 <p className="font-medium">{job.title ?? "Job"}</p>
-                <p className="text-slate-600">
+                <p className="text-[#64748b]">
                   {job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString("en-AU") : "-"} · {job.status ?? "scheduled"}
                 </p>
               </div>
             ))}
-            {(weekJobs ?? []).length === 0 ? <p className="text-slate-500">No jobs this week.</p> : null}
+            {(weekJobs ?? []).length === 0 ? <p className="text-[#64748b]">No jobs this week.</p> : null}
           </div>
         </article>
       </div>
@@ -134,7 +134,7 @@ export default async function EmployeeDashboardPage() {
               <p className="font-medium">
                 {entry.created_at ? new Date(entry.created_at).toLocaleDateString("en-AU") : "-"}
               </p>
-              <p className="text-slate-600">
+              <p className="text-[#64748b]">
                 {entry.clock_in ? new Date(entry.clock_in).toLocaleTimeString("en-AU") : "--"} -{" "}
                 {entry.clock_out ? new Date(entry.clock_out).toLocaleTimeString("en-AU") : "--"} ·{" "}
                 {Number(entry.worked_hours ?? 0).toFixed(2)}h

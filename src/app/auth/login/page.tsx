@@ -80,13 +80,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const emailValue = searchParams?.email ?? rememberedEmail;
 
   return (
-    <main className="min-h-screen bg-sky-50 px-6 py-16">
-      <div className="mx-auto max-w-md rounded-2xl border border-sky-100 bg-white p-8 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-4 flex justify-center">
           <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
         </div>
-        <h1 className="text-3xl font-bold text-sky-950">Sign in to SERVLO</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="text-3xl font-bold text-[#1e3a5f]">Welcome back</h1>
+        <p className="mt-2 text-sm text-[#64748b]">
           Welcome back. Access your dashboard and continue managing your business.
         </p>
 
@@ -98,7 +98,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <form action={signIn} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
               Email
             </label>
             <input
@@ -107,11 +107,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               type="email"
               defaultValue={emailValue}
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
             />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
               Password
             </label>
             <input
@@ -120,29 +120,29 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               type="password"
               defaultValue={rememberedPassword}
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
             />
           </div>
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-[#64748b]">
             <input
               name="remember_me"
               type="checkbox"
               defaultChecked={rememberedChecked}
-              className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
+              className="h-4 w-4 rounded border-slate-300 text-[#0db8c8]"
             />
             Remember me
           </label>
           {searchParams?.error ? (
             <p className="text-sm text-red-700">{searchParams.error}</p>
           ) : null}
-          <Button type="submit" className="w-full bg-sky-700 hover:bg-sky-800">
+          <Button type="submit" className="w-full bg-[#0db8c8] text-white hover:bg-[#0a9dab]">
             Sign in
           </Button>
         </form>
 
-        <p className="mt-5 text-sm text-slate-600">
+        <p className="mt-5 text-sm text-[#64748b]">
           New to SERVLO?{" "}
-          <Link href="/auth/signup" className="font-semibold text-sky-700 hover:text-sky-800">
+          <Link href="/auth/signup" className="font-semibold text-[#1e3a5f] hover:text-[#0db8c8]">
             Create an account
           </Link>
         </p>

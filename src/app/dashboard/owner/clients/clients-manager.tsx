@@ -93,14 +93,14 @@ export default function ClientsManager({ clients, createClientAction, updateClie
       {toast ? (
         <div
           className={`rounded-md px-3 py-2 text-sm ${
-            toast.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            toast.type === "success" ? "bg-green-50 text-[#22c55e]" : "bg-red-50 text-[#ef4444]"
           }`}
         >
           {toast.message}
         </div>
       ) : null}
       <div className="flex items-center gap-2">
-        <button onClick={onAdd} className="rounded-md bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
+        <button onClick={onAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
           Add Client
         </button>
         <select
@@ -194,7 +194,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">
                   Cancel
                 </button>
-                <button type="submit" className="rounded bg-[#1e3a5f] px-4 py-2 text-sm text-white">
+                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">
                   {editing ? "Save Changes" : "Create Client"}
                 </button>
               </div>
