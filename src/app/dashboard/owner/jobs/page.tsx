@@ -1,36 +1,37 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
 import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
 
 export default async function OwnerJobsPage() {
-  const { user } = await getOwnerContext();
+  const sb = await createClient();
+  const {
+    data: { user }
+  } = await sb.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const supabase = await createClient();
   const [{ data: jobs }, { data: clients }, { data: employees }] = await Promise.all([
-    supabase
+    sb
       .from("jobs")
       .select(
         "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, clients:clients(full_name)"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
-    supabase.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name"),
-    supabase.from("employees").select("id, full_name").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name"),
+    sb.from("employees").select("id, full_name").eq("owner_id", user.id).order("full_name")
   ]);
 
   const photoUrlsByJob: Record<string, Array<{ url: string; label: "before" | "after" }>> = {};
   const jobIds = (jobs ?? []).map((job) => job.id);
   if (jobIds.length > 0) {
-    const { data: photoRows } = await supabase
+    const { data: photoRows } = await sb
       .from("job_photos")
       .select("job_id, storage_path, label")
       .in("job_id", jobIds);
     for (const row of photoRows ?? []) {
-      const { data } = supabase.storage.from("job-photos").getPublicUrl(row.storage_path);
+      const { data } = sb.storage.from("job-photos").getPublicUrl(row.storage_path);
       const label: "before" | "after" = row.label === "after" ? "after" : "before";
       const current = photoUrlsByJob[row.job_id] ?? [];
       current.push({ url: data.publicUrl, label });
@@ -40,9 +41,11 @@ export default async function OwnerJobsPage() {
 
   async function createJobAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
     const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
     const { error } = await sb.from("jobs").insert({
       owner_id: owner.id,
       title: String(formData.get("title") ?? ""),
@@ -68,10 +71,12 @@ export default async function OwnerJobsPage() {
 
   async function updateJobAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = await createClient();
     const { error } = await sb
       .from("jobs")
       .update({
@@ -100,11 +105,13 @@ export default async function OwnerJobsPage() {
 
   async function updateJobStatusAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
     const status = String(formData.get("status") ?? "scheduled");
-    const sb = await createClient();
     const { error } = await sb.from("jobs").update({ status }).eq("id", id).eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
     revalidatePath("/dashboard/owner/jobs");
@@ -112,10 +119,12 @@ export default async function OwnerJobsPage() {
 
   async function createInvoiceFromJobAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const jobId = String(formData.get("job_id") ?? "");
-    const sb = await createClient();
     const { data: job } = await sb
       .from("jobs")
       .select("id, title, client_id, scheduled_date")
@@ -134,11 +143,13 @@ export default async function OwnerJobsPage() {
 
   async function updateJobScheduleAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
     const scheduledDate = String(formData.get("scheduled_date") ?? "");
-    const sb = await createClient();
     const { error } = await sb
       .from("jobs")
       .update({ scheduled_date: scheduledDate || null })
@@ -150,11 +161,13 @@ export default async function OwnerJobsPage() {
 
   async function updateJobEmployeeAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
     const employeeId = String(formData.get("employee_id") ?? "") || null;
-    const sb = await createClient();
     const { data: updatedJob, error } = await sb
       .from("jobs")
       .update({ employee_id: employeeId })
@@ -184,13 +197,14 @@ export default async function OwnerJobsPage() {
 
   async function uploadJobPhotoAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const jobId = String(formData.get("job_id") ?? "");
     const label = String(formData.get("photo_label") ?? "before").toLowerCase() === "after" ? "after" : "before";
     const files = formData.getAll("photos").filter((entry): entry is File => entry instanceof File);
-    const sb = await createClient();
-
     for (const file of files) {
       if (!file.name) continue;
       const bytes = await file.arrayBuffer();

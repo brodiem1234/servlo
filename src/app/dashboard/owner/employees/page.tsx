@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
 import EmployeesManager from "./employees-manager";
 
 export default async function OwnerEmployeesPage() {
-  const { user } = await getOwnerContext();
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const supabase = await createClient();
   const { data: employees } = await supabase
     .from("employees")
     .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role")
@@ -17,9 +18,11 @@ export default async function OwnerEmployeesPage() {
 
   async function createEmployeeAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
     const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
     const { error } = await sb.from("employees").insert({
       owner_id: owner.id,
       full_name: String(formData.get("full_name") ?? ""),
@@ -36,10 +39,12 @@ export default async function OwnerEmployeesPage() {
 
   async function updateEmployeeAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = await createClient();
     const { error } = await sb
       .from("employees")
       .update({

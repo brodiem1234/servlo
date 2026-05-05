@@ -20,7 +20,7 @@ export default async function ClientLayout({ children }: { children: React.React
   if (profile?.role !== "client") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="dashboard-theme min-h-screen bg-[#f8fafc]">
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div>

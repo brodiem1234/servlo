@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
 import InvoicesManager from "./invoices-manager";
 import { invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
 
@@ -26,24 +25,28 @@ type InvoicesPageProps = {
 };
 
 export default async function OwnerInvoicesPage({ searchParams }: InvoicesPageProps) {
-  const { user } = await getOwnerContext();
+  const sb = await createClient();
+  const {
+    data: { user }
+  } = await sb.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const supabase = await createClient();
   const [{ data: invoices }, { data: clients }] = await Promise.all([
-    supabase
+    sb
       .from("invoices")
       .select("id, invoice_number, client_id, amount, status, due_date, issue_date")
       .eq("owner_id", user.id)
       .order("due_date", { ascending: true }),
-    supabase.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name")
   ]);
 
   async function createInvoiceAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
     const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
     const lineItemsRaw = String(formData.get("line_items") ?? "[]");
     const lineItems = JSON.parse(lineItemsRaw) as Array<{
       description: string;
@@ -114,10 +117,12 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
 
   async function updateInvoiceAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = await createClient();
     const { error } = await sb
       .from("invoices")
       .update({

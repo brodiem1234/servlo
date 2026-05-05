@@ -80,8 +80,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const emailValue = searchParams?.email ?? rememberedEmail;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
+      <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-4 flex justify-center">
           <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
         </div>

@@ -79,7 +79,7 @@ export default async function EmployeeDashboardPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="dashboard-theme min-h-screen space-y-6 bg-[#f8fafc] p-4 md:p-6">
       <h1 className="text-2xl font-bold text-[#1e3a5f]">Employee Dashboard</h1>
       <p className="text-sm text-[#64748b]">Welcome {profile?.full_name ?? user.email}</p>
 

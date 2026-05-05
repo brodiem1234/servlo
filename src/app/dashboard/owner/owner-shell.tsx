@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Bell, Briefcase, FileText, Home, Menu, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Briefcase, FileText, Home, Menu, Moon, Sun, Users } from "lucide-react";
 
 const ownerNav = [
   { href: "/dashboard/owner", label: "Dashboard" },
@@ -26,12 +26,26 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const saved = (localStorage.getItem("servlo-theme") as "dark" | "light" | null) ?? "dark";
+    setTheme(saved);
+    document.documentElement.setAttribute("data-theme", saved);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("servlo-theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+  };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#1e3a5f]">
+    <div className="dashboard-theme min-h-screen bg-[#f8fafc] text-[#1e3a5f]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform bg-[#1e3a5f] px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform bg-[#0d1a26] px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -51,7 +65,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={`rounded-md px-3 py-2 text-sm font-medium ${
-                    active ? "bg-[#0db8c8] text-white" : "hover:bg-[#28507c]"
+                    active ? "bg-[#0db8c8] text-white" : "hover:bg-[#16324b]"
                   }`}
                 >
                   {item.label}
@@ -74,6 +88,14 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <p className="text-sm font-semibold text-[#1e3a5f] md:text-base">{businessName}</p>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded border p-2"
+                onClick={toggleTheme}
+                aria-label="Toggle dark and light mode"
+              >
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
               <div className="relative">
                 <button
                   type="button"
@@ -108,7 +130,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]"
+                  className="dashboard-primary rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]"
                 >
                   Sign Out
                 </button>

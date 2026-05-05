@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext, getOwnerDashboardData } from "@/lib/dashboard/owner";
+import { getOwnerDashboardData } from "@/lib/dashboard/owner";
 import { invoiceReminderEmailTemplate, quoteFollowUpEmailTemplate, sendEmail } from "@/lib/email";
 
 function formatCurrency(value: number) {
@@ -17,11 +17,21 @@ function getStatusBadgeClasses(status: string | null) {
 }
 
 export default async function OwnerDashboardPage() {
-  const { user, trialEnd } = await getOwnerContext();
+  const sb = await createClient();
+  const {
+    data: { user }
+  } = await sb.auth.getUser();
 
   if (!user) {
     redirect("/auth/login");
   }
+
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("trial_end")
+    .eq("id", user.id)
+    .maybeSingle();
+  const trialEnd = profile?.trial_end ?? null;
 
   const { metrics, recentJobs, topClients, chaseInvoices, quotesFollowUp } = await getOwnerDashboardData(user.id);
   const trialDaysRemaining = trialEnd
@@ -33,10 +43,12 @@ export default async function OwnerDashboardPage() {
 
   async function sendInvoiceReminderAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const invoiceId = String(formData.get("invoice_id") ?? "");
-    const sb = await createClient();
     const { data: invoice } = await sb
       .from("invoices")
       .select("invoice_number, amount, due_date, client_id")
@@ -73,10 +85,12 @@ export default async function OwnerDashboardPage() {
 
   async function sendQuoteReminderAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const quoteId = String(formData.get("quote_id") ?? "");
-    const sb = await createClient();
     const { data: quote } = await sb
       .from("quotes")
       .select("quote_number, created_at, client_id")

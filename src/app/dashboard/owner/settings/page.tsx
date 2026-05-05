@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
 import SubscriptionCards from "./subscription-cards";
 
 type SettingsPageProps = {
@@ -11,15 +10,21 @@ type SettingsPageProps = {
 };
 
 export default async function OwnerSettingsPage({ searchParams }: SettingsPageProps) {
-  const { user, businessName, trialEnd, subscriptionTier } = await getOwnerContext();
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, abn, phone, address, plan, subscription_status")
+    .select("business_name, abn, phone, address, plan, subscription_status, trial_end, subscription_tier")
     .eq("id", user.id)
     .maybeSingle();
+
+  const businessName = profile?.business_name ?? "SERVLO Business";
+  const trialEnd = profile?.trial_end ?? null;
+  const subscriptionTier = profile?.subscription_tier ?? "solo";
 
   const trialDaysRemaining = trialEnd
     ? Math.max(0, Math.ceil((new Date(trialEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -27,9 +32,11 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
 
   async function updateBusinessProfile(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
     const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
     await sb
       .from("profiles")
       .update({
@@ -47,6 +54,10 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     "use server";
     const password = String(formData.get("new_password") ?? "");
     const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
     await sb.auth.updateUser({ password });
     revalidatePath("/dashboard/owner/settings");
   }

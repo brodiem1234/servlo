@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
 import QuotesManager from "./quotes-manager";
 
 function getNextNumber(
@@ -20,24 +19,28 @@ function getNextNumber(
 }
 
 export default async function OwnerQuotesPage() {
-  const { user } = await getOwnerContext();
+  const sb = await createClient();
+  const {
+    data: { user }
+  } = await sb.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const supabase = await createClient();
   const [{ data: quotes }, { data: clients }] = await Promise.all([
-    supabase
+    sb
       .from("quotes")
       .select("id, quote_number, client_id, client_name, total, status, created_at")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false }),
-    supabase.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name")
   ]);
 
   async function createQuoteAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
     const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
     const lineItems = JSON.parse(String(formData.get("line_items") ?? "[]")) as Array<{
       description: string;
       quantity: number;
@@ -84,10 +87,12 @@ export default async function OwnerQuotesPage() {
 
   async function updateQuoteAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = await createClient();
     const { error } = await sb
       .from("quotes")
       .update({ client_id: String(formData.get("client_id") ?? "") || null })
@@ -99,10 +104,12 @@ export default async function OwnerQuotesPage() {
 
   async function acceptQuoteAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const quoteId = String(formData.get("quote_id") ?? "");
-    const sb = await createClient();
     const { data: quote } = await sb
       .from("quotes")
       .select("id, quote_number, client_id")
@@ -131,10 +138,12 @@ export default async function OwnerQuotesPage() {
 
   async function convertToInvoiceAction(formData: FormData) {
     "use server";
-    const { user: owner } = await getOwnerContext();
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const quoteId = String(formData.get("quote_id") ?? "");
-    const sb = await createClient();
     const { data: quote } = await sb
       .from("quotes")
       .select("id, client_id, total, subtotal, gst_amount")
