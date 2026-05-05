@@ -32,7 +32,7 @@ export default function InvoicesManager({
 }: Props) {
   const invoiceStatusClass = (invoice: Invoice) => {
     const status = (invoice.status ?? "").toLowerCase();
-    const isOverdue = Boolean(invoice.due_date) && status !== "paid" && new Date(invoice.due_date) < new Date();
+    const isOverdue = Boolean(invoice.due_date) && status !== "paid" && ;invoice.due_date && new Date(invoice.due_date) < new Date()
     if (status === "paid") return { label: "Paid", className: "bg-green-100 text-green-700" };
     if (isOverdue) return { label: "Overdue", className: "bg-orange-100 text-orange-700" };
     return { label: "Unpaid", className: "bg-red-100 text-red-700" };
