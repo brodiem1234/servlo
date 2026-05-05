@@ -29,7 +29,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     "use server";
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
-    const sb = createClient();
+    const sb = await createClient();
     const { error } = await sb.from("clients").insert({
       owner_id: owner.id,
       full_name: String(formData.get("full_name") ?? ""),
@@ -52,7 +52,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = createClient();
+    const sb = await createClient();
     const { error } = await sb
       .from("clients")
       .update({
@@ -150,4 +150,5 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     </section>
   );
 }
+
 

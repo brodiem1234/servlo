@@ -22,7 +22,7 @@ export default async function OwnerQuotesPage() {
     "use server";
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
-    const sb = createClient();
+    const sb = await createClient();
     const lineItems = JSON.parse(String(formData.get("line_items") ?? "[]")) as Array<{
       description: string;
       quantity: number;
@@ -72,7 +72,7 @@ export default async function OwnerQuotesPage() {
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = createClient();
+    const sb = await createClient();
     const { error } = await sb
       .from("quotes")
       .update({ client_id: String(formData.get("client_id") ?? "") || null })
@@ -87,7 +87,7 @@ export default async function OwnerQuotesPage() {
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
     const quoteId = String(formData.get("quote_id") ?? "");
-    const sb = createClient();
+    const sb = await createClient();
     const { data: quote } = await sb
       .from("quotes")
       .select("id, quote_number, client_id")
@@ -127,4 +127,5 @@ export default async function OwnerQuotesPage() {
     </section>
   );
 }
+
 

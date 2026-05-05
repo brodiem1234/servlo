@@ -25,7 +25,7 @@ export default async function OwnerJobsPage() {
     "use server";
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
-    const sb = createClient();
+    const sb = await createClient();
     const { error } = await sb.from("jobs").insert({
       owner_id: owner.id,
       title: String(formData.get("title") ?? ""),
@@ -51,7 +51,7 @@ export default async function OwnerJobsPage() {
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = createClient();
+    const sb = await createClient();
     const { error } = await sb
       .from("jobs")
       .update({
@@ -90,4 +90,5 @@ export default async function OwnerJobsPage() {
     </section>
   );
 }
+
 

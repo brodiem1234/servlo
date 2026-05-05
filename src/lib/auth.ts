@@ -6,3 +6,4 @@ export function canAccessPath(role: UserRole, pathname: string) {
   return true;
 }
 
+

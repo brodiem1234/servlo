@@ -22,7 +22,7 @@ export default async function OwnerSettingsPage() {
     "use server";
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
-    const sb = createClient();
+    const sb = await createClient();
     await sb
       .from("profiles")
       .update({
@@ -39,7 +39,7 @@ export default async function OwnerSettingsPage() {
   async function changePassword(formData: FormData) {
     "use server";
     const password = String(formData.get("new_password") ?? "");
-    const sb = createClient();
+    const sb = await createClient();
     await sb.auth.updateUser({ password });
     revalidatePath("/dashboard/owner/settings");
   }
@@ -78,4 +78,5 @@ export default async function OwnerSettingsPage() {
     </section>
   );
 }
+
 

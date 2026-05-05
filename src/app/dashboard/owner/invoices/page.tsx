@@ -22,7 +22,7 @@ export default async function OwnerInvoicesPage() {
     "use server";
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
-    const sb = createClient();
+    const sb = await createClient();
     const lineItemsRaw = String(formData.get("line_items") ?? "[]");
     const lineItems = JSON.parse(lineItemsRaw) as Array<{
       description: string;
@@ -78,7 +78,7 @@ export default async function OwnerInvoicesPage() {
     const { user: owner } = await getOwnerContext();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const sb = createClient();
+    const sb = await createClient();
     const { error } = await sb
       .from("invoices")
       .update({
@@ -106,4 +106,5 @@ export default async function OwnerInvoicesPage() {
     </section>
   );
 }
+
 
