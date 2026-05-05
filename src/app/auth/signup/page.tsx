@@ -125,8 +125,8 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
         <div className="mb-4 flex justify-center">
           <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
         </div>
-        <h1 className="text-3xl font-bold text-[#1e3a5f]">Create your account</h1>
-        <p className="mt-2 text-sm text-[#64748b]">
+        <h1 className="text-3xl font-bold text-white">Create your account</h1>
+        <p className="mt-2 text-sm text-slate-400">
           Start your 30 day free trial and set up your business in minutes.
         </p>
 
@@ -138,32 +138,32 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
 
         <form action={signUp} className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label htmlFor="role" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
+            <label htmlFor="role" className="mb-1 block text-sm font-medium text-slate-300">
               Role
             </label>
             <select
               id="role"
               name="role"
               defaultValue="owner"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             >
               <option value="owner">Business (Tradie)</option>
               <option value="client">Client</option>
             </select>
           </div>
           <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
+            <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-300">
               Full name
             </label>
             <input
               id="name"
               name="name"
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
           </div>
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
               Email
             </label>
             <input
@@ -171,11 +171,11 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
               name="email"
               type="email"
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
               Password
             </label>
             <input
@@ -184,56 +184,56 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
               type="password"
               minLength={8}
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
           </div>
           <div>
             <label
               htmlFor="business_name"
-              className="mb-1 block text-sm font-medium text-[#1e3a5f]"
+              className="mb-1 block text-sm font-medium text-slate-300"
             >
               Business name
             </label>
             <input
               id="business_name"
               name="business_name"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
           </div>
           <div>
-            <label htmlFor="abn" className="mb-1 block text-sm font-medium text-[#1e3a5f]">
+            <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
               ABN
             </label>
             <input
               id="abn"
               name="abn"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
           </div>
           <div>
             <label
               htmlFor="phone_number"
-              className="mb-1 block text-sm font-medium text-[#1e3a5f]"
+              className="mb-1 block text-sm font-medium text-slate-300"
             >
               Phone number
             </label>
             <input
               id="phone_number"
               name="phone_number"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
           </div>
           <div className="sm:col-span-2">
             <label
               htmlFor="trade_type"
-              className="mb-1 block text-sm font-medium text-[#1e3a5f]"
+              className="mb-1 block text-sm font-medium text-slate-300"
             >
               Trade type
             </label>
             <select
               id="trade_type"
               name="trade_type"
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-[#1e3a5f]"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
               defaultValue=""
             >
               <option value="" disabled>
@@ -253,9 +253,9 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
           </div>
         </form>
 
-        <p className="mt-5 text-sm text-[#64748b]">
+        <p className="mt-5 text-sm text-slate-400">
           Already have an account?{" "}
-          <Link href="/auth/login" className="font-semibold text-[#1e3a5f] hover:text-[#0db8c8]">
+          <Link href="/auth/login" className="font-semibold text-teal-400 hover:text-teal-300">
             Sign in
           </Link>
         </p>

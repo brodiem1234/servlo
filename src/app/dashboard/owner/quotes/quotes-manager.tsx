@@ -107,7 +107,7 @@ export default function QuotesManager({
       </button>
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
         <table className="w-full min-w-[720px] text-sm">
-          <thead><tr className="border-b text-left text-[#1e3a5f]"><th className="px-2 py-2">Quote #</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Total</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
+          <thead><tr className="border-b text-left text-slate-300"><th className="px-2 py-2">Quote #</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Total</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
           <tbody>
             {quotes.map((quote) => (
               <tr key={quote.id} className="border-b hover:bg-slate-50">
@@ -153,7 +153,7 @@ export default function QuotesManager({
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="ml-auto h-full w-full max-w-3xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-[#1e3a5f]">{editingId ? "Edit Quote" : "New Quote"}</h2>
+            <h2 className="text-lg font-semibold text-slate-100">{editingId ? "Edit Quote" : "New Quote"}</h2>
             <form action={onSubmit} className="mt-4 space-y-3">
               <input type="hidden" name="id" value={editingId} />
               <input type="hidden" name="line_items" value={JSON.stringify(lineItems)} />
@@ -180,7 +180,7 @@ export default function QuotesManager({
                     </div>
                   ))}
                   <button type="button" onClick={() => setLineItems((prev) => [...prev, { ...emptyLine }])} className="rounded border px-3 py-2 text-sm">Add line item</button>
-                  <p className="text-sm text-slate-600">Quote Total: ${total.toFixed(2)}</p>
+                  <p className="text-sm text-slate-400">Quote Total: ${total.toFixed(2)}</p>
                 </div>
               ) : null}
               <div className="flex justify-end gap-2">

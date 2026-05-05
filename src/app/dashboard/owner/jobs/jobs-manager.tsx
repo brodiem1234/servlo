@@ -433,7 +433,7 @@ export default function JobsManager({
             >
               ←
             </button>
-            <p className="text-sm font-semibold text-[#1e3a5f]">{currentCalendarLabel}</p>
+            <p className="text-sm font-semibold text-slate-100">{currentCalendarLabel}</p>
             <button
               type="button"
               onClick={() => navigateCalendar(1)}
@@ -446,7 +446,7 @@ export default function JobsManager({
             <div className="space-y-1">
               {Array.from({ length: 13 }, (_, i) => 7 + i).map((hour) => (
                 <div key={hour} className="relative border-t pt-1 min-h-14">
-                  <p className="text-xs text-slate-500">{`${String(hour).padStart(2, "0")}:00`}</p>
+                  <p className="text-xs text-slate-400">{`${String(hour).padStart(2, "0")}:00`}</p>
                 </div>
               ))}
               <div className="relative -mt-[740px] h-[780px]">
@@ -479,7 +479,7 @@ export default function JobsManager({
           ) : null}
           {calendarView === "week" ? (
             <div>
-              <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase text-slate-500">
+              <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase text-slate-300">
                 {weekDays.map((day) => (
                   <div key={toDateKey(day)}>{day.toLocaleDateString("en-AU", { weekday: "short", day: "numeric" })}</div>
                 ))}
@@ -517,7 +517,7 @@ export default function JobsManager({
           ) : null}
           {calendarView === "month" ? (
             <>
-              <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase text-slate-500">
+              <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase text-slate-300">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
                   <div key={day}>{day}</div>
                 ))}
@@ -541,7 +541,7 @@ export default function JobsManager({
                         if (jobId) quickUpdateSchedule(jobId, dateKey);
                       }}
                     >
-                      <p className="mb-2 text-xs font-semibold text-slate-600">{date.getDate()}</p>
+                      <p className="mb-2 text-xs font-semibold text-slate-200">{date.getDate()}</p>
                       <div className="space-y-1">
                         {jobsOnDate.map((job) => (
                           <button
@@ -571,7 +571,7 @@ export default function JobsManager({
             <tbody>
               {filteredJobs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-2 py-6 text-center text-sm text-slate-500">
+                  <td colSpan={7} className="px-2 py-6 text-center text-sm text-slate-400">
                     <div className="flex flex-col items-center gap-3">
                       <p>No jobs yet. Add your first job to get started.</p>
                       <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
@@ -637,7 +637,7 @@ export default function JobsManager({
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-[#1e3a5f]">{editing ? "Edit Job" : "Add Job"}</h2>
+            <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Job" : "Add Job"}</h2>
             <div className="mt-3 rounded-md border bg-white p-1 text-sm w-fit">
               <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[#0db8c8] text-white" : ""}`}>Details</button>
               <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[#0db8c8] text-white" : ""}`}>Photos</button>
@@ -660,7 +660,7 @@ export default function JobsManager({
               <textarea name="description" value={values.description} onChange={(e) => setValues((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="min-h-20 rounded border px-3 py-2 sm:col-span-2" />
               <textarea name="notes" value={values.notes} onChange={(e) => setValues((p) => ({ ...p, notes: e.target.value }))} placeholder="Notes" className="min-h-20 rounded border px-3 py-2 sm:col-span-2" />
               <div className="sm:col-span-2 rounded border p-3">
-                <p className="mb-2 text-sm font-semibold text-[#1e3a5f]">Costs</p>
+                <p className="mb-2 text-sm font-semibold text-slate-100">Costs</p>
                 <div className="grid gap-2 sm:grid-cols-4">
                   <input type="number" step="0.01" name="materials_cost" value={values.materials_cost} onChange={(e) => setValues((p) => ({ ...p, materials_cost: e.target.value }))} placeholder="Materials cost" className="h-10 rounded border px-3" />
                   <input type="number" step="0.1" name="labour_hours" value={values.labour_hours} onChange={(e) => setValues((p) => ({ ...p, labour_hours: e.target.value }))} placeholder="Labour hours" className="h-10 rounded border px-3" />
@@ -673,7 +673,7 @@ export default function JobsManager({
                   const profit = revenue - costs;
                   const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
                   return (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-slate-400">
                       Profit margin: ${profit.toFixed(2)} ({margin.toFixed(1)}%)
                     </p>
                   );
@@ -687,7 +687,7 @@ export default function JobsManager({
               ) : null}
               {activeTab === "photos" ? (
                 <div className="sm:col-span-2 space-y-3">
-                  {!editing ? <p className="text-sm text-slate-500">Save the job first, then upload photos.</p> : null}
+                  {!editing ? <p className="text-sm text-slate-400">Save the job first, then upload photos.</p> : null}
                   {editing ? (
                     <div className="space-y-2">
                       <select
@@ -712,11 +712,11 @@ export default function JobsManager({
                     {(jobPhotosByJob[values.id] ?? []).map((photo, idx) => (
                       <div key={`${photo.url}-${idx}`} className="rounded border p-2">
                         <img src={photo.url} alt={`Job photo ${idx + 1}`} className="h-24 w-full rounded object-cover" />
-                        <p className="mt-1 text-xs font-medium capitalize text-slate-600">{photo.label}</p>
+                        <p className="mt-1 text-xs font-medium capitalize text-slate-300">{photo.label}</p>
                       </div>
                     ))}
                     {(jobPhotosByJob[values.id] ?? []).length === 0 ? (
-                      <p className="text-sm text-slate-500">No photos uploaded yet.</p>
+                      <p className="text-sm text-slate-400">No photos uploaded yet.</p>
                     ) : null}
                   </div>
                 </div>

@@ -141,25 +141,25 @@ export default async function OwnerDashboardPage() {
         </div>
       )}
       <div>
-        <h1 className="text-2xl font-bold text-[#1e3a5f] md:text-3xl">Owner Dashboard</h1>
-        <p className="text-sm text-[#64748b]">Track operational performance in real time.</p>
+        <h1 className="text-2xl font-bold text-white md:text-3xl">Owner Dashboard</h1>
+        <p className="text-sm text-slate-400">Track operational performance in real time.</p>
       </div>
 
       {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? (
-        <article className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">Getting Started Checklist</h2>
-          <ul className="mt-3 space-y-2 text-sm text-slate-700">
-            <li>1. <a href="/dashboard/owner/clients" className="font-medium text-[#1e3a5f] underline">Add your first client</a></li>
-            <li>2. <a href="/dashboard/owner/jobs" className="font-medium text-[#1e3a5f] underline">Create your first job</a></li>
-            <li>3. <a href="/dashboard/owner/quotes" className="font-medium text-[#1e3a5f] underline">Send your first quote</a></li>
-            <li>4. <a href="/dashboard/owner/invoices" className="font-medium text-[#1e3a5f] underline">Create your first invoice</a></li>
-            <li>5. <a href="/dashboard/owner/settings" className="font-medium text-[#1e3a5f] underline">Complete your business settings</a></li>
+        <article className="rounded-xl border border-[#2a4a6b] bg-[#1a2f45] p-4">
+          <h2 className="text-lg font-semibold text-white">Getting Started Checklist</h2>
+          <ul className="mt-3 space-y-2 text-sm text-slate-200">
+            <li>1. <a href="/dashboard/owner/clients" className="font-medium text-white underline">Add your first client</a></li>
+            <li>2. <a href="/dashboard/owner/jobs" className="font-medium text-white underline">Create your first job</a></li>
+            <li>3. <a href="/dashboard/owner/quotes" className="font-medium text-white underline">Send your first quote</a></li>
+            <li>4. <a href="/dashboard/owner/invoices" className="font-medium text-white underline">Create your first invoice</a></li>
+            <li>5. <a href="/dashboard/owner/settings" className="font-medium text-white underline">Complete your business settings</a></li>
           </ul>
         </article>
       ) : null}
 
       <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           <a href="/dashboard/owner/jobs" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">
             New Job
@@ -175,30 +175,30 @@ export default async function OwnerDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Revenue This Month</p>
-          <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">{formatCurrency(metrics.revenueThisMonth)}</p>
+          <p className="text-xs font-semibold uppercase text-slate-400">Revenue This Month</p>
+          <p className="mt-2 text-3xl font-bold text-teal-400">{formatCurrency(metrics.revenueThisMonth)}</p>
         </article>
         <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Outstanding</p>
-          <p className="mt-2 text-3xl font-bold text-[#ef4444]">{formatCurrency(metrics.outstandingAmount)}</p>
+          <p className="text-xs font-semibold uppercase text-slate-400">Outstanding</p>
+          <p className="mt-2 text-3xl font-bold text-teal-400">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
         <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Jobs Completed This Week</p>
-          <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">{metrics.jobsCompletedThisWeek}</p>
+          <p className="text-xs font-semibold uppercase text-slate-400">Jobs Completed This Week</p>
+          <p className="mt-2 text-3xl font-bold text-teal-400">{metrics.jobsCompletedThisWeek}</p>
         </article>
         <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Active Clients</p>
-          <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">{metrics.activeClientsCount}</p>
+          <p className="text-xs font-semibold uppercase text-slate-400">Active Clients</p>
+          <p className="mt-2 text-3xl font-bold text-teal-400">{metrics.activeClientsCount}</p>
         </article>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">Recent Jobs</h2>
+          <h2 className="text-lg font-semibold text-white">Recent Jobs</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[500px] text-sm">
               <thead>
-                <tr className="border-b text-left text-slate-500">
+                <tr className="border-b text-left text-slate-300">
                   <th className="px-2 py-2 font-medium">Title</th>
                   <th className="px-2 py-2 font-medium">Client</th>
                   <th className="px-2 py-2 font-medium">Status</th>
@@ -208,7 +208,7 @@ export default async function OwnerDashboardPage() {
               <tbody>
                 {recentJobs.length === 0 ? (
                   <tr>
-                    <td className="px-2 py-4 text-slate-500" colSpan={4}>
+                    <td className="px-2 py-4 text-slate-400" colSpan={4}>
                       No jobs found.
                     </td>
                   </tr>
@@ -236,7 +236,7 @@ export default async function OwnerDashboardPage() {
         </article>
 
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">Top Clients</h2>
+          <h2 className="text-lg font-semibold text-white">Top Clients</h2>
           <div className="mt-3 space-y-2 text-sm">
             {topClients.map((client, idx) => (
               <div key={`${client.client_name}-${idx}`} className="flex items-center justify-between rounded border px-3 py-2">
@@ -244,14 +244,14 @@ export default async function OwnerDashboardPage() {
                 <p className="font-semibold">{formatCurrency(client.total)}</p>
               </div>
             ))}
-            {topClients.length === 0 ? <p className="text-slate-500">No client revenue data yet.</p> : null}
+            {topClients.length === 0 ? <p className="text-slate-400">No client revenue data yet.</p> : null}
           </div>
         </article>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">Chase Invoices</h2>
+          <h2 className="text-lg font-semibold text-white">Chase Invoices</h2>
           <div className="mt-3 space-y-2 text-sm">
             {chaseInvoices.map((invoice: any) => (
               <div key={invoice.id} className="rounded border p-3">
@@ -262,11 +262,11 @@ export default async function OwnerDashboardPage() {
                     <button type="submit" className="rounded border px-2 py-1 text-xs">Send Reminder</button>
                   </form>
                 </div>
-                <p className="text-slate-600">
+                <p className="text-slate-200">
                   {formatCurrency(Number(invoice.amount ?? 0))} · Due{" "}
                   {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   {invoice.last_reminder_sent
                     ? `Reminder sent ${Math.max(
                         0,
@@ -276,12 +276,12 @@ export default async function OwnerDashboardPage() {
                 </p>
               </div>
             ))}
-            {chaseInvoices.length === 0 ? <p className="text-slate-500">No unpaid invoices.</p> : null}
+            {chaseInvoices.length === 0 ? <p className="text-slate-400">No unpaid invoices.</p> : null}
           </div>
         </article>
 
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">Follow Up Needed (Quotes)</h2>
+          <h2 className="text-lg font-semibold text-white">Follow Up Needed (Quotes)</h2>
           <div className="mt-3 space-y-2 text-sm">
             {quotesFollowUp.map((quote: any) => (
               <div key={quote.id} className="rounded border p-3">
@@ -292,13 +292,13 @@ export default async function OwnerDashboardPage() {
                     <button type="submit" className="rounded border px-2 py-1 text-xs">Send Reminder</button>
                   </form>
                 </div>
-                <p className="text-slate-600">
+                <p className="text-slate-200">
                   Created {quote.created_at ? new Date(quote.created_at).toLocaleDateString("en-AU") : "-"} ·{" "}
                   {quote.status ?? "pending"}
                 </p>
               </div>
             ))}
-            {quotesFollowUp.length === 0 ? <p className="text-slate-500">No quote follow-ups needed.</p> : null}
+            {quotesFollowUp.length === 0 ? <p className="text-slate-400">No quote follow-ups needed.</p> : null}
           </div>
         </article>
       </div>

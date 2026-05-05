@@ -186,7 +186,7 @@ export default function InvoicesManager({
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="ml-auto h-full w-full max-w-3xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-[#1e3a5f]">{editingId ? "Edit Invoice" : "New Invoice"}</h2>
+            <h2 className="text-lg font-semibold text-slate-100">{editingId ? "Edit Invoice" : "New Invoice"}</h2>
             <form action={action} className="mt-4 space-y-3">
               <input type="hidden" name="id" value={editingId} />
               <input type="hidden" name="line_items" value={JSON.stringify(lineItems)} />
@@ -218,7 +218,7 @@ export default function InvoicesManager({
                     </div>
                   ))}
                   <button type="button" onClick={() => setLineItems((prev) => [...prev, { ...emptyLine }])} className="rounded border px-3 py-2 text-sm">Add line item</button>
-                  <p className="text-sm text-slate-600">Subtotal: ${subTotal.toFixed(2)} | GST: ${gst.toFixed(2)} | Total: ${(subTotal + gst).toFixed(2)}</p>
+                  <p className="text-sm text-slate-400">Subtotal: ${subTotal.toFixed(2)} | GST: ${gst.toFixed(2)} | Total: ${(subTotal + gst).toFixed(2)}</p>
                 </div>
               ) : null}
               <div className="flex justify-end gap-2">

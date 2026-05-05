@@ -128,7 +128,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-[#1e3a5f]">{editing ? "Edit Client" : "Add Client"}</h2>
+            <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Client" : "Add Client"}</h2>
             <form action={action} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
               {(
@@ -145,7 +145,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                 ] as const
               ).map(([key, label]) => (
                 <div key={key}>
-                  <label className="mb-1 block text-sm font-medium">{label}</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-300">{label}</label>
                   <input
                     name={key}
                     value={values[key]}
@@ -155,7 +155,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                 </div>
               ))}
               <div>
-                <label className="mb-1 block text-sm font-medium">Client Status</label>
+                <label className="mb-1 block text-sm font-medium text-slate-300">Client Status</label>
                 <select
                   name="status"
                   value={values.status}
@@ -168,7 +168,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Source</label>
+                <label className="mb-1 block text-sm font-medium text-slate-300">Source</label>
                 <select
                   name="source"
                   value={values.source}
@@ -182,7 +182,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                 </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium">Notes</label>
+                <label className="mb-1 block text-sm font-medium text-slate-300">Notes</label>
                 <textarea
                   name="notes"
                   value={values.notes}

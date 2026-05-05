@@ -153,6 +153,29 @@
   color: var(--servlo-text-muted-dark) !important;
 }
 
+/* Dark mode text visibility */
+[data-theme="dark"] label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4 {
+  color: #f0f4f8 !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] td,
+[data-theme="dark"] th {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] a {
+  color: #0db8c8;
+}
+
 [data-theme="light"] .dashboard-theme,
 [data-theme="light"] .auth-theme {
   background: #f8fafc;

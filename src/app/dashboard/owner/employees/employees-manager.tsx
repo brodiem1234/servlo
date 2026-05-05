@@ -112,7 +112,7 @@ export default function EmployeesManager({
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-[#1e3a5f]">{editing ? "Edit Employee" : "Add Employee"}</h2>
+            <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Employee" : "Add Employee"}</h2>
             <form action={action} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
               <input name="full_name" value={values.full_name} onChange={(e) => setValues((p) => ({ ...p, full_name: e.target.value }))} placeholder="Full name" className="h-10 rounded border px-3" />
@@ -121,7 +121,7 @@ export default function EmployeesManager({
               <input name="trade_type" value={values.trade_type} onChange={(e) => setValues((p) => ({ ...p, trade_type: e.target.value }))} placeholder="Trade type" className="h-10 rounded border px-3" />
               <input name="hourly_rate" value={values.hourly_rate} onChange={(e) => setValues((p) => ({ ...p, hourly_rate: e.target.value }))} placeholder="Hourly rate" className="h-10 rounded border px-3" />
               <div className="sm:col-span-2 rounded border p-3">
-                <p className="mb-2 text-sm font-medium">Licences</p>
+                <p className="mb-2 text-sm font-medium text-slate-300">Licences</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {licencesOptions.map((lic) => (
                     <label key={lic} className="inline-flex items-center gap-2 text-sm">
