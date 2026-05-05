@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 export type OwnerMetric = {
+  totalJobs: number;
   activeJobs: number;
   totalClients: number;
   revenueThisMonth: number;
@@ -32,12 +33,17 @@ export async function getOwnerContext() {
 export async function getOwnerDashboardData(ownerId: string) {
   const supabase = await createClient();
 
-  const [{ data: jobs }, { data: clients }, { data: invoices }] = await Promise.all([
+  const [{ data: jobs }, { count: jobsCount }, { data: clients }, { data: invoices }] = await Promise.all([
     supabase
       .from("jobs")
-      .select("id, title, status, scheduled_date, client_name")
+      .select("id, title, status, scheduled_date")
       .eq("owner_id", ownerId)
-      .order("scheduled_date", { ascending: false }),
+      .order("scheduled_date", { ascending: false })
+      .limit(5),
+    supabase
+      .from("jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", ownerId),
     supabase
       .from("clients")
       .select("id")
@@ -58,6 +64,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   const safeInvoices = invoices ?? [];
 
   const metrics: OwnerMetric = {
+    totalJobs: jobsCount ?? 0,
     activeJobs: safeJobs.filter((job) => !["completed", "cancelled"].includes(job.status ?? "")).length,
     totalClients: safeClients.length,
     revenueThisMonth: safeInvoices
@@ -79,7 +86,7 @@ export async function getOwnerDashboardData(ownerId: string) {
 
   return {
     metrics,
-    recentJobs: safeJobs.slice(0, 5),
+    recentJobs: safeJobs,
     recentInvoices: safeInvoices.slice(0, 5)
   };
 }

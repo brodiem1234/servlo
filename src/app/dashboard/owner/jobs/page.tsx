@@ -13,7 +13,7 @@ export default async function OwnerJobsPage() {
     supabase
       .from("jobs")
       .select(
-        "id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, client_name"
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, clients:clients(full_name)"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
@@ -81,7 +81,10 @@ export default async function OwnerJobsPage() {
         <h1 className="text-2xl font-bold text-[#1e3a5f]">Jobs</h1>
       </div>
       <JobsManager
-        jobs={jobs ?? []}
+        jobs={(jobs ?? []).map((job: any) => ({
+          ...job,
+          client_name: job.clients?.full_name ?? null
+        }))}
         clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         employees={(employees ?? []).map((e) => ({ id: e.id, label: e.full_name ?? "Unnamed employee" }))}
         createJobAction={createJobAction}

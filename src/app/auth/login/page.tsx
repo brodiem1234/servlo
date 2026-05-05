@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,7 @@ async function signIn(formData: FormData) {
 
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const rememberMe = formData.get("remember_me") === "on";
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -23,10 +25,42 @@ async function signIn(formData: FormData) {
     redirect("/auth/login?error=Invalid%20email%20or%20password");
   }
 
+  const cookieStore = await cookies();
+  if (rememberMe) {
+    const oneYear = 60 * 60 * 24 * 365;
+    cookieStore.set("servlo_remember_email", email, {
+      path: "/",
+      maxAge: oneYear,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    });
+    cookieStore.set("servlo_remember_password", password, {
+      path: "/",
+      maxAge: oneYear,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    });
+    cookieStore.set("servlo_persist_session", "true", {
+      path: "/",
+      maxAge: oneYear,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    });
+  } else {
+    cookieStore.delete("servlo_remember_email");
+    cookieStore.delete("servlo_remember_password");
+    cookieStore.delete("servlo_persist_session");
+  }
+
   redirect("/dashboard/owner");
 }
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const cookieStore = await cookies();
+  const rememberedEmail = cookieStore.get("servlo_remember_email")?.value ?? "";
+  const rememberedPassword = cookieStore.get("servlo_remember_password")?.value ?? "";
+  const rememberedChecked = cookieStore.get("servlo_persist_session")?.value === "true";
+
   return (
     <main className="min-h-screen bg-sky-50 px-6 py-16">
       <div className="mx-auto max-w-md rounded-2xl border border-sky-100 bg-white p-8 shadow-sm">
@@ -55,6 +89,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
               id="email"
               name="email"
               type="email"
+              defaultValue={rememberedEmail}
               required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
             />
@@ -67,10 +102,20 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
               id="password"
               name="password"
               type="password"
+              defaultValue={rememberedPassword}
               required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
             />
           </div>
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input
+              name="remember_me"
+              type="checkbox"
+              defaultChecked={rememberedChecked}
+              className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
+            />
+            Remember me
+          </label>
           <Button type="submit" className="w-full bg-sky-700 hover:bg-sky-800">
             Sign in
           </Button>
