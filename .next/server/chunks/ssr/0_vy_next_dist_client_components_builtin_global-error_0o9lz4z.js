@@ -1,0 +1,3 @@
+module.exports=[35424,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(13253);a.n(d("[project]/.cursor/projects/empty-window/servlo/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},44421,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(13253);a.n(d("[project]/.cursor/projects/empty-window/servlo/node_modules/next/dist/client/components/builtin/global-error.js"))},35842,a=>{"use strict";a.i(35424);var b=a.i(44421);a.n(b)},72898,a=>{a.n(a.i(35842))}];
+
+//# sourceMappingURL=0_vy_next_dist_client_components_builtin_global-error_0o9lz4z.js.map

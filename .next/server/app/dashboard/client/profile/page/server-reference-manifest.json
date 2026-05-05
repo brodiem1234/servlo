@@ -1,0 +1,17 @@
+{
+  "node": {
+    "008ef488b3cdd73ca2a2a58160d461c32bbc1357d7": {
+      "workers": {
+        "app/dashboard/client/profile/page": {
+          "moduleId": 54752,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/client/layout.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/client/layout.tsx"
+    }
+  },
+  "edge": {}
+}

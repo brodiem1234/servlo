@@ -4,9 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import QuotesManager from "./quotes-manager";
 
-function getNextNumber(existing: Array<{ quote_number: string | null }>, prefix: string) {
+function getNextNumber(
+  existing: Array<Record<string, string | null>>,
+  key: string,
+  prefix: string
+) {
   const max = existing.reduce((highest, item) => {
-    const value = item.quote_number ?? "";
+    const value = item[key] ?? "";
     const match = new RegExp(`^${prefix}-(\\d+)$`).exec(value);
     if (!match) return highest;
     const num = Number(match[1]);
@@ -47,7 +51,7 @@ export default async function OwnerQuotesPage() {
       .from("quotes")
       .select("quote_number")
       .eq("owner_id", owner.id);
-    const quoteNumber = getNextNumber(existingNumbers ?? [], "QTE");
+    const quoteNumber = getNextNumber(existingNumbers ?? [], "quote_number", "QTE");
     const { data: created } = await sb
       .from("quotes")
       .insert({
@@ -139,11 +143,11 @@ export default async function OwnerQuotesPage() {
       .maybeSingle();
     if (!quote) return;
 
-    const { data: existingInvoiceNumbers } = await sb
+    const { data: existingQuoteNumbers } = await sb
       .from("invoices")
-      .select("invoice_number")
+      .select("quote_number")
       .eq("owner_id", owner.id);
-    const invoiceNumber = getNextNumber(existingInvoiceNumbers ?? [], "INV");
+    const invoiceNumber = getNextNumber(existingQuoteNumbers ?? [], "quote_number", "INV");
 
     const { error: invoiceError } = await sb.from("invoices").insert({
       owner_id: owner.id,

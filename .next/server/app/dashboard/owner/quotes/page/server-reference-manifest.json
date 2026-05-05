@@ -1,0 +1,65 @@
+{
+  "node": {
+    "00f4299287a6d037d670dae25632d9c236a2354d31": {
+      "workers": {
+        "app/dashboard/owner/quotes/page": {
+          "moduleId": 95294,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/layout.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/layout.tsx"
+    },
+    "400fa8163dbb9c0917789835da732a4da7233e7988": {
+      "workers": {
+        "app/dashboard/owner/quotes/page": {
+          "moduleId": 95294,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+    },
+    "40c5c2625d284151e4c3bd69a688825e60adddcbc1": {
+      "workers": {
+        "app/dashboard/owner/quotes/page": {
+          "moduleId": 95294,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_1",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_1",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+    },
+    "40d3b3dd4bfe9183ef31bb7c72ae287d81082102d7": {
+      "workers": {
+        "app/dashboard/owner/quotes/page": {
+          "moduleId": 95294,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_2",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_2",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+    },
+    "40da9fb67ba11028aed45f4808ed39870ebaa1aa18": {
+      "workers": {
+        "app/dashboard/owner/quotes/page": {
+          "moduleId": 95294,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_3",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_3",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/quotes/page.tsx"
+    }
+  },
+  "edge": {}
+}

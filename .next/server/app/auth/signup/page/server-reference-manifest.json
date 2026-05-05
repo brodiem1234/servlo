@@ -1,0 +1,17 @@
+{
+  "node": {
+    "404bd815ed924797f098bb79228fe3975bd42ada37": {
+      "workers": {
+        "app/auth/signup/page": {
+          "moduleId": 94996,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/auth/signup/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/auth/signup/page.tsx"
+    }
+  },
+  "edge": {}
+}

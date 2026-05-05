@@ -2,15 +2,22 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
+import SubscriptionCards from "./subscription-cards";
 
-export default async function OwnerSettingsPage() {
+type SettingsPageProps = {
+  searchParams?: {
+    success?: string;
+  };
+};
+
+export default async function OwnerSettingsPage({ searchParams }: SettingsPageProps) {
   const { user, businessName, trialEnd, subscriptionTier } = await getOwnerContext();
   if (!user) redirect("/auth/login");
 
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, abn, phone, address")
+    .select("business_name, abn, phone, address, plan, subscription_status")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -61,12 +68,16 @@ export default async function OwnerSettingsPage() {
         </form>
       </article>
 
-      <article className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Subscription</h2>
-        <p className="mt-2 text-sm text-slate-600">Current plan: {String(subscriptionTier).toUpperCase()}</p>
-        <p className="text-sm text-slate-600">{trialDaysRemaining} days remaining in trial</p>
-        <button className="mt-3 rounded bg-[#3b82f6] px-4 py-2 text-sm text-white">Upgrade</button>
-      </article>
+      <SubscriptionCards
+        email={user.email ?? ""}
+        currentPlan={String(profile?.plan ?? subscriptionTier ?? "trial")}
+        success={searchParams?.success === "true"}
+        priceIds={{
+          solo: process.env.STRIPE_SOLO_PRICE_ID ?? "",
+          team: process.env.STRIPE_TEAM_PRICE_ID ?? "",
+          business: process.env.STRIPE_BUSINESS_PRICE_ID ?? ""
+        }}
+      />
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[#1e3a5f]">Account</h2>

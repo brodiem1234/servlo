@@ -1,0 +1,41 @@
+{
+  "node": {
+    "00f4299287a6d037d670dae25632d9c236a2354d31": {
+      "workers": {
+        "app/dashboard/owner/employees/page": {
+          "moduleId": 89660,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/layout.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/layout.tsx"
+    },
+    "4050dc1b68eb51802c528d418b33592024741ba5df": {
+      "workers": {
+        "app/dashboard/owner/employees/page": {
+          "moduleId": 89660,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_1",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/employees/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_1",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/employees/page.tsx"
+    },
+    "406557cffef268c6cd6ce014764f4f7782165bc2b8": {
+      "workers": {
+        "app/dashboard/owner/employees/page": {
+          "moduleId": 89660,
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/employees/page.tsx"
+        }
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": ".cursor/projects/empty-window/servlo/src/app/dashboard/owner/employees/page.tsx"
+    }
+  },
+  "edge": {}
+}

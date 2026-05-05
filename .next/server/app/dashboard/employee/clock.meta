@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/dashboard/layout,_N_T_/dashboard/employee/layout,_N_T_/dashboard/employee/clock/layout,_N_T_/dashboard/employee/clock/page,_N_T_/dashboard/employee/clock"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/dashboard/employee/clock/__PAGE__",
+    "/dashboard/employee/clock",
+    "/dashboard/employee",
+    "/dashboard",
+    "/_index",
+    "/_head"
+  ]
+}
