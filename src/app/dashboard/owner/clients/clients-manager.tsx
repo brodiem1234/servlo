@@ -18,8 +18,8 @@ type ClientRecord = {
 
 type Props = {
   clients: ClientRecord[];
-  createClientAction: (formData: FormData) => Promise<void>;
-  updateClientAction: (formData: FormData) => Promise<void>;
+  createClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  updateClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
 };
 
 const defaultValues = {
@@ -73,18 +73,13 @@ export default function ClientsManager({ clients, createClientAction, updateClie
   }
 
   const action = async (formData: FormData) => {
-    try {
-      if (editing) {
-        await updateClientAction(formData);
-      } else {
-        await createClientAction(formData);
-      }
+    const result = editing ? await updateClientAction(formData) : await createClientAction(formData);
+    if (result.ok) {
       setToast({ type: "success", message: editing ? "Client updated" : "Client added" });
       setOpen(false);
-    } catch (error) {
-      setToast({ type: "error", message: "Unable to save client" });
-      console.error(error);
+      return;
     }
+    setToast({ type: "error", message: result.message ?? "Unable to save client" });
   };
 
   return (

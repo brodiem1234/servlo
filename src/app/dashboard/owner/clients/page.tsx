@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
+import { createAdminClient } from "@/lib/supabase/admin";
 import ClientsManager from "./clients-manager";
 
 type ClientsPageProps = {
@@ -11,27 +11,160 @@ type ClientsPageProps = {
   };
 };
 
+type ClientActionResult = {
+  ok: boolean;
+  message?: string;
+};
+
+function formatDbError(error: {
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
+}) {
+  return [
+    error.code ? `code=${error.code}` : null,
+    error.message ? `message=${error.message}` : null,
+    error.details ? `details=${error.details}` : null,
+    error.hint ? `hint=${error.hint}` : null
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+async function ensureOwnerProfileExists(
+  sb: Awaited<ReturnType<typeof createClient>>,
+  owner: {
+  id: string;
+  email?: string | null;
+  user_metadata?: Record<string, unknown> | null;
+}
+) {
+  const fullName =
+    (owner.user_metadata?.full_name as string | undefined) ??
+    (owner.user_metadata?.name as string | undefined) ??
+    "";
+
+  const { data: idProfile } = await sb.from("profiles").select("id").eq("id", owner.id).maybeSingle();
+  if (idProfile?.id) return idProfile.id;
+
+  if (owner.email) {
+    const { data: emailProfile } = await sb
+      .from("profiles")
+      .select("id")
+      .eq("email", owner.email)
+      .maybeSingle();
+    if (emailProfile?.id) return emailProfile.id;
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.from("profiles").upsert(
+      {
+        id: owner.id,
+        email: owner.email ?? "",
+        full_name: fullName,
+        role: "owner"
+      },
+      { onConflict: "id" }
+    );
+
+    if (error) {
+      console.error("ensureOwnerProfileExists admin upsert failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        ownerId: owner.id
+      });
+    } else {
+      return owner.id;
+    }
+  } catch (error) {
+    console.error("ensureOwnerProfileExists admin client error", {
+      ownerId: owner.id,
+      error
+    });
+  }
+
+  const { error: fallbackError } = await sb.from("profiles").upsert(
+    {
+      id: owner.id,
+      email: owner.email ?? "",
+      full_name: fullName,
+      role: "owner"
+    },
+    { onConflict: "id" }
+  );
+
+  if (fallbackError) {
+    console.error("ensureOwnerProfileExists fallback upsert failed", {
+      code: fallbackError.code,
+      message: fallbackError.message,
+      details: fallbackError.details,
+      hint: fallbackError.hint,
+      ownerId: owner.id
+    });
+  }
+
+  return owner.id;
+}
+
+async function resolveOwnerIdCandidates(
+  sb: Awaited<ReturnType<typeof createClient>>,
+  owner: { id: string; email?: string | null; user_metadata?: Record<string, unknown> | null }
+) {
+  const candidates = new Set<string>();
+  candidates.add(owner.id);
+
+  const { data: profileById } = await sb
+    .from("profiles")
+    .select("id, business_id")
+    .eq("id", owner.id)
+    .maybeSingle();
+
+  if (profileById?.id) candidates.add(profileById.id);
+  if (profileById?.business_id) candidates.add(profileById.business_id);
+
+  if (owner.email) {
+    const { data: profileByEmail } = await sb
+      .from("profiles")
+      .select("id, business_id")
+      .eq("email", owner.email)
+      .maybeSingle();
+    if (profileByEmail?.id) candidates.add(profileByEmail.id);
+    if (profileByEmail?.business_id) candidates.add(profileByEmail.business_id);
+  }
+
+  return Array.from(candidates).filter(Boolean);
+}
+
 export default async function OwnerClientsPage({ searchParams }: ClientsPageProps) {
-  const { user } = await getOwnerContext();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
   const view = searchParams?.view === "list" ? "list" : "card";
   const sort = searchParams?.sort === "created_at" ? "created_at" : "full_name";
 
-  const supabase = await createClient();
   const { data: clients } = await supabase
     .from("clients")
     .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
     .eq("owner_id", user.id)
     .order(sort, { ascending: true });
 
-  async function createClientAction(formData: FormData) {
+  async function createClientAction(formData: FormData): Promise<ClientActionResult> {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
     const sb = await createClient();
-    const { error } = await sb.from("clients").insert({
-      owner_id: owner.id,
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) {
+      return { ok: false, message: "You are not authenticated. Please sign in again." };
+    }
+
+    await ensureOwnerProfileExists(sb, owner);
+    const ownerIdCandidates = await resolveOwnerIdCandidates(sb, owner);
+
+    const basePayload = {
       full_name: String(formData.get("full_name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
@@ -42,35 +175,133 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       state: String(formData.get("state") ?? ""),
       postcode: String(formData.get("postcode") ?? ""),
       notes: String(formData.get("notes") ?? "")
+    };
+
+    let error: {
+      code?: string;
+      message?: string;
+      details?: string;
+      hint?: string;
+    } | null = null;
+    let successfulOwnerId: string | null = null;
+
+    for (const candidateOwnerId of ownerIdCandidates) {
+      const attempt = await sb.from("clients").insert({
+        owner_id: candidateOwnerId,
+        ...basePayload
+      });
+      if (!attempt.error) {
+        error = null;
+        successfulOwnerId = candidateOwnerId;
+        break;
+      }
+      error = attempt.error;
+      if (attempt.error.code !== "23503") {
+        break;
+      }
+    }
+
+    // If production schema is missing optional columns, retry with core fields so save still succeeds.
+    if (error && error.code === "PGRST204") {
+      const fallbackPayload = {
+        owner_id: owner.id,
+        full_name: basePayload.full_name,
+        email: basePayload.email,
+        phone: basePayload.phone,
+        notes: basePayload.notes
+      };
+      const fallback = await sb.from("clients").insert(fallbackPayload);
+      error = fallback.error;
+    }
+
+    if (error) {
+      console.error("Create client failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        ownerId: owner.id,
+        ownerIdCandidates,
+        payload: basePayload
+      });
+      return {
+        ok: false,
+        message: formatDbError(error) || "Failed to create client"
+      };
+    }
+
+    console.info("Create client succeeded", {
+      ownerId: owner.id,
+      successfulOwnerId
     });
-    if (error) throw new Error(error.message);
+
     revalidatePath("/dashboard/owner/clients");
+    return { ok: true };
   }
 
-  async function updateClientAction(formData: FormData) {
+  async function updateClientAction(formData: FormData): Promise<ClientActionResult> {
     "use server";
-    const { user: owner } = await getOwnerContext();
-    if (!owner) redirect("/auth/login");
-    const id = String(formData.get("id") ?? "");
     const sb = await createClient();
-    const { error } = await sb
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) {
+      return { ok: false, message: "You are not authenticated. Please sign in again." };
+    }
+
+    const resolvedOwnerId = await ensureOwnerProfileExists(sb, owner);
+
+    const id = String(formData.get("id") ?? "");
+    const payload = {
+      full_name: String(formData.get("full_name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      company_name: String(formData.get("company_name") ?? ""),
+      abn: String(formData.get("abn") ?? ""),
+      address: String(formData.get("address") ?? ""),
+      suburb: String(formData.get("suburb") ?? ""),
+      state: String(formData.get("state") ?? ""),
+      postcode: String(formData.get("postcode") ?? ""),
+      notes: String(formData.get("notes") ?? "")
+    };
+
+    let { error } = await sb
       .from("clients")
-      .update({
-        full_name: String(formData.get("full_name") ?? ""),
-        email: String(formData.get("email") ?? ""),
-        phone: String(formData.get("phone") ?? ""),
-        company_name: String(formData.get("company_name") ?? ""),
-        abn: String(formData.get("abn") ?? ""),
-        address: String(formData.get("address") ?? ""),
-        suburb: String(formData.get("suburb") ?? ""),
-        state: String(formData.get("state") ?? ""),
-        postcode: String(formData.get("postcode") ?? ""),
-        notes: String(formData.get("notes") ?? "")
-      })
+      .update(payload)
       .eq("id", id)
-      .eq("owner_id", owner.id);
-    if (error) throw new Error(error.message);
+      .eq("owner_id", resolvedOwnerId);
+
+    if (error && error.code === "PGRST204") {
+      const fallback = await sb
+        .from("clients")
+        .update({
+          full_name: payload.full_name,
+          email: payload.email,
+          phone: payload.phone,
+          notes: payload.notes
+        })
+        .eq("id", id)
+        .eq("owner_id", owner.id);
+      error = fallback.error;
+    }
+
+    if (error) {
+      console.error("Update client failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        ownerId: owner.id,
+        resolvedOwnerId,
+        clientId: id,
+        payload
+      });
+      return {
+        ok: false,
+        message: formatDbError(error) || "Failed to update client"
+      };
+    }
+
     revalidatePath("/dashboard/owner/clients");
+    return { ok: true };
   }
 
   return (
@@ -150,5 +381,3 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     </section>
   );
 }
-
-

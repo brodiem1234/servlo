@@ -10,8 +10,8 @@ type Job = {
   employee_id: string | null;
   job_type: string | null;
   scheduled_date: string | null;
-  start_time: string | null;
-  end_time: string | null;
+  scheduled_start: string | null;
+  scheduled_end: string | null;
   address: string | null;
   suburb: string | null;
   state: string | null;
@@ -39,8 +39,8 @@ const empty = {
   employee_id: "",
   job_type: "",
   scheduled_date: "",
-  start_time: "",
-  end_time: "",
+  scheduled_start: "",
+  scheduled_end: "",
   address: "",
   suburb: "",
   state: "",
@@ -91,8 +91,8 @@ export default function JobsManager({ jobs, clients, employees, createJobAction,
       employee_id: job.employee_id ?? "",
       job_type: job.job_type ?? "",
       scheduled_date: job.scheduled_date ? job.scheduled_date.slice(0, 10) : "",
-      start_time: job.start_time ?? "",
-      end_time: job.end_time ?? "",
+      scheduled_start: job.scheduled_start ?? "",
+      scheduled_end: job.scheduled_end ?? "",
       address: job.address ?? "",
       suburb: job.suburb ?? "",
       state: job.state ?? "",
@@ -183,8 +183,8 @@ export default function JobsManager({ jobs, clients, employees, createJobAction,
               <select name="employee_id" value={values.employee_id} onChange={(e) => setValues((p) => ({ ...p, employee_id: e.target.value }))} className="h-10 rounded border px-3"><option value="">Employee</option>{employees.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
               <input type="date" name="scheduled_date" value={values.scheduled_date} onChange={(e) => setValues((p) => ({ ...p, scheduled_date: e.target.value }))} className="h-10 rounded border px-3" />
               <select name="priority" value={values.priority} onChange={(e) => setValues((p) => ({ ...p, priority: e.target.value }))} className="h-10 rounded border px-3"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option></select>
-              <input type="time" name="start_time" value={values.start_time} onChange={(e) => setValues((p) => ({ ...p, start_time: e.target.value }))} className="h-10 rounded border px-3" />
-              <input type="time" name="end_time" value={values.end_time} onChange={(e) => setValues((p) => ({ ...p, end_time: e.target.value }))} className="h-10 rounded border px-3" />
+              <input type="time" name="scheduled_start" value={values.scheduled_start} onChange={(e) => setValues((p) => ({ ...p, scheduled_start: e.target.value }))} className="h-10 rounded border px-3" />
+              <input type="time" name="scheduled_end" value={values.scheduled_end} onChange={(e) => setValues((p) => ({ ...p, scheduled_end: e.target.value }))} className="h-10 rounded border px-3" />
               <input name="address" value={values.address} onChange={(e) => setValues((p) => ({ ...p, address: e.target.value }))} placeholder="Address" className="h-10 rounded border px-3" />
               <input name="suburb" value={values.suburb} onChange={(e) => setValues((p) => ({ ...p, suburb: e.target.value }))} placeholder="Suburb" className="h-10 rounded border px-3" />
               <input name="state" value={values.state} onChange={(e) => setValues((p) => ({ ...p, state: e.target.value }))} placeholder="State" className="h-10 rounded border px-3" />

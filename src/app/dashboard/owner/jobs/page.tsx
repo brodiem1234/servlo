@@ -13,7 +13,7 @@ export default async function OwnerJobsPage() {
     supabase
       .from("jobs")
       .select(
-        "id, title, description, client_id, employee_id, job_type, scheduled_date, start_time, end_time, address, suburb, state, priority, notes, status, client_name"
+        "id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, client_name"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
@@ -34,8 +34,8 @@ export default async function OwnerJobsPage() {
       employee_id: String(formData.get("employee_id") ?? "") || null,
       job_type: String(formData.get("job_type") ?? ""),
       scheduled_date: String(formData.get("scheduled_date") ?? "") || null,
-      start_time: String(formData.get("start_time") ?? "") || null,
-      end_time: String(formData.get("end_time") ?? "") || null,
+      scheduled_start: String(formData.get("scheduled_start") ?? "") || null,
+      scheduled_end: String(formData.get("scheduled_end") ?? "") || null,
       address: String(formData.get("address") ?? ""),
       suburb: String(formData.get("suburb") ?? ""),
       state: String(formData.get("state") ?? ""),
@@ -61,8 +61,8 @@ export default async function OwnerJobsPage() {
         employee_id: String(formData.get("employee_id") ?? "") || null,
         job_type: String(formData.get("job_type") ?? ""),
         scheduled_date: String(formData.get("scheduled_date") ?? "") || null,
-        start_time: String(formData.get("start_time") ?? "") || null,
-        end_time: String(formData.get("end_time") ?? "") || null,
+        scheduled_start: String(formData.get("scheduled_start") ?? "") || null,
+        scheduled_end: String(formData.get("scheduled_end") ?? "") || null,
         address: String(formData.get("address") ?? ""),
         suburb: String(formData.get("suburb") ?? ""),
         state: String(formData.get("state") ?? ""),
