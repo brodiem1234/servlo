@@ -7,6 +7,8 @@ type ClientRecord = {
   full_name: string | null;
   email: string | null;
   phone: string | null;
+  status?: string | null;
+  source?: string | null;
   company_name: string | null;
   abn: string | null;
   address: string | null;
@@ -27,6 +29,8 @@ const defaultValues = {
   full_name: "",
   email: "",
   phone: "",
+  status: "active",
+  source: "other",
   company_name: "",
   abn: "",
   address: "",
@@ -56,6 +60,8 @@ export default function ClientsManager({ clients, createClientAction, updateClie
       full_name: client.full_name ?? "",
       email: client.email ?? "",
       phone: client.phone ?? "",
+      status: client.status ?? "active",
+      source: client.source ?? "other",
       company_name: client.company_name ?? "",
       abn: client.abn ?? "",
       address: client.address ?? "",
@@ -148,6 +154,33 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                   />
                 </div>
               ))}
+              <div>
+                <label className="mb-1 block text-sm font-medium">Client Status</label>
+                <select
+                  name="status"
+                  value={values.status}
+                  onChange={(e) => setValues((prev) => ({ ...prev, status: e.target.value }))}
+                  className="h-10 w-full rounded border px-3 text-sm"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="lead">Lead</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">Source</label>
+                <select
+                  name="source"
+                  value={values.source}
+                  onChange={(e) => setValues((prev) => ({ ...prev, source: e.target.value }))}
+                  className="h-10 w-full rounded border px-3 text-sm"
+                >
+                  <option value="referral">Referral</option>
+                  <option value="website">Website</option>
+                  <option value="walk-in">Walk-in</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
               <div className="sm:col-span-2">
                 <label className="mb-1 block text-sm font-medium">Notes</label>
                 <textarea

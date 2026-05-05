@@ -147,11 +147,83 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   const view = searchParams?.view === "list" ? "list" : "card";
   const sort = searchParams?.sort === "created_at" ? "created_at" : "full_name";
 
-  const { data: clients } = await supabase
+  let clients:
+    | Array<{
+        id: string;
+        full_name: string | null;
+        email: string | null;
+        phone: string | null;
+        company_name: string | null;
+        abn: string | null;
+        address: string | null;
+        suburb: string | null;
+        state: string | null;
+        postcode: string | null;
+        notes: string | null;
+        status?: string | null;
+        source?: string | null;
+        created_at: string | null;
+      }>
+    | null = null;
+
+  const primaryClientsQuery = await supabase
     .from("clients")
-    .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
+    .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, created_at")
     .eq("owner_id", user.id)
     .order(sort, { ascending: true });
+
+  if (primaryClientsQuery.error?.code === "PGRST204") {
+    const fallbackClientsQuery = await supabase
+      .from("clients")
+      .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
+      .eq("owner_id", user.id)
+      .order(sort, { ascending: true });
+    clients = (fallbackClientsQuery.data ?? []).map((client) => ({
+      ...client,
+      status: null,
+      source: null
+    }));
+  } else {
+    clients = primaryClientsQuery.data ?? [];
+  }
+
+  const clientIds = (clients ?? []).map((client) => client.id);
+  const [{ data: jobs }, { data: invoices }] = await Promise.all([
+    clientIds.length
+      ? supabase
+          .from("jobs")
+          .select("id, client_id, scheduled_date")
+          .in("client_id", clientIds)
+          .eq("owner_id", user.id)
+      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; scheduled_date: string | null }> }),
+    clientIds.length
+      ? supabase
+          .from("invoices")
+          .select("id, client_id, amount")
+          .in("client_id", clientIds)
+          .eq("owner_id", user.id)
+      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; amount: number | null }> })
+  ]);
+
+  const metricsByClient = new Map<string, { totalJobs: number; totalInvoiced: number; lastJobDate: string | null }>();
+  for (const clientId of clientIds) {
+    metricsByClient.set(clientId, { totalJobs: 0, totalInvoiced: 0, lastJobDate: null });
+  }
+  for (const job of jobs ?? []) {
+    if (!job.client_id) continue;
+    const metric = metricsByClient.get(job.client_id);
+    if (!metric) continue;
+    metric.totalJobs += 1;
+    if (job.scheduled_date && (!metric.lastJobDate || job.scheduled_date > metric.lastJobDate)) {
+      metric.lastJobDate = job.scheduled_date;
+    }
+  }
+  for (const invoice of invoices ?? []) {
+    if (!invoice.client_id) continue;
+    const metric = metricsByClient.get(invoice.client_id);
+    if (!metric) continue;
+    metric.totalInvoiced += Number(invoice.amount ?? 0);
+  }
 
   async function createClientAction(formData: FormData): Promise<ClientActionResult> {
     "use server";
@@ -168,6 +240,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       full_name: String(formData.get("full_name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
+      status: String(formData.get("status") ?? "active"),
+      source: String(formData.get("source") ?? "other"),
       company_name: String(formData.get("company_name") ?? ""),
       abn: String(formData.get("abn") ?? ""),
       address: String(formData.get("address") ?? ""),
@@ -254,6 +328,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       full_name: String(formData.get("full_name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
+      status: String(formData.get("status") ?? "active"),
+      source: String(formData.get("source") ?? "other"),
       company_name: String(formData.get("company_name") ?? ""),
       abn: String(formData.get("abn") ?? ""),
       address: String(formData.get("address") ?? ""),
@@ -340,15 +416,33 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
                 <th className="px-2 py-2">Name</th>
                 <th className="px-2 py-2">Email</th>
                 <th className="px-2 py-2">Phone</th>
+                <th className="px-2 py-2">Status</th>
+                <th className="px-2 py-2">Source</th>
+                <th className="px-2 py-2">Jobs</th>
+                <th className="px-2 py-2">Invoiced</th>
+                <th className="px-2 py-2">Last job</th>
                 <th className="px-2 py-2">Created</th>
               </tr>
             </thead>
             <tbody>
               {(clients ?? []).map((client) => (
                 <tr key={client.id} className="border-b hover:bg-slate-50">
-                  <td className="px-2 py-2 font-medium">{client.full_name ?? "-"}</td>
+                  <td className="px-2 py-2 font-medium">
+                    <a className="text-[#1e3a5f] hover:underline" href={`/dashboard/owner/clients/${client.id}`}>
+                      {client.full_name ?? "-"}
+                    </a>
+                  </td>
                   <td className="px-2 py-2">{client.email ?? "-"}</td>
                   <td className="px-2 py-2">{client.phone ?? "-"}</td>
+                  <td className="px-2 py-2 capitalize">{client.status ?? "active"}</td>
+                  <td className="px-2 py-2 capitalize">{client.source ?? "other"}</td>
+                  <td className="px-2 py-2">{metricsByClient.get(client.id)?.totalJobs ?? 0}</td>
+                  <td className="px-2 py-2">${(metricsByClient.get(client.id)?.totalInvoiced ?? 0).toFixed(2)}</td>
+                  <td className="px-2 py-2">
+                    {metricsByClient.get(client.id)?.lastJobDate
+                      ? new Date(metricsByClient.get(client.id)!.lastJobDate!).toLocaleDateString("en-AU")
+                      : "-"}
+                  </td>
                   <td className="px-2 py-2">
                     {client.created_at ? new Date(client.created_at).toLocaleDateString("en-AU") : "-"}
                   </td>
@@ -356,7 +450,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
               ))}
               {(clients ?? []).length === 0 ? (
                 <tr>
-                  <td className="px-2 py-4 text-slate-500" colSpan={4}>
+                  <td className="px-2 py-4 text-slate-500" colSpan={9}>
                     No clients yet.
                   </td>
                 </tr>
@@ -367,11 +461,25 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {(clients ?? []).map((client) => (
-            <article key={client.id} className="rounded-xl border bg-white p-4 shadow-sm">
+            <a key={client.id} href={`/dashboard/owner/clients/${client.id}`} className="rounded-xl border bg-white p-4 shadow-sm hover:bg-slate-50">
               <p className="font-semibold text-[#1e3a5f]">{client.full_name ?? "Unnamed client"}</p>
               <p className="mt-1 text-sm text-slate-600">{client.email ?? "No email"}</p>
               <p className="text-sm text-slate-600">{client.phone ?? "No phone"}</p>
-            </article>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <p>Status: <span className="font-medium capitalize">{client.status ?? "active"}</span></p>
+                <p>Source: <span className="font-medium capitalize">{client.source ?? "other"}</span></p>
+                <p>Jobs: <span className="font-medium">{metricsByClient.get(client.id)?.totalJobs ?? 0}</span></p>
+                <p>Invoiced: <span className="font-medium">${(metricsByClient.get(client.id)?.totalInvoiced ?? 0).toFixed(2)}</span></p>
+                <p className="col-span-2">
+                  Last job:{" "}
+                  <span className="font-medium">
+                    {metricsByClient.get(client.id)?.lastJobDate
+                      ? new Date(metricsByClient.get(client.id)!.lastJobDate!).toLocaleDateString("en-AU")
+                      : "-"}
+                  </span>
+                </p>
+              </div>
+            </a>
           ))}
           {(clients ?? []).length === 0 ? (
             <p className="text-sm text-slate-500">No clients yet.</p>

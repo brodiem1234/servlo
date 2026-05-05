@@ -32,6 +32,8 @@ async function signUp(formData: FormData) {
   const abn = String(formData.get("abn") ?? "").trim();
   const phoneNumber = String(formData.get("phone_number") ?? "").trim();
   const tradeType = String(formData.get("trade_type") ?? "").trim();
+  const roleInput = String(formData.get("role") ?? "owner").trim();
+  const role = roleInput === "client" ? "client" : "owner";
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -43,7 +45,8 @@ async function signUp(formData: FormData) {
         business_name: businessName,
         abn,
         phone_number: phoneNumber,
-        trade_type: tradeType
+        trade_type: tradeType,
+        role
       }
     }
   });
@@ -73,7 +76,7 @@ async function signUp(formData: FormData) {
         phone: phoneNumber,
         business_name: businessName,
         abn,
-        role: "owner",
+        role,
         trial_start: trialStart.toISOString(),
         trial_end: trialEnd.toISOString(),
         subscription_status: "trialing",
@@ -102,7 +105,7 @@ async function signUp(formData: FormData) {
         phone: phoneNumber,
         business_name: businessName,
         abn,
-        role: "owner",
+        role,
         trial_start: trialStart.toISOString(),
         trial_end: trialEnd.toISOString(),
         subscription_status: "trialing",
@@ -112,7 +115,7 @@ async function signUp(formData: FormData) {
     redirect("/auth/signup?error=Account%20created%20but%20profile%20setup%20failed");
   }
 
-  redirect("/auth/login?success=Account%20created.%20Please%20sign%20in.");
+  redirect(role === "client" ? "/dashboard/client" : "/dashboard/owner");
 }
 
 export default function SignupPage({ searchParams }: SignupPageProps) {
@@ -131,6 +134,20 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
         ) : null}
 
         <form action={signUp} className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label htmlFor="role" className="mb-1 block text-sm font-medium text-slate-700">
+              Role
+            </label>
+            <select
+              id="role"
+              name="role"
+              defaultValue="owner"
+              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
+            >
+              <option value="owner">Business (Tradie)</option>
+              <option value="client">Client</option>
+            </select>
+          </div>
           <div>
             <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-700">
               Full name
@@ -177,7 +194,6 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
             <input
               id="business_name"
               name="business_name"
-              required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
             />
           </div>
@@ -188,7 +204,6 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
             <input
               id="abn"
               name="abn"
-              required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
             />
           </div>
@@ -202,7 +217,6 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
             <input
               id="phone_number"
               name="phone_number"
-              required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
             />
           </div>
@@ -216,7 +230,6 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
             <select
               id="trade_type"
               name="trade_type"
-              required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none ring-sky-200 focus:ring-2"
               defaultValue=""
             >

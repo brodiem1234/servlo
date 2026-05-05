@@ -17,6 +17,10 @@ export default async function DashboardPage() {
     redirect("/dashboard/employee/jobs");
   }
 
+  if (profile?.role === "client") {
+    redirect("/dashboard/client");
+  }
+
   redirect("/dashboard/owner");
 }
 
