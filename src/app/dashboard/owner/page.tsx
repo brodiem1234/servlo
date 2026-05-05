@@ -22,12 +22,21 @@ export default async function OwnerDashboardPage() {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-lg border border-sky-200 bg-sky-100 px-4 py-3 text-sm text-sky-900">
-        {trialDaysRemaining} days remaining in your free trial -{" "}
-        <a href="/dashboard/owner/settings" className="font-semibold underline">
-          Upgrade now
-        </a>
-      </div>
+      {trialDaysRemaining > 0 ? (
+        <div className="rounded-lg border border-sky-200 bg-sky-100 px-4 py-3 text-sm text-sky-900">
+          {trialDaysRemaining} days remaining in your free trial -{" "}
+          <a href="/dashboard/owner/settings" className="font-semibold underline">
+            Upgrade now
+          </a>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Trial expired -{" "}
+          <a href="/dashboard/owner/settings" className="font-semibold underline">
+            upgrade to continue
+          </a>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold text-[#1e3a5f] md:text-3xl">Owner Dashboard</h1>
         <p className="text-sm text-slate-600">Track operational performance in real time.</p>
@@ -50,22 +59,23 @@ export default async function OwnerDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Total Jobs</p>
-          <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">{metrics.totalJobs}</p>
-        </article>
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-slate-500">Total Clients</p>
           <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">{metrics.totalClients}</p>
         </article>
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Revenue This Month</p>
+          <p className="text-xs font-semibold uppercase text-slate-500">Total Jobs</p>
+          <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">{metrics.totalJobs}</p>
+          <p className="text-xs text-slate-500">{metrics.scheduledThisWeek} scheduled this week</p>
+        </article>
+        <article className="rounded-xl border bg-white p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase text-slate-500">Total Invoiced</p>
           <p className="mt-2 text-3xl font-bold text-[#1e3a5f]">
-            {formatCurrency(metrics.revenueThisMonth)}
+            {formatCurrency(metrics.totalInvoicedAmount)}
           </p>
         </article>
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-500">Overdue Invoices</p>
-          <p className="mt-2 text-3xl font-bold text-red-600">{metrics.overdueInvoices}</p>
+          <p className="text-xs font-semibold uppercase text-slate-500">Outstanding Amount</p>
+          <p className="mt-2 text-3xl font-bold text-red-600">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
       </div>
 
@@ -77,6 +87,7 @@ export default async function OwnerDashboardPage() {
               <thead>
                 <tr className="border-b text-left text-slate-500">
                   <th className="px-2 py-2 font-medium">Title</th>
+                  <th className="px-2 py-2 font-medium">Client</th>
                   <th className="px-2 py-2 font-medium">Status</th>
                   <th className="px-2 py-2 font-medium">Scheduled</th>
                 </tr>
@@ -84,7 +95,7 @@ export default async function OwnerDashboardPage() {
               <tbody>
                 {recentJobs.length === 0 ? (
                   <tr>
-                    <td className="px-2 py-4 text-slate-500" colSpan={3}>
+                    <td className="px-2 py-4 text-slate-500" colSpan={4}>
                       No jobs found.
                     </td>
                   </tr>
@@ -92,7 +103,12 @@ export default async function OwnerDashboardPage() {
                   recentJobs.map((job) => (
                     <tr key={job.id} className="border-b">
                       <td className="px-2 py-2 font-medium">{job.title ?? "Untitled job"}</td>
-                      <td className="px-2 py-2">{job.status ?? "pending"}</td>
+                      <td className="px-2 py-2">{job.client_name ?? "-"}</td>
+                      <td className="px-2 py-2">
+                        <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                          {job.status ?? "pending"}
+                        </span>
+                      </td>
                       <td className="px-2 py-2">
                         {job.scheduled_date
                           ? new Date(job.scheduled_date).toLocaleDateString("en-AU")

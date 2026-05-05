@@ -2,10 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export type OwnerMetric = {
   totalJobs: number;
-  activeJobs: number;
+  scheduledThisWeek: number;
   totalClients: number;
-  revenueThisMonth: number;
-  overdueInvoices: number;
+  totalInvoicedAmount: number;
+  outstandingAmount: number;
 };
 
 export async function getOwnerContext() {
@@ -36,7 +36,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   const [{ data: jobs }, { count: jobsCount }, { data: clients }, { data: invoices }] = await Promise.all([
     supabase
       .from("jobs")
-      .select("id, title, status, scheduled_date")
+      .select("id, title, status, scheduled_date, client_name, clients:clients(full_name)")
       .eq("owner_id", ownerId)
       .order("scheduled_date", { ascending: false })
       .limit(5),
@@ -56,32 +56,36 @@ export async function getOwnerDashboardData(ownerId: string) {
   ]);
 
   const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const weekStart = new Date(now);
+  const day = weekStart.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  weekStart.setDate(weekStart.getDate() + mondayOffset);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
 
-  const safeJobs = jobs ?? [];
+  const safeJobs = (jobs ?? []).map((job: any) => ({
+    ...job,
+    client_name: job.client_name ?? job.clients?.full_name ?? null
+  }));
   const safeClients = clients ?? [];
   const safeInvoices = invoices ?? [];
 
+  const { data: weekJobs } = await supabase
+    .from("jobs")
+    .select("id, scheduled_date")
+    .eq("owner_id", ownerId)
+    .gte("scheduled_date", weekStart.toISOString().slice(0, 10))
+    .lt("scheduled_date", weekEnd.toISOString().slice(0, 10));
+
   const metrics: OwnerMetric = {
     totalJobs: jobsCount ?? 0,
-    activeJobs: safeJobs.filter((job) => !["completed", "cancelled"].includes(job.status ?? "")).length,
+    scheduledThisWeek: (weekJobs ?? []).filter((job) => Boolean(job.scheduled_date)).length,
     totalClients: safeClients.length,
-    revenueThisMonth: safeInvoices
-      .filter((invoice) => {
-        const paidAt = invoice.due_date ? new Date(invoice.due_date) : null;
-        return (
-          invoice.status === "paid" &&
-          paidAt &&
-          paidAt.getMonth() === currentMonth &&
-          paidAt.getFullYear() === currentYear
-        );
-      })
-      .reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0),
-    overdueInvoices: safeInvoices.filter((invoice) => {
-      if (!invoice.due_date) return false;
-      return invoice.status !== "paid" && new Date(invoice.due_date) < now;
-    }).length
+    totalInvoicedAmount: safeInvoices.reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0),
+    outstandingAmount: safeInvoices
+      .filter((invoice) => (invoice.status ?? "").toLowerCase() === "unpaid")
+      .reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0)
   };
 
   return {

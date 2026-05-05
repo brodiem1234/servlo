@@ -4,6 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import InvoicesManager from "./invoices-manager";
 
+function getNextNumber(existing: Array<{ invoice_number: string | null }>, prefix: string) {
+  const max = existing.reduce((highest, item) => {
+    const value = item.invoice_number ?? "";
+    const match = new RegExp(`^${prefix}-(\\d+)$`).exec(value);
+    if (!match) return highest;
+    const num = Number(match[1]);
+    return Number.isFinite(num) ? Math.max(highest, num) : highest;
+  }, 0);
+  return `${prefix}-${String(max + 1).padStart(3, "0")}`;
+}
+
 export default async function OwnerInvoicesPage() {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
@@ -36,11 +47,11 @@ export default async function OwnerInvoicesPage() {
       0
     );
     const total = subTotal + gst;
-    const { count } = await sb
+    const { data: existingNumbers } = await sb
       .from("invoices")
-      .select("id", { count: "exact", head: true })
+      .select("invoice_number")
       .eq("owner_id", owner.id);
-    const invoiceNumber = `INV-${String((count ?? 0) + 1).padStart(3, "0")}`;
+    const invoiceNumber = getNextNumber(existingNumbers ?? [], "INV");
     const { data: created } = await sb
       .from("invoices")
       .insert({
@@ -52,7 +63,7 @@ export default async function OwnerInvoicesPage() {
         subtotal: subTotal,
         gst_amount: gst,
         amount: total,
-        status: "draft"
+        status: "unpaid"
       })
       .select("id")
       .single();

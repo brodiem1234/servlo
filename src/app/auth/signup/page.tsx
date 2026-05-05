@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -62,8 +63,7 @@ async function signUp(formData: FormData) {
   }
 
   const trialStart = new Date();
-  const trialEnd = new Date(trialStart);
-  trialEnd.setDate(trialEnd.getDate() + 30);
+  const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   let profileError: Error | null = null;
   try {
@@ -122,6 +122,9 @@ export default function SignupPage({ searchParams }: SignupPageProps) {
   return (
     <main className="min-h-screen bg-sky-50 px-6 py-16">
       <div className="mx-auto max-w-2xl rounded-2xl border border-sky-100 bg-white p-8 shadow-sm">
+        <div className="mb-4 flex justify-center">
+          <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
+        </div>
         <h1 className="text-3xl font-bold text-sky-950">Create your SERVLO account</h1>
         <p className="mt-2 text-sm text-slate-600">
           Start your 30 day free trial and set up your business in minutes.

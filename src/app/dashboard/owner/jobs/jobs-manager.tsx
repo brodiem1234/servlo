@@ -31,6 +31,7 @@ type Props = {
   employees: RefOpt[];
   createJobAction: (formData: FormData) => Promise<void>;
   updateJobAction: (formData: FormData) => Promise<void>;
+  updateJobStatusAction: (formData: FormData) => Promise<void>;
 };
 
 const empty = {
@@ -73,7 +74,14 @@ function startOfWeek(date: Date) {
   return clone;
 }
 
-export default function JobsManager({ jobs, clients, employees, createJobAction, updateJobAction }: Props) {
+export default function JobsManager({
+  jobs,
+  clients,
+  employees,
+  createJobAction,
+  updateJobAction,
+  updateJobStatusAction
+}: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -200,6 +208,19 @@ export default function JobsManager({ jobs, clients, employees, createJobAction,
     } catch (error) {
       setToast({ type: "error", message: "Unable to save job" });
       console.error(error);
+    }
+  };
+
+  const quickUpdateStatus = async (id: string, status: string) => {
+    const fd = new FormData();
+    fd.set("id", id);
+    fd.set("status", status);
+    try {
+      await updateJobStatusAction(fd);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setToast({ type: "error", message: "Unable to update status" });
     }
   };
 
@@ -468,13 +489,18 @@ export default function JobsManager({ jobs, clients, employees, createJobAction,
                     <td className="px-2 py-2">{job.client_name ?? "-"}</td>
                     <td className="px-2 py-2">{job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString("en-AU") : "-"}</td>
                     <td className="px-2 py-2">
-                      <span
+                      <select
+                        value={normalizeStatus(job.status)}
+                        onChange={(e) => quickUpdateStatus(job.id, e.target.value)}
                         className={`rounded-full px-2 py-1 text-xs font-semibold ${
                           statusClasses[normalizeStatus(job.status)] ?? statusClasses.scheduled
                         }`}
                       >
-                        {normalizeStatus(job.status).replace("_", " ")}
-                      </span>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
                     </td>
                     <td className="px-2 py-2 capitalize">{(job.priority ?? "normal").replace("normal", "medium")}</td>
                     <td className="px-2 py-2"><button onClick={() => startEdit(job)} className="rounded border px-2 py-1 text-xs">Edit</button></td>

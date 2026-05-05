@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
@@ -28,6 +29,8 @@ async function signIn(formData: FormData) {
     let message = rawMessage;
     if (lowerMessage.includes("invalid login credentials")) {
       message = "Incorrect email or password";
+    } else if (lowerMessage.includes("user not found") || lowerMessage.includes("email not found")) {
+      message = "Account not found";
     } else if (lowerMessage.includes("email not confirmed")) {
       message = "Please verify your email before logging in";
     }
@@ -79,6 +82,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="min-h-screen bg-sky-50 px-6 py-16">
       <div className="mx-auto max-w-md rounded-2xl border border-sky-100 bg-white p-8 shadow-sm">
+        <div className="mb-4 flex justify-center">
+          <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
+        </div>
         <h1 className="text-3xl font-bold text-sky-950">Sign in to SERVLO</h1>
         <p className="mt-2 text-sm text-slate-600">
           Welcome back. Access your dashboard and continue managing your business.

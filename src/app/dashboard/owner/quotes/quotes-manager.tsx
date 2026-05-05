@@ -21,6 +21,7 @@ type Props = {
   createQuoteAction: (formData: FormData) => Promise<void>;
   updateQuoteAction: (formData: FormData) => Promise<void>;
   acceptQuoteAction: (formData: FormData) => Promise<void>;
+  convertToInvoiceAction: (formData: FormData) => Promise<void>;
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
@@ -30,7 +31,8 @@ export default function QuotesManager({
   clients,
   createQuoteAction,
   updateQuoteAction,
-  acceptQuoteAction
+  acceptQuoteAction,
+  convertToInvoiceAction
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -41,6 +43,7 @@ export default function QuotesManager({
     draft: "bg-slate-100 text-slate-700",
     sent: "bg-blue-100 text-blue-700",
     accepted: "bg-green-100 text-green-700",
+    declined: "bg-red-100 text-red-700",
     rejected: "bg-red-100 text-red-700",
     expired: "bg-orange-100 text-orange-700"
   };
@@ -101,19 +104,32 @@ export default function QuotesManager({
                 <td className="px-2 py-2">{quote.client_name ?? "-"}</td>
                 <td className="px-2 py-2">${Number(quote.total ?? 0).toFixed(2)}</td>
                 <td className="px-2 py-2">
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      statusColors[quote.status ?? "draft"] ?? statusColors.draft
-                    }`}
-                  >
-                    {quote.status ?? "draft"}
-                  </span>
+                  {(() => {
+                    const statusKey = (quote.status ?? "draft").toLowerCase();
+                    const label = statusKey === "rejected" ? "declined" : statusKey;
+                    const colorKey = statusKey === "rejected" ? "declined" : statusKey;
+                    return (
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                          statusColors[colorKey] ?? statusColors.draft
+                        }`}
+                      >
+                        {label}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-2 py-2 flex gap-2">
                   <button onClick={() => startEdit(quote)} className="rounded border px-2 py-1 text-xs">Edit</button>
                   <form action={acceptQuoteAction}>
                     <input type="hidden" name="quote_id" value={quote.id} />
                     <button type="submit" className="rounded bg-emerald-600 px-2 py-1 text-xs text-white">Accept</button>
+                  </form>
+                  <form action={convertToInvoiceAction}>
+                    <input type="hidden" name="quote_id" value={quote.id} />
+                    <button type="submit" className="rounded bg-[#1e3a5f] px-2 py-1 text-xs text-white">
+                      Convert to Invoice
+                    </button>
                   </form>
                 </td>
               </tr>

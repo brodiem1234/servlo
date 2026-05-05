@@ -4,6 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import QuotesManager from "./quotes-manager";
 
+function getNextNumber(existing: Array<{ quote_number: string | null }>, prefix: string) {
+  const max = existing.reduce((highest, item) => {
+    const value = item.quote_number ?? "";
+    const match = new RegExp(`^${prefix}-(\\d+)$`).exec(value);
+    if (!match) return highest;
+    const num = Number(match[1]);
+    return Number.isFinite(num) ? Math.max(highest, num) : highest;
+  }, 0);
+  return `${prefix}-${String(max + 1).padStart(3, "0")}`;
+}
+
 export default async function OwnerQuotesPage() {
   const { user } = await getOwnerContext();
   if (!user) redirect("/auth/login");
@@ -32,11 +43,11 @@ export default async function OwnerQuotesPage() {
     const subTotal = lineItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
     const gst = lineItems.reduce((sum, i) => sum + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0);
     const total = subTotal + gst;
-    const { count } = await sb
+    const { data: existingNumbers } = await sb
       .from("quotes")
-      .select("id", { count: "exact", head: true })
+      .select("quote_number")
       .eq("owner_id", owner.id);
-    const quoteNumber = `QTE-${String((count ?? 0) + 1).padStart(3, "0")}`;
+    const quoteNumber = getNextNumber(existingNumbers ?? [], "QTE");
     const { data: created } = await sb
       .from("quotes")
       .insert({
@@ -114,6 +125,42 @@ export default async function OwnerQuotesPage() {
     revalidatePath("/dashboard/owner/jobs");
   }
 
+  async function convertToInvoiceAction(formData: FormData) {
+    "use server";
+    const { user: owner } = await getOwnerContext();
+    if (!owner) redirect("/auth/login");
+    const quoteId = String(formData.get("quote_id") ?? "");
+    const sb = await createClient();
+    const { data: quote } = await sb
+      .from("quotes")
+      .select("id, client_id, total, subtotal, gst_amount")
+      .eq("id", quoteId)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (!quote) return;
+
+    const { data: existingInvoiceNumbers } = await sb
+      .from("invoices")
+      .select("invoice_number")
+      .eq("owner_id", owner.id);
+    const invoiceNumber = getNextNumber(existingInvoiceNumbers ?? [], "INV");
+
+    const { error: invoiceError } = await sb.from("invoices").insert({
+      owner_id: owner.id,
+      client_id: quote.client_id,
+      invoice_number: invoiceNumber,
+      subtotal: Number(quote.subtotal ?? quote.total ?? 0),
+      gst_amount: Number(quote.gst_amount ?? 0),
+      amount: Number(quote.total ?? 0),
+      status: "unpaid"
+    });
+    if (invoiceError) throw new Error(invoiceError.message);
+
+    await sb.from("quotes").update({ status: "accepted" }).eq("id", quote.id).eq("owner_id", owner.id);
+    revalidatePath("/dashboard/owner/quotes");
+    revalidatePath("/dashboard/owner/invoices");
+  }
+
   return (
     <section className="space-y-5">
       <h1 className="text-2xl font-bold text-[#1e3a5f]">Quotes</h1>
@@ -123,6 +170,7 @@ export default async function OwnerQuotesPage() {
         createQuoteAction={createQuoteAction}
         updateQuoteAction={updateQuoteAction}
         acceptQuoteAction={acceptQuoteAction}
+        convertToInvoiceAction={convertToInvoiceAction}
       />
     </section>
   );

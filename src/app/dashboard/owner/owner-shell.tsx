@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Briefcase, FileText, Home, Menu, Users, Wrench } from "lucide-react";
+import { Briefcase, FileText, Home, Menu, Users } from "lucide-react";
 
 const ownerNav = [
   { href: "/dashboard/owner", label: "Dashboard" },
@@ -28,13 +29,13 @@ export default function OwnerShell({ businessName, signOutAction, children }: Pr
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-[#1e3a5f] px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform bg-[#1e3a5f] px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="mb-6">
             <div className="flex items-center gap-2">
-              <Wrench size={18} />
+              <Image src="/logo.png" alt="SERVLO" width={36} height={36} />
               <p className="text-xl font-bold tracking-wide">SERVLO</p>
             </div>
             <div className="mt-2 h-[2px] w-full bg-[#3b82f6]" />
@@ -83,6 +84,15 @@ export default function OwnerShell({ businessName, signOutAction, children }: Pr
           <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>
         </div>
       </div>
+
+      {open ? (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      ) : null}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-white md:hidden">
         <div className="grid grid-cols-4">

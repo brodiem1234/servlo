@@ -75,6 +75,18 @@ export default async function OwnerJobsPage() {
     revalidatePath("/dashboard/owner/jobs");
   }
 
+  async function updateJobStatusAction(formData: FormData) {
+    "use server";
+    const { user: owner } = await getOwnerContext();
+    if (!owner) redirect("/auth/login");
+    const id = String(formData.get("id") ?? "");
+    const status = String(formData.get("status") ?? "scheduled");
+    const sb = await createClient();
+    const { error } = await sb.from("jobs").update({ status }).eq("id", id).eq("owner_id", owner.id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/dashboard/owner/jobs");
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -89,6 +101,7 @@ export default async function OwnerJobsPage() {
         employees={(employees ?? []).map((e) => ({ id: e.id, label: e.full_name ?? "Unnamed employee" }))}
         createJobAction={createJobAction}
         updateJobAction={updateJobAction}
+        updateJobStatusAction={updateJobStatusAction}
       />
     </section>
   );
