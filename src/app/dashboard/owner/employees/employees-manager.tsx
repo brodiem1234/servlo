@@ -109,7 +109,7 @@ export default function EmployeesManager({
                 </td>
                 <td className="px-2 py-2">{employee.email ?? "-"}</td>
                 <td className="px-2 py-2">{employee.phone ?? "-"}</td>
-                <td className="px-2 py-2">{employee.trade_type ?? "-"}</td>
+                <td className="px-2 py-2">{employee.trade_type ?? employee.role ?? "-"}</td>
                 <td className="px-2 py-2">{employee.hourly_rate != null ? `$${employee.hourly_rate}` : "-"}</td>
                 <td className="px-2 py-2">
                   {!demo ? (

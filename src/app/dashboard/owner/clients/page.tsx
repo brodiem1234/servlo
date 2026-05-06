@@ -208,12 +208,12 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
           .eq("owner_id", ownerId)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; scheduled_date: string | null }> }),
     clientIds.length
-      ? supabase
-          .from("invoices")
-          .select("id, client_id, amount")
-          .in("client_id", clientIds)
-          .eq("owner_id", ownerId)
-      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; amount: number | null }> })
+          ? supabase
+              .from("invoices")
+              .select("id, client_id, amount, total")
+              .in("client_id", clientIds)
+              .eq("owner_id", ownerId)
+      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; amount: number | null; total?: number | null }> })
   ]);
 
   const metricsByClient = new Map<string, ClientMetric>();
@@ -233,7 +233,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     if (!invoice.client_id) continue;
     const metric = metricsByClient.get(invoice.client_id);
     if (!metric) continue;
-    metric.totalInvoiced += Number(invoice.amount ?? 0);
+    metric.totalInvoiced += Number(invoice.total ?? invoice.amount ?? 0);
   }
 
   const metricsRecord = Object.fromEntries(metricsByClient) as Record<string, ClientMetric>;

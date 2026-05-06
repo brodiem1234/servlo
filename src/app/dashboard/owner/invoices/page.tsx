@@ -32,14 +32,48 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
   } = await sb.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const [{ data: invoices }, { data: clients }] = await Promise.all([
-    sb
-      .from("invoices")
-      .select("id, invoice_number, client_id, amount, status, due_date, issue_date, is_demo")
-      .eq("owner_id", user.id)
-      .order("due_date", { ascending: true }),
-    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
-  ]);
+  const invWideSelect =
+    "id, invoice_number, client_id, amount, total, subtotal, gst, gst_amount, status, due_date, issue_date, is_demo";
+  const invNarrowSelect = "id, invoice_number, client_id, amount, status, due_date, issue_date, is_demo";
+
+  const clientsPromise = sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name");
+
+  const invFirst = await sb.from("invoices").select(invWideSelect).eq("owner_id", user.id).order("due_date", {
+    ascending: true
+  });
+
+  let invoices: Array<{
+    id: string;
+    invoice_number: string | null;
+    client_id: string | null;
+    amount: number | null;
+    total?: number | null;
+    subtotal?: number | null;
+    gst?: number | null;
+    gst_amount?: number | null;
+    status: string | null;
+    due_date: string | null;
+    issue_date: string | null;
+    is_demo?: boolean | null;
+  }> = [];
+
+  if (!invFirst.error) {
+    invoices = (invFirst.data ?? []) as typeof invoices;
+  } else if (invFirst.error.code === "PGRST204") {
+    const invFb = await sb.from("invoices").select(invNarrowSelect).eq("owner_id", user.id).order("due_date", {
+      ascending: true
+    });
+    invoices = (invFb.data ?? []) as typeof invoices;
+    if (invFb.error) {
+      console.error("[invoices-page] invoices fallback query failed", invFb.error);
+      invoices = [];
+    }
+  } else {
+    console.error("[invoices-page] invoices query failed", invFirst.error);
+    invoices = [];
+  }
+
+  const { data: clients } = await clientsPromise;
 
   async function createInvoiceAction(formData: FormData) {
     "use server";
@@ -66,26 +100,36 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       .select("invoice_number")
       .eq("owner_id", owner.id);
     const invoiceNumber = getNextNumber(existingNumbers ?? [], "INV");
-    const { data: created } = await sb
+
+    const baseInsert = {
+      owner_id: owner.id,
+      client_id: String(formData.get("client_id") ?? "") || null,
+      invoice_number: invoiceNumber,
+      issue_date: String(formData.get("issue_date") ?? "") || null,
+      due_date: String(formData.get("due_date") ?? "") || null,
+      subtotal: subTotal,
+      status: "unpaid"
+    };
+
+    let created = await sb
       .from("invoices")
-      .insert({
-        owner_id: owner.id,
-        client_id: String(formData.get("client_id") ?? "") || null,
-        invoice_number: invoiceNumber,
-        issue_date: String(formData.get("issue_date") ?? "") || null,
-        due_date: String(formData.get("due_date") ?? "") || null,
-        subtotal: subTotal,
-        gst_amount: gst,
-        amount: total,
-        status: "unpaid"
-      })
+      .insert({ ...baseInsert, gst, total })
       .select("id")
       .single();
-    if (!created?.id) throw new Error("Failed to create invoice");
-    if (created?.id && lineItems.length > 0) {
+
+    if (created.error) {
+      created = await sb
+        .from("invoices")
+        .insert({ ...baseInsert, gst_amount: gst, amount: total })
+        .select("id")
+        .single();
+    }
+
+    if (!created.data?.id) throw new Error(created.error?.message ?? "Failed to create invoice");
+    if (created.data?.id && lineItems.length > 0) {
       const { error: itemsError } = await sb.from("invoice_items").insert(
         lineItems.map((i) => ({
-          invoice_id: created.id,
+          invoice_id: created.data.id,
           description: i.description,
           quantity: i.quantity,
           unit_price: i.unit_price,

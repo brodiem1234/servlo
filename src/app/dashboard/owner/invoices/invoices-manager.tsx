@@ -9,6 +9,7 @@ type Invoice = {
   invoice_number: string | null;
   client_id: string | null;
   amount: number | null;
+  total?: number | null;
   status: string | null;
   due_date: string | null;
   issue_date: string | null;
@@ -158,7 +159,7 @@ export default function InvoicesManager({
     const doc = new jsPDF();
     doc.text("SERVLO Invoice", 14, 20);
     doc.text(`Invoice #: ${invoice.invoice_number ?? "-"}`, 14, 32);
-    doc.text(`Amount: $${Number(invoice.amount ?? 0).toFixed(2)}`, 14, 42);
+    doc.text(`Amount: $${Number(invoice.total ?? invoice.amount ?? 0).toFixed(2)}`, 14, 42);
     doc.text(
       `Due: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}`,
       14,
@@ -216,7 +217,7 @@ export default function InvoicesManager({
                     {demo ? <DemoBadge /> : null}
                   </div>
                 </td>
-                <td className="px-2 py-2 text-[var(--text-primary)]">${Number(invoice.amount ?? 0).toFixed(2)}</td>
+                <td className="px-2 py-2 text-[var(--text-primary)]">${Number(invoice.total ?? invoice.amount ?? 0).toFixed(2)}</td>
                 <td className="px-2 py-2 text-[var(--text-secondary)]">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}</td>
                 <td className="px-2 py-2">
                   <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${badge.className}`}>

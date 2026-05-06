@@ -539,9 +539,9 @@ export default function JobsManager({
         className={`block w-full rounded-md px-2 py-1.5 text-left text-xs font-semibold shadow-sm ${cls} ${options?.className ?? ""}`}
       >
         {time ? <p className="text-[10px] font-bold uppercase tracking-wide opacity-90">{time}</p> : null}
-        <p className="line-clamp-2 leading-snug">
-          {job.title ?? "Untitled job"}
-          {job.is_demo ? <span className="ml-1 text-[9px] font-bold uppercase text-violet-700">Demo</span> : null}
+        <p className="flex flex-wrap items-center gap-1 leading-snug">
+          <span className="line-clamp-2">{job.title ?? "Untitled job"}</span>
+          {job.is_demo ? <DemoBadge className="!px-1.5 !py-px !text-[9px]" /> : null}
         </p>
         <p className="truncate text-[10px] font-normal opacity-95">{job.client_name ?? "—"}</p>
         <p className="truncate text-[10px] font-normal opacity-95">{displayEmployeeName(job)}</p>

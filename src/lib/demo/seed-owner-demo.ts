@@ -1,11 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-function moneyGstInclusive(totalIncl: number) {
-  const subtotal = Math.round((totalIncl / 1.1) * 100) / 100;
-  const gst = Math.round((totalIncl - subtotal) * 100) / 100;
-  return { subtotal, gst, total: totalIncl };
-}
-
 function localDateKey(d = new Date()) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -41,6 +35,7 @@ export async function removeAllDemoForOwner(sb: SupabaseClient, ownerId: string)
 
 /**
  * Seeds template records for a brand-new owner account (service role client).
+ * Column sets match owner dashboard schema; optional fallbacks handle legacy DB shapes.
  */
 export async function seedOwnerDemoData(
   sb: SupabaseClient,
@@ -50,27 +45,21 @@ export async function seedOwnerDemoData(
     await removeAllDemoForOwner(sb, ownerId);
 
     const today = localDateKey();
-    const due = new Date();
-    due.setDate(due.getDate() + 14);
-    const dueKey = localDateKey(due);
 
     const { data: clientRow, error: clientErr } = await sb
       .from("clients")
       .insert({
         owner_id: ownerId,
         full_name: "Alex Johnson",
-        company_name: "Johnson Properties",
         email: "demo-client@servlo.com.au",
         phone: "0412 345 678",
+        company_name: "Johnson Properties",
+        abn: "",
         address: "12 Example Street",
         suburb: "Adelaide",
         state: "SA",
         postcode: "5000",
-        status: "active",
-        notes: "This is a demo client. Replace with your real clients.",
-        source: "demo",
-        portal_token: crypto.randomUUID(),
-        abn: "",
+        notes: "Demo client — replace with your real clients",
         is_demo: true
       })
       .select("id")
@@ -82,50 +71,108 @@ export async function seedOwnerDemoData(
 
     const clientId = clientRow.id as string;
 
-    const { data: employeeRow, error: empErr } = await sb
+    let employeeRow: { id: string } | null = null;
+    let empErr = null;
+
+    const empMinimal = await sb
       .from("employees")
       .insert({
         owner_id: ownerId,
         full_name: "Sam Taylor",
         email: "demo-employee@servlo.com.au",
         phone: "0423 456 789",
-        trade_type: "Field Technician",
-        licences: [],
-        hourly_rate: 0,
-        role: "employee",
+        role: "Field Technician",
         is_demo: true
       })
       .select("id")
       .single();
 
-    if (empErr || !employeeRow?.id) {
+    if (!empMinimal.error && empMinimal.data?.id) {
+      employeeRow = empMinimal.data as { id: string };
+    } else {
+      empErr = empMinimal.error;
+      const empLegacy = await sb
+        .from("employees")
+        .insert({
+          owner_id: ownerId,
+          full_name: "Sam Taylor",
+          email: "demo-employee@servlo.com.au",
+          phone: "0423 456 789",
+          role: "Field Technician",
+          trade_type: "",
+          licences: [],
+          hourly_rate: 0,
+          is_demo: true
+        })
+        .select("id")
+        .single();
+
+      if (!empLegacy.error && empLegacy.data?.id) {
+        employeeRow = empLegacy.data as { id: string };
+        empErr = null;
+      } else {
+        const empRoleEnum = await sb
+          .from("employees")
+          .insert({
+            owner_id: ownerId,
+            full_name: "Sam Taylor",
+            email: "demo-employee@servlo.com.au",
+            phone: "0423 456 789",
+            role: "employee",
+            trade_type: "Field Technician",
+            licences: [],
+            hourly_rate: 0,
+            is_demo: true
+          })
+          .select("id")
+          .single();
+
+        if (!empRoleEnum.error && empRoleEnum.data?.id) {
+          employeeRow = empRoleEnum.data as { id: string };
+          empErr = null;
+        } else {
+          empErr = empRoleEnum.error ?? empLegacy.error ?? empErr;
+        }
+      }
+    }
+
+    if (!employeeRow?.id || empErr) {
       await sb.from("clients").delete().eq("id", clientId);
       return { ok: false, message: empErr?.message ?? "Failed to insert demo employee" };
     }
 
-    const employeeId = employeeRow.id as string;
+    const employeeId = employeeRow.id;
 
-    const { error: jobErr } = await sb.from("jobs").insert({
+    const jobMinimal = {
       owner_id: ownerId,
       client_id: clientId,
       employee_id: employeeId,
       title: "Residential Service Call",
-      description: "This is a demo job. Create your first real job to get started.",
+      description: "Demo job — create your first real job to get started",
       status: "in_progress",
       priority: "normal",
       scheduled_date: today,
-      scheduled_start: "09:00",
-      scheduled_end: "12:00",
-      address: "12 Example Street",
-      suburb: "Adelaide",
-      state: "SA",
-      job_type: "Service",
-      notes: "",
-      materials_cost: 0,
-      labour_hours: 0,
-      hourly_rate: 0,
       is_demo: true
-    });
+    };
+
+    let jobErr = null;
+    const jobTry1 = await sb.from("jobs").insert(jobMinimal);
+    if (jobTry1.error) {
+      const jobTry2 = await sb.from("jobs").insert({
+        ...jobMinimal,
+        job_type: "",
+        scheduled_start: null,
+        scheduled_end: null,
+        address: "",
+        suburb: "",
+        state: "",
+        notes: "",
+        materials_cost: 0,
+        labour_hours: 0,
+        hourly_rate: 0
+      });
+      jobErr = jobTry2.error;
+    }
 
     if (jobErr) {
       await sb.from("employees").delete().eq("id", employeeId);
@@ -133,75 +180,43 @@ export async function seedOwnerDemoData(
       return { ok: false, message: jobErr.message ?? "Failed to insert demo job" };
     }
 
-    const quoteTotals = moneyGstInclusive(1250);
-    const quoteNumber = "Example Quote — Residential Work";
+    const invNewShape = {
+      owner_id: ownerId,
+      client_id: clientId,
+      invoice_number: "INV-00001",
+      status: "Unpaid",
+      subtotal: 772.73,
+      gst: 77.27,
+      total: 850.0,
+      is_demo: true
+    };
 
-    const { data: quoteRow, error: quoteErr } = await sb
-      .from("quotes")
-      .insert({
-        owner_id: ownerId,
-        client_id: clientId,
-        quote_number: quoteNumber,
-        client_name: "Alex Johnson",
-        subtotal: quoteTotals.subtotal,
-        gst_amount: quoteTotals.gst,
-        total: quoteTotals.total,
-        status: "draft",
-        is_demo: true
-      })
-      .select("id")
-      .single();
+    const invLegacyShape = {
+      owner_id: ownerId,
+      client_id: clientId,
+      invoice_number: "INV-00001",
+      status: "unpaid",
+      subtotal: 772.73,
+      gst_amount: 77.27,
+      amount: 850.0,
+      is_demo: true
+    };
 
-    if (quoteErr || !quoteRow?.id) {
-      return { ok: false, message: quoteErr?.message ?? "Failed to insert demo quote" };
+    const invTry1 = await sb.from("invoices").insert(invNewShape).select("id").single();
+    if (!invTry1.error && invTry1.data?.id) {
+      return { ok: true };
     }
 
-    const quoteId = quoteRow.id as string;
-
-    await sb.from("quote_items").insert({
-      quote_id: quoteId,
-      description: "Residential scope — labour & materials",
-      quantity: 1,
-      unit_price: quoteTotals.subtotal,
-      gst_applicable: true,
-      line_total: quoteTotals.subtotal
-    });
-
-    const invTotals = moneyGstInclusive(850);
-
-    const { data: invRow, error: invErr } = await sb
-      .from("invoices")
-      .insert({
-        owner_id: ownerId,
-        client_id: clientId,
-        invoice_number: "INV-00001",
-        issue_date: today,
-        due_date: dueKey,
-        subtotal: invTotals.subtotal,
-        gst_amount: invTotals.gst,
-        amount: invTotals.total,
-        status: "unpaid",
-        is_demo: true
-      })
-      .select("id")
-      .single();
-
-    if (invErr || !invRow?.id) {
-      return { ok: false, message: invErr?.message ?? "Failed to insert demo invoice" };
+    const invTry2 = await sb.from("invoices").insert(invLegacyShape).select("id").single();
+    if (!invTry2.error && invTry2.data?.id) {
+      return { ok: true };
     }
 
-    const invoiceId = invRow.id as string;
-    const invLineNet = invTotals.subtotal;
-    await sb.from("invoice_items").insert({
-      invoice_id: invoiceId,
-      description: "Professional services (demo)",
-      quantity: 1,
-      unit_price: invLineNet,
-      gst_applicable: true,
-      line_total: invLineNet
-    });
-
-    return { ok: true };
+    const invErr = invTry2.error ?? invTry1.error;
+    await sb.from("jobs").delete().eq("owner_id", ownerId).eq("client_id", clientId).eq("is_demo", true);
+    await sb.from("employees").delete().eq("id", employeeId);
+    await sb.from("clients").delete().eq("id", clientId);
+    return { ok: false, message: invErr?.message ?? "Failed to insert demo invoice" };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return { ok: false, message: msg };
