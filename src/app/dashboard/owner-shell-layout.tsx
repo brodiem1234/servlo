@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import OwnerShell from "./owner/owner-shell";
+import { businessesOwnerOrEq } from "@/lib/businesses";
 
 async function signOut() {
   "use server";
@@ -35,7 +36,7 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       .neq("status", "accepted")
       .order("created_at", { ascending: true })
       .limit(5),
-    supabase.from("businesses").select("accent_colour").eq("owner_id", user.id).maybeSingle()
+    supabase.from("businesses").select("accent_colour").or(businessesOwnerOrEq(user.id)).maybeSingle()
   ]);
 
   const alerts = [

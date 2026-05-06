@@ -1,5 +1,5 @@
 -- Normalise RLS policy names with authenticated role targets.
--- businesses.owner_id must match auth.uid() (this schema does not use user_id).
+-- Writes should set both businesses.owner_id and businesses.user_id to auth.uid() (see 0005_businesses_user_id_mirror.sql).
 
 ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
 

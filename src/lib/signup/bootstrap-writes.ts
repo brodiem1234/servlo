@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import type { IndustrySlug } from "@/lib/industries";
+import { businessesRowForOwner } from "@/lib/businesses";
 
 export function describeSupabaseError(prefix: string, err: { message?: string; code?: string; details?: string }) {
   const bits = [prefix, err.code ? `(${err.code})` : null, err.message, err.details].filter(Boolean);
@@ -86,10 +87,9 @@ export async function bootstrapSignupWrites(
   if (role === "owner") {
     try {
       const accent_colour = normalizeAccentColour(params.accentColourRaw);
-      const bizRes = await admin.from("businesses").upsert(
-        { owner_id: params.userId, accent_colour },
-        { onConflict: "owner_id" }
-      );
+      const bizRes = await admin.from("businesses").upsert(businessesRowForOwner(params.userId, { accent_colour }), {
+        onConflict: "owner_id"
+      });
       if (bizRes.error) {
         console.error("[bootstrapSignupWrites] businesses upsert failed", bizRes.error);
         return {

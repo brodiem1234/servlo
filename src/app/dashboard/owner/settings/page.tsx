@@ -6,6 +6,7 @@ import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import SubscriptionCards from "./subscription-cards";
+import { businessesOwnerOrEq, businessesRowForOwner } from "@/lib/businesses";
 
 type SettingsPageProps = {
   searchParams?: {
@@ -28,7 +29,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       .select("business_name, abn, phone, address, plan, subscription_status, trial_end, subscription_tier")
       .eq("id", user.id)
       .maybeSingle(),
-    supabase.from("businesses").select("accent_colour").eq("owner_id", user.id).maybeSingle()
+    supabase.from("businesses").select("accent_colour").or(businessesOwnerOrEq(user.id)).maybeSingle()
   ]);
 
   const businessName = profile?.business_name ?? "SERVLO Business";
@@ -68,10 +69,9 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const accent_colour = normalizeAccentColour(String(formData.get("accent_colour") ?? ""));
-    const { error } = await sb.from("businesses").upsert(
-      { owner_id: owner.id, accent_colour },
-      { onConflict: "owner_id" }
-    );
+    const { error } = await sb.from("businesses").upsert(businessesRowForOwner(owner.id, { accent_colour }), {
+      onConflict: "owner_id"
+    });
     if (error) {
       console.error("[settings] brand accent upsert failed", error);
     }

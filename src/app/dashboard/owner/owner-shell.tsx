@@ -35,7 +35,7 @@ function isNavItemActive(pathname: string, href: string) {
 
 type Props = {
   businessName: string;
-  /** Hex preset saved on businesses.accent_colour */
+  /** Hex preset saved on businesses.accent_colour (owner_id + user_id mirror auth uid). */
   accentColourHex?: string | null;
   signOutAction: (formData: FormData) => Promise<void>;
   alerts: Array<{ id: string; text: string }>;
