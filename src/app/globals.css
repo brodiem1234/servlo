@@ -56,19 +56,19 @@
 :root {
   --accent-color: #0891b2;
   --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
+  --bg-primary: color-mix(in srgb, var(--accent-color) 2.5%, #f8fafc);
+  --bg-secondary: color-mix(in srgb, var(--accent-color) 6%, #ffffff);
   --bg-card: #ffffff;
-  --text-primary: #1e3a5f;
-  --text-secondary: #64748b;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
   --text-muted: #94a3b8;
-  --border: #e2e8f0;
+  --border: color-mix(in srgb, var(--accent-color) 14%, #e2e8f0);
   --input-bg: #ffffff;
-  --sidebar-bg: #f1f5f9;
-  --sidebar-text: #1e3a5f;
-  --sidebar-text-muted: #64748b;
-  --sidebar-divider: #cbd5e1;
-  --sidebar-hover-bg: #e2e8f0;
+  --sidebar-bg: color-mix(in srgb, var(--accent-color) 14%, #eef2f7);
+  --sidebar-text: #0f172a;
+  --sidebar-text-muted: #475569;
+  --sidebar-divider: color-mix(in srgb, var(--accent-color) 22%, #cbd5e1);
+  --sidebar-hover-bg: color-mix(in srgb, var(--accent-color) 10%, #e2e8f0);
   --sidebar-active-bg: var(--accent-color);
   --sidebar-active-text: #ffffff;
   --sidebar-ring: var(--accent-color);
@@ -77,19 +77,19 @@
 :root.dark {
   --accent-color: #0891b2;
   --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
-  --bg-primary: #0d1a2e;
-  --bg-secondary: #0f1e2e;
-  --bg-card: #1a2f45;
-  --text-primary: #f0f4f8;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border: #2a4a6b;
-  --input-bg: #162436;
-  --sidebar-bg: #1e3a5f;
-  --sidebar-text: #ffffff;
-  --sidebar-text-muted: #cbd5e1;
-  --sidebar-divider: color-mix(in srgb, var(--accent-color) 45%, transparent);
-  --sidebar-hover-bg: #0d1a2e;
+  --bg-primary: color-mix(in srgb, var(--accent-color) 3%, #0f172a);
+  --bg-secondary: color-mix(in srgb, var(--accent-color) 15%, #0f172a);
+  --bg-card: color-mix(in srgb, var(--accent-color) 8%, #131f30);
+  --text-primary: #f8fafc;
+  --text-secondary: color-mix(in srgb, #e2e8f0 82%, var(--accent-color) 18%);
+  --text-muted: color-mix(in srgb, #94a3b8 88%, var(--accent-color) 12%);
+  --border: color-mix(in srgb, var(--accent-color) 26%, #334155);
+  --input-bg: color-mix(in srgb, var(--accent-color) 6%, #0f172a);
+  --sidebar-bg: color-mix(in srgb, var(--accent-color) 15%, #0f172a);
+  --sidebar-text: color-mix(in srgb, #f8fafc 94%, var(--accent-color) 6%);
+  --sidebar-text-muted: color-mix(in srgb, #cbd5e1 82%, var(--accent-color) 18%);
+  --sidebar-divider: color-mix(in srgb, var(--accent-color) 38%, transparent);
+  --sidebar-hover-bg: color-mix(in srgb, #ffffff 8%, var(--sidebar-bg));
   --sidebar-active-bg: var(--accent-color);
   --sidebar-active-text: #ffffff;
   --sidebar-ring: var(--accent-color);
@@ -121,7 +121,7 @@
 :root.dark .dashboard-theme h2,
 :root.dark .dashboard-theme h3,
 :root.dark .dashboard-theme h4 {
-  color: #f0f4f8 !important;
+  color: var(--text-primary) !important;
 }
 
 .dashboard-theme .bg-white,
@@ -141,13 +141,13 @@
 :root.dark .dashboard-theme .dashboard-card,
 :root.dark .dashboard-theme .dashboard-panel,
 :root.dark .auth-theme .auth-card {
-  border-color: #2a4a6b !important;
+  border-color: color-mix(in srgb, var(--accent-color) 22%, var(--border)) !important;
 }
 
 :root.dark .dashboard-theme .border-white,
 :root.dark .dashboard-theme .border-slate-100,
 :root.dark .dashboard-theme .border-slate-200 {
-  border-color: #2a4a6b !important;
+  border-color: color-mix(in srgb, var(--accent-color) 20%, var(--border)) !important;
 }
 
 .dashboard-theme input,
@@ -167,7 +167,7 @@
 :root.dark .auth-theme input,
 :root.dark .auth-theme select,
 :root.dark .auth-theme textarea {
-  border-color: #2a4a6b !important;
+  border-color: color-mix(in srgb, var(--accent-color) 24%, var(--border)) !important;
 }
 
 .dashboard-theme input::placeholder,
@@ -190,11 +190,11 @@
   color: #cbd5e1;
 }
 
-/* Table borders — navy in dark mode */
+/* Table borders — subtle accent tint in dark mode */
 :root.dark .dashboard-theme table,
 :root.dark .dashboard-theme th,
 :root.dark .dashboard-theme td {
-  border-color: #1e3a5f !important;
+  border-color: color-mix(in srgb, var(--accent-color) 18%, #1e293b) !important;
 }
 
 .dashboard-theme label,
@@ -353,9 +353,17 @@
   color: color-mix(in srgb, var(--accent-color) 82%, white);
 }
 
-/* Modal / slide-over cards — dark blue border (not white) */
+.dashboard-theme .dashboard-stat-value {
+  color: var(--accent-color) !important;
+}
+
+:root.dark .dashboard-theme .dashboard-stat-value {
+  color: var(--accent-color) !important;
+}
+
+/* Modal / slide-over cards — subtle accent-tinted border */
 :root.dark .dashboard-theme .rounded-xl.border,
 :root.dark .dashboard-theme .rounded-lg.border,
 :root.dark .dashboard-theme .border.border-slate-700 {
-  border-color: #2a4a6b !important;
+  border-color: color-mix(in srgb, var(--accent-color) 22%, var(--border)) !important;
 }

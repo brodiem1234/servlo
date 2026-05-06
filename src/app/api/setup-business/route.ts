@@ -6,9 +6,6 @@ import { isIndustrySlug, parseIndustryTagsJson } from "@/lib/industries";
 import { bootstrapSignupProfiles } from "@/lib/signup/bootstrap-writes";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 
-console.log("SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log("SERVICE_KEY exists:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-
 type SetupBusinessBody = {
   userId?: string;
   businessName?: string;
@@ -16,6 +13,7 @@ type SetupBusinessBody = {
   phone?: string;
   industries?: unknown;
   accentColour?: string;
+  demoOnly?: boolean;
 };
 
 function jsonErr(message: string, status: number) {
@@ -90,13 +88,6 @@ function parseIndustriesField(raw: unknown): IndustrySlug[] {
 }
 
 export async function POST(request: Request) {
-  console.log('ENV CHECK:', {
-    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    serviceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length ?? 0,
-    serviceKeyStart: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) ?? 'MISSING'
-  });
-
   let body: SetupBusinessBody;
   try {
     body = (await request.json()) as SetupBusinessBody;
@@ -134,6 +125,18 @@ export async function POST(request: Request) {
       persistSession: false
     }
   });
+
+  if (body.demoOnly === true) {
+    const demo = await seedOwnerDemoData(supabaseAdmin, userId);
+    return NextResponse.json(
+      {
+        success: demo.ok,
+        demoSeeded: demo.ok,
+        ...(demo.ok ? {} : { demoSeedError: demo.message ?? "Unknown demo seed error" })
+      },
+      { status: demo.ok ? 200 : 500 }
+    );
+  }
 
   const {
     data: authUserRes,
@@ -204,6 +207,21 @@ export async function POST(request: Request) {
   if (!profileBootstrap.ok) {
     console.error("[setup-business] profile bootstrap failed", profileBootstrap.message);
     return jsonErr(profileBootstrap.message, 500);
+  }
+
+  const trialReinforce = await supabaseAdmin
+    .from("profiles")
+    .update({
+      trial_start: trialStart.toISOString(),
+      trial_end: trialEnd.toISOString(),
+      trial_end_date: trialEnd.toISOString(),
+      subscription_status: "trialing",
+      subscription_tier: "solo"
+    })
+    .eq("id", userId);
+
+  if (trialReinforce.error) {
+    console.error("[setup-business] trial dates reinforcement failed", trialReinforce.error);
   }
 
   const buildBusinessPayload = (accentHex: string) => ({

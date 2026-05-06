@@ -107,7 +107,8 @@ export async function bootstrapSignupProfiles(
   trialStart: Date,
   trialEnd: Date
 ): Promise<
-  { ok: true; role: "owner" | "client" } | { ok: false; step: "core_profile"; message: string }
+  | { ok: true; role: "owner" | "client" }
+  | { ok: false; step: "core_profile" | "extended_profile"; message: string }
 > {
   const role = params.role;
 
@@ -142,6 +143,7 @@ export async function bootstrapSignupProfiles(
     abn: params.abn || null,
     trial_start: trialStart.toISOString(),
     trial_end: trialEnd.toISOString(),
+    trial_end_date: trialEnd.toISOString(),
     subscription_status: "trialing",
     subscription_tier: "solo"
   };
@@ -157,9 +159,25 @@ export async function bootstrapSignupProfiles(
   try {
     const extRes = await admin.from("profiles").update(extendedPayload).eq("id", params.userId);
     if (extRes.error) {
+      if (role === "owner") {
+        return {
+          ok: false,
+          step: "extended_profile",
+          message: describeSupabaseError("Trial and profile fields failed to save:", extRes.error)
+        };
+      }
       console.warn("[bootstrapSignupProfiles] extended profile update failed (non-fatal)", extRes.error);
     }
   } catch (e) {
+    if (role === "owner") {
+      console.error("[bootstrapSignupProfiles] extended profile threw", e);
+      return {
+        ok: false,
+        step: "extended_profile",
+        message:
+          e instanceof Error ? `Trial and profile fields failed to save: ${e.message}` : "Trial setup failed."
+      };
+    }
     console.warn("[bootstrapSignupProfiles] extended profile threw (non-fatal)", e);
   }
 
@@ -173,7 +191,8 @@ export async function bootstrapSignupWrites(
   trialStart: Date,
   trialEnd: Date
 ): Promise<
-  { ok: true; role: "owner" | "client" } | { ok: false; step: "core_profile" | "business"; message: string }
+  | { ok: true; role: "owner" | "client" }
+  | { ok: false; step: "core_profile" | "extended_profile" | "business"; message: string }
 > {
   const profiles = await bootstrapSignupProfiles(admin, params, trialStart, trialEnd);
   if (!profiles.ok) {

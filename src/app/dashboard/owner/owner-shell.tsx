@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Fragment, useState } from "react";
 import { Bell, Briefcase, Calendar, Home, Menu, Users } from "lucide-react";
@@ -56,8 +55,20 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent-color)] p-0.5 shadow-inner ring-2 ring-[color-mix(in_srgb,var(--accent-color)_55%,white)]">
-                <span className="overflow-hidden rounded-full bg-white">
-                  <Image src="/logo.png" alt="SERVLO" width={36} height={36} className="block" />
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--accent-color)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-[26px] w-[26px]">
+                    <text
+                      x="12"
+                      y="17"
+                      textAnchor="middle"
+                      fontSize="14"
+                      fontWeight="700"
+                      fontFamily="ui-sans-serif, system-ui, sans-serif"
+                      fill="currentColor"
+                    >
+                      S
+                    </text>
+                  </svg>
                 </span>
               </span>
               <p className="text-xl font-bold tracking-wide text-[var(--sidebar-text)]">SERVLO</p>

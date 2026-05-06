@@ -7,6 +7,7 @@ import { normalizeAccentColour } from "@/lib/brand-accent";
 import SubscriptionCards from "./subscription-cards";
 import { businessesOwnerOrEq } from "@/lib/businesses";
 import { BrandAccentForm } from "./brand-accent-form";
+import { ReseedDemoApiButton } from "./reseed-demo-api-button";
 
 type SettingsPageProps = {
   searchParams?: {
@@ -26,20 +27,15 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
   const [{ data: profile }, { data: businessRow }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("business_name, abn, phone, address, plan, subscription_status, trial_end, subscription_tier")
+      .select("business_name, abn, phone, address, plan, subscription_status, subscription_tier")
       .eq("id", user.id)
       .maybeSingle(),
     supabase.from("businesses").select("accent_colour").or(businessesOwnerOrEq(user.id)).maybeSingle()
   ]);
 
   const businessName = profile?.business_name ?? "SERVLO Business";
-  const trialEnd = profile?.trial_end ?? null;
   const subscriptionTier = profile?.subscription_tier ?? "solo";
   const savedAccent = normalizeAccentColour(businessRow?.accent_colour);
-
-  const trialDaysRemaining = trialEnd
-    ? Math.max(0, Math.ceil((new Date(trialEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : 0;
 
   async function updateBusinessProfile(formData: FormData) {
     "use server";
@@ -197,7 +193,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           On signup we add sample clients, jobs, quotes and invoices so the dashboard is not empty. These rows are tagged as demo,
           stay out of financial totals where noted, and do not support billing emails or similar actions.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap items-start gap-3">
           <form action={resetDemoDataAction}>
             <button
               type="submit"
@@ -211,9 +207,12 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               Remove All Demo Data
             </button>
           </form>
+          <ReseedDemoApiButton userId={user.id} />
         </div>
         <p className="mt-3 text-xs text-slate-500">
           Reset removes existing demo rows and inserts a fresh template set. Remove deletes demo rows only and leaves your real data untouched.
+          “Reseed demo data” calls <code className="rounded bg-slate-100 px-1 py-0.5 text-[11px]">POST /api/setup-business</code> with{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 text-[11px]">demoOnly</code>, matching the signup seed path.
         </p>
       </article>
 

@@ -12,6 +12,7 @@ import {
   ownerWelcomeLine,
   type IndustrySlug
 } from "@/lib/industries";
+import { computeTrialDaysRemaining } from "@/lib/trial-profile";
 
 export const dynamic = "force-dynamic";
 
@@ -38,11 +39,24 @@ export default async function OwnerDashboardPage() {
   }
 
   const [{ data: profile }, dashboardData] = await Promise.all([
-    sb.from("profiles").select("trial_end, industry_tags, industry_other_note").eq("id", user.id).maybeSingle(),
+    sb
+      .from("profiles")
+      .select(
+        "trial_end, trial_end_date, trial_start, subscription_status, industry_tags, industry_other_note"
+      )
+      .eq("id", user.id)
+      .maybeSingle(),
     getOwnerDashboardData(user.id)
   ]);
 
-  const trialEnd = profile?.trial_end ?? null;
+  const trialDaysRemaining = computeTrialDaysRemaining(
+    profile as {
+      trial_end?: string | null;
+      trial_end_date?: string | null;
+      trial_start?: string | null;
+      subscription_status?: string | null;
+    }
+  );
   const industryTags: IndustrySlug[] = Array.isArray((profile as { industry_tags?: unknown })?.industry_tags)
     ? ((profile as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))
     : [];
@@ -68,12 +82,6 @@ export default async function OwnerDashboardPage() {
     d.setDate(d.getDate() - (6 - i));
     return d.toLocaleDateString("en-AU", { weekday: "short" });
   });
-  const trialDaysRemaining = trialEnd
-    ? Math.max(
-        0,
-        Math.ceil((new Date(trialEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-      )
-    : 0;
 
   async function sendInvoiceReminderAction(formData: FormData) {
     "use server";
@@ -225,7 +233,7 @@ export default async function OwnerDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Revenue This Month</p>
-          <p className="mt-2 text-3xl font-bold text-accent-strong">{formatCurrency(metrics.revenueThisMonth)}</p>
+          <p className="dashboard-stat-value mt-2 text-3xl font-bold">{formatCurrency(metrics.revenueThisMonth)}</p>
           <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
             Paid invoices — last 7 days
           </p>
@@ -233,15 +241,15 @@ export default async function OwnerDashboardPage() {
         </article>
         <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Outstanding</p>
-          <p className="mt-2 text-3xl font-bold text-accent-strong">{formatCurrency(metrics.outstandingAmount)}</p>
+          <p className="dashboard-stat-value mt-2 text-3xl font-bold">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
         <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Jobs Completed This Week</p>
-          <p className="mt-2 text-3xl font-bold text-accent-strong">{metrics.jobsCompletedThisWeek}</p>
+          <p className="dashboard-stat-value mt-2 text-3xl font-bold">{metrics.jobsCompletedThisWeek}</p>
         </article>
         <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Active Clients</p>
-          <p className="mt-2 text-3xl font-bold text-accent-strong">{metrics.activeClientsCount}</p>
+          <p className="dashboard-stat-value mt-2 text-3xl font-bold">{metrics.activeClientsCount}</p>
         </article>
       </div>
 

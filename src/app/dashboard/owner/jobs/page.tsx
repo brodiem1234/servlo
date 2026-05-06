@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
@@ -23,20 +24,28 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
   } = await sb.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const [{ data: jobs }, { data: clients }, { data: employees }] = await Promise.all([
-    sb
-      .from("jobs")
-      .select(
-        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo, clients:clients(full_name), employees:employees(full_name)"
-      )
-      .eq("owner_id", user.id)
-      .order("scheduled_date", { ascending: true }),
+  const jobsSelectPlain =
+    "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo";
+
+  const [{ data: jobsRaw, error: jobsErr }, { data: clients }, { data: employees }] = await Promise.all([
+    sb.from("jobs").select(jobsSelectPlain).eq("owner_id", user.id).order("scheduled_date", { ascending: true }),
     sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
     sb.from("employees").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
 
+  if (jobsErr) {
+    console.error("[jobs-page] jobs query failed", jobsErr);
+  }
+
+  const clientNameById = new Map((clients ?? []).map((c: { id: string; full_name: string | null }) => [c.id, c.full_name]));
+  const employeeNameById = new Map(
+    (employees ?? []).map((e: { id: string; full_name: string | null }) => [e.id, e.full_name])
+  );
+
+  const jobs = jobsRaw ?? [];
+
   const photoUrlsByJob: Record<string, Array<{ url: string; label: "before" | "after" }>> = {};
-  const jobIds = (jobs ?? []).map((job) => job.id);
+  const jobIds = jobs.map((job) => job.id);
   if (jobIds.length > 0) {
     const { data: photoRows } = await sb
       .from("job_photos")
@@ -58,28 +67,34 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       data: { user: owner }
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
-    const { error } = await sb.from("jobs").insert({
-      owner_id: owner.id,
-      is_demo: false,
-      title: String(formData.get("title") ?? ""),
-      description: String(formData.get("description") ?? ""),
-      client_id: String(formData.get("client_id") ?? "") || null,
-      employee_id: String(formData.get("employee_id") ?? "") || null,
-      job_type: String(formData.get("job_type") ?? ""),
-      scheduled_date: String(formData.get("scheduled_date") ?? "") || null,
-      scheduled_start: String(formData.get("scheduled_start") ?? "") || null,
-      scheduled_end: String(formData.get("scheduled_end") ?? "") || null,
-      address: String(formData.get("address") ?? ""),
-      suburb: String(formData.get("suburb") ?? ""),
-      state: String(formData.get("state") ?? ""),
-      priority: String(formData.get("priority") ?? "normal"),
-      notes: String(formData.get("notes") ?? ""),
-      materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
-      labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
-      hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0
-    });
+    const { data: inserted, error } = await sb
+      .from("jobs")
+      .insert({
+        owner_id: owner.id,
+        is_demo: false,
+        status: "scheduled",
+        title: String(formData.get("title") ?? ""),
+        description: String(formData.get("description") ?? ""),
+        client_id: String(formData.get("client_id") ?? "") || null,
+        employee_id: String(formData.get("employee_id") ?? "") || null,
+        job_type: String(formData.get("job_type") ?? ""),
+        scheduled_date: String(formData.get("scheduled_date") ?? "") || null,
+        scheduled_start: String(formData.get("scheduled_start") ?? "") || null,
+        scheduled_end: String(formData.get("scheduled_end") ?? "") || null,
+        address: String(formData.get("address") ?? ""),
+        suburb: String(formData.get("suburb") ?? ""),
+        state: String(formData.get("state") ?? ""),
+        priority: String(formData.get("priority") ?? "normal"),
+        notes: String(formData.get("notes") ?? ""),
+        materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
+        labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
+        hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0
+      })
+      .select("id")
+      .maybeSingle();
     if (error) throw new Error(error.message);
-    revalidatePath("/dashboard/owner/jobs");
+    if (!inserted?.id) throw new Error("Job was not saved.");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   async function updateJobAction(formData: FormData) {
@@ -353,10 +368,10 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
   }
 
-  const jobsMapped = (jobs ?? []).map((job: any) => ({
+  const jobsMapped = jobs.map((job) => ({
     ...job,
-    client_name: job.clients?.full_name ?? null,
-    employee_name: job.employees?.full_name ?? null
+    client_name: job.client_id ? clientNameById.get(job.client_id) ?? null : null,
+    employee_name: job.employee_id ? employeeNameById.get(job.employee_id) ?? null : null
   }));
   const visibleJobs = filterDemoEntities(jobsMapped);
   const clientRefs = filterDemoEntities(clients ?? []).map((c: any) => ({

@@ -51,11 +51,11 @@ export async function getOwnerContext() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, trial_start, trial_end, subscription_tier, subscription_status")
+    .select("business_name, trial_start, trial_end, trial_end_date, subscription_tier, subscription_status")
     .eq("id", user.id)
     .maybeSingle();
 
-  let trialEnd = profile?.trial_end ?? null;
+  let trialEnd = profile?.trial_end ?? profile?.trial_end_date ?? null;
   if (!trialEnd) {
     if (profile?.trial_start) {
       const fallback = new Date(profile.trial_start);
