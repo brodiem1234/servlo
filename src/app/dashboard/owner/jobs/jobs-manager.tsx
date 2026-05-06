@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 type Job = {
@@ -22,9 +22,11 @@ type Job = {
   notes: string | null;
   status: string | null;
   client_name: string | null;
+  employee_name?: string | null;
   materials_cost?: number | null;
   labour_hours?: number | null;
   hourly_rate?: number | null;
+  created_at?: string | null;
 };
 
 type RefOpt = { id: string; label: string };
@@ -78,6 +80,13 @@ function toDateKey(input: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function isDayToday(day: Date) {
+  const n = new Date();
+  return (
+    day.getFullYear() === n.getFullYear() && day.getMonth() === n.getMonth() && day.getDate() === n.getDate()
+  );
+}
+
 function parseTimeToMinutes(value: string | null) {
   if (!value) return null;
   const trimmed = value.slice(0, 5);
@@ -92,6 +101,12 @@ function startOfWeek(date: Date) {
   clone.setDate(clone.getDate() - day);
   clone.setHours(0, 0, 0, 0);
   return clone;
+}
+
+function sortJobsByStartTime(dayJobs: Job[]) {
+  return [...dayJobs].sort(
+    (a, b) => (parseTimeToMinutes(a.scheduled_start) ?? 0) - (parseTimeToMinutes(b.scheduled_start) ?? 0)
+  );
 }
 
 export default function JobsManager({
@@ -113,7 +128,7 @@ export default function JobsManager({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [view, setView] = useState<"list" | "calendar">("list");
-  const [calendarView, setCalendarView] = useState<"today" | "week" | "month">("month");
+  const [calendarView, setCalendarView] = useState<"today" | "week" | "month">("week");
   const [values, setValues] = useState(empty);
   const [toast, setToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [search, setSearch] = useState("");
@@ -149,15 +164,24 @@ export default function JobsManager({
     setQuickAdd(null);
   };
 
-  const statusClasses: Record<string, string> = {
-    scheduled: "bg-blue-100 text-blue-700",
-    in_progress: "bg-orange-100 text-orange-700",
-    completed: "bg-green-100 text-green-700",
-    complete: "bg-green-100 text-green-700",
-    en_route: "bg-orange-100 text-orange-700",
-    on_site: "bg-orange-100 text-orange-700",
-    "in-progress": "bg-orange-100 text-orange-700",
-    cancelled: "bg-red-100 text-red-700"
+  const statusPillClasses: Record<string, string> = {
+    scheduled: "bg-orange-100 text-orange-900 ring-1 ring-inset ring-orange-300 dark:bg-orange-950 dark:text-orange-100 dark:ring-orange-700",
+    in_progress:
+      "bg-blue-100 text-blue-900 ring-1 ring-inset ring-blue-300 dark:bg-blue-950 dark:text-blue-100 dark:ring-blue-700",
+    completed:
+      "bg-green-100 text-green-900 ring-1 ring-inset ring-green-300 dark:bg-green-950 dark:text-green-100 dark:ring-green-700",
+    cancelled: "bg-red-100 text-red-900 ring-1 ring-inset ring-red-300 dark:bg-red-950 dark:text-red-100 dark:ring-red-700"
+  };
+
+  const statusBlockClasses: Record<string, string> = {
+    scheduled:
+      "border border-orange-300 bg-orange-100 text-orange-950 hover:bg-orange-200 dark:border-orange-700 dark:bg-orange-950/90 dark:text-orange-50 dark:hover:bg-orange-900",
+    in_progress:
+      "border border-blue-300 bg-blue-100 text-blue-950 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-950/90 dark:text-blue-50 dark:hover:bg-blue-900",
+    completed:
+      "border border-green-300 bg-green-100 text-green-950 hover:bg-green-200 dark:border-green-700 dark:bg-green-950/90 dark:text-green-50 dark:hover:bg-green-900",
+    cancelled:
+      "border border-red-300 bg-red-100 text-red-950 hover:bg-red-200 dark:border-red-700 dark:bg-red-950/90 dark:text-red-50 dark:hover:bg-red-900"
   };
 
   const normalizeStatus = (status: string | null) => {
@@ -167,13 +191,6 @@ export default function JobsManager({
     if (raw === "cancelled") return "cancelled";
     return "scheduled";
   };
-
-  useEffect(() => {
-    console.log("JobsManager jobs:", jobs);
-    if (jobs.length === 0) {
-      console.log("Jobs array is empty.");
-    }
-  }, [jobs]);
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
@@ -198,6 +215,36 @@ export default function JobsManager({
       return matchesSearch && matchesClient && matchesStatus && matchesPriority && matchesFrom && matchesTo;
     });
   }, [jobs, search, clientFilter, statusFilter, priorityFilter, fromDate, toDate]);
+
+  const jobNumberById = useMemo(() => {
+    const sorted = [...jobs].sort((a, b) => {
+      const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (ta !== tb) return ta - tb;
+      return a.id.localeCompare(b.id);
+    });
+    const map = new Map<string, string>();
+    sorted.forEach((j, i) => map.set(j.id, `JB${String(i + 1).padStart(5, "0")}`));
+    return map;
+  }, [jobs]);
+
+  const listStats = useMemo(() => {
+    let pending = 0;
+    let inProgress = 0;
+    let completed = 0;
+    for (const job of filteredJobs) {
+      const s = normalizeStatus(job.status);
+      if (s === "scheduled") pending += 1;
+      else if (s === "in_progress") inProgress += 1;
+      else if (s === "completed") completed += 1;
+    }
+    return { total: filteredJobs.length, pending, inProgress, completed };
+  }, [filteredJobs]);
+
+  const employeeNameById = useMemo(() => new Map(employees.map((e) => [e.id, e.label])), [employees]);
+
+  const displayEmployeeName = (job: Job) =>
+    job.employee_name ?? (job.employee_id ? employeeNameById.get(job.employee_id) ?? null : null) ?? "—";
 
   const monthLabel = useMemo(
     () =>
@@ -387,6 +434,14 @@ export default function JobsManager({
     setOpen(true);
   }
 
+  function startAddWithDate(dateKey: string) {
+    setEditing(false);
+    setValues({ ...empty, scheduled_date: dateKey });
+    setActiveTab("details");
+    setQuickAdd(null);
+    setOpen(true);
+  }
+
   function startEdit(job: Job) {
     setEditing(true);
     setValues({
@@ -436,6 +491,45 @@ export default function JobsManager({
     setFocusDate((prev) => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() + direction));
   }
 
+  function calendarJobBlock(
+    job: Job,
+    options?: { draggable?: boolean; className?: string; style?: CSSProperties }
+  ) {
+    const st = normalizeStatus(job.status);
+    const cls = statusBlockClasses[st] ?? statusBlockClasses.scheduled;
+    const time =
+      job.scheduled_start || job.scheduled_end
+        ? `${(job.scheduled_start ?? "—").slice(0, 5)}–${(job.scheduled_end ?? "—").slice(0, 5)}`
+        : null;
+    const draggable = Boolean(options?.draggable);
+    return (
+      <button
+        key={job.id}
+        type="button"
+        data-job-block
+        draggable={draggable}
+        style={options?.style}
+        onDragStart={
+          draggable
+            ? (event: DragEvent<HTMLButtonElement>) => {
+                event.dataTransfer.setData("text/job-id", job.id);
+              }
+            : undefined
+        }
+        onClick={(event) => {
+          event.stopPropagation();
+          startEdit(job);
+        }}
+        className={`block w-full rounded-md px-2 py-1.5 text-left text-xs font-semibold shadow-sm ${cls} ${options?.className ?? ""}`}
+      >
+        {time ? <p className="text-[10px] font-bold uppercase tracking-wide opacity-90">{time}</p> : null}
+        <p className="line-clamp-2 leading-snug">{job.title ?? "Untitled job"}</p>
+        <p className="truncate text-[10px] font-normal opacity-95">{job.client_name ?? "—"}</p>
+        <p className="truncate text-[10px] font-normal opacity-95">{displayEmployeeName(job)}</p>
+      </button>
+    );
+  }
+
   const currentCalendarLabel =
     calendarView === "month"
       ? monthLabel
@@ -469,7 +563,7 @@ export default function JobsManager({
         </select>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded border px-3 text-sm">
           <option value="all">All statuses</option>
-          <option value="scheduled">Scheduled</option>
+          <option value="scheduled">Pending</option>
           <option value="in_progress">In Progress</option>
           <option value="completed">Completed</option>
           <option value="cancelled">Cancelled</option>
@@ -501,95 +595,109 @@ export default function JobsManager({
         </div>
       ) : null}
       {view === "calendar" ? (
-        <div className="rounded-xl border bg-white p-4 shadow-sm">
-          <div className="mb-3 rounded-md border bg-white p-1 text-sm w-fit">
-            <button onClick={() => setCalendarView("today")} className={`rounded px-3 py-1 ${calendarView === "today" ? "bg-[#0db8c8] text-white" : ""}`}>Today</button>
-            <button onClick={() => setCalendarView("week")} className={`rounded px-3 py-1 ${calendarView === "week" ? "bg-[#0db8c8] text-white" : ""}`}>Week</button>
-            <button onClick={() => setCalendarView("month")} className={`rounded px-3 py-1 ${calendarView === "month" ? "bg-[#0db8c8] text-white" : ""}`}>Month</button>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <div className="mb-3 flex flex-wrap gap-2 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] p-1 text-sm w-fit">
+            <button
+              type="button"
+              onClick={() => setCalendarView("today")}
+              className={`rounded px-3 py-1 ${calendarView === "today" ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"}`}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalendarView("week")}
+              className={`rounded px-3 py-1 ${calendarView === "week" ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"}`}
+            >
+              Week
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarView("month");
+                setMonthDate(new Date(focusDate.getFullYear(), focusDate.getMonth(), 1));
+              }}
+              className={`rounded px-3 py-1 ${calendarView === "month" ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"}`}
+            >
+              Month
+            </button>
           </div>
           <div className="mb-4 flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => navigateCalendar(-1)}
-              className="rounded border px-3 py-1 text-sm"
-            >
+            <button type="button" onClick={() => navigateCalendar(-1)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--text-primary)]">
               ←
             </button>
-            <p className="text-sm font-semibold text-slate-100">{currentCalendarLabel}</p>
-            <button
-              type="button"
-              onClick={() => navigateCalendar(1)}
-              className="rounded border px-3 py-1 text-sm"
-            >
+            <p className="text-center text-sm font-semibold text-[var(--text-primary)]">{currentCalendarLabel}</p>
+            <button type="button" onClick={() => navigateCalendar(1)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--text-primary)]">
               →
             </button>
           </div>
           {calendarView === "today" ? (
-            <div className="space-y-1">
-              {Array.from({ length: 13 }, (_, i) => 7 + i).map((hour) => (
-                <div key={hour} className="relative border-t pt-1 min-h-14">
-                  <p className="text-xs text-slate-400">{`${String(hour).padStart(2, "0")}:00`}</p>
+            <div
+              className="relative cursor-pointer rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]"
+              role="presentation"
+              onClick={(event) => {
+                if ((event.target as HTMLElement).closest("[data-job-block]")) return;
+                startAddWithDate(todayKey);
+              }}
+            >
+              <div className="space-y-1">
+                {Array.from({ length: 13 }, (_, i) => 7 + i).map((hour) => (
+                  <div key={hour} className="relative min-h-14 border-t border-[var(--border)] pt-1">
+                    <p className="text-xs text-[var(--text-muted)]">{`${String(hour).padStart(2, "0")}:00`}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="pointer-events-none relative -mt-[728px] h-[728px]">
+                <div className="pointer-events-auto absolute inset-y-0 left-16 right-0">
+                  {todayJobs.map((job) => {
+                    const start = parseTimeToMinutes(job.scheduled_start) ?? 9 * 60;
+                    const end = parseTimeToMinutes(job.scheduled_end) ?? start + 60;
+                    const dayStart = 7 * 60;
+                    const dayEnd = 19 * 60;
+                    const totalMinutes = dayEnd - dayStart;
+                    const pxPerMinute = 728 / totalMinutes;
+                    const topPx = Math.max(0, start - dayStart) * pxPerMinute;
+                    const spanMinutes = Math.min(dayEnd, end) - Math.max(dayStart, start);
+                    const heightPx = Math.max(44, spanMinutes * pxPerMinute);
+                    return calendarJobBlock(job, {
+                      className: "absolute left-0 right-2 overflow-hidden",
+                      style: { top: topPx, height: heightPx }
+                    });
+                  })}
                 </div>
-              ))}
-              <div className="relative -mt-[740px] h-[780px]">
-                {todayJobs.map((job) => {
-                  const start = parseTimeToMinutes(job.scheduled_start) ?? 9 * 60;
-                  const end = parseTimeToMinutes(job.scheduled_end) ?? start + 60;
-                  const dayStart = 7 * 60;
-                  const dayEnd = 19 * 60;
-                  const top = Math.max(0, start - dayStart);
-                  const height = Math.max(28, Math.min(dayEnd, end) - Math.max(dayStart, start));
-                  return (
-                    <button
-                      key={job.id}
-                      type="button"
-                      onClick={() => startEdit(job)}
-                      className={`absolute left-20 right-2 rounded px-2 py-1 text-left text-xs font-medium ${
-                        statusClasses[normalizeStatus(job.status)] ?? statusClasses.scheduled
-                      }`}
-                      style={{ top, height }}
-                    >
-                      <p className="truncate">{job.title ?? "Untitled job"}</p>
-                      <p className="truncate text-[10px]">
-                        {(job.scheduled_start ?? "--:--").slice(0, 5)} - {(job.scheduled_end ?? "--:--").slice(0, 5)}
-                      </p>
-                    </button>
-                  );
-                })}
               </div>
             </div>
           ) : null}
           {calendarView === "week" ? (
-            <div>
-              <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase text-slate-300">
-                {weekDays.map((day) => (
-                  <div key={toDateKey(day)}>{day.toLocaleDateString("en-AU", { weekday: "short", day: "numeric" })}</div>
-                ))}
-              </div>
-              <div className="mt-2 grid grid-cols-7 gap-2">
+            <div className="overflow-x-auto pb-1">
+              <div className="grid min-w-[840px] grid-cols-7 gap-2">
                 {weekDays.map((day) => {
                   const key = toDateKey(day);
-                  const jobsOnDay = jobsByDate.get(key) ?? [];
+                  const jobsOnDay = sortJobsByStartTime(jobsByDate.get(key) ?? []);
+                  const today = isDayToday(day);
                   return (
-                    <div key={key} className="min-h-[180px] rounded border p-2">
-                      <div className="space-y-1">
-                        {jobsOnDay.map((job) => (
-                          <button
-                            key={job.id}
-                            type="button"
-                            draggable
-                            onDragStart={(event) => {
-                              event.dataTransfer.setData("text/job-id", job.id);
-                            }}
-                            onClick={() => startEdit(job)}
-                            className={`block w-full truncate rounded px-2 py-1 text-left text-xs ${
-                              statusClasses[normalizeStatus(job.status)] ?? statusClasses.scheduled
-                            }`}
-                            title={job.title ?? "Untitled job"}
-                          >
-                            {(job.scheduled_start ?? "--:--").slice(0, 5)} {job.title ?? "Untitled job"}
-                          </button>
-                        ))}
+                    <div
+                      key={key}
+                      role="presentation"
+                      onClick={(event) => {
+                        if ((event.target as HTMLElement).closest("[data-job-block]")) return;
+                        startAddWithDate(key);
+                      }}
+                      className={`flex min-h-[520px] flex-col rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] ${
+                        today ? "ring-2 ring-[#0db8c8] ring-offset-2 ring-offset-[var(--bg-card)]" : ""
+                      }`}
+                    >
+                      <div
+                        className={`border-b border-[var(--border)] px-2 py-2 text-center text-[11px] font-semibold leading-tight ${
+                          today ? "rounded-t-[calc(0.5rem-2px)] bg-[#0db8c8]/15 text-[#0b8a98]" : "text-[var(--text-primary)]"
+                        }`}
+                      >
+                        <div>{day.toLocaleDateString("en-AU", { weekday: "short" })}</div>
+                        <div className="text-xs">{day.toLocaleDateString("en-AU", { day: "numeric", month: "short" })}</div>
+                      </div>
+                      <div className="flex flex-1 flex-col gap-2 p-2">
+                        {jobsOnDay.map((job) => calendarJobBlock(job, { draggable: true }))}
+                        <p className="mt-auto pt-2 text-center text-[10px] text-[var(--text-muted)]">Click empty space to add</p>
                       </div>
                     </div>
                   );
@@ -599,45 +707,47 @@ export default function JobsManager({
           ) : null}
           {calendarView === "month" ? (
             <>
-              <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase text-slate-300">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                  <div key={day}>{day}</div>
+              <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-[var(--text-muted)]">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                  <div key={d}>{d}</div>
                 ))}
               </div>
               <div className="mt-2 grid grid-cols-7 gap-2">
                 {calendarDays.map((date, index) => {
                   if (!date) {
-                    return <div key={`empty-${index}`} className="min-h-[120px] rounded border bg-slate-50" />;
+                    return <div key={`empty-${index}`} className="min-h-[140px] rounded-lg border border-[var(--border)] bg-[var(--bg-primary)]" />;
                   }
 
                   const dateKey = toDateKey(date);
-                  const jobsOnDate = jobsByDate.get(dateKey) ?? [];
+                  const jobsOnDate = sortJobsByStartTime(jobsByDate.get(dateKey) ?? []);
+                  const today = isDayToday(date);
 
                   return (
                     <div
                       key={dateKey}
-                      className="min-h-[120px] rounded border p-2"
+                      role="presentation"
+                      onClick={(event) => {
+                        if ((event.target as HTMLElement).closest("[data-job-block]")) return;
+                        startAddWithDate(dateKey);
+                      }}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={(event) => {
                         const jobId = event.dataTransfer.getData("text/job-id");
                         if (jobId) quickUpdateSchedule(jobId, dateKey);
                       }}
+                      className={`flex min-h-[140px] cursor-pointer flex-col rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-2 ${
+                        today ? "ring-2 ring-[#0db8c8] ring-offset-1 ring-offset-[var(--bg-card)]" : ""
+                      }`}
                     >
-                      <p className="mb-2 text-xs font-semibold text-slate-200">{date.getDate()}</p>
-                      <div className="space-y-1">
-                        {jobsOnDate.map((job) => (
-                          <button
-                            key={job.id}
-                            type="button"
-                            onClick={() => startEdit(job)}
-                            className={`block w-full truncate rounded px-2 py-1 text-left text-xs font-medium ${
-                              statusClasses[normalizeStatus(job.status)] ?? statusClasses.scheduled
-                            }`}
-                            title={job.title ?? "Untitled job"}
-                          >
-                            {job.title ?? "Untitled job"}
-                          </button>
-                        ))}
+                      <p
+                        className={`mb-1.5 inline-flex min-h-[1.25rem] w-min min-w-[1.5rem] items-center justify-center rounded px-1 text-xs font-bold ${
+                          today ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"
+                        }`}
+                      >
+                        {date.getDate()}
+                      </p>
+                      <div className="flex flex-1 flex-col gap-1 overflow-hidden">
+                        {jobsOnDate.map((job) => calendarJobBlock(job, { draggable: true }))}
                       </div>
                     </div>
                   );
@@ -647,73 +757,125 @@ export default function JobsManager({
           ) : null}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
-          <table className="w-full min-w-[700px] text-sm">
-            <thead><tr className="border-b text-left"><th className="px-2 py-2">Title</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Date</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Priority</th><th className="px-2 py-2">Employee</th><th className="px-2 py-2">Actions</th></tr></thead>
-            <tbody>
-              {filteredJobs.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-2 py-6 text-center text-sm text-slate-400">
-                    <div className="flex flex-col items-center gap-3">
-                      <p>No jobs yet. Add your first job to get started.</p>
-                      <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
-                        Add your first job
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Summary</span>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-100">
+              Total · {listStats.total}
+            </span>
+            <span className="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-900 ring-1 ring-inset ring-orange-200 dark:bg-orange-950 dark:text-orange-100 dark:ring-orange-800">
+              Pending · {listStats.pending}
+            </span>
+            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-900 ring-1 ring-inset ring-blue-200 dark:bg-blue-950 dark:text-blue-100 dark:ring-blue-800">
+              In progress · {listStats.inProgress}
+            </span>
+            <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-900 ring-1 ring-inset ring-green-200 dark:bg-green-950 dark:text-green-100 dark:ring-green-800">
+              Completed · {listStats.completed}
+            </span>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+            <table className="w-full min-w-[840px] text-sm">
+              <thead>
+                <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                  <th className="whitespace-nowrap px-2 py-2 font-medium">Job #</th>
+                  <th className="px-2 py-2 font-medium">Title</th>
+                  <th className="px-2 py-2 font-medium">Client</th>
+                  <th className="whitespace-nowrap px-2 py-2 font-medium">Date</th>
+                  <th className="px-2 py-2 font-medium">Status</th>
+                  <th className="px-2 py-2 font-medium">Priority</th>
+                  <th className="px-2 py-2 font-medium">Employee</th>
+                  <th className="whitespace-nowrap px-2 py-2 font-medium">Actions</th>
                 </tr>
-              ) : (
-                filteredJobs.map((job) => (
-                  <tr key={job.id} className="border-b hover:bg-slate-50">
-                    <td className="px-2 py-2">{job.title ?? "-"}</td>
-                    <td className="px-2 py-2">{job.client_name ?? "-"}</td>
-                    <td className="px-2 py-2">{job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString("en-AU") : "-"}</td>
-                    <td className="px-2 py-2">
-                      <select
-                        value={normalizeStatus(job.status)}
-                        onChange={(e) => quickUpdateStatus(job.id, e.target.value)}
-                        className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                          statusClasses[normalizeStatus(job.status)] ?? statusClasses.scheduled
-                        }`}
-                      >
-                        <option value="scheduled">Scheduled</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </td>
-                    <td className="px-2 py-2 capitalize">{(job.priority ?? "normal").replace("normal", "medium")}</td>
-                    <td className="px-2 py-2">
-                      <select
-                        value={job.employee_id ?? ""}
-                        onChange={(e) => quickAssignEmployee(job.id, e.target.value)}
-                        className="h-8 rounded border px-2 text-xs"
-                      >
-                        <option value="">Unassigned</option>
-                        {employees.map((employee) => (
-                          <option key={employee.id} value={employee.id}>
-                            {employee.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-2 py-2 space-x-2">
-                      <button onClick={() => startEdit(job)} className="rounded border px-2 py-1 text-xs">Edit</button>
-                      {normalizeStatus(job.status) === "completed" ? (
-                        <form action={createInvoiceFromJobAction} className="inline">
-                          <input type="hidden" name="job_id" value={job.id} />
-                          <button type="submit" className="rounded bg-[#0db8c8] px-2 py-1 text-xs text-white hover:bg-[#0a9dab]">
-                            Create Invoice
-                          </button>
-                        </form>
-                      ) : null}
+              </thead>
+              <tbody>
+                {filteredJobs.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-2 py-8 text-center text-sm text-[var(--text-muted)]">
+                      {jobs.length === 0 ? (
+                        <p>No jobs yet. Use &quot;Add Job&quot; above to create one.</p>
+                      ) : (
+                        <p>No jobs match your filters. Try adjusting search or filters.</p>
+                      )}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  filteredJobs.map((job) => {
+                    const st = normalizeStatus(job.status);
+                    return (
+                      <tr
+                        key={job.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => startEdit(job)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            startEdit(job);
+                          }
+                        }}
+                        className="cursor-pointer border-b border-[var(--border)] hover:bg-[var(--bg-primary)]"
+                      >
+                        <td className="whitespace-nowrap px-2 py-2 font-mono text-xs font-semibold text-[var(--text-primary)]">
+                          {jobNumberById.get(job.id) ?? "—"}
+                        </td>
+                        <td className="px-2 py-2 font-medium text-[var(--text-primary)]">{job.title ?? "-"}</td>
+                        <td className="px-2 py-2 text-[var(--text-secondary)]">{job.client_name ?? "-"}</td>
+                        <td className="whitespace-nowrap px-2 py-2 text-[var(--text-secondary)]">
+                          {job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString("en-AU") : "-"}
+                        </td>
+                        <td className="px-2 py-2" onClick={(event) => event.stopPropagation()}>
+                          <select
+                            aria-label="Job status"
+                            value={st}
+                            onChange={(event) => quickUpdateStatus(job.id, event.target.value)}
+                            className={`h-8 max-w-[170px] cursor-pointer rounded-full px-2 py-1 text-xs font-semibold ${statusPillClasses[st] ?? statusPillClasses.scheduled}`}
+                          >
+                            <option value="scheduled">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </td>
+                        <td className="px-2 py-2 capitalize text-[var(--text-secondary)]">
+                          {(job.priority ?? "normal").replace("normal", "medium")}
+                        </td>
+                        <td className="px-2 py-2" onClick={(event) => event.stopPropagation()}>
+                          <select
+                            value={job.employee_id ?? ""}
+                            onChange={(event) => quickAssignEmployee(job.id, event.target.value)}
+                            className="h-8 max-w-[160px] rounded border border-[var(--border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--text-primary)]"
+                          >
+                            <option value="">Unassigned</option>
+                            {employees.map((employee) => (
+                              <option key={employee.id} value={employee.id}>
+                                {employee.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="whitespace-nowrap px-2 py-2" onClick={(event) => event.stopPropagation()}>
+                          {st === "completed" ? (
+                            <form action={createInvoiceFromJobAction} className="inline">
+                              <input type="hidden" name="job_id" value={job.id} />
+                              <button
+                                type="submit"
+                                className="rounded bg-[#0db8c8] px-2 py-1 text-xs font-medium text-white hover:bg-[#0a9dab]"
+                              >
+                                Create Invoice
+                              </button>
+                            </form>
+                          ) : (
+                            <span className="text-xs text-[var(--text-muted)]">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {open ? (

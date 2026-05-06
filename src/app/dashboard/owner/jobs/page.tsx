@@ -15,7 +15,7 @@ export default async function OwnerJobsPage() {
     sb
       .from("jobs")
       .select(
-        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, clients:clients(full_name)"
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, clients:clients(full_name), employees:employees(full_name)"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
@@ -333,7 +333,8 @@ export default async function OwnerJobsPage() {
       <JobsManager
         jobs={(jobs ?? []).map((job: any) => ({
           ...job,
-          client_name: job.clients?.full_name ?? null
+          client_name: job.clients?.full_name ?? null,
+          employee_name: job.employees?.full_name ?? null
         }))}
         clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         employees={(employees ?? []).map((e) => ({ id: e.id, label: e.full_name ?? "Unnamed employee" }))}
