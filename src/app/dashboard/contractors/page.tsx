@@ -1,4 +1,10 @@
-export default function ContractorsPage() {
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
+
+export default async function ContractorsPage() {
+  const { enabled } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "contractors");
+
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Contractors</h1>

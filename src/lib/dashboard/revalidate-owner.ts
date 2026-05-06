@@ -9,6 +9,10 @@ export function revalidateOwnerWorkspaceRoutes() {
   revalidatePath("/dashboard/owner/invoices");
   revalidatePath("/dashboard/owner/quotes");
   revalidatePath("/dashboard/owner/employees");
+  revalidatePath("/dashboard/owner/purchase-orders");
+  revalidatePath("/dashboard/owner/settings");
   revalidatePath("/dashboard/schedule");
   revalidatePath("/dashboard/reports");
+  revalidatePath("/dashboard/contractors");
 }
+

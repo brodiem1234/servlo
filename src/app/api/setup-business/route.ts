@@ -5,6 +5,16 @@ import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug, parseIndustryTagsJson } from "@/lib/industries";
 import { bootstrapSignupProfiles } from "@/lib/signup/bootstrap-writes";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
+import { sendEmail, welcomeOwnerEmailTemplate } from "@/lib/email";
+import {
+  buildInitialEnabledFeatures,
+  isWorkspaceFeatureId,
+  primaryIndustrySlug,
+  serializeFeatureFlags,
+  welcomeHighlightLabels,
+  type WorkspaceFeatureId
+} from "@/lib/workspace-features";
+import { formatIndustryLabels } from "@/lib/industries";
 
 type SetupBusinessBody = {
   userId?: string;
@@ -14,6 +24,7 @@ type SetupBusinessBody = {
   industries?: unknown;
   accentColour?: string;
   demoOnly?: boolean;
+  workspaceFeaturesEnabled?: unknown;
 };
 
 function jsonErr(message: string, status: number) {
@@ -182,6 +193,20 @@ export async function POST(request: Request) {
   const otherNote =
     industries.includes("other") ? String(meta.industry_other_note ?? "").trim() || null : null;
 
+  const primaryIndustry = primaryIndustrySlug(industries.length ? industries : ["other"]);
+
+  let featureFlagsPayload: Record<string, unknown> | undefined;
+  if (Array.isArray(body.workspaceFeaturesEnabled)) {
+    const ids = body.workspaceFeaturesEnabled.filter(
+      (x): x is WorkspaceFeatureId => typeof x === "string" && isWorkspaceFeatureId(x)
+    );
+    featureFlagsPayload = serializeFeatureFlags(new Set(ids));
+  } else {
+    featureFlagsPayload = serializeFeatureFlags(
+      new Set(buildInitialEnabledFeatures(primaryIndustry, new Set()))
+    );
+  }
+
   const trialStart = new Date();
   const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
@@ -239,7 +264,8 @@ export async function POST(request: Request) {
     abn: abn || null,
     phone: phone || null,
     industries,
-    accent_colour: accentHex
+    accent_colour: accentHex,
+    ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
   });
 
   let bizRowId: string | null = null;
@@ -268,7 +294,8 @@ export async function POST(request: Request) {
         {
           user_id: userId,
           owner_id: userId,
-          accent_colour: teal_fallback
+          accent_colour: teal_fallback,
+          ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
         },
         { onConflict: "user_id" }
       )
@@ -300,6 +327,24 @@ export async function POST(request: Request) {
     console.error("[setup-business] demo seed FAILED:", demo.message ?? demo);
   } else {
     console.log("[setup-business] demo seed completed OK", { userId });
+  }
+
+  try {
+    const welcomeFrom = process.env.RESEND_WELCOME_FROM ?? "SERVLO <hello@servlo.com.au>";
+    await sendEmail(
+      email,
+      "Welcome to SERVLO",
+      welcomeOwnerEmailTemplate({
+        ownerName: fullName,
+        dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/owner`,
+        supportUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/contact`,
+        industryLabel: formatIndustryLabels(industries.length ? industries : []),
+        highlightFeatures: welcomeHighlightLabels(primaryIndustry)
+      }),
+      welcomeFrom
+    );
+  } catch (welcomeErr) {
+    console.warn("[setup-business] welcome email failed (non-fatal)", welcomeErr);
   }
 
   return NextResponse.json({

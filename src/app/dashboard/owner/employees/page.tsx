@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import EmployeesManager from "./employees-manager";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 
 export default async function OwnerEmployeesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "employee_management");
 
   const { data: employees } = await supabase
     .from("employees")

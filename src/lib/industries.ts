@@ -83,71 +83,53 @@ export function ownerWelcomeLine(tags: IndustrySlug[] | null | undefined): strin
 
 export type ChecklistItem = { href: string; label: string; optional?: boolean };
 
-const BASE_CHECKLIST: ChecklistItem[] = [
-  { href: "/dashboard/owner/clients", label: "Add your first client", optional: false },
-  { href: "/dashboard/owner/jobs", label: "Create your first job", optional: false },
-  { href: "/dashboard/owner/quotes", label: "Send your first quote", optional: false },
-  { href: "/dashboard/owner/invoices", label: "Create your first invoice", optional: false },
-  { href: "/dashboard/owner/settings", label: "Complete your business settings", optional: false }
-];
-
-const INDUSTRY_CHECKLIST_LEAD: Partial<Record<IndustrySlug, ChecklistItem[]>> = {
+const CHECKLIST_BY_INDUSTRY: Record<IndustrySlug, ChecklistItem[]> = {
   trades: [
-    { href: "/dashboard/owner/jobs", label: "Schedule your crew on the calendar" },
-    { href: "/dashboard/owner/jobs", label: "Log job progress & photos on site" },
-    { href: "/dashboard/owner/invoices", label: "Send an invoice the same day you finish" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/owner/jobs", label: "Create your first job" },
+    { href: "/dashboard/owner/employees", label: "Set up your crew" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" }
   ],
   cleaning: [
-    { href: "/dashboard/owner/jobs", label: "Set up recurring cleans as repeating jobs" },
-    { href: "/dashboard/owner/clients", label: "Add residential, commercial, or NDIS clients" },
-    { href: "/dashboard/owner/invoices", label: "Turn completed visits into NDIS-ready invoices" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/owner/jobs", label: "Set up a recurring job" },
+    { href: "/dashboard/owner/employees", label: "Add your team" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" }
   ],
   events: [
-    { href: "/dashboard/owner/jobs", label: "Track bump-in, show day & bump-out as jobs" },
-    { href: "/dashboard/owner/quotes", label: "Quote packages with AV & hire line items" },
-    { href: "/dashboard/owner/clients", label: "Give coordinators one portal for approvals" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/owner/quotes", label: "Quote equipment & packages" },
+    { href: "/dashboard/owner/jobs", label: "Schedule bump-in & show day jobs" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" }
   ],
   marketing: [
-    { href: "/dashboard/owner/jobs", label: "Track retainers & milestones as jobs" },
-    { href: "/dashboard/owner/invoices", label: "Invoice by phase or on approval" },
-    { href: "/dashboard/owner/clients", label: "Keep every brand contact in one place" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/owner/quotes", label: "Create your first quote" },
+    { href: "/dashboard/reports", label: "Set up your pipeline view" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" }
   ],
   health: [
-    { href: "/dashboard/owner/jobs", label: "Block recurring appointments in your schedule" },
-    { href: "/dashboard/owner/clients", label: "Store client notes & intake alongside bookings" },
-    { href: "/dashboard/owner/invoices", label: "Bill sessions or packs without spreadsheets" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/schedule", label: "Book your appointment cadence" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" },
+    { href: "/dashboard/owner/clients", label: "Share the client portal" }
   ],
   field_services: [
-    { href: "/dashboard/owner/jobs", label: "Plan routes & inspections on one calendar" },
-    { href: "/dashboard/owner/jobs", label: "Attach photo proof & compliance notes to jobs" },
-    { href: "/dashboard/owner/quotes", label: "Quote treatments & follow-ups in minutes" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/owner/jobs", label: "Schedule your first visit" },
+    { href: "/dashboard/owner/quotes", label: "Quote inspections & treatments" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" }
   ],
   other: [
-    { href: "/dashboard/owner/settings", label: "Tell us more about your business in settings" },
-    { href: "/dashboard/owner/jobs", label: "Model your first workflow as a job" },
-    { href: "/dashboard/owner/clients", label: "Import or add your key contacts" }
+    { href: "/dashboard/owner/clients", label: "Add your first client" },
+    { href: "/dashboard/owner/jobs", label: "Create your first job" },
+    { href: "/dashboard/owner/quotes", label: "Send your first quote" },
+    { href: "/dashboard/owner/invoices", label: "Send your first invoice" }
   ]
 };
 
-function dedupeItems(items: ChecklistItem[]): ChecklistItem[] {
-  const seen = new Set<string>();
-  const out: ChecklistItem[] = [];
-  for (const item of items) {
-    const k = `${item.href}::${item.label}`;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(item);
-  }
-  return out;
-}
-
-/** Up to 5 items: industry-specific first, then generic without duplicates */
+/** Personalised Getting Started steps by primary industry */
 export function getGettingStartedChecklist(tags: IndustrySlug[] | null | undefined): ChecklistItem[] {
-  const primary = tags?.find((t) => t !== "other") ?? tags?.[0];
-  const lead = primary
-    ? (INDUSTRY_CHECKLIST_LEAD[primary] ?? []).map((item) => ({ ...item, optional: true }))
-    : [];
-  const base = BASE_CHECKLIST.map((item) => ({ ...item, optional: item.optional ?? false }));
-  const merged = dedupeItems([...lead, ...base]);
-  return merged.slice(0, 5);
+  const primary = tags?.find((t) => t !== "other") ?? tags?.[0] ?? "other";
+  return CHECKLIST_BY_INDUSTRY[primary] ?? CHECKLIST_BY_INDUSTRY.other;
 }

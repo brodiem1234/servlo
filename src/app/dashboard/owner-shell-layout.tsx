@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
 import OwnerShell from "./owner/owner-shell";
+import { filterOwnerNavSections, OWNER_NAV_SECTIONS } from "./owner/nav-config";
+import { isIndustrySlug, type IndustrySlug } from "@/lib/industries";
+import { loadWorkspaceFeatureSet, schedulingEnabled } from "@/lib/workspace-features";
 
 async function signOut() {
   "use server";
@@ -19,7 +22,8 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   }
 
   const supabase = await createClient();
-  const [{ data: unpaidInvoices }, { data: followUpQuotes }] = await Promise.all([
+  const [{ data: profileRow }, invRes, quoteRes, tasksRes] = await Promise.all([
+    supabase.from("profiles").select("industry_tags").eq("id", user.id).maybeSingle(),
     supabase
       .from("invoices")
       .select("id, invoice_number, due_date")
@@ -31,17 +35,43 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       .from("quotes")
       .select("id, quote_number, created_at, status")
       .eq("owner_id", user.id)
-      .neq("status", "accepted")
+      .in("status", ["sent", "pending"])
       .order("created_at", { ascending: true })
-      .limit(5)
+      .limit(20),
+    supabase
+      .from("owner_tasks")
+      .select("id, title, done")
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: true })
+      .limit(80)
   ]);
+
+  const industryTags = Array.isArray((profileRow as { industry_tags?: unknown } | null)?.industry_tags)
+    ? ((profileRow as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))
+    : [];
+
+  const enabledFeatures = await loadWorkspaceFeatureSet(supabase, user.id, industryTags);
+  const filteredNav = filterOwnerNavSections(OWNER_NAV_SECTIONS, enabledFeatures);
+
+  const shortcutTargets = {
+    jobs: schedulingEnabled(enabledFeatures),
+    clients: enabledFeatures.has("client_management"),
+    invoices: enabledFeatures.has("invoices"),
+    quotes: enabledFeatures.has("quotes")
+  };
+
+  const unpaidInvoices = invRes.data;
+  const followUpQuotesRaw = quoteRes.data;
+  const taskRows = tasksRes.error ? [] : tasksRes.data ?? [];
+
+  const followUpQuotes = followUpQuotesRaw ?? [];
 
   const alerts = [
     ...(unpaidInvoices ?? []).map((invoice) => ({
       id: `invoice-${invoice.id}`,
       text: `Invoice ${invoice.invoice_number ?? "unpaid"} needs follow-up`
     })),
-    ...((followUpQuotes ?? [])
+    ...followUpQuotes
       .filter((quote) => {
         if (!quote.created_at) return false;
         const ageDays = Math.floor((Date.now() - new Date(quote.created_at).getTime()) / (1000 * 60 * 60 * 24));
@@ -49,12 +79,26 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       })
       .map((quote) => ({
         id: `quote-${quote.id}`,
-        text: `Quote ${quote.quote_number ?? "pending"} needs follow-up`
-      })))
+        text: `Quote ${quote.quote_number ?? "pending"} awaiting acceptance (${Math.max(
+          0,
+          Math.floor((Date.now() - new Date(quote.created_at as string).getTime()) / (1000 * 60 * 60 * 24))
+        )} days)`
+      }))
   ].slice(0, 8);
 
   return (
-    <OwnerShell businessName={businessName} signOutAction={signOut} alerts={alerts}>
+    <OwnerShell
+      businessName={businessName}
+      signOutAction={signOut}
+      alerts={alerts}
+      initialTasks={taskRows.map((t) => ({
+        id: t.id,
+        title: t.title,
+        done: Boolean(t.done)
+      }))}
+      navSections={filteredNav}
+      shortcutTargets={shortcutTargets}
+    >
       {children}
     </OwnerShell>
   );

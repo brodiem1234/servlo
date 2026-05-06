@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import InvoicesManager from "./invoices-manager";
 import { invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
@@ -28,11 +30,8 @@ type InvoicesPageProps = {
 
 export default async function OwnerInvoicesPage({ searchParams }: InvoicesPageProps) {
   const sp = (await searchParams) ?? {};
-  const sb = await createClient();
-  const {
-    data: { user }
-  } = await sb.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "invoices");
 
   const invWideSelect =
     "id, invoice_number, client_id, amount, total, subtotal, gst, gst_amount, status, due_date, issue_date, is_demo";

@@ -21,9 +21,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
+import { formatIndustryLabels } from "@/lib/industries";
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import { DEFAULT_ACCENT_HEX, normalizeAccentColour, type AccentPresetHex } from "@/lib/brand-accent";
+import { WorkspaceSetupPreview } from "@/components/auth/workspace-setup-preview";
+import {
+  buildInitialEnabledFeatures,
+  optionalFeaturesForIndustry,
+  primaryIndustrySlug,
+  recommendedFeaturesForIndustry
+} from "@/lib/workspace-features";
 
 const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
   {
@@ -94,16 +102,24 @@ export function SignupForm() {
   const router = useRouter();
   const [state, formAction] = useFormState(signUpAction, initialSignupState);
   const formRef = useRef<HTMLFormElement>(null);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [role, setRole] = useState<"owner" | "client">("owner");
   const [selected, setSelected] = useState<IndustrySlug[]>([]);
   const [otherNote, setOtherNote] = useState("");
   const [accentColour, setAccentColour] = useState<AccentPresetHex>(DEFAULT_ACCENT_HEX);
+  const [optionalFeatureOn, setOptionalFeatureOn] = useState<Record<string, boolean>>({});
   const [localError, setLocalError] = useState<string | null>(null);
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
 
   const needsOtherNote = selected.includes("other");
   const industriesJson = useMemo(() => JSON.stringify(selected), [selected]);
+  const signupPrimaryIndustry = useMemo(
+    () => primaryIndustrySlug(selected.length ? selected : ["other"]),
+    [selected]
+  );
+  const signupRecommendedIds = useMemo(() => recommendedFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
+  const signupOptionalIds = useMemo(() => optionalFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
+  const signupIndustryHeadline = formatIndustryLabels([signupPrimaryIndustry]) || "SERVLO";
   const displayedError = localError ?? state.error;
 
   useEffect(() => {
@@ -130,17 +146,24 @@ export function SignupForm() {
 
   function handleContinueFromIndustries(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
+    const nextOptional = Object.fromEntries(signupOptionalIds.map((id) => [id, false]));
+    setOptionalFeatureOn(nextOptional);
     setStep(3);
+  }
+
+  function handleContinueFromWorkspacePreview(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    setStep(4);
   }
 
   function handleBack(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    setStep((s) => (s === 3 ? 2 : 1));
+    setStep((s) => (s === 4 ? 3 : s === 3 ? 2 : 1));
   }
 
   async function handleOwnerSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (role !== "owner" || step !== 3) return;
+    if (role !== "owner" || step !== 4) return;
 
     const form = formRef.current;
     if (!form?.checkValidity()) {
@@ -204,12 +227,18 @@ export function SignupForm() {
         return;
       }
 
+      const optionalChosen = new Set(
+        signupOptionalIds.filter((id) => Boolean(optionalFeatureOn[id]))
+      );
+      const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, optionalChosen);
+
       const baseSetupBody = {
         userId,
         businessName,
         abn,
         phone: phoneNumber,
-        industries: selected
+        industries: selected,
+        workspaceFeaturesEnabled
       };
 
       const postSetup = async (accentForInsert: string) => {
@@ -475,6 +504,18 @@ export function SignupForm() {
           </div>
 
           <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
+            <WorkspaceSetupPreview
+              primaryIndustryLabel={signupIndustryHeadline}
+              recommendedIds={signupRecommendedIds}
+              optionalIds={signupOptionalIds}
+              optionalOn={optionalFeatureOn}
+              setOptionalOn={(id, on) => setOptionalFeatureOn((prev) => ({ ...prev, [id]: on }))}
+              onBack={handleBack}
+              onContinue={handleContinueFromWorkspacePreview}
+            />
+          </div>
+
+          <div className={step === 4 ? "space-y-4" : "hidden"} aria-hidden={step !== 4}>
             <div>
               <h2 className="text-lg font-semibold text-white">Choose your brand colour</h2>
               <p className="mt-1 text-sm text-slate-400">

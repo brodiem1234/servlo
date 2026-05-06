@@ -8,6 +8,19 @@ import SubscriptionCards from "./subscription-cards";
 import { businessesOwnerOrEq } from "@/lib/businesses";
 import { BrandAccentForm } from "./brand-accent-form";
 import { ReseedDemoApiButton } from "./reseed-demo-api-button";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import type { IndustrySlug } from "@/lib/industries";
+import { isIndustrySlug } from "@/lib/industries";
+import {
+  FEATURE_LABELS,
+  WORKSPACE_FEATURE_IDS,
+  isRecommendedFeatureForIndustry,
+  isWorkspaceFeatureId,
+  primaryIndustrySlug,
+  serializeFeatureFlags,
+  type WorkspaceFeatureId
+} from "@/lib/workspace-features";
+import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 
 type SettingsPageProps = {
   searchParams?: {
@@ -18,24 +31,60 @@ type SettingsPageProps = {
 };
 
 export default async function OwnerSettingsPage({ searchParams }: SettingsPageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled: workspaceFeatures, supabase } = await requireOwnerWorkspaceFeatures();
 
   const [{ data: profile }, { data: businessRow }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("business_name, abn, phone, address, plan, subscription_status, subscription_tier")
+      .select(
+        "business_name, abn, phone, address, plan, subscription_status, subscription_tier, email_digest_enabled, industry_tags"
+      )
       .eq("id", user.id)
       .maybeSingle(),
-    supabase.from("businesses").select("accent_colour").or(businessesOwnerOrEq(user.id)).maybeSingle()
+    supabase.from("businesses").select("accent_colour, industries").or(businessesOwnerOrEq(user.id)).maybeSingle()
   ]);
+
+  const industriesFromBiz = businessRow?.industries as unknown;
+  const tagsFromProfile = (profile as { industry_tags?: unknown } | null)?.industry_tags;
+  let primaryIndustry: IndustrySlug = "other";
+  if (Array.isArray(industriesFromBiz)) {
+    const tags = industriesFromBiz.filter((t): t is IndustrySlug => typeof t === "string" && isIndustrySlug(t));
+    if (tags.length) primaryIndustry = primaryIndustrySlug(tags);
+  }
+  if (primaryIndustry === "other" && Array.isArray(tagsFromProfile)) {
+    const tags = tagsFromProfile.filter((t): t is IndustrySlug => typeof t === "string" && isIndustrySlug(t));
+    if (tags.length) primaryIndustry = primaryIndustrySlug(tags);
+  }
 
   const businessName = profile?.business_name ?? "SERVLO Business";
   const subscriptionTier = profile?.subscription_tier ?? "solo";
   const savedAccent = normalizeAccentColour(businessRow?.accent_colour);
+  const digestOn = (profile as { email_digest_enabled?: boolean | null } | null)?.email_digest_enabled !== false;
+
+  async function updateWorkspaceFeaturesAction(formData: FormData) {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    const { data: prof } = await sb.from("profiles").select("role").eq("id", owner.id).maybeSingle();
+    if (prof?.role && prof.role !== "owner") redirect("/dashboard");
+
+    const raw = formData.getAll("feature");
+    const next = new Set<WorkspaceFeatureId>();
+    for (const x of raw) {
+      if (typeof x === "string" && isWorkspaceFeatureId(x)) next.add(x);
+    }
+    const payload = serializeFeatureFlags(next);
+    const { error } = await sb.from("businesses").update({ feature_flags: payload }).or(businessesOwnerOrEq(owner.id));
+    if (error) {
+      console.error("updateWorkspaceFeatures failed", error);
+      throw new Error(error.message);
+    }
+    revalidateOwnerWorkspaceRoutes();
+    revalidatePath("/dashboard/employee");
+  }
 
   async function updateBusinessProfile(formData: FormData) {
     "use server";
@@ -113,6 +162,18 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     redirect("/dashboard/owner/settings?demo=removed_ok");
   }
 
+  async function updateDigestPreference(formData: FormData) {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    const digest_enabled = String(formData.get("digest_enabled") ?? "true") === "true";
+    await sb.from("profiles").update({ email_digest_enabled: digest_enabled }).eq("id", owner.id);
+    revalidatePath("/dashboard/owner/settings");
+  }
+
   async function changePassword(formData: FormData) {
     "use server";
     const password = String(formData.get("new_password") ?? "");
@@ -174,6 +235,65 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           Choose one of the preset brand accents — safe contrast on buttons, sidebar highlights and links across your dashboard.
         </p>
         <BrandAccentForm savedAccent={savedAccent} />
+      </article>
+
+      <article className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Workspace features</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Turn modules on or off for your workspace. The sidebar and dashboard update immediately after you save. Features marked{" "}
+          <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-900">Recommended</span> match your industry defaults.
+        </p>
+        <form action={updateWorkspaceFeaturesAction} className="mt-4 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {WORKSPACE_FEATURE_IDS.map((id) => (
+              <label
+                key={id}
+                className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm hover:bg-slate-50"
+              >
+                <input
+                  type="checkbox"
+                  name="feature"
+                  value={id}
+                  defaultChecked={workspaceFeatures.has(id)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent-color)]"
+                />
+                <span className="flex flex-1 flex-wrap items-center gap-2">
+                  <span className="font-medium text-[var(--text-primary)]">{FEATURE_LABELS[id]}</span>
+                  {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                    <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-teal-900">
+                      Recommended
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+            ))}
+          </div>
+          <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
+            Save features
+          </button>
+        </form>
+      </article>
+
+      <article className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Notifications</h2>
+        <p className="mt-2 text-sm text-slate-600">Daily digest emails summarise jobs due today, unpaid invoices and quotes awaiting acceptance.</p>
+        <form action={updateDigestPreference} className="mt-4 space-y-3 text-sm">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input type="radio" name="digest_enabled" value="true" defaultChecked={digestOn} />
+            <span>Send daily digest (recommended)</span>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input type="radio" name="digest_enabled" value="false" defaultChecked={!digestOn} />
+            <span>Off</span>
+          </label>
+          <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
+            Save notification preference
+          </button>
+          <p className="text-xs text-slate-500">
+            Schedule <code className="rounded bg-slate-100 px-1 py-0.5 text-[11px]">GET /api/cron/daily-digest</code> with header{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 text-[11px]">Authorization: Bearer CRON_SECRET</code>.
+          </p>
+        </form>
       </article>
 
       <SubscriptionCards

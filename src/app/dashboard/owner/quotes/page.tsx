@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import QuotesManager from "./quotes-manager";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 
@@ -25,11 +27,8 @@ type QuotesPageProps = {
 
 export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps) {
   const sp = (await searchParams) ?? {};
-  const sb = await createClient();
-  const {
-    data: { user }
-  } = await sb.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "quotes");
 
   const [{ data: quotes }, { data: clients }] = await Promise.all([
     sb

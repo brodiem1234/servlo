@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +14,8 @@ function localIsoDate(d: Date) {
 type ScheduleSearchParams = Promise<{ date?: string | string[] } | undefined>;
 
 export default async function SchedulePage({ searchParams }: { searchParams?: ScheduleSearchParams }) {
-  const sb = await createClient();
-  const {
-    data: { user }
-  } = await sb.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "scheduling");
 
   const resolvedParams = searchParams ? await searchParams : {};
   const sp = resolvedParams ?? {};

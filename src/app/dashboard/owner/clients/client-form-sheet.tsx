@@ -11,6 +11,7 @@ type ClientRecord = {
   phone: string | null;
   status?: string | null;
   source?: string | null;
+  client_type?: string | null;
   company_name: string | null;
   abn: string | null;
   address: string | null;
@@ -37,6 +38,7 @@ const defaultValues = {
   phone: "",
   status: "active",
   source: "other",
+  client_type: "customer",
   company_name: "",
   abn: "",
   address: "",
@@ -72,6 +74,7 @@ export default function ClientFormSheet({
         phone: client.phone ?? "",
         status: client.status ?? "active",
         source: client.source ?? "other",
+        client_type: client.client_type === "supplier" || client.client_type === "lead" ? client.client_type : "customer",
         company_name: client.company_name ?? "",
         abn: client.abn ?? "",
         address: client.address ?? "",
@@ -209,6 +212,19 @@ export default function ClientFormSheet({
               </ul>
             ) : null}
             <p className="mt-1 text-xs text-[var(--text-muted)]">Pick a suggestion to auto-fill state and postcode when available.</p>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Client type</label>
+            <select
+              name="client_type"
+              value={values.client_type}
+              onChange={(e) => setValues((prev) => ({ ...prev, client_type: e.target.value }))}
+              className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+            >
+              <option value="customer">Customer</option>
+              <option value="supplier">Supplier</option>
+              <option value="lead">Lead</option>
+            </select>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Client Status</label>

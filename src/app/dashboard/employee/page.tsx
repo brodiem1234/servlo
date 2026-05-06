@@ -1,6 +1,30 @@
 ﻿import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isIndustrySlug, type IndustrySlug } from "@/lib/industries";
+import { loadWorkspaceFeatureSet } from "@/lib/workspace-features";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+async function resolveEmployeeOwnerId(sb: SupabaseClient, userId: string, email: string | undefined) {
+  const [{ data: jobOwner }, { data: empOwner }] = await Promise.all([
+    sb.from("jobs").select("owner_id").eq("employee_id", userId).limit(1).maybeSingle(),
+    email
+      ? sb.from("employees").select("owner_id").eq("email", email).limit(1).maybeSingle()
+      : Promise.resolve({ data: null })
+  ]);
+  return jobOwner?.owner_id ?? empOwner?.owner_id ?? null;
+}
+
+async function employeeWorkspaceHasGpsClock(sb: SupabaseClient, userId: string, email: string | undefined) {
+  const ownerId = await resolveEmployeeOwnerId(sb, userId, email);
+  if (!ownerId) return false;
+  const { data: ownerProf } = await sb.from("profiles").select("industry_tags").eq("id", ownerId).maybeSingle();
+  const tags = Array.isArray((ownerProf as { industry_tags?: unknown } | null)?.industry_tags)
+    ? ((ownerProf as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))
+    : [];
+  const feats = await loadWorkspaceFeatureSet(sb, ownerId, tags);
+  return feats.has("gps_clock");
+}
 
 export default async function EmployeeDashboardPage() {
   const supabase = await createClient();
@@ -11,6 +35,8 @@ export default async function EmployeeDashboardPage() {
 
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
   if (profile?.role !== "employee") redirect("/dashboard");
+
+  const showGpsClock = await employeeWorkspaceHasGpsClock(supabase, user.id, user.email ?? undefined);
 
   const today = new Date();
   const todayKey = today.toISOString().slice(0, 10);
@@ -50,6 +76,9 @@ export default async function EmployeeDashboardPage() {
       data: { user: employee }
     } = await sb.auth.getUser();
     if (!employee) redirect("/auth/login");
+    if (!(await employeeWorkspaceHasGpsClock(sb, employee.id, employee.email ?? undefined))) {
+      redirect("/dashboard/employee");
+    }
     await sb.from("timesheets").insert({ employee_id: employee.id, clock_in: new Date().toISOString() });
     revalidatePath("/dashboard/employee");
   }
@@ -83,21 +112,25 @@ export default async function EmployeeDashboardPage() {
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Employee Dashboard</h1>
       <p className="text-sm text-[var(--text-secondary)]">Welcome {profile?.full_name ?? user.email}</p>
 
-      <div className="flex gap-2">
-        <form action={clockInAction}>
-          <button type="submit" className="rounded bg-[var(--accent-color)] px-6 py-3 text-base font-semibold text-white hover:bg-[var(--accent-hover)]">
-            Clock In
-          </button>
-        </form>
-        <form action={clockOutAction}>
-          <button
-            type="submit"
-            className="rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-6 py-3 text-base font-semibold text-[var(--text-primary)]"
-          >
-            Clock Out
-          </button>
-        </form>
-      </div>
+      {showGpsClock ? (
+        <div className="flex gap-2">
+          <form action={clockInAction}>
+            <button type="submit" className="rounded bg-[var(--accent-color)] px-6 py-3 text-base font-semibold text-white hover:bg-[var(--accent-hover)]">
+              Clock In
+            </button>
+          </form>
+          <form action={clockOutAction}>
+            <button
+              type="submit"
+              className="rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-6 py-3 text-base font-semibold text-[var(--text-primary)]"
+            >
+              Clock Out
+            </button>
+          </form>
+        </div>
+      ) : (
+        <p className="text-sm text-[var(--text-secondary)]">Clock in/out is turned off for your workspace. Ask your owner to enable GPS clock in Settings → Workspace features.</p>
+      )}
 
       <div className="grid gap-4 xl:grid-cols-2">
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">

@@ -3,7 +3,7 @@ import { Resend } from "resend";
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "SERVLO <no-reply@servlo.com.au>";
 
-export async function sendEmail(to: string, subject: string, html: string) {
+export async function sendEmail(to: string, subject: string, html: string, fromOverride?: string) {
   if (!to) return { ok: false, error: "Missing recipient email" };
   if (!resend) {
     console.error("Email send skipped: RESEND_API_KEY missing");
@@ -11,7 +11,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
   }
   try {
     await resend.emails.send({
-      from: FROM_EMAIL,
+      from: fromOverride ?? FROM_EMAIL,
       to,
       subject,
       html
@@ -89,6 +89,61 @@ export function portalShareEmailTemplate(args: {
     <p>You can view your quotes, invoices, and jobs using the portal link below:</p>
     <p><a href="${args.portalUrl}" style="background:#1e3a5f;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Open Portal</a></p>
     <p style="word-break:break-all;color:#64748b;">${args.portalUrl}</p>
+  `);
+}
+
+export function welcomeOwnerEmailTemplate(args: {
+  ownerName: string;
+  dashboardUrl: string;
+  supportUrl: string;
+  industryLabel?: string | null;
+  highlightFeatures?: string[];
+}) {
+  const industryLine =
+    args.industryLabel?.trim() ?
+      `<p style="color:#334155;">We&apos;ve tailored your workspace for <strong>${args.industryLabel.trim()}</strong>.</p>`
+    : "";
+  const highlights =
+    args.highlightFeatures?.filter(Boolean).slice(0, 3) ?? [];
+  const bullets =
+    highlights.length > 0 ?
+      `<ul style="margin:8px 0;padding-left:18px;color:#334155;line-height:1.6;">${highlights.map((h) => `<li>${h}</li>`).join("")}</ul>`
+    : `<ul style="margin:8px 0;padding-left:18px;color:#334155;line-height:1.6;">
+        <li>Add your first client and create a job so your calendar fills up.</li>
+        <li>Send quotes from SERVLO so follow-ups stay organised.</li>
+        <li>Use invoices with reminders to get paid on time.</li>
+      </ul>`;
+
+  return wrapEmail(`
+    <h2 style="margin:0 0 12px; color:#0f172a;">Welcome to SERVLO</h2>
+    <p>Hi ${args.ownerName},</p>
+    ${industryLine}
+    <p style="color:#334155;">Your workspace is ready — here are three highlights we&apos;ve switched on for you:</p>
+    ${bullets}
+    <p><a href="${args.dashboardUrl}" style="background:#1e3a5f;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Go to dashboard</a></p>
+    <p style="margin-top:16px;color:#334155;">You can turn modules on or off anytime under Settings → Features.</p>
+    <p style="margin-top:16px;color:#334155;">Questions? <a href="${args.supportUrl}" style="color:#1e3a5f;font-weight:600;">Contact support</a>.</p>
+    <p style="color:#64748b;">— SERVLO</p>
+  `);
+}
+
+export function ownerDailyDigestEmailTemplate(args: {
+  jobsSection: string;
+  invoicesSection: string;
+  quotesSection: string;
+  dashboardUrl: string;
+}) {
+  return wrapEmail(`
+    <h2 style="margin:0 0 12px; color:#0f172a;">Your SERVLO morning snapshot</h2>
+    <p style="color:#334155;">Here is what needs attention today.</p>
+    <h3 style="margin:18px 0 8px;color:#0f172a;font-size:15px;">Jobs scheduled today</h3>
+    ${args.jobsSection}
+    <h3 style="margin:18px 0 8px;color:#0f172a;font-size:15px;">Outstanding invoices</h3>
+    ${args.invoicesSection}
+    <h3 style="margin:18px 0 8px;color:#0f172a;font-size:15px;">Quotes awaiting acceptance</h3>
+    ${args.quotesSection}
+    <p style="margin-top:20px;"><a href="${args.dashboardUrl}" style="background:#1e3a5f;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Open dashboard</a></p>
+    <p style="color:#64748b;font-size:12px;">You can turn this email off in Settings → Notifications.</p>
   `);
 }
 

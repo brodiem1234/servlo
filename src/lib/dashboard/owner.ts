@@ -137,7 +137,8 @@ export async function getOwnerDashboardData(ownerId: string) {
     { data: recentJobsActivity },
     { data: recentClientsActivity },
     { data: recentInvoicesActivity },
-    { data: recentQuotesActivity }
+    { data: recentQuotesActivity },
+    { count: employeeHeadcount }
   ] = await Promise.all([
     supabase.from("clients").select("id, status, is_demo").eq("owner_id", ownerId),
     supabase
@@ -195,7 +196,8 @@ export async function getOwnerDashboardData(ownerId: string) {
       .select("id, quote_number, created_at, is_demo")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
-      .limit(8)
+      .limit(8),
+    supabase.from("employees").select("id", { count: "exact", head: true }).eq("owner_id", ownerId)
   ]);
 
   const now = new Date();
@@ -394,6 +396,17 @@ export async function getOwnerDashboardData(ownerId: string) {
     quoteStatusCounts[quoteBucket(quote.status)] += 1;
   }
 
+  const pipelineAwaitingValue = (quotesMoney as Array<{ status?: string | null; total?: number | null }>).reduce(
+    (sum, quote) => (quoteBucket(quote.status) === "awaiting" ? sum + Number(quote.total ?? 0) : sum),
+    0
+  );
+
+  const jobsScheduledThisWeek = (visibleJobs as Array<{ scheduled_date?: string | null }>).filter((job) => {
+    if (!job.scheduled_date) return false;
+    const date = new Date(job.scheduled_date);
+    return date >= weekStart && date < weekEnd;
+  }).length;
+
   const quotesFollowUp = quotesMoney
     .filter((quote: any) => {
       const st = (quote.status ?? "").toLowerCase();
@@ -437,8 +450,11 @@ export async function getOwnerDashboardData(ownerId: string) {
       clients: visibleClients.length,
       jobs: visibleJobs.length,
       quotes: quotesMoney.length,
-      invoices: invoicesMoney.length
-    }
+      invoices: invoicesMoney.length,
+      employees: typeof employeeHeadcount === "number" ? employeeHeadcount : 0
+    },
+    pipelineAwaitingValue,
+    jobsScheduledThisWeek
   };
 }
 

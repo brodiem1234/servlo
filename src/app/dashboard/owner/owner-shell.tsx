@@ -1,28 +1,22 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Fragment, useState } from "react";
-import { Bell, Briefcase, Calendar, Home, Menu, Users } from "lucide-react";
+import { Fragment, useMemo, useState } from "react";
+import {
+  Bell,
+  Briefcase,
+  FileText,
+  Home,
+  LayoutGrid,
+  Menu,
+  MoreHorizontal,
+  Users
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
-
-const ownerNavSections = [
-  [{ href: "/dashboard/owner", label: "Dashboard" }],
-  [
-    { href: "/dashboard/owner/jobs", label: "Jobs" },
-    { href: "/dashboard/owner/clients", label: "Clients" }
-  ],
-  [{ href: "/dashboard/schedule", label: "Schedule" }],
-  [
-    { href: "/dashboard/owner/invoices", label: "Invoices" },
-    { href: "/dashboard/owner/quotes", label: "Quotes" }
-  ],
-  [
-    { href: "/dashboard/owner/employees", label: "Employees" },
-    { href: "/dashboard/contractors", label: "Contractors" }
-  ],
-  [{ href: "/dashboard/reports", label: "Reports" }],
-  [{ href: "/dashboard/owner/settings", label: "Settings" }]
-];
+import OwnerKeyboardShortcuts from "@/components/dashboard/owner-keyboard-shortcuts";
+import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/owner-sidebar-todos";
+import type { OwnerNavItem } from "@/app/dashboard/owner/nav-config";
 
 /** Dashboard is only active on the exact path; other items match their section. */
 function isNavItemActive(pathname: string, href: string) {
@@ -32,17 +26,78 @@ function isNavItemActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function iconForMobileNav(href: string): LucideIcon {
+  if (href === "/dashboard/owner") return Home;
+  if (href.includes("/jobs")) return Briefcase;
+  if (href.includes("/clients")) return Users;
+  if (href.includes("/invoices")) return FileText;
+  if (href.includes("/quotes")) return FileText;
+  return LayoutGrid;
+}
+
+type ShortcutTargets = {
+  jobs?: boolean;
+  clients?: boolean;
+  invoices?: boolean;
+  quotes?: boolean;
+};
+
 type Props = {
   businessName: string;
   signOutAction: (formData: FormData) => Promise<void>;
   alerts: Array<{ id: string; text: string }>;
+  initialTasks: OwnerTaskRow[];
+  navSections: OwnerNavItem[][];
+  shortcutTargets?: ShortcutTargets;
   children: React.ReactNode;
 };
 
-export default function OwnerShell({ businessName, signOutAction, alerts, children }: Props) {
+export default function OwnerShell({
+  businessName,
+  signOutAction,
+  alerts,
+  initialTasks,
+  navSections,
+  shortcutTargets,
+  children
+}: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const flatNav = useMemo(() => navSections.flat(), [navSections]);
+
+  const mobileTabs = useMemo(() => {
+    const preferred = [
+      "/dashboard/owner",
+      "/dashboard/owner/jobs",
+      "/dashboard/owner/clients",
+      "/dashboard/owner/invoices",
+      "/dashboard/owner/quotes",
+      "/dashboard/schedule"
+    ];
+    const picked: OwnerNavItem[] = [];
+    for (const href of preferred) {
+      const hit = flatNav.find((i) => i.href === href);
+      if (hit && !picked.some((p) => p.href === hit.href)) picked.push(hit);
+      if (picked.length >= 4) break;
+    }
+    if (picked.length < 4) {
+      for (const item of flatNav) {
+        if (picked.some((p) => p.href === item.href)) continue;
+        if (item.href === "/dashboard/owner/settings") continue;
+        picked.push(item);
+        if (picked.length >= 4) break;
+      }
+    }
+    return picked.slice(0, 4);
+  }, [flatNav]);
+
+  const mobileMoreLinks = useMemo(
+    () => flatNav.filter((l) => !mobileTabs.some((t) => t.href === l.href)),
+    [flatNav, mobileTabs]
+  );
 
   return (
     <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
@@ -76,13 +131,10 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
             <div className="mt-2 h-[2px] w-full bg-[var(--sidebar-ring)]" aria-hidden />
           </div>
           <nav className="flex flex-col gap-0">
-            {ownerNavSections.map((section, sectionIndex) => (
+            {navSections.map((section, sectionIndex) => (
               <Fragment key={`nav-section-${sectionIndex}`}>
                 {sectionIndex > 0 ? (
-                  <hr
-                    className="my-3 border-0 border-t border-[var(--sidebar-divider)]"
-                    aria-hidden
-                  />
+                  <hr className="my-3 border-0 border-t border-[var(--sidebar-divider)]" aria-hidden />
                 ) : null}
                 <div className="flex flex-col gap-2">
                   {section.map((item) => {
@@ -103,6 +155,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               </Fragment>
             ))}
           </nav>
+          <OwnerSidebarTodos initialTasks={initialTasks} />
         </aside>
 
         <div className="flex min-h-screen flex-col">
@@ -154,10 +207,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                 ) : null}
               </div>
               <form action={signOutAction}>
-                <button
-                  type="submit"
-                  className="dashboard-primary rounded-md px-4 py-2 text-sm font-semibold text-white"
-                >
+                <button type="submit" className="dashboard-primary rounded-md px-4 py-2 text-sm font-semibold text-white">
                   Sign Out
                 </button>
               </form>
@@ -178,29 +228,64 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
       ) : null}
 
       <nav className="owner-mobile-nav fixed inset-x-0 bottom-0 z-30 border-t border-[var(--sidebar-divider)] bg-[var(--sidebar-bg)] md:hidden">
-        <div className="grid grid-cols-4">
-          {[
-            { href: "/dashboard/owner", label: "Dashboard", icon: Home },
-            { href: "/dashboard/owner/jobs", label: "Jobs", icon: Briefcase },
-            { href: "/dashboard/owner/clients", label: "Clients", icon: Users },
-            { href: "/dashboard/schedule", label: "Schedule", icon: Calendar }
-          ].map((item) => {
+        <div className="grid grid-cols-5">
+          {mobileTabs.map((item) => {
             const active = isNavItemActive(pathname, item.href);
-            const Icon = item.icon;
+            const Icon = iconForMobileNav(item.href);
             return (
               <a
                 key={item.href}
                 href={item.href}
                 data-active={active ? "true" : "false"}
-                className="flex min-h-[52px] flex-col items-center justify-center px-1 py-2 text-xs text-[var(--sidebar-text)]"
+                onClick={() => {
+                  setOpen(false);
+                  setMoreOpen(false);
+                }}
+                className="flex min-h-[52px] flex-col items-center justify-center px-1 py-2 text-[11px] text-[var(--sidebar-text)]"
               >
                 <Icon size={16} className="text-[var(--sidebar-text)]" />
                 <span className="mt-0.5 leading-tight">{item.label}</span>
               </a>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setMoreOpen((v) => !v)}
+            className={`flex min-h-[52px] flex-col items-center justify-center px-1 py-2 text-[11px] text-[var(--sidebar-text)] ${moreOpen ? "bg-white/10" : ""}`}
+          >
+            <MoreHorizontal size={16} />
+            <span className="mt-0.5 leading-tight">More</span>
+          </button>
         </div>
       </nav>
+
+      {moreOpen ? (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="fixed inset-0 z-[38] bg-black/40 md:hidden"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div className="fixed inset-x-0 bottom-[52px] z-40 max-h-[55vh] overflow-auto rounded-t-xl border border-[var(--sidebar-divider)] bg-[var(--sidebar-bg)] p-3 text-[var(--sidebar-text)] md:hidden">
+            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide opacity-70">More</p>
+            <div className="grid gap-1">
+              {mobileMoreLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-md px-3 py-2 text-sm hover:bg-white/10"
+                  onClick={() => setMoreOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      <OwnerKeyboardShortcuts targets={shortcutTargets} />
     </div>
   );
 }

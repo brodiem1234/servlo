@@ -3,7 +3,12 @@
 type InvoiceCounts = { draft: number; unpaid: number; overdue: number; paid: number };
 type QuoteCounts = { draft: number; awaiting: number; accepted: number; declined: number };
 
-type Props = { invoices: InvoiceCounts; quotes: QuoteCounts };
+type Props = {
+  invoices: InvoiceCounts;
+  quotes: QuoteCounts;
+  showInvoices?: boolean;
+  showQuotes?: boolean;
+};
 
 const invoiceStatuses = [
   { key: "draft" as const, label: "Draft", circleClass: "bg-slate-400" },
@@ -57,23 +62,32 @@ function GridCard({
   );
 }
 
-export default function InvoiceQuoteStatusGrids({ invoices, quotes }: Props) {
+export default function InvoiceQuoteStatusGrids({
+  invoices,
+  quotes,
+  showInvoices = true,
+  showQuotes = true
+}: Props) {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <GridCard
-        title="Invoices"
-        statuses={invoiceStatuses}
-        hrefPrefix="/dashboard/owner/invoices"
-        bucketKey="bucket"
-        counts={invoices as Record<string, number>}
-      />
-      <GridCard
-        title="Quotes"
-        statuses={quoteStatuses}
-        hrefPrefix="/dashboard/owner/quotes"
-        bucketKey="bucket"
-        counts={quotes as Record<string, number>}
-      />
+      {showInvoices ? (
+        <GridCard
+          title="Invoices"
+          statuses={invoiceStatuses}
+          hrefPrefix="/dashboard/owner/invoices"
+          bucketKey="bucket"
+          counts={invoices as Record<string, number>}
+        />
+      ) : null}
+      {showQuotes ? (
+        <GridCard
+          title="Quotes"
+          statuses={quoteStatuses}
+          hrefPrefix="/dashboard/owner/quotes"
+          bucketKey="bucket"
+          counts={quotes as Record<string, number>}
+        />
+      ) : null}
     </div>
   );
 }

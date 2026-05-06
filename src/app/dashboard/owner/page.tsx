@@ -17,6 +17,7 @@ import {
   type IndustrySlug
 } from "@/lib/industries";
 import { computeTrialDaysRemaining } from "@/lib/trial-profile";
+import { loadWorkspaceFeatureSet, schedulingEnabled } from "@/lib/workspace-features";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,7 @@ export default async function OwnerDashboardPage() {
   const industryTags: IndustrySlug[] = Array.isArray((profile as { industry_tags?: unknown })?.industry_tags)
     ? ((profile as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))
     : [];
+  const enabled = await loadWorkspaceFeatureSet(sb, user.id, industryTags);
   const welcomeLine = ownerWelcomeLine(industryTags.length ? industryTags : null);
   const checklistItems = getGettingStartedChecklist(industryTags.length ? industryTags : null);
 
@@ -79,7 +81,10 @@ export default async function OwnerDashboardPage() {
 
   function checklistDone(href: string): boolean {
     const h = href.toLowerCase();
+    if (h.includes("/employees")) return onboardingCounts.employees > 0;
     if (h.includes("/clients")) return onboardingCounts.clients > 0;
+    if (h.includes("/schedule")) return onboardingCounts.jobs > 0;
+    if (h.includes("/reports")) return onboardingCounts.quotes > 0;
     if (h.includes("/jobs")) return onboardingCounts.jobs > 0;
     if (h.includes("/quotes")) return onboardingCounts.quotes > 0;
     if (h.includes("/invoices")) return onboardingCounts.invoices > 0;
@@ -91,6 +96,20 @@ export default async function OwnerDashboardPage() {
     ...item,
     done: checklistDone(item.href)
   }));
+
+  const ringTasksVisible = ringTasks.filter((task) => {
+    const h = task.href.toLowerCase();
+    if (h.includes("/settings")) return true;
+    if (h.includes("/schedule")) return schedulingEnabled(enabled);
+    if (h.includes("/employees")) return enabled.has("employee_management");
+    if (h.includes("/reports"))
+      return enabled.has("crm_pipeline") || enabled.has("project_tracking") || enabled.has("equipment_hire");
+    if (h.includes("/clients")) return enabled.has("client_management");
+    if (h.includes("/jobs")) return schedulingEnabled(enabled);
+    if (h.includes("/quotes")) return enabled.has("quotes");
+    if (h.includes("/invoices")) return enabled.has("invoices");
+    return true;
+  });
 
   const todayIso = isoLocal(new Date());
   const tomorrowD = new Date();
@@ -112,7 +131,9 @@ export default async function OwnerDashboardPage() {
     quoteStatusCounts,
     jobsTodayStat,
     jobsTomorrowStat,
-    mapJobsToday
+    mapJobsToday,
+    pipelineAwaitingValue,
+    jobsScheduledThisWeek
   } = dashboardData;
 
   const sparkLabels = Array.from({ length: 7 }, (_, i) => {
@@ -120,6 +141,14 @@ export default async function OwnerDashboardPage() {
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - (6 - i));
     return d.toLocaleDateString("en-AU", { weekday: "short" });
+  });
+
+  const activityFiltered = recentActivity.filter((item) => {
+    if (item.kind === "job" && !schedulingEnabled(enabled)) return false;
+    if (item.kind === "invoice" && !enabled.has("invoices")) return false;
+    if (item.kind === "quote" && !enabled.has("quotes")) return false;
+    if (item.kind === "client" && !enabled.has("client_management")) return false;
+    return true;
   });
 
   async function sendInvoiceReminderAction(formData: FormData) {
@@ -206,6 +235,16 @@ export default async function OwnerDashboardPage() {
     revalidatePath("/dashboard/owner");
   }
 
+  const showScheduling = schedulingEnabled(enabled);
+  const featureInvoices = enabled.has("invoices");
+  const featureQuotes = enabled.has("quotes");
+  const featureClients = enabled.has("client_management");
+  const featureJobMap = enabled.has("gps_clock") && showScheduling;
+  const featurePipeline = enabled.has("crm_pipeline");
+  const featureRecurringWeek = enabled.has("recurring_jobs") && showScheduling;
+  const featureEquipment = enabled.has("equipment_hire");
+  const featureJobPhotos = enabled.has("job_photos");
+
   return (
     <section className="space-y-6">
       {trialDaysRemaining > 0 ? (
@@ -237,32 +276,50 @@ export default async function OwnerDashboardPage() {
             <p className="mt-2 text-sm font-medium text-accent-strong">{welcomeLine}</p>
           ) : null}
         </div>
-        <JobDayStatCards
-          todayKeyIso={todayIso}
-          tomorrowKeyIso={tomorrowIso}
-          today={jobsTodayStat}
-          tomorrow={jobsTomorrowStat}
-        />
+        {showScheduling ? (
+          <JobDayStatCards
+            todayKeyIso={todayIso}
+            tomorrowKeyIso={tomorrowIso}
+            today={jobsTodayStat}
+            tomorrow={jobsTomorrowStat}
+          />
+        ) : null}
       </div>
 
-      {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? <GettingStartedRing tasks={ringTasks} /> : null}
+      {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? (
+        <GettingStartedRing tasks={ringTasksVisible} />
+      ) : null}
 
-      <InvoiceQuoteStatusGrids invoices={invoiceStatusCounts} quotes={quoteStatusCounts} />
+      <InvoiceQuoteStatusGrids
+        invoices={invoiceStatusCounts}
+        quotes={quoteStatusCounts}
+        showInvoices={featureInvoices}
+        showQuotes={featureQuotes}
+      />
 
-      <OwnerDashboardQuickActions />
+      <OwnerDashboardQuickActions
+        enabled={{
+          scheduling: showScheduling,
+          clients: featureClients,
+          invoices: featureInvoices,
+          quotes: featureQuotes
+        }}
+      />
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-sm">
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Jobs by status</span>
-        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          Pending · {jobsByStatus.pending}
-        </span>
-        <span className="rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] px-3 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_38%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]">
-          In progress · {jobsByStatus.inProgress}
-        </span>
-        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
-          Completed · {jobsByStatus.completed}
-        </span>
-      </div>
+      {showScheduling ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-sm">
+          <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Jobs by status</span>
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+            Pending · {jobsByStatus.pending}
+          </span>
+          <span className="rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] px-3 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_38%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]">
+            In progress · {jobsByStatus.inProgress}
+          </span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+            Completed · {jobsByStatus.completed}
+          </span>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
@@ -277,74 +334,78 @@ export default async function OwnerDashboardPage() {
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Outstanding</p>
           <p className="dashboard-stat-value mt-2 text-3xl font-bold">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
-        <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Jobs Completed This Week</p>
-          <p className="dashboard-stat-value mt-2 text-3xl font-bold">{metrics.jobsCompletedThisWeek}</p>
-        </article>
+        {showScheduling ? (
+          <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+            <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Jobs Completed This Week</p>
+            <p className="dashboard-stat-value mt-2 text-3xl font-bold">{metrics.jobsCompletedThisWeek}</p>
+          </article>
+        ) : null}
         <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Active Clients</p>
           <p className="dashboard-stat-value mt-2 text-3xl font-bold">{metrics.activeClientsCount}</p>
         </article>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">This Week at a Glance</h2>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">Scheduled jobs for today and tomorrow.</p>
-          <div className="mt-4 grid gap-6 md:grid-cols-2">
-            <div>
-              <h3 className="text-sm font-semibold text-accent-strong">Today</h3>
-              <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
-                {glanceToday.length === 0 ? (
-                  <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
-                ) : (
-                  glanceToday.map((job) => (
-                    <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
-                      <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--text-primary)]">
-                        <span>{job.title ?? "Untitled job"}</span>
-                        {job.is_demo ? <DemoBadge /> : null}
-                      </p>
-                      <p className="text-xs text-[var(--text-muted)]">
-                        {job.client_name ?? "—"}
-                        {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
-                      </p>
-                    </li>
-                  ))
-                )}
-              </ul>
+      <div className={`grid gap-4 ${showScheduling ? "xl:grid-cols-2" : ""}`}>
+        {showScheduling ? (
+          <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">This Week at a Glance</h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Scheduled jobs for today and tomorrow.</p>
+            <div className="mt-4 grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-semibold text-accent-strong">Today</h3>
+                <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
+                  {glanceToday.length === 0 ? (
+                    <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
+                  ) : (
+                    glanceToday.map((job) => (
+                      <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
+                        <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--text-primary)]">
+                          <span>{job.title ?? "Untitled job"}</span>
+                          {job.is_demo ? <DemoBadge /> : null}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">
+                          {job.client_name ?? "—"}
+                          {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
+                        </p>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-accent-strong">Tomorrow</h3>
+                <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
+                  {glanceTomorrow.length === 0 ? (
+                    <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
+                  ) : (
+                    glanceTomorrow.map((job) => (
+                      <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
+                        <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--text-primary)]">
+                          <span>{job.title ?? "Untitled job"}</span>
+                          {job.is_demo ? <DemoBadge /> : null}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">
+                          {job.client_name ?? "—"}
+                          {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
+                        </p>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-accent-strong">Tomorrow</h3>
-              <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
-                {glanceTomorrow.length === 0 ? (
-                  <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
-                ) : (
-                  glanceTomorrow.map((job) => (
-                    <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
-                      <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--text-primary)]">
-                        <span>{job.title ?? "Untitled job"}</span>
-                        {job.is_demo ? <DemoBadge /> : null}
-                      </p>
-                      <p className="text-xs text-[var(--text-muted)]">
-                        {job.client_name ?? "—"}
-                        {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
-                      </p>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-          </div>
-        </article>
+          </article>
+        ) : null}
 
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent activity</h2>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">Latest jobs, clients, invoices and quotes.</p>
           <ul className="mt-3 space-y-2 text-sm">
-            {recentActivity.length === 0 ? (
+            {activityFiltered.length === 0 ? (
               <li className="text-[var(--text-muted)]">No recent activity yet.</li>
             ) : (
-              recentActivity.map((item) => (
+              activityFiltered.map((item) => (
                 <li
                   key={item.id}
                   className="flex items-start justify-between gap-2 rounded border border-[var(--border)] px-3 py-2"
@@ -361,9 +422,61 @@ export default async function OwnerDashboardPage() {
         </article>
       </div>
 
-      <TodayJobsMapCollapsible jobs={mapJobsToday} />
+      {featurePipeline || featureRecurringWeek || featureEquipment || featureJobPhotos ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {featurePipeline ? (
+            <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Pipeline value</h2>
+              <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{formatCurrency(pipelineAwaitingValue)}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Open quotes awaiting acceptance</p>
+              <a
+                href="/dashboard/owner/quotes?bucket=awaiting"
+                className="mt-3 inline-block text-sm font-semibold text-[var(--accent-color)] hover:underline"
+              >
+                Review quotes
+              </a>
+            </article>
+          ) : null}
+          {featureRecurringWeek ? (
+            <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Scheduled this week</h2>
+              <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{jobsScheduledThisWeek}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Jobs on your calendar (Mon–Sun)</p>
+              <a href="/dashboard/schedule" className="mt-3 inline-block text-sm font-semibold text-[var(--accent-color)] hover:underline">
+                View schedule
+              </a>
+            </article>
+          ) : null}
+          {featureEquipment ? (
+            <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Equipment & hire</h2>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                Line up hire gear and packages against jobs and quotes.
+              </p>
+              <a href="/dashboard/owner/quotes" className="mt-3 inline-block text-sm font-semibold text-[var(--accent-color)] hover:underline">
+                Open quotes
+              </a>
+            </article>
+          ) : null}
+          {featureJobPhotos ? (
+            <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Job photos</h2>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                Capture proof-of-work from each job record when you&apos;re on site.
+              </p>
+              <a href="/dashboard/owner/jobs" className="mt-3 inline-block text-sm font-semibold text-[var(--accent-color)] hover:underline">
+                View jobs
+              </a>
+            </article>
+          ) : null}
+        </div>
+      ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      {featureJobMap ? <TodayJobsMapCollapsible jobs={mapJobsToday} /> : null}
+
+      {showScheduling || (featureInvoices && featureClients) ? (
+        <div className="grid gap-4 xl:grid-cols-2">
+          {showScheduling ? (
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Jobs</h2>
           <div className="mt-3 overflow-x-auto">
@@ -410,7 +523,9 @@ export default async function OwnerDashboardPage() {
             </table>
           </div>
         </article>
+          ) : null}
 
+          {featureInvoices && featureClients ? (
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Top Clients</h2>
           <div className="mt-3 space-y-2 text-sm">
@@ -426,9 +541,13 @@ export default async function OwnerDashboardPage() {
             {topClients.length === 0 ? <p className="text-[var(--text-muted)]">No client revenue data yet.</p> : null}
           </div>
         </article>
-      </div>
+          ) : null}
+        </div>
+      ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      {featureInvoices || featureQuotes ? (
+        <div className="grid gap-4 xl:grid-cols-2">
+          {featureInvoices ? (
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Chase Invoices</h2>
           <div className="mt-3 space-y-2 text-sm">
@@ -465,7 +584,9 @@ export default async function OwnerDashboardPage() {
             {chaseInvoices.length === 0 ? <p className="text-[var(--text-muted)]">No unpaid invoices.</p> : null}
           </div>
         </article>
+          ) : null}
 
+          {featureQuotes ? (
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Follow Up Needed (Quotes)</h2>
           <p className="mt-1 text-xs text-[var(--text-muted)]">Awaiting acceptance for more than 3 days.</p>
@@ -495,7 +616,9 @@ export default async function OwnerDashboardPage() {
             {quotesFollowUp.length === 0 ? <p className="text-[var(--text-muted)]">No quote follow-ups needed.</p> : null}
           </div>
         </article>
-      </div>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

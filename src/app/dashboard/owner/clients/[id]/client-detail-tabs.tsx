@@ -9,6 +9,7 @@ type ClientInfo = {
   phone: string | null;
   status?: string | null;
   source?: string | null;
+  client_type?: string | null;
   company_name: string | null;
   address: string | null;
   suburb: string | null;
@@ -66,6 +67,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes }: Pro
             <div><dt className="text-slate-500">Email</dt><dd className="font-medium">{client.email ?? "-"}</dd></div>
             <div><dt className="text-slate-500">Phone</dt><dd className="font-medium">{client.phone ?? "-"}</dd></div>
             <div><dt className="text-slate-500">Company</dt><dd className="font-medium">{client.company_name ?? "-"}</dd></div>
+            <div><dt className="text-slate-500">Type</dt><dd className="font-medium capitalize">{client.client_type ?? "customer"}</dd></div>
             <div><dt className="text-slate-500">Status</dt><dd className="font-medium capitalize">{client.status ?? "active"}</dd></div>
             <div><dt className="text-slate-500">Source</dt><dd className="font-medium capitalize">{client.source ?? "other"}</dd></div>
             <div className="sm:col-span-2"><dt className="text-slate-500">Address</dt><dd className="font-medium">{[client.address, client.suburb, client.state, client.postcode].filter(Boolean).join(", ") || "-"}</dd></div>

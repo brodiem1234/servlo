@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
@@ -20,11 +22,8 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     typeof sp.openJob === "string" ? sp.openJob.trim() || undefined : undefined;
   const initialScheduleToday = sp.today !== "all";
 
-  const sb = await createClient();
-  const {
-    data: { user }
-  } = await sb.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "scheduling");
 
   const jobsSelectPlain =
     "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo";

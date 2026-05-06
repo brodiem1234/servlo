@@ -32,15 +32,19 @@ export type ClientRow = {
   portal_token?: string | null;
   created_at: string | null;
   is_demo?: boolean | null;
+  client_type?: string | null;
 };
 
 export type SortKey = "newest" | "oldest" | "name_asc" | "name_desc";
+
+export type ClientTypeTab = "all" | "customer" | "supplier" | "lead";
 
 type Props = {
   clients: ClientRow[];
   metrics: Record<string, ClientMetric>;
   initialView: "card" | "list";
   initialSort: SortKey;
+  initialClientTypeTab: ClientTypeTab;
   createClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   updateClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   sendPortalEmailAction: (formData: FormData) => Promise<void>;
@@ -54,11 +58,26 @@ function statusBadgeClass(status: string | null | undefined) {
   return "bg-slate-100 text-slate-800 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-600";
 }
 
+function clientTypeBadgeClass(t: string | null | undefined) {
+  const v = (t ?? "customer").toLowerCase();
+  if (v === "supplier") return "bg-sky-100 text-sky-900 ring-1 ring-sky-200 dark:bg-sky-950 dark:text-sky-100 dark:ring-sky-800";
+  if (v === "lead") return "bg-violet-100 text-violet-900 ring-1 ring-violet-200 dark:bg-violet-950 dark:text-violet-100 dark:ring-violet-800";
+  return "bg-teal-100 text-teal-900 ring-1 ring-teal-200 dark:bg-teal-950 dark:text-teal-100 dark:ring-teal-800";
+}
+
+function clientTypeLabel(t: string | null | undefined) {
+  const v = (t ?? "customer").toLowerCase();
+  if (v === "supplier") return "Supplier";
+  if (v === "lead") return "Lead";
+  return "Customer";
+}
+
 export default function OwnerClientsView({
   clients,
   metrics,
   initialView,
   initialSort,
+  initialClientTypeTab,
   createClientAction,
   updateClientAction,
   sendPortalEmailAction,
@@ -75,6 +94,12 @@ export default function OwnerClientsView({
   const sortParam: SortKey =
     sortQs === "newest" || sortQs === "oldest" || sortQs === "name_desc" || sortQs === "name_asc" ? sortQs : initialSort;
 
+  const clientTypeQs = searchParams.get("client_type");
+  const clientTypeTab: ClientTypeTab =
+    clientTypeQs === "customer" || clientTypeQs === "supplier" || clientTypeQs === "lead"
+      ? clientTypeQs
+      : initialClientTypeTab;
+
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetClient, setSheetClient] = useState<ClientRow | null>(null);
   const [banner, setBanner] = useState<{ type: "success"; message: string } | null>(null);
@@ -87,10 +112,14 @@ export default function OwnerClientsView({
   }, [banner]);
 
   const pushParams = useCallback(
-    (next: { view?: "card" | "list"; sort?: SortKey }) => {
+    (next: { view?: "card" | "list"; sort?: SortKey; client_type?: ClientTypeTab }) => {
       const p = new URLSearchParams(searchParams.toString());
       if (next.view) p.set("view", next.view);
       if (next.sort) p.set("sort", next.sort);
+      if (next.client_type !== undefined) {
+        if (next.client_type === "all") p.delete("client_type");
+        else p.set("client_type", next.client_type);
+      }
       const qs = p.toString();
       const href = qs ? `${pathname}?${qs}` : pathname;
       router.push(href as Parameters<typeof router.push>[0]);
@@ -100,14 +129,15 @@ export default function OwnerClientsView({
 
   const filteredClients = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return clients;
     return clients.filter((c) => {
-      const blob = [c.full_name, c.email, c.phone, c.company_name, c.suburb]
+      if (clientTypeTab !== "all" && (c.client_type ?? "customer") !== clientTypeTab) return false;
+      if (!q) return true;
+      const blob = [c.full_name, c.email, c.phone, c.company_name, c.suburb, clientTypeLabel(c.client_type)]
         .map((x) => (x ?? "").toLowerCase())
         .join(" ");
       return blob.includes(q);
     });
-  }, [clients, search]);
+  }, [clients, search, clientTypeTab]);
 
   function openCreate() {
     setSheetClient(null);
@@ -206,12 +236,37 @@ export default function OwnerClientsView({
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["all", "All"],
+            ["customer", "Customers"],
+            ["supplier", "Suppliers"],
+            ["lead", "Leads"]
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => pushParams({ client_type: value })}
+            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              clientTypeTab === value
+                ? "border-[var(--accent-color)] bg-[var(--accent-color)] text-white"
+                : "border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {effectiveView === "list" ? (
         <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <table className="w-full min-w-[800px] text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
                 <th className="px-2 py-2 font-medium">Name</th>
+                <th className="px-2 py-2 font-medium">Type</th>
                 <th className="px-2 py-2 font-medium">Email</th>
                 <th className="px-2 py-2 font-medium">Phone</th>
                 <th className="px-2 py-2 font-medium">Status</th>
@@ -221,7 +276,7 @@ export default function OwnerClientsView({
                 <th className="px-2 py-2 font-medium">Last job</th>
                 <th className="px-2 py-2 font-medium">Created</th>
                 <th className="px-2 py-2 font-medium">Portal</th>
-                <th className="px-2 py-2 font-medium">Jobs</th>
+                <th className="px-2 py-2 font-medium">Open</th>
               </tr>
             </thead>
             <tbody>
@@ -244,6 +299,13 @@ export default function OwnerClientsView({
                       <span>{client.full_name ?? "-"}</span>
                       {client.is_demo ? <DemoBadge /> : null}
                     </div>
+                  </td>
+                  <td className="px-2 py-2">
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${clientTypeBadgeClass(client.client_type)}`}
+                    >
+                      {clientTypeLabel(client.client_type)}
+                    </span>
                   </td>
                   <td className="px-2 py-2 text-[var(--text-secondary)]">{client.email ?? "-"}</td>
                   <td className="px-2 py-2 text-[var(--text-secondary)]">{client.phone ?? "-"}</td>
@@ -294,7 +356,7 @@ export default function OwnerClientsView({
               ))}
               {filteredClients.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-6 text-[var(--text-muted)]" colSpan={11}>
+                  <td className="px-2 py-6 text-[var(--text-muted)]" colSpan={12}>
                     {clients.length === 0 ? "No clients yet." : "No clients match your search."}
                   </td>
                 </tr>
@@ -321,6 +383,11 @@ export default function OwnerClientsView({
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold text-[var(--text-primary)]">{client.full_name ?? "Unnamed client"}</p>
                 {client.is_demo ? <DemoBadge /> : null}
+                <span
+                  className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${clientTypeBadgeClass(client.client_type)}`}
+                >
+                  {clientTypeLabel(client.client_type)}
+                </span>
               </div>
               {client.company_name ? <p className="mt-0.5 text-sm text-[var(--text-secondary)]">{client.company_name}</p> : null}
               <p className="mt-2 text-sm text-[var(--text-secondary)]">{client.phone ?? "No phone"}</p>

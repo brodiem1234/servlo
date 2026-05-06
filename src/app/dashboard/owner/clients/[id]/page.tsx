@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getOwnerContext } from "@/lib/dashboard/owner";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import ClientDetailTabs from "./client-detail-tabs";
 
 type Props = {
@@ -10,16 +9,15 @@ type Props = {
 };
 
 export default async function OwnerClientDetailPage({ params }: Props) {
-  const { user } = await getOwnerContext();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "client_management");
 
-  const supabase = await createClient();
   const clientId = params.id;
 
   const [{ data: client }, { data: jobs }, { data: invoices }, { data: quotes }] = await Promise.all([
     supabase
       .from("clients")
-      .select("id, full_name, email, phone, company_name, address, suburb, state, postcode, notes, status, source")
+      .select("id, full_name, email, phone, company_name, address, suburb, state, postcode, notes, status, source, client_type")
       .eq("id", clientId)
       .eq("owner_id", user.id)
       .maybeSingle(),

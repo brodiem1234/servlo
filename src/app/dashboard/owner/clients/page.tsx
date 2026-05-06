@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
+import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clients-view";
@@ -13,6 +14,7 @@ type ClientsPageProps = {
   searchParams?: {
     view?: string;
     sort?: string;
+    client_type?: string;
   };
 };
 
@@ -43,6 +45,11 @@ function parseSort(raw: string | undefined): SortKey {
   if (raw === "created_at") return "newest";
   if (raw === "full_name") return "name_asc";
   return "name_asc";
+}
+
+function parseClientTypeTab(raw: string | undefined): "all" | "customer" | "supplier" | "lead" {
+  if (raw === "customer" || raw === "supplier" || raw === "lead") return raw;
+  return "all";
 }
 
 async function ensureOwnerProfileExists(
@@ -117,20 +124,18 @@ async function ensureOwnerProfileExists(
 }
 
 export default async function OwnerClientsPage({ searchParams }: ClientsPageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const { user, enabled, supabase } = await requireOwnerWorkspaceFeatures();
+  guardWorkspaceNav(enabled, "client_management");
 
   const ownerId = user.id;
   const view = searchParams?.view === "list" ? "list" : "card";
   const sortKey = parseSort(searchParams?.sort);
+  const clientTypeTab = parseClientTypeTab(searchParams?.client_type);
 
   let clientsQuery = supabase
     .from("clients")
     .select(
-      "id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at, is_demo"
+      "id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at, is_demo, client_type"
     )
     .eq("owner_id", ownerId);
 
@@ -173,6 +178,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         portal_token?: string | null;
         created_at: string | null;
         is_demo?: boolean | null;
+        client_type?: string | null;
       }>
     | null = null;
 
@@ -189,7 +195,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       status: null,
       source: null,
       portal_token: null,
-      is_demo: false
+      is_demo: false,
+      client_type: "customer"
     }));
   } else if (primaryClientsQuery.error) {
     console.error("[clients-page] clients query failed", primaryClientsQuery.error);
@@ -252,6 +259,9 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
 
     await ensureOwnerProfileExists(sb, owner);
 
+    const rawClientType = String(formData.get("client_type") ?? "customer");
+    const client_type = rawClientType === "supplier" || rawClientType === "lead" ? rawClientType : "customer";
+
     const basePayload = {
       full_name: String(formData.get("full_name") ?? ""),
       email: String(formData.get("email") ?? ""),
@@ -265,7 +275,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       suburb: String(formData.get("suburb") ?? ""),
       state: String(formData.get("state") ?? ""),
       postcode: String(formData.get("postcode") ?? ""),
-      notes: String(formData.get("notes") ?? "")
+      notes: String(formData.get("notes") ?? ""),
+      client_type
     };
 
     let attempt = await sb.from("clients").insert({
@@ -325,6 +336,9 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     await ensureOwnerProfileExists(sb, owner);
 
     const id = String(formData.get("id") ?? "");
+    const rawClientType = String(formData.get("client_type") ?? "customer");
+    const client_type = rawClientType === "supplier" || rawClientType === "lead" ? rawClientType : "customer";
+
     const payload = {
       full_name: String(formData.get("full_name") ?? ""),
       email: String(formData.get("email") ?? ""),
@@ -337,7 +351,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       suburb: String(formData.get("suburb") ?? ""),
       state: String(formData.get("state") ?? ""),
       postcode: String(formData.get("postcode") ?? ""),
-      notes: String(formData.get("notes") ?? "")
+      notes: String(formData.get("notes") ?? ""),
+      client_type
     };
 
     let { error } = await sb
@@ -414,6 +429,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         metrics={metricsRecord}
         initialView={view}
         initialSort={sortKey}
+        initialClientTypeTab={clientTypeTab}
         createClientAction={createClientAction}
         updateClientAction={updateClientAction}
         sendPortalEmailAction={sendPortalEmailAction}
