@@ -101,7 +101,7 @@ export default async function ClientPortalPage({ params }: Props) {
                   </div>
                   <a
                     href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || "#"}
-                    className="rounded bg-[#0db8c8] px-3 py-1 text-xs text-white hover:bg-[#0a9dab]"
+                    className="rounded bg-[var(--accent-color)] px-3 py-1 text-xs text-white hover:bg-[var(--accent-hover)]"
                   >
                     Pay Now
                   </a>

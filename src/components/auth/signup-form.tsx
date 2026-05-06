@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
+import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
+import { DEFAULT_ACCENT_HEX, type AccentPresetHex } from "@/lib/brand-accent";
 
 const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
   {
@@ -68,10 +70,11 @@ type Props = {
 
 export function SignupForm({ action, error }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [role, setRole] = useState<"owner" | "client">("owner");
   const [selected, setSelected] = useState<IndustrySlug[]>([]);
   const [otherNote, setOtherNote] = useState("");
+  const [accentColour, setAccentColour] = useState<AccentPresetHex>(DEFAULT_ACCENT_HEX);
 
   const needsOtherNote = selected.includes("other");
   const industriesJson = useMemo(() => JSON.stringify(selected), [selected]);
@@ -94,10 +97,20 @@ export function SignupForm({ action, error }: Props) {
     setStep(2);
   }
 
+  function handleContinueFromIndustries(e: React.MouseEvent) {
+    e.preventDefault();
+    if (selected.length === 0) return;
+    setStep(3);
+  }
+
   function handleBack(e: React.MouseEvent) {
     e.preventDefault();
-    setStep(1);
+    setStep((s) => (s === 3 ? 2 : 1));
   }
+
+  const accentBtn = "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]";
+  const industrySelectedRing =
+    "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--accent-color)_45%,transparent)]";
 
   return (
     <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
@@ -119,6 +132,7 @@ export function SignupForm({ action, error }: Props) {
         <form ref={formRef} action={action} className="mt-6 space-y-6">
           <input type="hidden" name="industry_tags_json" value={industriesJson} />
           <input type="hidden" name="industry_other_note" value={otherNote} />
+          <input type="hidden" name="accent_colour" value={accentColour} readOnly />
 
           <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
             <div className="sm:col-span-2">
@@ -205,11 +219,11 @@ export function SignupForm({ action, error }: Props) {
 
             <div className="sm:col-span-2 flex flex-col gap-3 sm:flex-row sm:justify-end">
               {role === "owner" ? (
-                <Button type="button" onClick={handleContinue} className="w-full bg-[#0db8c8] text-white hover:bg-[#0a9dab] sm:w-auto">
+                <Button type="button" onClick={handleContinue} className={`w-full sm:w-auto ${accentBtn}`}>
                   Continue
                 </Button>
               ) : (
-                <Button type="submit" className="w-full bg-[#0db8c8] text-white hover:bg-[#0a9dab] sm:ml-auto sm:w-auto">
+                <Button type="submit" className={`w-full sm:ml-auto sm:w-auto ${accentBtn}`}>
                   Create account
                 </Button>
               )}
@@ -231,19 +245,21 @@ export function SignupForm({ action, error }: Props) {
                     type="button"
                     onClick={() => toggleIndustry(slug)}
                     className={`flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition ${
-                      on ? "border-teal-400 bg-teal-500/10 ring-2 ring-teal-400/40" : "border-slate-600 hover:border-slate-500"
+                      on ? industrySelectedRing : "border-slate-600 hover:border-slate-500"
                     }`}
                   >
                     <div className="flex w-full items-start gap-2">
                       <span
                         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
-                          on ? "border-teal-400 bg-teal-400 text-slate-900" : "border-slate-500 text-transparent"
+                          on
+                            ? "border-[var(--accent-color)] bg-[var(--accent-color)] text-white"
+                            : "border-slate-500 text-transparent"
                         }`}
                         aria-hidden
                       >
                         ✓
                       </span>
-                      <Icon className="h-5 w-5 shrink-0 text-teal-400" aria-hidden />
+                      <Icon className="h-5 w-5 shrink-0 text-[var(--accent-color)]" aria-hidden />
                       <span className="text-sm font-semibold text-white">{label}</span>
                     </div>
                     <p className="pl-9 text-xs text-slate-400">{sub}</p>
@@ -278,10 +294,36 @@ export function SignupForm({ action, error }: Props) {
                 Back
               </Button>
               <Button
-                type="submit"
+                type="button"
                 disabled={selected.length === 0}
-                className="bg-[#0db8c8] text-white hover:bg-[#0a9dab] disabled:opacity-50"
+                onClick={handleContinueFromIndustries}
+                className={`disabled:opacity-50 ${accentBtn}`}
               >
+                Continue
+              </Button>
+            </div>
+          </div>
+
+          <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Choose your brand colour</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                Choose your brand colour — you can change this anytime in settings.
+              </p>
+            </div>
+
+            <BrandAccentSwatches value={accentColour} onChange={setAccentColour} />
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                className="border-slate-500 text-slate-200 hover:bg-slate-800"
+              >
+                Back
+              </Button>
+              <Button type="submit" className={accentBtn}>
                 Create account
               </Button>
             </div>
@@ -290,7 +332,7 @@ export function SignupForm({ action, error }: Props) {
 
         <p className="mt-5 text-sm text-slate-400">
           Already have an account?{" "}
-          <Link href="/auth/login" className="font-semibold text-teal-400 hover:text-teal-300">
+          <Link href="/auth/login" className="font-semibold text-[var(--accent-color)] hover:underline">
             Sign in
           </Link>
         </p>

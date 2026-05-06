@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -176,7 +176,7 @@ export default function OwnerClientsView({
               aria-label="Card view"
               aria-pressed={effectiveView === "card"}
               onClick={() => pushParams({ view: "card" })}
-              className={`rounded-md p-2 ${effectiveView === "card" ? "bg-[#0db8c8] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+              className={`rounded-md p-2 ${effectiveView === "card" ? "bg-[var(--accent-color)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
             >
               <LayoutGrid className="size-5" />
             </button>
@@ -186,7 +186,7 @@ export default function OwnerClientsView({
               aria-label="List view"
               aria-pressed={effectiveView === "list"}
               onClick={() => pushParams({ view: "list" })}
-              className={`rounded-md p-2 ${effectiveView === "list" ? "bg-[#0db8c8] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+              className={`rounded-md p-2 ${effectiveView === "list" ? "bg-[var(--accent-color)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
             >
               <LayoutList className="size-5" />
             </button>
@@ -195,7 +195,7 @@ export default function OwnerClientsView({
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0db8c8] px-4 text-sm font-semibold text-white hover:bg-[#0a9dab]"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[var(--accent-color)] px-4 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
           >
             <Plus className="size-4" aria-hidden />
             Add Client
@@ -282,7 +282,7 @@ export default function OwnerClientsView({
                   <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                     <Link
                       href={`/dashboard/owner/jobs?client=${encodeURIComponent(client.id)}`}
-                      className="rounded border border-[var(--border)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-[#0db8c8]/10"
+                      className="rounded border border-[var(--border)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--accent-color)]/10"
                     >
                       View Jobs
                     </Link>
@@ -330,7 +330,7 @@ export default function OwnerClientsView({
               <div className="mt-4 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/dashboard/owner/jobs?client=${encodeURIComponent(client.id)}`}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[#0db8c8]/10"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--accent-color)]/10"
                 >
                   View Jobs
                 </Link>

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 async function signOut() {
@@ -41,7 +41,7 @@ export default async function ClientLayout({ children }: { children: React.React
               Profile
             </a>
             <form action={signOut}>
-              <button type="submit" className="rounded bg-[#0db8c8] px-3 py-2 text-sm text-white hover:bg-[#0a9dab]">
+              <button type="submit" className="rounded bg-[var(--accent-color)] px-3 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
                 Sign Out
               </button>
             </form>

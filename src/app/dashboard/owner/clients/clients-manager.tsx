@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -103,7 +103,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
         </div>
       ) : null}
       <div className="flex items-center gap-2">
-        <button onClick={onAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+        <button onClick={onAdd} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
           Add Client
         </button>
         <select
@@ -197,7 +197,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">
                   Cancel
                 </button>
-                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">
+                <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
                   {editing ? "Save Changes" : "Create Client"}
                 </button>
               </div>

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerDashboardData } from "@/lib/dashboard/owner";
@@ -183,7 +183,7 @@ export default async function OwnerDashboardPage() {
         <h1 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">Owner Dashboard</h1>
         <p className="text-sm text-[var(--text-muted)]">Track operational performance in real time.</p>
         {welcomeLine ? (
-          <p className="mt-2 text-sm font-medium text-teal-800 dark:text-teal-300">{welcomeLine}</p>
+          <p className="mt-2 text-sm font-medium text-accent-strong">{welcomeLine}</p>
         ) : null}
       </div>
 
@@ -220,25 +220,25 @@ export default async function OwnerDashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Revenue This Month</p>
-          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{formatCurrency(metrics.revenueThisMonth)}</p>
+          <p className="mt-2 text-3xl font-bold text-accent-strong">{formatCurrency(metrics.revenueThisMonth)}</p>
           <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
             Paid invoices — last 7 days
           </p>
           <RevenueSparkline values={revenueLast7Days} labels={sparkLabels} />
         </article>
-        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Outstanding</p>
-          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{formatCurrency(metrics.outstandingAmount)}</p>
+          <p className="mt-2 text-3xl font-bold text-accent-strong">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
-        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Jobs Completed This Week</p>
-          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{metrics.jobsCompletedThisWeek}</p>
+          <p className="mt-2 text-3xl font-bold text-accent-strong">{metrics.jobsCompletedThisWeek}</p>
         </article>
-        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Active Clients</p>
-          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{metrics.activeClientsCount}</p>
+          <p className="mt-2 text-3xl font-bold text-accent-strong">{metrics.activeClientsCount}</p>
         </article>
       </div>
 
@@ -248,7 +248,7 @@ export default async function OwnerDashboardPage() {
           <p className="mt-1 text-sm text-[var(--text-secondary)]">Scheduled jobs for today and tomorrow.</p>
           <div className="mt-4 grid gap-6 md:grid-cols-2">
             <div>
-              <h3 className="text-sm font-semibold text-teal-800 dark:text-teal-300">Today</h3>
+              <h3 className="text-sm font-semibold text-accent-strong">Today</h3>
               <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 {glanceToday.length === 0 ? (
                   <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
@@ -266,7 +266,7 @@ export default async function OwnerDashboardPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-teal-800 dark:text-teal-300">Tomorrow</h3>
+              <h3 className="text-sm font-semibold text-accent-strong">Tomorrow</h3>
               <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 {glanceTomorrow.length === 0 ? (
                   <li className="text-[var(--text-muted)]">No jobs scheduled.</li>

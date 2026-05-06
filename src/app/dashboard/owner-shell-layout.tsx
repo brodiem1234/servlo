@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerContext } from "@/lib/dashboard/owner";
+import { normalizeAccentColour } from "@/lib/brand-accent";
 import OwnerShell from "./owner/owner-shell";
 
 async function signOut() {
@@ -19,7 +20,7 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   }
 
   const supabase = await createClient();
-  const [{ data: unpaidInvoices }, { data: followUpQuotes }] = await Promise.all([
+  const [{ data: unpaidInvoices }, { data: followUpQuotes }, { data: businessRow }] = await Promise.all([
     supabase
       .from("invoices")
       .select("id, invoice_number, due_date")
@@ -33,7 +34,8 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       .eq("owner_id", user.id)
       .neq("status", "accepted")
       .order("created_at", { ascending: true })
-      .limit(5)
+      .limit(5),
+    supabase.from("businesses").select("accent_colour").eq("owner_id", user.id).maybeSingle()
   ]);
 
   const alerts = [
@@ -53,8 +55,10 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       })))
   ].slice(0, 8);
 
+  const accentColourHex = normalizeAccentColour(businessRow?.accent_colour);
+
   return (
-    <OwnerShell businessName={businessName} signOutAction={signOut} alerts={alerts}>
+    <OwnerShell businessName={businessName} accentColourHex={accentColourHex} signOutAction={signOut} alerts={alerts}>
       {children}
     </OwnerShell>
   );

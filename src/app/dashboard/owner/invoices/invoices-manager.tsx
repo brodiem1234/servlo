@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import jsPDF from "jspdf";
@@ -179,7 +179,7 @@ export default function InvoicesManager({
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startCreate} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+      <button onClick={startCreate} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
         New Invoice
       </button>
       <article className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-950/80">
@@ -280,7 +280,7 @@ export default function InvoicesManager({
               ) : null}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editingId ? "Save" : "Create Invoice"}</button>
+                <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editingId ? "Save" : "Create Invoice"}</button>
               </div>
             </form>
           </div>

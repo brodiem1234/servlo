@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -14,7 +14,7 @@ import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
 import { LANDING_INDUSTRY_ORDER } from "@/lib/industries";
 import { LANDING_INDUSTRY_COPY } from "@/lib/industry-marketing";
 
-const tealIcon = "text-[#0db8c8] dark:text-cyan-400";
+const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
 
 const features: Array<{ Icon: LucideIcon; title: string; description: string }> = [
   {
@@ -117,7 +117,7 @@ function HeroAppMock() {
     <div className="relative mx-auto w-full max-w-lg md:max-w-none">
       <div
         aria-hidden
-        className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[#0db8c8]/25 via-cyan-400/10 to-[#1e3a5f]/20 blur-2xl dark:from-cyan-400/20 dark:via-teal-500/10 dark:to-[#0f172a]/40"
+        className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[color-mix(in_srgb,var(--accent-color)_25%,transparent)] via-cyan-400/10 to-[#1e3a5f]/20 blur-2xl dark:from-cyan-400/20 dark:via-teal-500/10 dark:to-[#0f172a]/40"
       />
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_80px_-12px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 dark:border-cyan-400/25 dark:bg-[#0c1525] dark:shadow-[0_28px_90px_-16px_rgba(0,0,0,0.65)] dark:ring-white/10">
         <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/90 px-4 py-3 dark:border-white/10 dark:bg-[#111f36]/90">
@@ -133,8 +133,8 @@ function HeroAppMock() {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Today</p>
               <p className="text-lg font-bold text-[#1e3a5f] dark:text-white">Wed 7 May</p>
             </div>
-            <div className="rounded-lg bg-[#0db8c8]/15 px-3 py-1.5 text-right dark:bg-cyan-400/15">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#0a8a98] dark:text-cyan-200">This week</p>
+            <div className="rounded-lg bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)] px-3 py-1.5 text-right dark:bg-cyan-400/15">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-color)] dark:text-cyan-200">This week</p>
               <p className="text-sm font-bold tabular-nums text-[#1e3a5f] dark:text-white">12 jobs</p>
             </div>
           </div>
@@ -149,7 +149,7 @@ function HeroAppMock() {
                 <p className="truncate text-sm font-medium text-slate-600 dark:text-slate-300">Norwood Community Centre</p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-2xl font-extrabold tabular-nums tracking-tight text-[#0db8c8] dark:text-cyan-300">$4,850</p>
+                <p className="text-2xl font-extrabold tabular-nums tracking-tight text-[var(--accent-color)] dark:text-cyan-300">$4,850</p>
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Inc. GST · Approved</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ function HeroAppMock() {
             </div>
             <div className="rounded-lg border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm dark:border-white/10 dark:bg-[#152238]/90">
               <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">This month</p>
-              <p className="text-lg font-bold tabular-nums text-[#0db8c8] dark:text-cyan-300">$48.2k</p>
+              <p className="text-lg font-bold tabular-nums text-[var(--accent-color)] dark:text-cyan-300">$48.2k</p>
             </div>
           </div>
         </div>
@@ -206,13 +206,13 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/auth/signup"
-                className="rounded-lg bg-[#0db8c8] px-6 py-3 text-base font-semibold text-white shadow-md shadow-[#0db8c8]/25 hover:bg-[#0a9dab] dark:text-[#0f172a] dark:bg-cyan-400 dark:shadow-cyan-400/20 dark:hover:bg-cyan-300"
+                className="rounded-lg bg-[var(--accent-color)] px-6 py-3 text-base font-semibold text-white shadow-md shadow-[color-mix(in_srgb,var(--accent-color)_25%,transparent)] hover:bg-[var(--accent-hover)] dark:text-[#0f172a] dark:bg-cyan-400 dark:shadow-cyan-400/20 dark:hover:bg-cyan-300"
               >
                 Start 30-Day Free Trial
               </Link>
               <a
                 href="#features"
-                className="rounded-lg border-2 border-[#0db8c8] bg-white px-6 py-3 text-base font-semibold text-[#1e3a5f] shadow-sm hover:bg-slate-50 dark:border-cyan-300/60 dark:bg-[#1e3a5f]/80 dark:text-white dark:shadow-none dark:hover:bg-[#256090]"
+                className="rounded-lg border-2 border-[var(--accent-color)] bg-white px-6 py-3 text-base font-semibold text-[#1e3a5f] shadow-sm hover:bg-slate-50 dark:border-cyan-300/60 dark:bg-[#1e3a5f]/80 dark:text-white dark:shadow-none dark:hover:bg-[#256090]"
               >
                 See How It Works
               </a>
@@ -245,14 +245,14 @@ export default function HomePage() {
             className="scroll-mt-28 border-t border-slate-200 bg-white py-14 dark:border-slate-700 dark:bg-[#111827]/40"
           >
             <div className="mx-auto max-w-7xl px-4 md:px-6">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#0db8c8] dark:text-cyan-400">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--accent-color)] dark:text-cyan-400">
                 {copy.headline}
               </p>
               <h3 className="mt-2 text-2xl font-bold text-[#1e3a5f] dark:text-white md:text-3xl">{copy.tagline}</h3>
               <ul className="mt-6 max-w-3xl space-y-3 text-[#475569] dark:text-slate-300">
                 {copy.bullets.map((b) => (
                   <li key={b} className="flex gap-3 text-sm leading-relaxed md:text-base">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0db8c8] dark:bg-cyan-400" aria-hidden />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent-color)] dark:bg-cyan-400" aria-hidden />
                     <span>{b}</span>
                   </li>
                 ))}
@@ -333,14 +333,14 @@ export default function HomePage() {
               key={plan.name}
               className={`flex flex-col rounded-xl border p-6 ${
                 plan.popular
-                  ? "border-[#0db8c8] bg-[#e6f9fb] shadow-md shadow-[#0db8c8]/15 dark:border-cyan-400 dark:bg-[#10283a]"
+                  ? "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_10%,#ffffff)] shadow-md shadow-[color-mix(in_srgb,var(--accent-color)_18%,transparent)] dark:border-cyan-400 dark:bg-[#10283a]"
                   : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-2xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
                 {plan.popular ? (
-                  <span className="shrink-0 rounded-full bg-[#0db8c8] px-2 py-1 text-xs font-semibold text-white dark:bg-cyan-400 dark:text-[#0f172a]">
+                  <span className="shrink-0 rounded-full bg-[var(--accent-color)] px-2 py-1 text-xs font-semibold text-white dark:bg-cyan-400 dark:text-[#0f172a]">
                     Most Popular
                   </span>
                 ) : null}
@@ -349,7 +349,7 @@ export default function HomePage() {
               <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
                 {plan.list.map((item) => (
                   <li key={item} className="flex gap-2">
-                    <span className="mt-0.5 shrink-0 text-[#0db8c8] dark:text-cyan-400" aria-hidden>
+                    <span className="mt-0.5 shrink-0 text-[var(--accent-color)] dark:text-cyan-400" aria-hidden>
                       ✓
                     </span>
                     <span>{item}</span>
@@ -358,7 +358,7 @@ export default function HomePage() {
               </ul>
               <Link
                 href="/auth/signup"
-                className="mt-6 inline-block rounded-md bg-[#0db8c8] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0a9dab] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
+                className="mt-6 inline-block rounded-md bg-[var(--accent-color)] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
               >
                 Start Free Trial
               </Link>
@@ -383,7 +383,7 @@ export default function HomePage() {
               key={t.name}
               className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
             >
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#0db8c8] dark:text-cyan-400">{t.trade}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-color)] dark:text-cyan-400">{t.trade}</p>
               <p className="mt-2 text-amber-500 dark:text-amber-300">★★★★★</p>
               <p className="mt-3 text-sm leading-relaxed text-[#334155] dark:text-slate-200">&quot;{t.quote}&quot;</p>
               <p className="mt-3 text-xs font-semibold text-[#1e3a5f] dark:text-white">
@@ -405,7 +405,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/auth/signup"
-            className="mt-8 inline-flex min-w-[220px] items-center justify-center rounded-xl bg-[#0db8c8] px-10 py-4 text-lg font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[#0a9dab] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
+            className="mt-8 inline-flex min-w-[220px] items-center justify-center rounded-xl bg-[var(--accent-color)] px-10 py-4 text-lg font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
           >
             Start Free Trial
           </Link>
@@ -430,13 +430,13 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-[#475569] md:justify-end dark:text-slate-300">
-            <Link href="/privacy" className="hover:text-[#0db8c8] dark:hover:text-cyan-300">
+            <Link href="/privacy" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-[#0db8c8] dark:hover:text-cyan-300">
+            <Link href="/terms" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
               Terms of Service
             </Link>
-            <Link href="/contact" className="hover:text-[#0db8c8] dark:hover:text-cyan-300">
+            <Link href="/contact" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
               Contact
             </Link>
           </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { DemoBadge } from "@/components/demo-badge";
@@ -86,7 +86,7 @@ export default function EmployeesManager({
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+      <button onClick={startAdd} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
         Add Employee
       </button>
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
@@ -159,7 +159,7 @@ export default function EmployeesManager({
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editing ? "Save Changes" : "Create Employee"}</button>
+                <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Employee"}</button>
               </div>
             </form>
           </div>

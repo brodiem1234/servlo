@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
@@ -105,7 +105,7 @@ export default function QuotesManager({
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startNew} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+      <button onClick={startNew} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
         New Quote
       </button>
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
@@ -151,7 +151,7 @@ export default function QuotesManager({
                       </form>
                       <form action={convertToInvoiceAction}>
                         <input type="hidden" name="quote_id" value={quote.id} />
-                        <button type="submit" className="rounded bg-[#0db8c8] px-2 py-1 text-xs text-white hover:bg-[#0a9dab]">
+                        <button type="submit" className="rounded bg-[var(--accent-color)] px-2 py-1 text-xs text-white hover:bg-[var(--accent-hover)]">
                           Convert to Invoice
                         </button>
                       </form>
@@ -202,7 +202,7 @@ export default function QuotesManager({
               ) : null}
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editingId ? "Save" : "Create Quote"}</button>
+                <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editingId ? "Save" : "Create Quote"}</button>
               </div>
             </form>
           </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -90,20 +90,22 @@ export default function SubscriptionCards({ email, currentPlan, success, priceId
             <div
               key={plan.key}
               className={`rounded-lg border p-4 ${
-                isCurrent ? "border-[#0db8c8] bg-cyan-50" : "border-slate-200"
+                isCurrent
+                  ? "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)]"
+                  : "border-slate-200"
               }`}
             >
               <p className="text-lg font-semibold text-[#1e3a5f]">{plan.label}</p>
               <p className="mt-1 text-xl font-bold">{plan.price}</p>
               <p className="mt-2 text-sm text-[#64748b]">{plan.description}</p>
               {isCurrent ? (
-                <p className="mt-3 text-sm font-medium text-[#0db8c8]">Current plan</p>
+                <p className="mt-3 text-sm font-medium text-[var(--accent-color)]">Current plan</p>
               ) : (
                 <button
                   type="button"
                   onClick={() => startCheckout(plan.priceId, plan.key)}
                   disabled={loadingPlan === plan.key}
-                  className="mt-3 rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab] disabled:opacity-60"
+                  className="mt-3 rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
                 >
                   {loadingPlan === plan.key ? "Redirecting..." : "Upgrade"}
                 </button>

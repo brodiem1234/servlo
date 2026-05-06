@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { SignupForm } from "@/components/auth/signup-form";
 import { parseIndustryTagsJson, type IndustrySlug } from "@/lib/industries";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
+import { normalizeAccentColour } from "@/lib/brand-accent";
 
 type SignupPageProps = {
   searchParams?: Promise<{ error?: string }>;
@@ -23,6 +24,7 @@ async function signUp(formData: FormData) {
 
   const industryTagsJson = String(formData.get("industry_tags_json") ?? "[]");
   const industryOtherNote = String(formData.get("industry_other_note") ?? "").trim();
+  const accentColourRaw = String(formData.get("accent_colour") ?? "").trim();
 
   let industry_tags: IndustrySlug[] = [];
   if (role === "owner") {
@@ -90,6 +92,20 @@ async function signUp(formData: FormData) {
       { onConflict: "id" }
     );
     profileError = error ?? null;
+
+    if (!profileError && role === "owner") {
+      const accent_colour = normalizeAccentColour(accentColourRaw);
+      const bizRes = await adminSupabase.from("businesses").upsert(
+        {
+          owner_id: data.user.id,
+          accent_colour
+        },
+        { onConflict: "owner_id" }
+      );
+      if (bizRes.error) {
+        console.error("[signup] businesses accent upsert failed", bizRes.error);
+      }
+    }
 
     if (!profileError && role === "owner") {
       const seeded = await seedOwnerDemoData(adminSupabase, data.user.id);

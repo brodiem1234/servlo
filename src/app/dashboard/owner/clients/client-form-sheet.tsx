@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -250,7 +250,7 @@ export default function ClientFormSheet({
             <button type="button" onClick={onClose} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)]">
               Cancel
             </button>
-            <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+            <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
               {editing ? "Save Changes" : "Create Client"}
             </button>
           </div>

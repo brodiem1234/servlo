@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Briefcase, FileText, Receipt, UserPlus } from "lucide-react";
 
 const btnPrimary =
-  "inline-flex items-center justify-center gap-2 rounded-lg bg-[#0db8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a9dab]";
+  "inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent-color)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--accent-hover)]";
 const btnOutline =
   "inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] shadow-sm transition hover:bg-[var(--bg-primary)]";
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { DemoBadge } from "@/components/demo-badge";
@@ -560,10 +560,10 @@ export default function JobsManager({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="rounded-md border bg-white p-1 text-sm">
-          <button onClick={() => setView("list")} className={`rounded px-3 py-1 ${view === "list" ? "bg-[#0db8c8] text-white" : ""}`}>List View</button>
-          <button onClick={() => setView("calendar")} className={`rounded px-3 py-1 ${view === "calendar" ? "bg-[#0db8c8] text-white" : ""}`}>Calendar View</button>
+          <button onClick={() => setView("list")} className={`rounded px-3 py-1 ${view === "list" ? "bg-[var(--accent-color)] text-white" : ""}`}>List View</button>
+          <button onClick={() => setView("calendar")} className={`rounded px-3 py-1 ${view === "calendar" ? "bg-[var(--accent-color)] text-white" : ""}`}>Calendar View</button>
         </div>
-        <button onClick={startAdd} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">Add Job</button>
+        <button onClick={startAdd} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">Add Job</button>
       </div>
       <div className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-4">
         <input
@@ -607,7 +607,7 @@ export default function JobsManager({
               ? "bg-green-50 text-[#22c55e]"
               : toast.type === "error"
                 ? "bg-red-50 text-[#ef4444]"
-                : "bg-cyan-50 text-[#0db8c8]"
+                : "bg-[color-mix(in_srgb,var(--accent-color)_12%,transparent)] text-[var(--accent-color)]"
           }`}
         >
           {toast.message}
@@ -619,14 +619,14 @@ export default function JobsManager({
             <button
               type="button"
               onClick={() => setCalendarView("today")}
-              className={`rounded px-3 py-1 ${calendarView === "today" ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"}`}
+              className={`rounded px-3 py-1 ${calendarView === "today" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}
             >
               Today
             </button>
             <button
               type="button"
               onClick={() => setCalendarView("week")}
-              className={`rounded px-3 py-1 ${calendarView === "week" ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"}`}
+              className={`rounded px-3 py-1 ${calendarView === "week" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}
             >
               Week
             </button>
@@ -636,7 +636,7 @@ export default function JobsManager({
                 setCalendarView("month");
                 setMonthDate(new Date(focusDate.getFullYear(), focusDate.getMonth(), 1));
               }}
-              className={`rounded px-3 py-1 ${calendarView === "month" ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"}`}
+              className={`rounded px-3 py-1 ${calendarView === "month" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}
             >
               Month
             </button>
@@ -703,12 +703,12 @@ export default function JobsManager({
                         startAddWithDate(key);
                       }}
                       className={`flex min-h-[520px] flex-col rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] ${
-                        today ? "ring-2 ring-[#0db8c8] ring-offset-2 ring-offset-[var(--bg-card)]" : ""
+                        today ? "ring-2 ring-[var(--accent-color)] ring-offset-2 ring-offset-[var(--bg-card)]" : ""
                       }`}
                     >
                       <div
                         className={`border-b border-[var(--border)] px-2 py-2 text-center text-[11px] font-semibold leading-tight ${
-                          today ? "rounded-t-[calc(0.5rem-2px)] bg-[#0db8c8]/15 text-[#0b8a98]" : "text-[var(--text-primary)]"
+                          today ? "rounded-t-[calc(0.5rem-2px)] bg-[var(--accent-color)]/15 text-[var(--accent-color)]" : "text-[var(--text-primary)]"
                         }`}
                       >
                         <div>{day.toLocaleDateString("en-AU", { weekday: "short" })}</div>
@@ -755,12 +755,12 @@ export default function JobsManager({
                         if (jobId) quickUpdateSchedule(jobId, dateKey);
                       }}
                       className={`flex min-h-[140px] cursor-pointer flex-col rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-2 ${
-                        today ? "ring-2 ring-[#0db8c8] ring-offset-1 ring-offset-[var(--bg-card)]" : ""
+                        today ? "ring-2 ring-[var(--accent-color)] ring-offset-1 ring-offset-[var(--bg-card)]" : ""
                       }`}
                     >
                       <p
                         className={`mb-1.5 inline-flex min-h-[1.25rem] w-min min-w-[1.5rem] items-center justify-center rounded px-1 text-xs font-bold ${
-                          today ? "bg-[#0db8c8] text-white" : "text-[var(--text-primary)]"
+                          today ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"
                         }`}
                       >
                         {date.getDate()}
@@ -883,7 +883,7 @@ export default function JobsManager({
                               <input type="hidden" name="job_id" value={job.id} />
                               <button
                                 type="submit"
-                                className="rounded bg-[#0db8c8] px-2 py-1 text-xs font-medium text-white hover:bg-[#0a9dab]"
+                                className="rounded bg-[var(--accent-color)] px-2 py-1 text-xs font-medium text-white hover:bg-[var(--accent-hover)]"
                               >
                                 Create Invoice
                               </button>
@@ -927,7 +927,7 @@ export default function JobsManager({
                     <button
                       type="submit"
                       disabled={quickClientSaving}
-                      className="rounded bg-[#0db8c8] px-3 py-2 text-sm text-white hover:bg-[#0a9dab] disabled:opacity-60"
+                      className="rounded bg-[var(--accent-color)] px-3 py-2 text-sm text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
                     >
                       {quickClientSaving ? "Saving…" : "Save client"}
                     </button>
@@ -955,7 +955,7 @@ export default function JobsManager({
                     <button
                       type="submit"
                       disabled={quickEmployeeSaving}
-                      className="rounded bg-[#0db8c8] px-3 py-2 text-sm text-white hover:bg-[#0a9dab] disabled:opacity-60"
+                      className="rounded bg-[var(--accent-color)] px-3 py-2 text-sm text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
                     >
                       {quickEmployeeSaving ? "Saving…" : "Save employee"}
                     </button>
@@ -966,8 +966,8 @@ export default function JobsManager({
             <div className="flex h-full min-h-0 w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-xl md:shrink-0">
             <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Job" : "Add Job"}</h2>
             <div className="mt-3 rounded-md border bg-white p-1 text-sm w-fit">
-              <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[#0db8c8] text-white" : ""}`}>Details</button>
-              <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[#0db8c8] text-white" : ""}`}>Photos</button>
+              <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[var(--accent-color)] text-white" : ""}`}>Details</button>
+              <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[var(--accent-color)] text-white" : ""}`}>Photos</button>
             </div>
             <form action={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
@@ -1054,7 +1054,7 @@ export default function JobsManager({
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
                 <button type="button" onClick={() => closeJobOverlay()} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editing ? "Save Changes" : "Create Job"}</button>
+                <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Job"}</button>
               </div>
                 </>
               ) : null}
@@ -1083,7 +1083,7 @@ export default function JobsManager({
                         className="block w-full text-sm"
                         onChange={(e) => setSelectedPhotos(Array.from(e.target.files ?? []))}
                       />
-                      <button type="button" onClick={uploadPhotos} className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Upload Photos</button>
+                      <button type="button" onClick={uploadPhotos} className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Upload Photos</button>
                     </div>
                   ) : null}
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-3">

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getClientContext } from "@/lib/dashboard/client";
 
@@ -35,15 +35,15 @@ export default async function ClientDashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
+        <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border bg-white p-4 shadow-sm">
           <p className="text-xs uppercase text-[#64748b]">My jobs</p>
           <p className="mt-1 text-2xl font-bold text-[#1e3a5f]">{jobs?.length ?? 0}</p>
         </article>
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
+        <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border bg-white p-4 shadow-sm">
           <p className="text-xs uppercase text-[#64748b]">Quotes</p>
           <p className="mt-1 text-2xl font-bold text-[#1e3a5f]">{quotes?.length ?? 0}</p>
         </article>
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
+        <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border bg-white p-4 shadow-sm">
           <p className="text-xs uppercase text-[#64748b]">Invoices</p>
           <p className="mt-1 text-2xl font-bold text-[#1e3a5f]">{invoices?.length ?? 0}</p>
         </article>

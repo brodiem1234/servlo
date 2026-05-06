@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email";
 
 type ContactPageProps = {
@@ -47,7 +47,7 @@ export default function ContactPage({ searchParams }: ContactPageProps) {
         <input name="name" required placeholder="Your name" className="h-10 w-full rounded border px-3 text-sm" />
         <input name="email" type="email" required placeholder="Your email" className="h-10 w-full rounded border px-3 text-sm" />
         <textarea name="message" required placeholder="How can we help?" className="min-h-28 w-full rounded border px-3 py-2 text-sm" />
-        <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Send Message</button>
+        <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Send Message</button>
       </form>
     </main>
   );

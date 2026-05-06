@@ -1,8 +1,10 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
+import { normalizeAccentColour } from "@/lib/brand-accent";
+import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import SubscriptionCards from "./subscription-cards";
 
 type SettingsPageProps = {
@@ -20,15 +22,19 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("business_name, abn, phone, address, plan, subscription_status, trial_end, subscription_tier")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: profile }, { data: businessRow }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("business_name, abn, phone, address, plan, subscription_status, trial_end, subscription_tier")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase.from("businesses").select("accent_colour").eq("owner_id", user.id).maybeSingle()
+  ]);
 
   const businessName = profile?.business_name ?? "SERVLO Business";
   const trialEnd = profile?.trial_end ?? null;
   const subscriptionTier = profile?.subscription_tier ?? "solo";
+  const savedAccent = normalizeAccentColour(businessRow?.accent_colour);
 
   const trialDaysRemaining = trialEnd
     ? Math.max(0, Math.ceil((new Date(trialEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -50,6 +56,25 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         address: String(formData.get("address") ?? "")
       })
       .eq("id", owner.id);
+    revalidatePath("/dashboard/owner/settings");
+    revalidatePath("/dashboard/owner");
+  }
+
+  async function updateBrandAccent(formData: FormData) {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    const accent_colour = normalizeAccentColour(String(formData.get("accent_colour") ?? ""));
+    const { error } = await sb.from("businesses").upsert(
+      { owner_id: owner.id, accent_colour },
+      { onConflict: "owner_id" }
+    );
+    if (error) {
+      console.error("[settings] brand accent upsert failed", error);
+    }
     revalidatePath("/dashboard/owner/settings");
     revalidatePath("/dashboard/owner");
   }
@@ -160,8 +185,21 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           <input name="phone" defaultValue={profile?.phone ?? ""} className="h-10 rounded border px-3" placeholder="Phone" />
           <input name="address" defaultValue={profile?.address ?? ""} className="h-10 rounded border px-3" placeholder="Address" />
           <div className="sm:col-span-2">
-            <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Save Business Profile</button>
+            <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Save Business Profile</button>
           </div>
+        </form>
+      </article>
+
+      <article className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[#1e3a5f]">Brand Colour</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Choose one of the preset brand accents — safe contrast on buttons, sidebar highlights and links across your dashboard.
+        </p>
+        <form action={updateBrandAccent} className="mt-4 space-y-4">
+          <BrandAccentSwatches key={savedAccent} name="accent_colour" defaultValue={savedAccent} />
+          <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
+            Save brand colour
+          </button>
         </form>
       </article>
 
@@ -192,7 +230,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             </button>
           </form>
           <form action={removeAllDemoDataAction}>
-            <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+            <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
               Remove All Demo Data
             </button>
           </form>
@@ -206,7 +244,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         <h2 className="text-lg font-semibold text-[#1e3a5f]">Account</h2>
         <form action={changePassword} className="mt-3 flex flex-col gap-3 sm:max-w-md">
           <input name="new_password" type="password" minLength={8} required className="h-10 rounded border px-3" placeholder="New password" />
-          <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">Change Password</button>
+          <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Change Password</button>
         </form>
       </article>
     </section>

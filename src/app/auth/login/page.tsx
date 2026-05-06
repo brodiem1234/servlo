@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -128,14 +128,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               name="remember_me"
               type="checkbox"
               defaultChecked={rememberedChecked}
-              className="h-4 w-4 rounded border-slate-300 text-[#0db8c8]"
+              className="h-4 w-4 rounded border-slate-300 text-[var(--accent-color)]"
             />
             Remember me
           </label>
           {searchParams?.error ? (
             <p className="text-sm text-red-700">{searchParams.error}</p>
           ) : null}
-          <Button type="submit" className="w-full bg-[#0db8c8] text-white hover:bg-[#0a9dab]">
+          <Button type="submit" className="w-full bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]">
             Sign in
           </Button>
         </form>

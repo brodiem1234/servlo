@@ -43,7 +43,7 @@
   textarea:focus {
     outline: none;
     border-color: #1e3a5f;
-    box-shadow: 0 0 0 2px rgba(13, 184, 200, 0.2);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 35%, transparent);
   }
 
   thead tr {
@@ -54,6 +54,8 @@
 
 /* globals.css */
 :root {
+  --accent-color: #0891b2;
+  --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
@@ -62,18 +64,20 @@
   --text-muted: #94a3b8;
   --border: #e2e8f0;
   --input-bg: #ffffff;
-  --accent: #0db8c8;
+  --accent: var(--accent-color);
   --sidebar-bg: #f1f5f9;
   --sidebar-text: #1e3a5f;
   --sidebar-text-muted: #64748b;
   --sidebar-divider: #cbd5e1;
   --sidebar-hover-bg: #e2e8f0;
-  --sidebar-active-bg: #0db8c8;
+  --sidebar-active-bg: var(--accent-color);
   --sidebar-active-text: #ffffff;
-  --sidebar-ring: #0db8c8;
+  --sidebar-ring: var(--accent-color);
 }
 
 :root.dark {
+  --accent-color: #0891b2;
+  --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
   --bg-primary: #0d1a2e;
   --bg-secondary: #0f1e2e;
   --bg-card: #1a2f45;
@@ -82,15 +86,19 @@
   --text-muted: #94a3b8;
   --border: #2a4a6b;
   --input-bg: #162436;
-  --accent: #0db8c8;
+  --accent: var(--accent-color);
   --sidebar-bg: #1e3a5f;
   --sidebar-text: #ffffff;
   --sidebar-text-muted: #cbd5e1;
-  --sidebar-divider: rgba(13, 184, 200, 0.5);
+  --sidebar-divider: rgba(8, 145, 178, 0.45);
   --sidebar-hover-bg: #0d1a2e;
-  --sidebar-active-bg: #0db8c8;
+  --sidebar-active-bg: var(--accent-color);
   --sidebar-active-text: #ffffff;
-  --sidebar-ring: #0db8c8;
+  --sidebar-ring: var(--accent-color);
+}
+
+.dashboard-theme {
+  color-scheme: inherit;
 }
 
 .dashboard-theme,
@@ -315,8 +323,16 @@
 }
 
 .dashboard-theme .dashboard-primary {
-  background: var(--accent) !important;
+  background: var(--accent-color) !important;
   color: #fff !important;
+}
+
+.dashboard-theme .text-accent-strong {
+  color: var(--accent-color);
+}
+
+:root.dark .dashboard-theme .text-accent-strong {
+  color: color-mix(in srgb, var(--accent-color) 82%, white);
 }
 
 /* Modal / slide-over cards — dark blue border (not white) */

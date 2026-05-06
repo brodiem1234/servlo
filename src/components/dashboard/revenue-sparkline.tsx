@@ -1,4 +1,4 @@
-type Props = {
+﻿type Props = {
   values: number[];
   /** ISO labels for each bucket (same length as values), e.g. Mon Tue … */
   labels?: string[];
@@ -18,7 +18,7 @@ export default function RevenueSparkline({ values, labels }: Props) {
           return (
             <div key={i} className="flex min-w-0 flex-1 flex-col items-center gap-1">
               <div
-                className="w-full max-w-[32px] rounded-t bg-[#0db8c8]/85 dark:bg-[#0db8c8]/70"
+                className="w-full max-w-[32px] rounded-t bg-[var(--accent-color)]/85 dark:bg-[var(--accent-color)]/70"
                 style={{ height: `${h}px` }}
                 title={`$${v.toFixed(0)}`}
               />

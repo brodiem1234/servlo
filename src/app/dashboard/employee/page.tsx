@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -85,7 +85,7 @@ export default async function EmployeeDashboardPage() {
 
       <div className="flex gap-2">
         <form action={clockInAction}>
-          <button type="submit" className="rounded bg-[#0db8c8] px-6 py-3 text-base font-semibold text-white hover:bg-[#0a9dab]">
+          <button type="submit" className="rounded bg-[var(--accent-color)] px-6 py-3 text-base font-semibold text-white hover:bg-[var(--accent-hover)]">
             Clock In
           </button>
         </form>
