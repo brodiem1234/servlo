@@ -93,6 +93,8 @@ async function signIn(formData: FormData) {
   redirect("/dashboard/owner");
 }
 
+import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const cookieStore = await cookies();
   const rememberedEmail = cookieStore.get("servlo_remember_email")?.value ?? "";
@@ -101,7 +103,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const emailValue = searchParams?.email ?? rememberedEmail;
 
   return (
-    <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
+    <>
+      <ThemeToggleCorner />
+      <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
       <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-4 flex justify-center">
           <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
@@ -168,6 +172,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
       </div>
     </main>
+    </>
   );
 }
 

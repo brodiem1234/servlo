@@ -4,13 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { normalizeAccentColour } from "@/lib/brand-accent";
-import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import SubscriptionCards from "./subscription-cards";
-import {
-  BUSINESSES_UPSERT_ON_CONFLICT,
-  businessesOwnerOrEq,
-  businessesRowForOwner
-} from "@/lib/businesses";
+import { businessesOwnerOrEq } from "@/lib/businesses";
+import { BrandAccentForm } from "./brand-accent-form";
 
 type SettingsPageProps = {
   searchParams?: {
@@ -61,24 +57,6 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         address: String(formData.get("address") ?? "")
       })
       .eq("id", owner.id);
-    revalidatePath("/dashboard/owner/settings");
-    revalidatePath("/dashboard/owner");
-  }
-
-  async function updateBrandAccent(formData: FormData) {
-    "use server";
-    const sb = await createClient();
-    const {
-      data: { user: owner }
-    } = await sb.auth.getUser();
-    if (!owner) redirect("/auth/login");
-    const accent_colour = normalizeAccentColour(String(formData.get("accent_colour") ?? ""));
-    const { error } = await sb.from("businesses").upsert(businessesRowForOwner(owner.id, { accent_colour }), {
-      onConflict: BUSINESSES_UPSERT_ON_CONFLICT
-    });
-    if (error) {
-      console.error("[settings] brand accent upsert failed", error);
-    }
     revalidatePath("/dashboard/owner/settings");
     revalidatePath("/dashboard/owner");
   }
@@ -199,12 +177,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         <p className="mt-2 text-sm text-slate-600">
           Choose one of the preset brand accents — safe contrast on buttons, sidebar highlights and links across your dashboard.
         </p>
-        <form action={updateBrandAccent} className="mt-4 space-y-4">
-          <BrandAccentSwatches key={savedAccent} name="accent_colour" defaultValue={savedAccent} />
-          <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
-            Save brand colour
-          </button>
-        </form>
+        <BrandAccentForm savedAccent={savedAccent} />
       </article>
 
       <SubscriptionCards

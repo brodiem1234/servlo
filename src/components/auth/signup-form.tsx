@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
+import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import { DEFAULT_ACCENT_HEX, normalizeAccentColour, type AccentPresetHex } from "@/lib/brand-accent";
 
@@ -264,7 +265,9 @@ export function SignupForm() {
     "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--accent-color)_45%,transparent)]";
 
   return (
-    <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
+    <>
+      <ThemeToggleCorner />
+      <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
       <div className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-4 flex justify-center">
           <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
@@ -483,5 +486,6 @@ export function SignupForm() {
         </p>
       </div>
     </main>
+    </>
   );
 }

@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Fragment, useEffect, useState, type CSSProperties } from "react";
-import { Bell, Briefcase, Calendar, Home, Menu, Moon, Sun, Users } from "lucide-react";
-import { normalizeAccentColour } from "@/lib/brand-accent";
+import { Fragment, useState } from "react";
+import { Bell, Briefcase, Calendar, Home, Menu, Users } from "lucide-react";
+import { ThemeToggleButton } from "@/components/theme-toggle-button";
 
 const ownerNavSections = [
   [{ href: "/dashboard/owner", label: "Dashboard" }],
@@ -35,40 +35,18 @@ function isNavItemActive(pathname: string, href: string) {
 
 type Props = {
   businessName: string;
-  /** Hex preset saved on businesses.accent_colour (owner_id + user_id mirror auth uid). */
-  accentColourHex?: string | null;
   signOutAction: (formData: FormData) => Promise<void>;
   alerts: Array<{ id: string; text: string }>;
   children: React.ReactNode;
 };
 
-export default function OwnerShell({ businessName, accentColourHex, signOutAction, alerts, children }: Props) {
+export default function OwnerShell({ businessName, signOutAction, alerts, children }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    const saved = (localStorage.getItem("servlo-theme") as "dark" | "light" | null) ?? "dark";
-    setTheme(saved);
-    document.documentElement.classList.toggle("dark", saved === "dark");
-  }, []);
-
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    localStorage.setItem("servlo-theme", next);
-    document.documentElement.classList.toggle("dark", next === "dark");
-  };
-
-  const accentHex = normalizeAccentColour(accentColourHex ?? undefined);
-  const accentStyle = { "--accent-color": accentHex } as CSSProperties;
 
   return (
-    <div
-      className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
-      style={accentStyle}
-    >
+    <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
           className={`owner-sidebar fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto bg-[var(--sidebar-bg)] transform px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] transition-transform md:static md:w-auto md:translate-x-0 md:shadow-none ${
@@ -129,14 +107,7 @@ export default function OwnerShell({ businessName, accentColourHex, signOutActio
               <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">{businessName}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded border border-[var(--border)] p-2 text-[var(--text-primary)]"
-                onClick={toggleTheme}
-                aria-label="Toggle dark and light mode"
-              >
-                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
+              <ThemeToggleButton />
               <div className="relative">
                 <button
                   type="button"
