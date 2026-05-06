@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import EmployeesManager from "./employees-manager";
+import { filterDemoEntities } from "@/lib/demo/visibility";
 
 export default async function OwnerEmployeesPage() {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export default async function OwnerEmployeesPage() {
 
   const { data: employees } = await supabase
     .from("employees")
-    .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role")
+    .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role, is_demo")
     .eq("owner_id", user.id)
     .order("full_name", { ascending: true });
 
@@ -61,13 +62,15 @@ export default async function OwnerEmployeesPage() {
     revalidatePath("/dashboard/owner/employees");
   }
 
+  const visibleEmployees = filterDemoEntities(employees ?? []);
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-[#1e3a5f]">Employees</h1>
       </div>
       <EmployeesManager
-        employees={employees ?? []}
+        employees={visibleEmployees}
         createEmployeeAction={createEmployeeAction}
         updateEmployeeAction={updateEmployeeAction}
       />

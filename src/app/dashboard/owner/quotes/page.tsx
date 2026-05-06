@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import QuotesManager from "./quotes-manager";
+import { filterDemoEntities } from "@/lib/demo/visibility";
 
 function getNextNumber(
   existing: Array<Record<string, string | null>>,
@@ -28,10 +29,10 @@ export default async function OwnerQuotesPage() {
   const [{ data: quotes }, { data: clients }] = await Promise.all([
     sb
       .from("quotes")
-      .select("id, quote_number, client_id, client_name, total, status, created_at")
+      .select("id, quote_number, client_id, client_name, total, status, created_at, is_demo")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false }),
-    sb.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
 
   async function createQuoteAction(formData: FormData) {
@@ -112,10 +113,11 @@ export default async function OwnerQuotesPage() {
     const quoteId = String(formData.get("quote_id") ?? "");
     const { data: quote } = await sb
       .from("quotes")
-      .select("id, quote_number, client_id")
+      .select("id, quote_number, client_id, is_demo")
       .eq("id", quoteId)
       .eq("owner_id", owner.id)
       .single();
+    if (quote?.is_demo) return;
     if (quote) {
       const { error: jobError } = await sb.from("jobs").insert({
         owner_id: owner.id,
@@ -146,11 +148,11 @@ export default async function OwnerQuotesPage() {
     const quoteId = String(formData.get("quote_id") ?? "");
     const { data: quote } = await sb
       .from("quotes")
-      .select("id, client_id, total, subtotal, gst_amount")
+      .select("id, client_id, total, subtotal, gst_amount, is_demo")
       .eq("id", quoteId)
       .eq("owner_id", owner.id)
       .maybeSingle();
-    if (!quote) return;
+    if (!quote || quote.is_demo) return;
 
     const { data: existingInvoiceNumbers } = await sb
       .from("invoices")
@@ -174,12 +176,14 @@ export default async function OwnerQuotesPage() {
     revalidatePath("/dashboard/owner/invoices");
   }
 
+  const visibleQuotes = filterDemoEntities(quotes ?? []);
+
   return (
     <section className="space-y-5">
       <h1 className="text-2xl font-bold text-[#1e3a5f]">Quotes</h1>
       <QuotesManager
-        quotes={quotes ?? []}
-        clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
+        quotes={visibleQuotes}
+        clients={filterDemoEntities(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         createQuoteAction={createQuoteAction}
         updateQuoteAction={updateQuoteAction}
         acceptQuoteAction={acceptQuoteAction}

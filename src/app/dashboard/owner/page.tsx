@@ -82,10 +82,11 @@ export default async function OwnerDashboardPage() {
     const invoiceId = String(formData.get("invoice_id") ?? "");
     const { data: invoice } = await sb
       .from("invoices")
-      .select("invoice_number, amount, due_date, client_id")
+      .select("invoice_number, amount, due_date, client_id, is_demo")
       .eq("id", invoiceId)
       .eq("owner_id", owner.id)
       .maybeSingle();
+    if (invoice?.is_demo) return;
     if (invoice?.client_id) {
       const { data: client } = await sb
         .from("clients")
@@ -124,10 +125,11 @@ export default async function OwnerDashboardPage() {
     const quoteId = String(formData.get("quote_id") ?? "");
     const { data: quote } = await sb
       .from("quotes")
-      .select("quote_number, created_at, client_id")
+      .select("quote_number, created_at, client_id, is_demo")
       .eq("id", quoteId)
       .eq("owner_id", owner.id)
       .maybeSingle();
+    if (quote?.is_demo) return;
     if (quote?.client_id) {
       const { data: client } = await sb
         .from("clients")

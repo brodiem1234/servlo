@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
+import { filterDemoEntities } from "@/lib/demo/visibility";
 
 type JobsPageProps = {
   searchParams?: Promise<{ client?: string | string[] }>;
@@ -24,12 +25,12 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     sb
       .from("jobs")
       .select(
-        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, clients:clients(full_name), employees:employees(full_name)"
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo, clients:clients(full_name), employees:employees(full_name)"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
-    sb.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name"),
-    sb.from("employees").select("id, full_name").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
+    sb.from("employees").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
 
   const photoUrlsByJob: Record<string, Array<{ url: string; label: "before" | "after" }>> = {};
@@ -134,6 +135,14 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const jobId = String(formData.get("job_id") ?? "");
+    const { data: jobCheck } = await sb
+      .from("jobs")
+      .select("is_demo")
+      .eq("id", jobId)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (jobCheck?.is_demo) return;
+
     const { data: job } = await sb
       .from("jobs")
       .select("id, title, client_id, scheduled_date")
@@ -182,12 +191,12 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .update({ employee_id: employeeId })
       .eq("id", id)
       .eq("owner_id", owner.id)
-      .select("title, scheduled_date")
+      .select("title, scheduled_date, is_demo")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (employeeId) {
-      const { data: employee } = await sb.from("employees").select("full_name, email").eq("id", employeeId).maybeSingle();
-      if (employee?.email) {
+    if (employeeId && !updatedJob?.is_demo) {
+      const { data: employee } = await sb.from("employees").select("full_name, email, is_demo").eq("id", employeeId).maybeSingle();
+      if (employee?.email && !employee.is_demo) {
         await sendEmail(
           employee.email,
           `New job assignment: ${updatedJob?.title ?? "SERVLO job"}`,
@@ -212,6 +221,9 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const jobId = String(formData.get("job_id") ?? "");
+    const { data: photoJob } = await sb.from("jobs").select("is_demo").eq("id", jobId).eq("owner_id", owner.id).maybeSingle();
+    if (photoJob?.is_demo) return;
+
     const label = String(formData.get("photo_label") ?? "before").toLowerCase() === "after" ? "after" : "before";
     const files = formData.getAll("photos").filter((entry): entry is File => entry instanceof File);
     for (const file of files) {
@@ -334,19 +346,30 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
   }
 
+  const jobsMapped = (jobs ?? []).map((job: any) => ({
+    ...job,
+    client_name: job.clients?.full_name ?? null,
+    employee_name: job.employees?.full_name ?? null
+  }));
+  const visibleJobs = filterDemoEntities(jobsMapped);
+  const clientRefs = filterDemoEntities(clients ?? []).map((c: any) => ({
+    id: c.id,
+    label: c.full_name ?? "Unnamed client"
+  }));
+  const employeeRefs = filterDemoEntities(employees ?? []).map((e: any) => ({
+    id: e.id,
+    label: e.full_name ?? "Unnamed employee"
+  }));
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-[#1e3a5f]">Jobs</h1>
       </div>
       <JobsManager
-        jobs={(jobs ?? []).map((job: any) => ({
-          ...job,
-          client_name: job.clients?.full_name ?? null,
-          employee_name: job.employees?.full_name ?? null
-        }))}
-        clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
-        employees={(employees ?? []).map((e) => ({ id: e.id, label: e.full_name ?? "Unnamed employee" }))}
+        jobs={visibleJobs}
+        clients={clientRefs}
+        employees={employeeRefs}
         initialClientId={initialClientId}
         createJobAction={createJobAction}
         updateJobAction={updateJobAction}

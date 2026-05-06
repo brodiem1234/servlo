@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DemoBadge } from "@/components/demo-badge";
 
 type Employee = {
   id: string;
@@ -11,6 +12,7 @@ type Employee = {
   licences: string[] | null;
   hourly_rate: number | null;
   role: string | null;
+  is_demo?: boolean | null;
 };
 
 type Props = {
@@ -95,16 +97,32 @@ export default function EmployeesManager({
             </tr>
           </thead>
           <tbody>
-            {employees.map((employee) => (
+            {employees.map((employee) => {
+              const demo = Boolean(employee.is_demo);
+              return (
               <tr key={employee.id} className="border-b hover:bg-[#f1f5f9]">
-                <td className="px-2 py-2 font-medium">{employee.full_name ?? "-"}</td>
+                <td className="px-2 py-2 font-medium">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>{employee.full_name ?? "-"}</span>
+                    {demo ? <DemoBadge /> : null}
+                  </div>
+                </td>
                 <td className="px-2 py-2">{employee.email ?? "-"}</td>
                 <td className="px-2 py-2">{employee.phone ?? "-"}</td>
                 <td className="px-2 py-2">{employee.trade_type ?? "-"}</td>
                 <td className="px-2 py-2">{employee.hourly_rate != null ? `$${employee.hourly_rate}` : "-"}</td>
-                <td className="px-2 py-2"><button onClick={() => startEdit(employee)} className="rounded border px-2 py-1 text-xs">Edit</button></td>
+                <td className="px-2 py-2">
+                  {!demo ? (
+                    <button type="button" onClick={() => startEdit(employee)} className="rounded border px-2 py-1 text-xs">
+                      Edit
+                    </button>
+                  ) : (
+                    <span className="text-xs text-slate-400">Demo — preview only</span>
+                  )}
+                </td>
               </tr>
-            ))}
+            );
+          })}
           </tbody>
         </table>
       </article>

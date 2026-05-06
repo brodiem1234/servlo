@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import SubscriptionCards from "./subscription-cards";
 
 type SettingsPageProps = {
   searchParams?: {
     success?: string;
+    demo?: string;
+    demo_msg?: string;
   };
 };
 
@@ -50,6 +54,62 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     revalidatePath("/dashboard/owner");
   }
 
+  async function resetDemoDataAction() {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    try {
+      const admin = createAdminClient();
+      await removeAllDemoForOwner(admin, owner.id);
+      const seeded = await seedOwnerDemoData(admin, owner.id);
+      if (!seeded.ok) {
+        redirect(
+          `/dashboard/owner/settings?demo=seed_failed&demo_msg=${encodeURIComponent(seeded.message ?? "Unknown error")}`
+        );
+      }
+    } catch (err) {
+      redirect(
+        `/dashboard/owner/settings?demo=error&demo_msg=${encodeURIComponent(err instanceof Error ? err.message : String(err))}`
+      );
+    }
+    revalidatePath("/dashboard/owner");
+    revalidatePath("/dashboard/owner/clients");
+    revalidatePath("/dashboard/owner/jobs");
+    revalidatePath("/dashboard/owner/quotes");
+    revalidatePath("/dashboard/owner/invoices");
+    revalidatePath("/dashboard/owner/employees");
+    revalidatePath("/dashboard/owner/settings");
+    redirect("/dashboard/owner/settings?demo=reset_ok");
+  }
+
+  async function removeAllDemoDataAction() {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    try {
+      const admin = createAdminClient();
+      await removeAllDemoForOwner(admin, owner.id);
+    } catch (err) {
+      redirect(
+        `/dashboard/owner/settings?demo=error&demo_msg=${encodeURIComponent(err instanceof Error ? err.message : String(err))}`
+      );
+    }
+    revalidatePath("/dashboard/owner");
+    revalidatePath("/dashboard/owner/clients");
+    revalidatePath("/dashboard/owner/jobs");
+    revalidatePath("/dashboard/owner/quotes");
+    revalidatePath("/dashboard/owner/invoices");
+    revalidatePath("/dashboard/owner/employees");
+    revalidatePath("/dashboard/owner/settings");
+    redirect("/dashboard/owner/settings?demo=removed_ok");
+  }
+
   async function changePassword(formData: FormData) {
     "use server";
     const password = String(formData.get("new_password") ?? "");
@@ -62,9 +122,35 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     revalidatePath("/dashboard/owner/settings");
   }
 
+  const demoBanner =
+    searchParams?.demo === "reset_ok"
+      ? { tone: "success" as const, text: "Demo data was reset. Fresh template records are available." }
+      : searchParams?.demo === "removed_ok"
+        ? { tone: "success" as const, text: "All demo records were removed from your account." }
+        : searchParams?.demo === "seed_failed" || searchParams?.demo === "error"
+          ? {
+              tone: "error" as const,
+              text: searchParams.demo_msg
+                ? `Demo action failed: ${searchParams.demo_msg}`
+                : "Demo action failed. Check that Supabase service role is configured."
+            }
+          : null;
+
   return (
     <section className="space-y-6">
       <h1 className="text-2xl font-bold text-[#1e3a5f]">Settings</h1>
+
+      {demoBanner ? (
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            demoBanner.tone === "success"
+              ? "border-green-200 bg-green-50 text-green-900"
+              : "border-red-200 bg-red-50 text-red-900"
+          }`}
+        >
+          {demoBanner.text}
+        </div>
+      ) : null}
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[#1e3a5f]">Business Profile</h2>
@@ -89,6 +175,32 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           business: process.env.STRIPE_BUSINESS_PRICE_ID ?? ""
         }}
       />
+
+      <article className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[#1e3a5f]">Demo data</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          On signup we add sample clients, jobs, quotes and invoices so the dashboard is not empty. These rows are tagged as demo,
+          stay out of financial totals where noted, and do not support billing emails or similar actions.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <form action={resetDemoDataAction}>
+            <button
+              type="submit"
+              className="rounded border border-[#1e3a5f] bg-white px-4 py-2 text-sm font-medium text-[#1e3a5f] hover:bg-slate-50"
+            >
+              Reset Demo Data
+            </button>
+          </form>
+          <form action={removeAllDemoDataAction}>
+            <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
+              Remove All Demo Data
+            </button>
+          </form>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Reset removes existing demo rows and inserts a fresh template set. Remove deletes demo rows only and leaves your real data untouched.
+        </p>
+      </article>
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[#1e3a5f]">Account</h2>

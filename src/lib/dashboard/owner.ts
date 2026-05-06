@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { excludeDemoFinancial, filterDemoEntities } from "@/lib/demo/visibility";
 
 export type OwnerMetric = {
   revenueThisMonth: number;
@@ -81,7 +82,6 @@ export async function getOwnerDashboardData(ownerId: string) {
   sevenDaysAgo.setHours(0, 0, 0, 0);
 
   const [
-    { data: jobs },
     { data: clients },
     { data: invoices },
     { data: allJobs },
@@ -93,64 +93,59 @@ export async function getOwnerDashboardData(ownerId: string) {
     { data: recentInvoicesActivity },
     { data: recentQuotesActivity }
   ] = await Promise.all([
-    supabase
-      .from("jobs")
-      .select("id, title, status, scheduled_date, client_name, clients:clients(full_name)")
-      .eq("owner_id", ownerId)
-      .order("scheduled_date", { ascending: false })
-      .limit(5),
-    supabase
-      .from("clients")
-      .select("id, status")
-      .eq("owner_id", ownerId),
+    supabase.from("clients").select("id, status, is_demo").eq("owner_id", ownerId),
     supabase
       .from("invoices")
-      .select("id, invoice_number, amount, due_date, status, client_id, clients:clients(full_name), created_at, last_reminder_sent")
+      .select(
+        "id, invoice_number, amount, due_date, status, client_id, is_demo, clients:clients(full_name), created_at, last_reminder_sent"
+      )
       .eq("owner_id", ownerId)
       .order("due_date", { ascending: true }),
     supabase
       .from("jobs")
-      .select("id, title, status, scheduled_date, scheduled_start, client_name, clients:clients(full_name)")
+      .select(
+        "id, title, status, scheduled_date, scheduled_start, client_name, is_demo, clients:clients(full_name)"
+      )
       .eq("owner_id", ownerId),
     supabase
       .from("invoices")
-      .select("id, invoice_number, amount, due_date, status, client_id, clients:clients(full_name), last_reminder_sent")
+      .select("id, invoice_number, amount, due_date, status, client_id, is_demo, clients:clients(full_name), last_reminder_sent")
       .eq("owner_id", ownerId)
       .eq("status", "unpaid")
       .order("due_date", { ascending: true }),
     supabase
       .from("quotes")
-      .select("id, quote_number, status, created_at, client_name, clients:clients(full_name), last_reminder_sent")
+      .select("id, quote_number, status, created_at, client_name, is_demo, clients:clients(full_name), last_reminder_sent")
       .eq("owner_id", ownerId)
       .neq("status", "accepted")
       .order("created_at", { ascending: true }),
     supabase
       .from("invoices")
-      .select("amount, created_at")
+      .select("amount, created_at, is_demo")
       .eq("owner_id", ownerId)
       .eq("status", "paid")
       .gte("created_at", sevenDaysAgo.toISOString()),
     supabase
       .from("jobs")
-      .select("id, title, created_at")
+      .select("id, title, created_at, is_demo")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("clients")
-      .select("id, full_name, created_at")
+      .select("id, full_name, created_at, is_demo")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("invoices")
-      .select("id, invoice_number, created_at")
+      .select("id, invoice_number, created_at, is_demo")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("quotes")
-      .select("id, quote_number, created_at")
+      .select("id, quote_number, created_at, is_demo")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
       .limit(8)
@@ -165,10 +160,6 @@ export async function getOwnerDashboardData(ownerId: string) {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 7);
 
-  const safeJobs = (jobs ?? []).map((job: any) => ({
-    ...job,
-    client_name: job.client_name ?? job.clients?.full_name ?? null
-  }));
   const safeClients = clients ?? [];
   const safeInvoices = invoices ?? [];
   const safeAllJobs = (allJobs ?? []).map((job: any) => ({
@@ -178,6 +169,27 @@ export async function getOwnerDashboardData(ownerId: string) {
   const safeUnpaid = unpaidInvoices ?? [];
   const safeQuotes = quotes ?? [];
 
+  const visibleClients = filterDemoEntities(safeClients as Array<{ is_demo?: boolean | null }>);
+  const visibleJobs = filterDemoEntities(safeAllJobs as Array<{ is_demo?: boolean | null }>);
+  const invoicesMoney = excludeDemoFinancial(safeInvoices);
+  const paidWeekMoney = excludeDemoFinancial(paidInvoicesWeek ?? []);
+
+  const jobNonDemoCount = safeAllJobs.filter((j: any) => !j.is_demo).length;
+  const clientNonDemoCount = safeClients.filter((c: any) => !c.is_demo).length;
+  const invoiceNonDemoCount = safeInvoices.filter((inv: any) => !inv.is_demo).length;
+  const quoteNonDemoCount = safeQuotes.filter((q: any) => !q.is_demo).length;
+
+  const recentJobs = [...visibleJobs]
+    .sort((a: any, b: any) => String(b.scheduled_date ?? "").localeCompare(String(a.scheduled_date ?? "")))
+    .slice(0, 5)
+    .map((job: any) => ({
+      id: job.id,
+      title: job.title ?? null,
+      status: job.status ?? null,
+      scheduled_date: job.scheduled_date ?? null,
+      client_name: job.client_name ?? job.clients?.full_name ?? null
+    }));
+
   const todayKey = toLocalDateKey(new Date());
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -185,7 +197,7 @@ export async function getOwnerDashboardData(ownerId: string) {
 
   const glanceToday: GlanceJobRow[] = [];
   const glanceTomorrow: GlanceJobRow[] = [];
-  for (const job of safeAllJobs) {
+  for (const job of visibleJobs as any[]) {
     const row: GlanceJobRow = {
       id: job.id,
       title: job.title ?? null,
@@ -204,7 +216,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   glanceTomorrow.sort(sortByStart);
 
   const jobsByStatus = { pending: 0, inProgress: 0, completed: 0 };
-  for (const job of safeAllJobs) {
+  for (const job of visibleJobs as any[]) {
     const b = bucketJobStatus(job.status ?? null);
     if (b === "cancelled") continue;
     if (b === "completed") jobsByStatus.completed += 1;
@@ -218,7 +230,7 @@ export async function getOwnerDashboardData(ownerId: string) {
     day.setDate(sevenDaysAgo.getDate() + i);
     revenueByDay.push(0);
     const key = toLocalDateKey(day);
-    for (const inv of paidInvoicesWeek ?? []) {
+    for (const inv of paidWeekMoney) {
       if (!inv.created_at) continue;
       const invKey = String(inv.created_at).slice(0, 10);
       if (invKey === key) {
@@ -230,6 +242,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   const activityCandidates: DashboardActivityItem[] = [];
   for (const j of recentJobsActivity ?? []) {
     if (!j.created_at) continue;
+    if ((j as { is_demo?: boolean }).is_demo && jobNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `job-${j.id}`,
       kind: "job",
@@ -239,6 +252,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   }
   for (const c of recentClientsActivity ?? []) {
     if (!c.created_at) continue;
+    if ((c as { is_demo?: boolean }).is_demo && clientNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `client-${c.id}`,
       kind: "client",
@@ -248,6 +262,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   }
   for (const inv of recentInvoicesActivity ?? []) {
     if (!inv.created_at) continue;
+    if ((inv as { is_demo?: boolean }).is_demo && invoiceNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `invoice-${inv.id}`,
       kind: "invoice",
@@ -257,6 +272,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   }
   for (const q of recentQuotesActivity ?? []) {
     if (!q.created_at) continue;
+    if ((q as { is_demo?: boolean }).is_demo && quoteNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `quote-${q.id}`,
       kind: "quote",
@@ -268,7 +284,7 @@ export async function getOwnerDashboardData(ownerId: string) {
   const recentActivity = activityCandidates.slice(0, 5);
 
   const metrics: OwnerMetric = {
-    revenueThisMonth: safeInvoices
+    revenueThisMonth: invoicesMoney
       .filter((invoice) => {
         if ((invoice.status ?? "").toLowerCase() !== "paid") return false;
         if (!invoice.created_at) return false;
@@ -276,20 +292,20 @@ export async function getOwnerDashboardData(ownerId: string) {
         return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
       })
       .reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0),
-    outstandingAmount: safeInvoices
+    outstandingAmount: invoicesMoney
       .filter((invoice) => (invoice.status ?? "").toLowerCase() === "unpaid")
       .reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0),
-    jobsCompletedThisWeek: safeAllJobs.filter((job) => {
+    jobsCompletedThisWeek: (visibleJobs as any[]).filter((job) => {
       if ((job.status ?? "").toLowerCase() !== "completed") return false;
       if (!job.scheduled_date) return false;
       const date = new Date(job.scheduled_date);
       return date >= weekStart && date < weekEnd;
     }).length,
-    activeClientsCount: safeClients.filter((client) => (client.status ?? "active") !== "inactive").length
+    activeClientsCount: visibleClients.filter((client: any) => (client.status ?? "active") !== "inactive").length
   };
 
   const topClientsMap = new Map<string, { client_name: string; total: number }>();
-  for (const invoice of safeInvoices) {
+  for (const invoice of invoicesMoney) {
     const id = invoice.client_id ?? "unknown";
     const current = topClientsMap.get(id) ?? {
       client_name: (invoice as any).client_name ?? (invoice as any).clients?.full_name ?? "Unknown client",
@@ -302,11 +318,11 @@ export async function getOwnerDashboardData(ownerId: string) {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
-  const chaseInvoices = safeUnpaid.map((invoice: any) => ({
+  const chaseInvoices = excludeDemoFinancial(safeUnpaid as Array<{ is_demo?: boolean | null }>).map((invoice: any) => ({
     ...invoice,
     client_name: invoice.client_name ?? invoice.clients?.full_name ?? "Unknown client"
   }));
-  const quotesFollowUp = safeQuotes
+  const quotesFollowUp = excludeDemoFinancial(safeQuotes as Array<{ is_demo?: boolean | null }>)
     .filter((quote: any) => {
       if (!quote.created_at) return false;
       const ageDays = Math.floor((Date.now() - new Date(quote.created_at).getTime()) / (1000 * 60 * 60 * 24));
@@ -317,10 +333,12 @@ export async function getOwnerDashboardData(ownerId: string) {
       client_name: quote.client_name ?? quote.clients?.full_name ?? "Unknown client"
     }));
 
+  const visibleInvoicesList = filterDemoEntities(safeInvoices as Array<{ is_demo?: boolean | null }>);
+
   return {
     metrics,
-    recentJobs: safeJobs,
-    recentInvoices: safeInvoices.slice(0, 5),
+    recentJobs,
+    recentInvoices: visibleInvoicesList.slice(0, 5),
     topClients,
     chaseInvoices,
     quotesFollowUp,

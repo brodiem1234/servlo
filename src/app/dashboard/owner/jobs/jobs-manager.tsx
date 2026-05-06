@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { DemoBadge } from "@/components/demo-badge";
 import { useEffect, useMemo, useState, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
@@ -27,6 +28,7 @@ type Job = {
   labour_hours?: number | null;
   hourly_rate?: number | null;
   created_at?: string | null;
+  is_demo?: boolean | null;
 };
 
 type RefOpt = { id: string; label: string };
@@ -129,6 +131,7 @@ export default function JobsManager({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editingDemo, setEditingDemo] = useState(false);
   const [view, setView] = useState<"list" | "calendar">("list");
   const [calendarView, setCalendarView] = useState<"today" | "week" | "month">("week");
   const [values, setValues] = useState(empty);
@@ -171,6 +174,7 @@ export default function JobsManager({
   const closeJobOverlay = () => {
     setOpen(false);
     setQuickAdd(null);
+    setEditingDemo(false);
   };
 
   const statusPillClasses: Record<string, string> = {
@@ -437,6 +441,7 @@ export default function JobsManager({
 
   function startAdd() {
     setEditing(false);
+    setEditingDemo(false);
     setValues(empty);
     setActiveTab("details");
     setQuickAdd(null);
@@ -445,6 +450,7 @@ export default function JobsManager({
 
   function startAddWithDate(dateKey: string) {
     setEditing(false);
+    setEditingDemo(false);
     setValues({ ...empty, scheduled_date: dateKey });
     setActiveTab("details");
     setQuickAdd(null);
@@ -453,6 +459,7 @@ export default function JobsManager({
 
   function startEdit(job: Job) {
     setEditing(true);
+    setEditingDemo(Boolean(job.is_demo));
     setValues({
       id: job.id,
       title: job.title ?? "",
@@ -532,7 +539,10 @@ export default function JobsManager({
         className={`block w-full rounded-md px-2 py-1.5 text-left text-xs font-semibold shadow-sm ${cls} ${options?.className ?? ""}`}
       >
         {time ? <p className="text-[10px] font-bold uppercase tracking-wide opacity-90">{time}</p> : null}
-        <p className="line-clamp-2 leading-snug">{job.title ?? "Untitled job"}</p>
+        <p className="line-clamp-2 leading-snug">
+          {job.title ?? "Untitled job"}
+          {job.is_demo ? <span className="ml-1 text-[9px] font-bold uppercase text-violet-700">Demo</span> : null}
+        </p>
         <p className="truncate text-[10px] font-normal opacity-95">{job.client_name ?? "—"}</p>
         <p className="truncate text-[10px] font-normal opacity-95">{displayEmployeeName(job)}</p>
       </button>
@@ -827,7 +837,12 @@ export default function JobsManager({
                         <td className="whitespace-nowrap px-2 py-2 font-mono text-xs font-semibold text-[var(--text-primary)]">
                           {jobNumberById.get(job.id) ?? "—"}
                         </td>
-                        <td className="px-2 py-2 font-medium text-[var(--text-primary)]">{job.title ?? "-"}</td>
+                        <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span>{job.title ?? "-"}</span>
+                            {job.is_demo ? <DemoBadge /> : null}
+                          </div>
+                        </td>
                         <td className="px-2 py-2 text-[var(--text-secondary)]">{job.client_name ?? "-"}</td>
                         <td className="whitespace-nowrap px-2 py-2 text-[var(--text-secondary)]">
                           {job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString("en-AU") : "-"}
@@ -863,7 +878,7 @@ export default function JobsManager({
                           </select>
                         </td>
                         <td className="whitespace-nowrap px-2 py-2" onClick={(event) => event.stopPropagation()}>
-                          {st === "completed" ? (
+                          {st === "completed" && !job.is_demo ? (
                             <form action={createInvoiceFromJobAction} className="inline">
                               <input type="hidden" name="job_id" value={job.id} />
                               <button
@@ -873,6 +888,8 @@ export default function JobsManager({
                                 Create Invoice
                               </button>
                             </form>
+                          ) : st === "completed" && job.is_demo ? (
+                            <span className="text-[10px] text-[var(--text-muted)]">Demo</span>
                           ) : (
                             <span className="text-xs text-[var(--text-muted)]">—</span>
                           )}
@@ -1044,7 +1061,12 @@ export default function JobsManager({
               {activeTab === "photos" ? (
                 <div className="sm:col-span-2 space-y-3">
                   {!editing ? <p className="text-sm text-slate-400">Save the job first, then upload photos.</p> : null}
-                  {editing ? (
+                  {editing && editingDemo ? (
+                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-100">
+                      This is a demo job — uploads are disabled. Create a real job to store photos.
+                    </p>
+                  ) : null}
+                  {editing && !editingDemo ? (
                     <div className="space-y-2">
                       <select
                         value={photoLabel}

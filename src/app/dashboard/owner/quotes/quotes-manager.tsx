@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
+import { DemoBadge } from "@/components/demo-badge";
 
 type Quote = {
   id: string;
@@ -11,6 +12,7 @@ type Quote = {
   total: number | null;
   status: string | null;
   created_at: string | null;
+  is_demo?: boolean | null;
 };
 
 type ClientRef = { id: string; label: string };
@@ -82,6 +84,7 @@ export default function QuotesManager({
   };
 
   const downloadPdf = (quote: Quote) => {
+    if (quote.is_demo) return;
     const doc = new jsPDF();
     doc.text("SERVLO Quote", 14, 20);
     doc.text(`Quote #: ${quote.quote_number ?? "-"}`, 14, 32);
@@ -109,9 +112,16 @@ export default function QuotesManager({
         <table className="w-full min-w-[720px] text-sm">
           <thead><tr className="border-b text-left text-slate-300"><th className="px-2 py-2">Quote #</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Total</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
           <tbody>
-            {quotes.map((quote) => (
+            {quotes.map((quote) => {
+              const demo = Boolean(quote.is_demo);
+              return (
               <tr key={quote.id} className="border-b hover:bg-slate-50">
-                <td className="px-2 py-2">{quote.quote_number ?? "-"}</td>
+                <td className="px-2 py-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>{quote.quote_number ?? "-"}</span>
+                    {demo ? <DemoBadge /> : null}
+                  </div>
+                </td>
                 <td className="px-2 py-2">{quote.client_name ?? "-"}</td>
                 <td className="px-2 py-2">${Number(quote.total ?? 0).toFixed(2)}</td>
                 <td className="px-2 py-2">
@@ -131,21 +141,28 @@ export default function QuotesManager({
                   })()}
                 </td>
                 <td className="px-2 py-2 flex gap-2">
-                  <button onClick={() => startEdit(quote)} className="rounded border px-2 py-1 text-xs">Edit</button>
-                  <button onClick={() => downloadPdf(quote)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
-                  <form action={acceptQuoteAction}>
-                    <input type="hidden" name="quote_id" value={quote.id} />
-                    <button type="submit" className="rounded bg-[#22c55e] px-2 py-1 text-xs text-white">Accept</button>
-                  </form>
-                  <form action={convertToInvoiceAction}>
-                    <input type="hidden" name="quote_id" value={quote.id} />
-                    <button type="submit" className="rounded bg-[#0db8c8] px-2 py-1 text-xs text-white hover:bg-[#0a9dab]">
-                      Convert to Invoice
-                    </button>
-                  </form>
+                  {!demo ? (
+                    <>
+                      <button type="button" onClick={() => startEdit(quote)} className="rounded border px-2 py-1 text-xs">Edit</button>
+                      <button type="button" onClick={() => downloadPdf(quote)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
+                      <form action={acceptQuoteAction}>
+                        <input type="hidden" name="quote_id" value={quote.id} />
+                        <button type="submit" className="rounded bg-[#22c55e] px-2 py-1 text-xs text-white">Accept</button>
+                      </form>
+                      <form action={convertToInvoiceAction}>
+                        <input type="hidden" name="quote_id" value={quote.id} />
+                        <button type="submit" className="rounded bg-[#0db8c8] px-2 py-1 text-xs text-white hover:bg-[#0a9dab]">
+                          Convert to Invoice
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <span className="text-xs text-slate-400">Demo — preview only</span>
+                  )}
                 </td>
               </tr>
-            ))}
+            );
+          })}
           </tbody>
         </table>
       </article>

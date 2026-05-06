@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import InvoicesManager from "./invoices-manager";
 import { invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
+import { filterDemoEntities } from "@/lib/demo/visibility";
 
 function getNextNumber(existing: Array<{ invoice_number: string | null }>, prefix: string) {
   const max = existing.reduce((highest, item) => {
@@ -34,10 +35,10 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
   const [{ data: invoices }, { data: clients }] = await Promise.all([
     sb
       .from("invoices")
-      .select("id, invoice_number, client_id, amount, status, due_date, issue_date")
+      .select("id, invoice_number, client_id, amount, status, due_date, issue_date, is_demo")
       .eq("owner_id", user.id)
       .order("due_date", { ascending: true }),
-    sb.from("clients").select("id, full_name").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
 
   async function createInvoiceAction(formData: FormData) {
@@ -96,8 +97,8 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     }
     const clientId = String(formData.get("client_id") ?? "") || null;
     if (clientId) {
-      const { data: client } = await sb.from("clients").select("email, full_name").eq("id", clientId).maybeSingle();
-      if (client?.email) {
+      const { data: client } = await sb.from("clients").select("email, full_name, is_demo").eq("id", clientId).maybeSingle();
+      if (client?.email && !client.is_demo) {
         const payNowUrl = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || `${process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au"}/dashboard/client`;
         await sendEmail(
           client.email,
@@ -136,14 +137,15 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     revalidatePath("/dashboard/owner/invoices");
   }
 
-  const allInvoices = invoices ?? [];
+  const visibleInvoices = filterDemoEntities(invoices ?? []);
+  const allInvoices = visibleInvoices;
 
   return (
     <section className="space-y-5">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Invoices</h1>
       <InvoicesManager
         invoices={allInvoices}
-        clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
+        clients={filterDemoEntities(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         createInvoiceAction={createInvoiceAction}
         updateInvoiceAction={updateInvoiceAction}
         prefill={searchParams}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import jsPDF from "jspdf";
+import { DemoBadge } from "@/components/demo-badge";
 
 type Invoice = {
   id: string;
@@ -11,6 +12,7 @@ type Invoice = {
   status: string | null;
   due_date: string | null;
   issue_date: string | null;
+  is_demo?: boolean | null;
 };
 
 type ClientRef = { id: string; label: string };
@@ -141,6 +143,7 @@ export default function InvoicesManager({
   };
 
   const overdue = invoices.filter((invoice) => {
+    if (invoice.is_demo) return false;
     if (!invoice.due_date || (invoice.status ?? "").toLowerCase() === "paid") return false;
     const due = new Date(invoice.due_date);
     due.setHours(0, 0, 0, 0);
@@ -151,6 +154,7 @@ export default function InvoicesManager({
   const nextInvoiceNumber = `INV-${String(invoices.length + 1).padStart(3, "0")}`;
 
   const downloadPdf = (invoice: Invoice) => {
+    if (invoice.is_demo) return;
     const doc = new jsPDF();
     doc.text("SERVLO Invoice", 14, 20);
     doc.text(`Invoice #: ${invoice.invoice_number ?? "-"}`, 14, 32);
@@ -203,9 +207,15 @@ export default function InvoicesManager({
           <tbody>
             {invoices.map((invoice) => {
               const badge = getStatusBadge(invoice);
+              const demo = Boolean(invoice.is_demo);
               return (
               <tr key={invoice.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-primary)]">
-                <td className="px-2 py-2 text-[var(--text-primary)]">{invoice.invoice_number ?? "-"}</td>
+                <td className="px-2 py-2 text-[var(--text-primary)]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>{invoice.invoice_number ?? "-"}</span>
+                    {demo ? <DemoBadge /> : null}
+                  </div>
+                </td>
                 <td className="px-2 py-2 text-[var(--text-primary)]">${Number(invoice.amount ?? 0).toFixed(2)}</td>
                 <td className="px-2 py-2 text-[var(--text-secondary)]">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}</td>
                 <td className="px-2 py-2">
@@ -214,12 +224,18 @@ export default function InvoicesManager({
                   </span>
                 </td>
                 <td className="px-2 py-2 space-x-2">
-                  <button onClick={() => startEdit(invoice)} className="rounded border px-2 py-1 text-xs">Edit</button>
-                  <button onClick={() => downloadPdf(invoice)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
+                  {!demo ? (
+                    <>
+                      <button type="button" onClick={() => startEdit(invoice)} className="rounded border px-2 py-1 text-xs">Edit</button>
+                      <button type="button" onClick={() => downloadPdf(invoice)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-[var(--text-muted)]">Demo — preview only</span>
+                  )}
                 </td>
               </tr>
             );
-            })}
+          })}
           </tbody>
         </table>
       </article>

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { LayoutGrid, LayoutList, Plus, Search } from "lucide-react";
 import ClientFormSheet from "./client-form-sheet";
 import PortalShareButton from "./portal-share-button";
+import { DemoBadge } from "@/components/demo-badge";
 
 export type ClientMetric = {
   totalJobs: number;
@@ -30,6 +31,7 @@ export type ClientRow = {
   source?: string | null;
   portal_token?: string | null;
   created_at: string | null;
+  is_demo?: boolean | null;
 };
 
 export type SortKey = "newest" | "oldest" | "name_asc" | "name_desc";
@@ -234,7 +236,12 @@ export default function OwnerClientsView({
                   }}
                   className="cursor-pointer border-b border-[var(--border)] hover:bg-[var(--bg-primary)]"
                 >
-                  <td className="px-2 py-2 font-medium text-[var(--text-primary)]">{client.full_name ?? "-"}</td>
+                  <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span>{client.full_name ?? "-"}</span>
+                      {client.is_demo ? <DemoBadge /> : null}
+                    </div>
+                  </td>
                   <td className="px-2 py-2 text-[var(--text-secondary)]">{client.email ?? "-"}</td>
                   <td className="px-2 py-2 text-[var(--text-secondary)]">{client.phone ?? "-"}</td>
                   <td className="px-2 py-2">
@@ -257,12 +264,16 @@ export default function OwnerClientsView({
                     {client.portal_token ? (
                       <div className="flex flex-wrap items-center gap-2">
                         <PortalShareButton url={`${appOrigin}/portal/${client.portal_token}`} />
-                        <form action={sendPortalEmailAction}>
-                          <input type="hidden" name="client_id" value={client.id} />
-                          <button type="submit" className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)]">
-                            Email Portal
-                          </button>
-                        </form>
+                        {!client.is_demo ? (
+                          <form action={sendPortalEmailAction}>
+                            <input type="hidden" name="client_id" value={client.id} />
+                            <button type="submit" className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)]">
+                              Email Portal
+                            </button>
+                          </form>
+                        ) : (
+                          <span className="text-[10px] text-[var(--text-muted)]">Demo — email disabled</span>
+                        )}
                       </div>
                     ) : (
                       "—"
@@ -304,7 +315,10 @@ export default function OwnerClientsView({
               }}
               className="flex cursor-pointer flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm transition hover:bg-[var(--bg-primary)]"
             >
-              <p className="font-semibold text-[var(--text-primary)]">{client.full_name ?? "Unnamed client"}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold text-[var(--text-primary)]">{client.full_name ?? "Unnamed client"}</p>
+                {client.is_demo ? <DemoBadge /> : null}
+              </div>
               {client.company_name ? <p className="mt-0.5 text-sm text-[var(--text-secondary)]">{client.company_name}</p> : null}
               <p className="mt-2 text-sm text-[var(--text-secondary)]">{client.phone ?? "No phone"}</p>
               <p className="text-sm text-[var(--text-secondary)]">{client.email ?? "No email"}</p>

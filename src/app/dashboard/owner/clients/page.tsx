@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clients-view";
 import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
+import { filterDemoEntities } from "@/lib/demo/visibility";
 
 type ClientsPageProps = {
   searchParams?: {
@@ -127,7 +128,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   let clientsQuery = supabase
     .from("clients")
     .select(
-      "id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at"
+      "id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at, is_demo"
     )
     .eq("owner_id", ownerId);
 
@@ -169,6 +170,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         source?: string | null;
         portal_token?: string | null;
         created_at: string | null;
+        is_demo?: boolean | null;
       }>
     | null = null;
 
@@ -177,14 +179,15 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     const fbAscending = sortKey === "oldest" || sortKey === "name_asc";
     const fallbackClientsQuery = await supabase
       .from("clients")
-      .select("id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
+      .select("id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at, is_demo")
       .eq("owner_id", ownerId)
       .order(fbSortCol, { ascending: fbAscending });
     clients = (fallbackClientsQuery.data ?? []).map((client) => ({
       ...client,
       status: null,
       source: null,
-      portal_token: null
+      portal_token: null,
+      is_demo: false
     }));
   } else if (primaryClientsQuery.error) {
     console.error("[clients-page] clients query failed", primaryClientsQuery.error);
@@ -193,7 +196,9 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     clients = primaryClientsQuery.data ?? [];
   }
 
-  const clientIds = (clients ?? []).map((client) => client.id);
+  const visibleClients = filterDemoEntities(clients ?? []);
+
+  const clientIds = visibleClients.map((client) => client.id);
   const [{ data: jobs }, { data: invoices }] = await Promise.all([
     clientIds.length
       ? supabase
@@ -378,10 +383,11 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     const clientId = String(formData.get("client_id") ?? "");
     const { data: client } = await sb
       .from("clients")
-      .select("full_name, email, portal_token")
+      .select("full_name, email, portal_token, is_demo")
       .eq("id", clientId)
       .eq("owner_id", owner.id)
       .maybeSingle();
+    if (client?.is_demo) return;
     if (!client?.email || !client.portal_token) return;
     const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`;
     await sendEmail(
@@ -400,7 +406,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   return (
     <Suspense fallback={<div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-8 text-sm text-[var(--text-muted)]">Loading clients…</div>}>
       <OwnerClientsView
-        clients={clients ?? []}
+        clients={visibleClients}
         metrics={metricsRecord}
         initialView={view}
         initialSort={sortKey}

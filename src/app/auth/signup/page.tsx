@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SignupForm } from "@/components/auth/signup-form";
 import { parseIndustryTagsJson, type IndustrySlug } from "@/lib/industries";
+import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 
 type SignupPageProps = {
   searchParams?: Promise<{ error?: string }>;
@@ -89,6 +90,13 @@ async function signUp(formData: FormData) {
       { onConflict: "id" }
     );
     profileError = error ?? null;
+
+    if (!profileError && role === "owner") {
+      const seeded = await seedOwnerDemoData(adminSupabase, data.user.id);
+      if (!seeded.ok) {
+        console.error("[signup] Demo seed failed", seeded.message);
+      }
+    }
   } catch {
     console.error("Signup profile insert threw before query", {
       email,
