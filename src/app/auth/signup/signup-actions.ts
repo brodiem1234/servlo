@@ -3,8 +3,15 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseWithAccessToken } from "@/lib/supabase/user-access-token";
 import { parseIndustryTagsJson, type IndustrySlug } from "@/lib/industries";
-import { bootstrapSignupWrites, describeSupabaseError } from "@/lib/signup/bootstrap-writes";
+import {
+  bootstrapSignupProfiles,
+  describeSupabaseError,
+  seedOwnerDemoNonFatal,
+  upsertOwnerBusinessRowWithRetry
+} from "@/lib/signup/bootstrap-writes";
+import { waitForSessionAfterSignUp } from "@/lib/signup/wait-for-session";
 import { setOnboardingFlashMessage } from "@/lib/onboarding-flash";
 import type { SignupFormState } from "./signup-form-state";
 
@@ -76,10 +83,21 @@ export async function signUpAction(_prevState: SignupFormState, formData: FormDa
     };
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  if (authData.session?.access_token && authData.session.refresh_token) {
+    const { error: setErr } = await supabase.auth.setSession({
+      access_token: authData.session.access_token,
+      refresh_token: authData.session.refresh_token
+    });
+    if (setErr) {
+      console.error("[signup] setSession right after signUp failed", setErr.message, setErr);
+    }
+  }
 
-  const { data: sessionProbe } = await supabase.auth.getSession();
-  console.info("[signup] session after signUp", Boolean(sessionProbe.session));
+  const session = await waitForSessionAfterSignUp(supabase, authData.session ?? null);
+  console.info("[signup] resolved session after signUp", {
+    hasSession: Boolean(session?.access_token),
+    userId
+  });
 
   let admin;
   try {
@@ -92,7 +110,7 @@ export async function signUpAction(_prevState: SignupFormState, formData: FormDa
     redirect("/onboarding/complete-profile" as Parameters<typeof redirect>[0]);
   }
 
-  const bootstrap = await bootstrapSignupWrites(
+  const profileBootstrap = await bootstrapSignupProfiles(
     admin,
     {
       userId,
@@ -110,25 +128,64 @@ export async function signUpAction(_prevState: SignupFormState, formData: FormDa
     trialEnd
   );
 
-  if (!bootstrap.ok) {
-    console.error("[signup] bootstrap failed", bootstrap.step, bootstrap.message);
-    let flashMessage = `Account created but profile setup failed. ${bootstrap.message}`;
-
+  if (!profileBootstrap.ok) {
+    console.error("[signup] profile bootstrap failed", profileBootstrap.message);
+    let flashMessage = `Account created but profile setup failed. ${profileBootstrap.message}`;
     if (
-      bootstrap.step === "core_profile" &&
       role === "client" &&
-      (String(bootstrap.message).toLowerCase().includes("enum") || bootstrap.message.includes("22P02"))
+      (String(profileBootstrap.message).toLowerCase().includes("enum") ||
+        profileBootstrap.message.includes("22P02"))
     ) {
       flashMessage +=
         " Apply migration 0003_profiles_client_role_and_policies.sql so user_role includes 'client'.";
     }
-
     await setOnboardingFlashMessage(flashMessage);
     redirect("/onboarding/complete-profile" as Parameters<typeof redirect>[0]);
   }
 
+  if (role === "owner") {
+    let businessOk = false;
+    let lastBusinessMessage = "";
+
+    if (session?.access_token) {
+      try {
+        const userSb = createSupabaseWithAccessToken(session.access_token);
+        const jwtResult = await upsertOwnerBusinessRowWithRetry(userSb, userId, accentColourRaw);
+        businessOk = jwtResult.ok;
+        lastBusinessMessage = jwtResult.ok ? "" : jwtResult.message;
+        if (!jwtResult.ok) {
+          console.error("[signup] JWT-scoped business upsert failed (will try service role)", jwtResult.message);
+        }
+      } catch (e) {
+        console.error("[signup] JWT business client failed", e);
+        lastBusinessMessage = e instanceof Error ? e.message : String(e);
+      }
+    } else {
+      console.warn("[signup] no session after signUp — business insert will use service role only", {
+        userId
+      });
+    }
+
+    if (!businessOk) {
+      console.info("[signup] attempting business upsert via service role");
+      const adminBiz = await upsertOwnerBusinessRowWithRetry(admin, userId, accentColourRaw);
+      businessOk = adminBiz.ok;
+      lastBusinessMessage = adminBiz.ok ? "" : adminBiz.message;
+    }
+
+    if (!businessOk) {
+      console.error("[signup] business bootstrap failed after JWT + admin attempts", lastBusinessMessage);
+      await setOnboardingFlashMessage(
+        `Account created but profile setup failed. ${lastBusinessMessage || "Business record could not be saved."}`
+      );
+      redirect("/onboarding/complete-profile" as Parameters<typeof redirect>[0]);
+    }
+
+    await seedOwnerDemoNonFatal(admin, userId);
+  }
+
   redirect(
-    (bootstrap.role === "client" ? "/dashboard/client" : "/dashboard/owner") as Parameters<
+    (profileBootstrap.role === "client" ? "/dashboard/client" : "/dashboard/owner") as Parameters<
       typeof redirect
     >[0]
   );

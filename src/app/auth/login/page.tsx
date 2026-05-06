@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
 import { Button } from "@/components/ui/button";
 
 type LoginPageProps = {
@@ -20,7 +20,37 @@ async function signIn(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const rememberMe = formData.get("remember_me") === "on";
 
-  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const oneYear = 60 * 60 * 24 * 365;
+  const cookieBase = {
+    path: "/" as const,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production"
+  };
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: Record<string, unknown>) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: Record<string, unknown>) {
+          cookieStore.set({ name, value: "", ...options });
+        }
+      },
+      cookieOptions: {
+        ...cookieBase,
+        maxAge: rememberMe ? oneYear : undefined
+      }
+    }
+  );
+
+  // Session lifetime on this SSR client comes from cookieOptions.maxAge above (browser-session cookie when unchecked).
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.user) {
@@ -42,22 +72,15 @@ async function signIn(formData: FormData) {
     redirect(`/auth/login?${query.toString()}`);
   }
 
-  const cookieStore = await cookies();
+  cookieStore.set("servlo_persist_session", rememberMe ? "true" : "false", {
+    path: "/",
+    maxAge: oneYear,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production"
+  });
+
   if (rememberMe) {
-    const oneYear = 60 * 60 * 24 * 365;
     cookieStore.set("servlo_remember_email", email, {
-      path: "/",
-      maxAge: oneYear,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production"
-    });
-    cookieStore.set("servlo_remember_password", password, {
-      path: "/",
-      maxAge: oneYear,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production"
-    });
-    cookieStore.set("servlo_persist_session", "true", {
       path: "/",
       maxAge: oneYear,
       sameSite: "lax",
@@ -65,8 +88,6 @@ async function signIn(formData: FormData) {
     });
   } else {
     cookieStore.delete("servlo_remember_email");
-    cookieStore.delete("servlo_remember_password");
-    cookieStore.delete("servlo_persist_session");
   }
 
   redirect("/dashboard/owner");
@@ -75,8 +96,8 @@ async function signIn(formData: FormData) {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const cookieStore = await cookies();
   const rememberedEmail = cookieStore.get("servlo_remember_email")?.value ?? "";
-  const rememberedPassword = cookieStore.get("servlo_remember_password")?.value ?? "";
-  const rememberedChecked = cookieStore.get("servlo_persist_session")?.value === "true";
+  /** Default on unless user explicitly chose not to remember. */
+  const rememberMeChecked = cookieStore.get("servlo_persist_session")?.value !== "false";
   const emailValue = searchParams?.email ?? rememberedEmail;
 
   return (
@@ -118,7 +139,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               id="password"
               name="password"
               type="password"
-              defaultValue={rememberedPassword}
               required
               className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
             />
@@ -127,7 +147,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <input
               name="remember_me"
               type="checkbox"
-              defaultChecked={rememberedChecked}
+              defaultChecked={rememberMeChecked}
               className="h-4 w-4 rounded border-slate-300 text-[var(--accent-color)]"
             />
             Remember me
