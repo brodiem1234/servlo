@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 type Job = {
@@ -29,6 +29,8 @@ type Job = {
 
 type RefOpt = { id: string; label: string };
 
+type QuickCreateJobRefResult = { ok: boolean; id?: string; label?: string; message?: string };
+
 type Props = {
   jobs: Job[];
   clients: RefOpt[];
@@ -41,7 +43,12 @@ type Props = {
   updateJobEmployeeAction: (formData: FormData) => Promise<void>;
   uploadJobPhotoAction: (formData: FormData) => Promise<void>;
   jobPhotosByJob: Record<string, Array<{ url: string; label: "before" | "after" }>>;
+  quickCreateClientForJobAction: (formData: FormData) => Promise<QuickCreateJobRefResult>;
+  quickCreateEmployeeForJobAction: (formData: FormData) => Promise<QuickCreateJobRefResult>;
 };
+
+const ADD_NEW_CLIENT = "__add_new_client__";
+const ADD_NEW_EMPLOYEE = "__add_new_employee__";
 
 const empty = {
   id: "",
@@ -98,7 +105,9 @@ export default function JobsManager({
   updateJobScheduleAction,
   updateJobEmployeeAction,
   uploadJobPhotoAction,
-  jobPhotosByJob
+  jobPhotosByJob,
+  quickCreateClientForJobAction,
+  quickCreateEmployeeForJobAction
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -121,6 +130,24 @@ export default function JobsManager({
   const [activeTab, setActiveTab] = useState<"details" | "photos">("details");
   const [photoLabel, setPhotoLabel] = useState<"before" | "after">("before");
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
+  const [quickAdd, setQuickAdd] = useState<null | "client" | "employee">(null);
+  const [clientOptions, setClientOptions] = useState<RefOpt[]>(clients);
+  const [employeeOptions, setEmployeeOptions] = useState<RefOpt[]>(employees);
+  const [quickClientSaving, setQuickClientSaving] = useState(false);
+  const [quickEmployeeSaving, setQuickEmployeeSaving] = useState(false);
+
+  useEffect(() => {
+    setClientOptions(clients);
+  }, [clients]);
+
+  useEffect(() => {
+    setEmployeeOptions(employees);
+  }, [employees]);
+
+  const closeJobOverlay = () => {
+    setOpen(false);
+    setQuickAdd(null);
+  };
 
   const statusClasses: Record<string, string> = {
     scheduled: "bg-blue-100 text-blue-700",
@@ -225,7 +252,7 @@ export default function JobsManager({
       else await createJobAction(fd);
       router.refresh();
       setToast({ type: "success", message: editing ? "Job updated" : "Job created" });
-      setOpen(false);
+      closeJobOverlay();
     } catch (error) {
       setToast({ type: "error", message: "Unable to save job" });
       console.error(error);
@@ -300,10 +327,63 @@ export default function JobsManager({
     }
   };
 
+  const submitQuickClient = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setQuickClientSaving(true);
+    try {
+      const res = await quickCreateClientForJobAction(fd);
+      if (!res.ok) {
+        setToast({ type: "error", message: res.message ?? "Could not create client" });
+        return;
+      }
+      if (res.id) {
+        const label = res.label ?? "Client";
+        setClientOptions((prev) => {
+          if (prev.some((p) => p.id === res.id)) return prev;
+          return [...prev, { id: res.id!, label }];
+        });
+        setValues((p) => ({ ...p, client_id: res.id! }));
+      }
+      setQuickAdd(null);
+      setToast({ type: "success", message: "Client added" });
+      router.refresh();
+    } finally {
+      setQuickClientSaving(false);
+    }
+  };
+
+  const submitQuickEmployee = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setQuickEmployeeSaving(true);
+    try {
+      const res = await quickCreateEmployeeForJobAction(fd);
+      if (!res.ok) {
+        setToast({ type: "error", message: res.message ?? "Could not create employee" });
+        return;
+      }
+      if (res.id) {
+        const label = res.label ?? "Employee";
+        setEmployeeOptions((prev) => {
+          if (prev.some((p) => p.id === res.id)) return prev;
+          return [...prev, { id: res.id!, label }];
+        });
+        setValues((p) => ({ ...p, employee_id: res.id! }));
+      }
+      setQuickAdd(null);
+      setToast({ type: "success", message: "Employee added" });
+      router.refresh();
+    } finally {
+      setQuickEmployeeSaving(false);
+    }
+  };
+
   function startAdd() {
     setEditing(false);
     setValues(empty);
     setActiveTab("details");
+    setQuickAdd(null);
     setOpen(true);
   }
 
@@ -331,6 +411,7 @@ export default function JobsManager({
       revenue_amount: "0"
     });
     setActiveTab("details");
+    setQuickAdd(null);
     setOpen(true);
   }
 
@@ -637,7 +718,64 @@ export default function JobsManager({
 
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
-          <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
+          <div className="flex h-full w-full flex-col md:flex-row md:justify-end md:overflow-hidden">
+            {quickAdd === "client" ? (
+              <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-base font-semibold text-slate-900">New client</h3>
+                  <button type="button" onClick={() => setQuickAdd(null)} className="text-sm text-slate-500 hover:text-slate-800">
+                    Close
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500">Adds a client and selects them on this job.</p>
+                <form className="grid gap-2" onSubmit={submitQuickClient}>
+                  <input name="full_name" required placeholder="Name" autoComplete="name" className="h-10 rounded border px-3 text-sm" />
+                  <input name="phone" type="tel" placeholder="Phone" autoComplete="tel" className="h-10 rounded border px-3 text-sm" />
+                  <input name="email" type="email" placeholder="Email" autoComplete="email" className="h-10 rounded border px-3 text-sm" />
+                  <div className="mt-1 flex gap-2">
+                    <button type="button" onClick={() => setQuickAdd(null)} className="rounded border px-3 py-2 text-sm">
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={quickClientSaving}
+                      className="rounded bg-[#0db8c8] px-3 py-2 text-sm text-white hover:bg-[#0a9dab] disabled:opacity-60"
+                    >
+                      {quickClientSaving ? "Saving…" : "Save client"}
+                    </button>
+                  </div>
+                </form>
+              </aside>
+            ) : null}
+            {quickAdd === "employee" ? (
+              <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-base font-semibold text-slate-900">New employee</h3>
+                  <button type="button" onClick={() => setQuickAdd(null)} className="text-sm text-slate-500 hover:text-slate-800">
+                    Close
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500">Adds an employee and assigns them on this job.</p>
+                <form className="grid gap-2" onSubmit={submitQuickEmployee}>
+                  <input name="full_name" required placeholder="Name" autoComplete="name" className="h-10 rounded border px-3 text-sm" />
+                  <input name="role" placeholder="Role (e.g. electrician)" defaultValue="employee" className="h-10 rounded border px-3 text-sm" />
+                  <input name="phone" type="tel" placeholder="Phone" autoComplete="tel" className="h-10 rounded border px-3 text-sm" />
+                  <div className="mt-1 flex gap-2">
+                    <button type="button" onClick={() => setQuickAdd(null)} className="rounded border px-3 py-2 text-sm">
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={quickEmployeeSaving}
+                      className="rounded bg-[#0db8c8] px-3 py-2 text-sm text-white hover:bg-[#0a9dab] disabled:opacity-60"
+                    >
+                      {quickEmployeeSaving ? "Saving…" : "Save employee"}
+                    </button>
+                  </div>
+                </form>
+              </aside>
+            ) : null}
+            <div className="flex h-full min-h-0 w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-xl md:shrink-0">
             <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Job" : "Add Job"}</h2>
             <div className="mt-3 rounded-md border bg-white p-1 text-sm w-fit">
               <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[#0db8c8] text-white" : ""}`}>Details</button>
@@ -649,8 +787,54 @@ export default function JobsManager({
                 <>
               <input name="title" value={values.title} onChange={(e) => setValues((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="h-10 rounded border px-3" />
               <input name="job_type" value={values.job_type} onChange={(e) => setValues((p) => ({ ...p, job_type: e.target.value }))} placeholder="Job type" className="h-10 rounded border px-3" />
-              <select name="client_id" value={values.client_id} onChange={(e) => setValues((p) => ({ ...p, client_id: e.target.value }))} className="h-10 rounded border px-3"><option value="">Client</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
-              <select name="employee_id" value={values.employee_id} onChange={(e) => setValues((p) => ({ ...p, employee_id: e.target.value }))} className="h-10 rounded border px-3"><option value="">Employee</option>{employees.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
+              <select
+                name="client_id"
+                value={values.client_id}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === ADD_NEW_CLIENT) {
+                    setQuickAdd("client");
+                    return;
+                  }
+                  setValues((p) => ({ ...p, client_id: v }));
+                }}
+                className="h-10 rounded border px-3"
+              >
+                <option value="">Client</option>
+                {clientOptions.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+                <option disabled className="text-slate-400">
+                  ────────────
+                </option>
+                <option value={ADD_NEW_CLIENT}>+ Add new client</option>
+              </select>
+              <select
+                name="employee_id"
+                value={values.employee_id}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === ADD_NEW_EMPLOYEE) {
+                    setQuickAdd("employee");
+                    return;
+                  }
+                  setValues((p) => ({ ...p, employee_id: v }));
+                }}
+                className="h-10 rounded border px-3"
+              >
+                <option value="">Employee</option>
+                {employeeOptions.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+                <option disabled className="text-slate-400">
+                  ────────────
+                </option>
+                <option value={ADD_NEW_EMPLOYEE}>+ Add new employee</option>
+              </select>
               <input type="date" name="scheduled_date" value={values.scheduled_date} onChange={(e) => setValues((p) => ({ ...p, scheduled_date: e.target.value }))} className="h-10 rounded border px-3" />
               <select name="priority" value={values.priority} onChange={(e) => setValues((p) => ({ ...p, priority: e.target.value }))} className="h-10 rounded border px-3"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option></select>
               <input type="time" name="scheduled_start" value={values.scheduled_start} onChange={(e) => setValues((p) => ({ ...p, scheduled_start: e.target.value }))} className="h-10 rounded border px-3" />
@@ -681,7 +865,7 @@ export default function JobsManager({
                 })()}
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
-                <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
+                <button type="button" onClick={() => closeJobOverlay()} className="rounded border px-4 py-2 text-sm">Cancel</button>
                 <button type="submit" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">{editing ? "Save Changes" : "Create Job"}</button>
               </div>
                 </>
@@ -730,6 +914,7 @@ export default function JobsManager({
                 </div>
               ) : null}
             </form>
+            </div>
           </div>
         </div>
       ) : null}

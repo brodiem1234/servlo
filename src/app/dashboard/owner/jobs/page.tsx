@@ -224,6 +224,107 @@ export default async function OwnerJobsPage() {
     revalidatePath("/dashboard/owner/jobs");
   }
 
+  type QuickCreateJobRefResult = { ok: boolean; id?: string; label?: string; message?: string };
+
+  async function quickCreateClientForJobAction(formData: FormData): Promise<QuickCreateJobRefResult> {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const full_name = String(formData.get("full_name") ?? "").trim();
+    if (!full_name) return { ok: false, message: "Name is required" };
+    const phone = String(formData.get("phone") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const { data, error } = await sb
+      .from("clients")
+      .insert({
+        owner_id: owner.id,
+        full_name,
+        phone: phone || null,
+        email: email || null,
+        status: "active",
+        source: "other",
+        portal_token: crypto.randomUUID(),
+        company_name: "",
+        abn: "",
+        address: "",
+        suburb: "",
+        state: "",
+        postcode: "",
+        notes: ""
+      })
+      .select("id, full_name")
+      .maybeSingle();
+    if (error) {
+      const fb = await sb
+        .from("clients")
+        .insert({
+          owner_id: owner.id,
+          full_name,
+          phone: phone || null,
+          email: email || null,
+          notes: ""
+        })
+        .select("id, full_name")
+        .maybeSingle();
+      if (fb.error) return { ok: false, message: fb.error.message };
+      revalidatePath("/dashboard/owner/jobs");
+      revalidatePath("/dashboard/owner/clients");
+      return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
+    }
+    revalidatePath("/dashboard/owner/jobs");
+    revalidatePath("/dashboard/owner/clients");
+    return { ok: true, id: data?.id, label: data?.full_name ?? full_name };
+  }
+
+  async function quickCreateEmployeeForJobAction(formData: FormData): Promise<QuickCreateJobRefResult> {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const full_name = String(formData.get("full_name") ?? "").trim();
+    if (!full_name) return { ok: false, message: "Name is required" };
+    const phone = String(formData.get("phone") ?? "").trim();
+    const role = String(formData.get("role") ?? "employee").trim() || "employee";
+    const full = await sb
+      .from("employees")
+      .insert({
+        owner_id: owner.id,
+        full_name,
+        email: "",
+        phone: phone || null,
+        trade_type: "",
+        licences: [],
+        hourly_rate: 0,
+        role
+      })
+      .select("id, full_name")
+      .maybeSingle();
+    if (!full.error && full.data) {
+      revalidatePath("/dashboard/owner/jobs");
+      revalidatePath("/dashboard/owner/employees");
+      return { ok: true, id: full.data.id, label: full.data.full_name ?? full_name };
+    }
+    const fb = await sb
+      .from("employees")
+      .insert({
+        owner_id: owner.id,
+        full_name,
+        phone: phone || null,
+        email: ""
+      })
+      .select("id, full_name")
+      .maybeSingle();
+    if (fb.error) return { ok: false, message: fb.error.message };
+    revalidatePath("/dashboard/owner/jobs");
+    revalidatePath("/dashboard/owner/employees");
+    return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -244,6 +345,8 @@ export default async function OwnerJobsPage() {
         updateJobEmployeeAction={updateJobEmployeeAction}
         uploadJobPhotoAction={uploadJobPhotoAction}
         jobPhotosByJob={photoUrlsByJob}
+        quickCreateClientForJobAction={quickCreateClientForJobAction}
+        quickCreateEmployeeForJobAction={quickCreateEmployeeForJobAction}
       />
     </section>
   );

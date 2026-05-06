@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnerDashboardData } from "@/lib/dashboard/owner";
 import { invoiceReminderEmailTemplate, quoteFollowUpEmailTemplate, sendEmail } from "@/lib/email";
+import RevenueSparkline from "@/components/dashboard/revenue-sparkline";
+import OwnerDashboardQuickActions from "@/components/dashboard/owner-dashboard-quick-actions";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(value);
@@ -33,7 +35,25 @@ export default async function OwnerDashboardPage() {
 
   const trialEnd = profile?.trial_end ?? null;
 
-  const { metrics, recentJobs, topClients, chaseInvoices, quotesFollowUp } = dashboardData;
+  const {
+    metrics,
+    recentJobs,
+    topClients,
+    chaseInvoices,
+    quotesFollowUp,
+    revenueLast7Days,
+    glanceToday,
+    glanceTomorrow,
+    jobsByStatus,
+    recentActivity
+  } = dashboardData;
+
+  const sparkLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - (6 - i));
+    return d.toLocaleDateString("en-AU", { weekday: "short" });
+  });
   const trialDaysRemaining = trialEnd
     ? Math.max(
         0,
@@ -158,37 +178,106 @@ export default async function OwnerDashboardPage() {
         </article>
       ) : null}
 
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <a href="/dashboard/owner/jobs" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">
-            New Job
-          </a>
-          <a href="/dashboard/owner/clients" className="rounded bg-[#0db8c8] px-4 py-2 text-sm text-white hover:bg-[#0a9dab]">
-            New Client
-          </a>
-          <a href="/dashboard/owner/invoices" className="rounded border border-[#1e3a5f] px-4 py-2 text-sm text-[#1e3a5f]">
-            New Invoice
-          </a>
-        </div>
+      <OwnerDashboardQuickActions />
+
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-sm">
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Jobs by status</span>
+        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+          Pending · {jobsByStatus.pending}
+        </span>
+        <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-900 dark:bg-sky-950 dark:text-sky-100">
+          In progress · {jobsByStatus.inProgress}
+        </span>
+        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+          Completed · {jobsByStatus.completed}
+        </span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-400">Revenue This Month</p>
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Revenue This Month</p>
           <p className="mt-2 text-3xl font-bold text-teal-400">{formatCurrency(metrics.revenueThisMonth)}</p>
+          <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+            Paid invoices — last 7 days
+          </p>
+          <RevenueSparkline values={revenueLast7Days} labels={sparkLabels} />
         </article>
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-400">Outstanding</p>
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Outstanding</p>
           <p className="mt-2 text-3xl font-bold text-teal-400">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-400">Jobs Completed This Week</p>
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Jobs Completed This Week</p>
           <p className="mt-2 text-3xl font-bold text-teal-400">{metrics.jobsCompletedThisWeek}</p>
         </article>
-        <article className="rounded-xl border-l-4 border-l-[#0db8c8] border bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase text-slate-400">Active Clients</p>
+        <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Active Clients</p>
           <p className="mt-2 text-3xl font-bold text-teal-400">{metrics.activeClientsCount}</p>
+        </article>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">This Week at a Glance</h2>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Scheduled jobs for today and tomorrow.</p>
+          <div className="mt-4 grid gap-6 md:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold text-[#0db8c8]">Today</h3>
+              <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
+                {glanceToday.length === 0 ? (
+                  <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
+                ) : (
+                  glanceToday.map((job) => (
+                    <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
+                      <p className="font-medium text-[var(--text-primary)]">{job.title ?? "Untitled job"}</p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {job.client_name ?? "—"}
+                        {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
+                      </p>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-[#0db8c8]">Tomorrow</h3>
+              <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
+                {glanceTomorrow.length === 0 ? (
+                  <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
+                ) : (
+                  glanceTomorrow.map((job) => (
+                    <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
+                      <p className="font-medium text-[var(--text-primary)]">{job.title ?? "Untitled job"}</p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {job.client_name ?? "—"}
+                        {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
+                      </p>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent activity</h2>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">Latest jobs, clients, invoices and quotes.</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            {recentActivity.length === 0 ? (
+              <li className="text-[var(--text-muted)]">No recent activity yet.</li>
+            ) : (
+              recentActivity.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-start justify-between gap-2 rounded border border-[var(--border)] px-3 py-2"
+                >
+                  <span className="text-[var(--text-primary)]">{item.label}</span>
+                  <span className="shrink-0 text-xs capitalize text-[var(--text-muted)]">{item.kind}</span>
+                </li>
+              ))
+            )}
+          </ul>
         </article>
       </div>
 

@@ -7,6 +7,37 @@ export type OwnerMetric = {
   activeClientsCount: number;
 };
 
+export type DashboardActivityItem = {
+  id: string;
+  kind: "job" | "client" | "invoice" | "quote";
+  label: string;
+  at: string;
+};
+
+export type GlanceJobRow = {
+  id: string;
+  title: string | null;
+  scheduled_date: string | null;
+  scheduled_start: string | null;
+  status: string | null;
+  client_name: string | null;
+};
+
+function toLocalDateKey(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function bucketJobStatus(status: string | null): "pending" | "in_progress" | "completed" | "cancelled" {
+  const k = (status ?? "").toLowerCase().replace("-", "_");
+  if (k === "completed" || k === "complete") return "completed";
+  if (k === "in_progress") return "in_progress";
+  if (k === "cancelled") return "cancelled";
+  return "pending";
+}
+
 export async function getOwnerContext() {
   const supabase = await createClient();
   const {
@@ -45,7 +76,23 @@ export async function getOwnerContext() {
 export async function getOwnerDashboardData(ownerId: string) {
   const supabase = await createClient();
 
-  const [{ data: jobs }, { data: clients }, { data: invoices }, { data: allJobs }, { data: unpaidInvoices }, { data: quotes }] = await Promise.all([
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const [
+    { data: jobs },
+    { data: clients },
+    { data: invoices },
+    { data: allJobs },
+    { data: unpaidInvoices },
+    { data: quotes },
+    { data: paidInvoicesWeek },
+    { data: recentJobsActivity },
+    { data: recentClientsActivity },
+    { data: recentInvoicesActivity },
+    { data: recentQuotesActivity }
+  ] = await Promise.all([
     supabase
       .from("jobs")
       .select("id, title, status, scheduled_date, client_name, clients:clients(full_name)")
@@ -63,7 +110,7 @@ export async function getOwnerDashboardData(ownerId: string) {
       .order("due_date", { ascending: true }),
     supabase
       .from("jobs")
-      .select("id, status, scheduled_date")
+      .select("id, title, status, scheduled_date, scheduled_start, client_name, clients:clients(full_name)")
       .eq("owner_id", ownerId),
     supabase
       .from("invoices")
@@ -76,7 +123,37 @@ export async function getOwnerDashboardData(ownerId: string) {
       .select("id, quote_number, status, created_at, client_name, clients:clients(full_name), last_reminder_sent")
       .eq("owner_id", ownerId)
       .neq("status", "accepted")
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("invoices")
+      .select("amount, created_at")
+      .eq("owner_id", ownerId)
+      .eq("status", "paid")
+      .gte("created_at", sevenDaysAgo.toISOString()),
+    supabase
+      .from("jobs")
+      .select("id, title, created_at")
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("clients")
+      .select("id, full_name, created_at")
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("invoices")
+      .select("id, invoice_number, created_at")
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("quotes")
+      .select("id, quote_number, created_at")
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false })
+      .limit(8)
   ]);
 
   const now = new Date();
@@ -94,9 +171,101 @@ export async function getOwnerDashboardData(ownerId: string) {
   }));
   const safeClients = clients ?? [];
   const safeInvoices = invoices ?? [];
-  const safeAllJobs = allJobs ?? [];
+  const safeAllJobs = (allJobs ?? []).map((job: any) => ({
+    ...job,
+    client_name: job.client_name ?? job.clients?.full_name ?? null
+  }));
   const safeUnpaid = unpaidInvoices ?? [];
   const safeQuotes = quotes ?? [];
+
+  const todayKey = toLocalDateKey(new Date());
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowKey = toLocalDateKey(tomorrow);
+
+  const glanceToday: GlanceJobRow[] = [];
+  const glanceTomorrow: GlanceJobRow[] = [];
+  for (const job of safeAllJobs) {
+    const row: GlanceJobRow = {
+      id: job.id,
+      title: job.title ?? null,
+      scheduled_date: job.scheduled_date ?? null,
+      scheduled_start: job.scheduled_start ?? null,
+      status: job.status ?? null,
+      client_name: job.client_name ?? job.clients?.full_name ?? null
+    };
+    const d = job.scheduled_date ? String(job.scheduled_date).slice(0, 10) : "";
+    if (d === todayKey) glanceToday.push(row);
+    else if (d === tomorrowKey) glanceTomorrow.push(row);
+  }
+  const sortByStart = (a: GlanceJobRow, b: GlanceJobRow) =>
+    String(a.scheduled_start ?? "").localeCompare(String(b.scheduled_start ?? ""));
+  glanceToday.sort(sortByStart);
+  glanceTomorrow.sort(sortByStart);
+
+  const jobsByStatus = { pending: 0, inProgress: 0, completed: 0 };
+  for (const job of safeAllJobs) {
+    const b = bucketJobStatus(job.status ?? null);
+    if (b === "cancelled") continue;
+    if (b === "completed") jobsByStatus.completed += 1;
+    else if (b === "in_progress") jobsByStatus.inProgress += 1;
+    else jobsByStatus.pending += 1;
+  }
+
+  const revenueByDay: number[] = [];
+  for (let i = 0; i < 7; i += 1) {
+    const day = new Date(sevenDaysAgo);
+    day.setDate(sevenDaysAgo.getDate() + i);
+    revenueByDay.push(0);
+    const key = toLocalDateKey(day);
+    for (const inv of paidInvoicesWeek ?? []) {
+      if (!inv.created_at) continue;
+      const invKey = String(inv.created_at).slice(0, 10);
+      if (invKey === key) {
+        revenueByDay[i] += Number(inv.amount ?? 0);
+      }
+    }
+  }
+
+  const activityCandidates: DashboardActivityItem[] = [];
+  for (const j of recentJobsActivity ?? []) {
+    if (!j.created_at) continue;
+    activityCandidates.push({
+      id: `job-${j.id}`,
+      kind: "job",
+      label: `Job created: ${j.title ?? "Untitled"}`,
+      at: j.created_at
+    });
+  }
+  for (const c of recentClientsActivity ?? []) {
+    if (!c.created_at) continue;
+    activityCandidates.push({
+      id: `client-${c.id}`,
+      kind: "client",
+      label: `Client added: ${c.full_name ?? "New client"}`,
+      at: c.created_at
+    });
+  }
+  for (const inv of recentInvoicesActivity ?? []) {
+    if (!inv.created_at) continue;
+    activityCandidates.push({
+      id: `invoice-${inv.id}`,
+      kind: "invoice",
+      label: `Invoice ${inv.invoice_number ?? inv.id} added`,
+      at: inv.created_at
+    });
+  }
+  for (const q of recentQuotesActivity ?? []) {
+    if (!q.created_at) continue;
+    activityCandidates.push({
+      id: `quote-${q.id}`,
+      kind: "quote",
+      label: `Quote ${q.quote_number ?? q.id} added`,
+      at: q.created_at
+    });
+  }
+  activityCandidates.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  const recentActivity = activityCandidates.slice(0, 5);
 
   const metrics: OwnerMetric = {
     revenueThisMonth: safeInvoices
@@ -154,7 +323,12 @@ export async function getOwnerDashboardData(ownerId: string) {
     recentInvoices: safeInvoices.slice(0, 5),
     topClients,
     chaseInvoices,
-    quotesFollowUp
+    quotesFollowUp,
+    revenueLast7Days: revenueByDay,
+    glanceToday,
+    glanceTomorrow,
+    jobsByStatus,
+    recentActivity
   };
 }
 

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
-import { Bell, Briefcase, HardHat, Home, Menu, Moon, Sun, Users } from "lucide-react";
+import { Bell, Briefcase, Calendar, HardHat, Home, Menu, Moon, Sun, Users } from "lucide-react";
 
 const ownerNavSections = [
   [{ href: "/dashboard/owner", label: "Dashboard" }],
@@ -11,6 +11,7 @@ const ownerNavSections = [
     { href: "/dashboard/owner/jobs", label: "Jobs" },
     { href: "/dashboard/owner/clients", label: "Clients" }
   ],
+  [{ href: "/dashboard/schedule", label: "Schedule" }],
   [
     { href: "/dashboard/owner/invoices", label: "Invoices" },
     { href: "/dashboard/owner/quotes", label: "Quotes" }
@@ -19,6 +20,7 @@ const ownerNavSections = [
     { href: "/dashboard/owner/employees", label: "Employees" },
     { href: "/dashboard/contractors", label: "Contractors" }
   ],
+  [{ href: "/dashboard/reports", label: "Reports" }],
   [{ href: "/dashboard/owner/settings", label: "Settings" }]
 ];
 
@@ -186,7 +188,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
             { href: "/dashboard/owner", label: "Dashboard", icon: Home },
             { href: "/dashboard/owner/jobs", label: "Jobs", icon: Briefcase },
             { href: "/dashboard/owner/clients", label: "Clients", icon: Users },
-            { href: "/dashboard/contractors", label: "Contractors", icon: HardHat }
+            { href: "/dashboard/schedule", label: "Schedule", icon: Calendar }
           ].map((item) => {
             const active = isNavItemActive(pathname, item.href);
             const Icon = item.icon;
