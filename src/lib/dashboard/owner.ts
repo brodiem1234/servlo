@@ -13,6 +13,7 @@ export type DashboardActivityItem = {
   kind: "job" | "client" | "invoice" | "quote";
   label: string;
   at: string;
+  isDemo?: boolean;
 };
 
 export type GlanceJobRow = {
@@ -22,6 +23,7 @@ export type GlanceJobRow = {
   scheduled_start: string | null;
   status: string | null;
   client_name: string | null;
+  is_demo?: boolean | null;
 };
 
 function toLocalDateKey(d: Date) {
@@ -174,11 +176,6 @@ export async function getOwnerDashboardData(ownerId: string) {
   const invoicesMoney = excludeDemoFinancial(safeInvoices);
   const paidWeekMoney = excludeDemoFinancial(paidInvoicesWeek ?? []);
 
-  const jobNonDemoCount = safeAllJobs.filter((j: any) => !j.is_demo).length;
-  const clientNonDemoCount = safeClients.filter((c: any) => !c.is_demo).length;
-  const invoiceNonDemoCount = safeInvoices.filter((inv: any) => !inv.is_demo).length;
-  const quoteNonDemoCount = safeQuotes.filter((q: any) => !q.is_demo).length;
-
   const recentJobs = [...visibleJobs]
     .sort((a: any, b: any) => String(b.scheduled_date ?? "").localeCompare(String(a.scheduled_date ?? "")))
     .slice(0, 5)
@@ -187,7 +184,8 @@ export async function getOwnerDashboardData(ownerId: string) {
       title: job.title ?? null,
       status: job.status ?? null,
       scheduled_date: job.scheduled_date ?? null,
-      client_name: job.client_name ?? job.clients?.full_name ?? null
+      client_name: job.client_name ?? job.clients?.full_name ?? null,
+      is_demo: job.is_demo ?? null
     }));
 
   const todayKey = toLocalDateKey(new Date());
@@ -204,7 +202,8 @@ export async function getOwnerDashboardData(ownerId: string) {
       scheduled_date: job.scheduled_date ?? null,
       scheduled_start: job.scheduled_start ?? null,
       status: job.status ?? null,
-      client_name: job.client_name ?? job.clients?.full_name ?? null
+      client_name: job.client_name ?? job.clients?.full_name ?? null,
+      is_demo: job.is_demo ?? null
     };
     const d = job.scheduled_date ? String(job.scheduled_date).slice(0, 10) : "";
     if (d === todayKey) glanceToday.push(row);
@@ -242,42 +241,42 @@ export async function getOwnerDashboardData(ownerId: string) {
   const activityCandidates: DashboardActivityItem[] = [];
   for (const j of recentJobsActivity ?? []) {
     if (!j.created_at) continue;
-    if ((j as { is_demo?: boolean }).is_demo && jobNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `job-${j.id}`,
       kind: "job",
       label: `Job created: ${j.title ?? "Untitled"}`,
-      at: j.created_at
+      at: j.created_at,
+      isDemo: Boolean((j as { is_demo?: boolean }).is_demo)
     });
   }
   for (const c of recentClientsActivity ?? []) {
     if (!c.created_at) continue;
-    if ((c as { is_demo?: boolean }).is_demo && clientNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `client-${c.id}`,
       kind: "client",
       label: `Client added: ${c.full_name ?? "New client"}`,
-      at: c.created_at
+      at: c.created_at,
+      isDemo: Boolean((c as { is_demo?: boolean }).is_demo)
     });
   }
   for (const inv of recentInvoicesActivity ?? []) {
     if (!inv.created_at) continue;
-    if ((inv as { is_demo?: boolean }).is_demo && invoiceNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `invoice-${inv.id}`,
       kind: "invoice",
       label: `Invoice ${inv.invoice_number ?? inv.id} added`,
-      at: inv.created_at
+      at: inv.created_at,
+      isDemo: Boolean((inv as { is_demo?: boolean }).is_demo)
     });
   }
   for (const q of recentQuotesActivity ?? []) {
     if (!q.created_at) continue;
-    if ((q as { is_demo?: boolean }).is_demo && quoteNonDemoCount > 0) continue;
     activityCandidates.push({
       id: `quote-${q.id}`,
       kind: "quote",
       label: `Quote ${q.quote_number ?? q.id} added`,
-      at: q.created_at
+      at: q.created_at,
+      isDemo: Boolean((q as { is_demo?: boolean }).is_demo)
     });
   }
   activityCandidates.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());

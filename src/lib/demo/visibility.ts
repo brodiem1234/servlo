@@ -1,11 +1,11 @@
-/** Rows tagged as onboarding demos — hide once the owner has any non-demo row of that kind. */
+/**
+ * Owner-facing lists show both real and demo rows. Demo rows use `DemoBadge` in the UI.
+ * Financial aggregates still use `excludeDemoFinancial`.
+ */
 export function filterDemoEntities<T extends { is_demo?: boolean | null }>(
   rows: T[] | null | undefined
 ): T[] {
-  const list = rows ?? [];
-  const real = list.filter((r) => !r.is_demo);
-  if (real.length > 0) return real;
-  return list.filter((r) => Boolean(r.is_demo));
+  return rows ?? [];
 }
 
 export function hasNonDemo<T extends { is_demo?: boolean | null }>(rows: T[] | null | undefined): boolean {

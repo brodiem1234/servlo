@@ -7,6 +7,8 @@ import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clien
 import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 
+export const dynamic = "force-dynamic";
+
 type ClientsPageProps = {
   searchParams?: {
     view?: string;
@@ -268,6 +270,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
 
     let attempt = await sb.from("clients").insert({
       owner_id: owner.id,
+      is_demo: false,
       ...basePayload
     });
 
@@ -282,6 +285,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     if (attempt.error?.code === "PGRST204") {
       const fallback = await sb.from("clients").insert({
         owner_id: owner.id,
+        is_demo: false,
         full_name: basePayload.full_name,
         email: basePayload.email,
         phone: basePayload.phone,

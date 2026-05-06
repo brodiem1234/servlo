@@ -66,10 +66,12 @@ export async function seedOwnerDemoData(
       .single();
 
     if (clientErr || !clientRow?.id) {
+      console.error("[seed-owner-demo] demo client insert failed", { owner_id: ownerId, message: clientErr?.message });
       return { ok: false, message: clientErr?.message ?? "Failed to insert demo client" };
     }
 
     const clientId = clientRow.id as string;
+    console.log("[seed-owner-demo] demo client inserted OK", { owner_id: ownerId, client_id: clientId });
 
     let employeeRow: { id: string } | null = null;
     let empErr = null;
@@ -137,11 +139,13 @@ export async function seedOwnerDemoData(
     }
 
     if (!employeeRow?.id || empErr) {
+      console.error("[seed-owner-demo] demo employee insert failed", { owner_id: ownerId, message: empErr?.message });
       await sb.from("clients").delete().eq("id", clientId);
       return { ok: false, message: empErr?.message ?? "Failed to insert demo employee" };
     }
 
     const employeeId = employeeRow.id;
+    console.log("[seed-owner-demo] demo employee inserted OK", { owner_id: ownerId, employee_id: employeeId });
 
     const jobMinimal = {
       owner_id: ownerId,
@@ -158,6 +162,10 @@ export async function seedOwnerDemoData(
     let jobErr = null;
     const jobTry1 = await sb.from("jobs").insert(jobMinimal);
     if (jobTry1.error) {
+      console.warn("[seed-owner-demo] demo job minimal insert failed, retrying expanded shape", {
+        owner_id: ownerId,
+        message: jobTry1.error.message
+      });
       const jobTry2 = await sb.from("jobs").insert({
         ...jobMinimal,
         job_type: "",
@@ -175,10 +183,17 @@ export async function seedOwnerDemoData(
     }
 
     if (jobErr) {
+      console.error("[seed-owner-demo] demo job insert failed", { owner_id: ownerId, message: jobErr.message });
       await sb.from("employees").delete().eq("id", employeeId);
       await sb.from("clients").delete().eq("id", clientId);
       return { ok: false, message: jobErr.message ?? "Failed to insert demo job" };
     }
+
+    console.log("[seed-owner-demo] demo job inserted OK", {
+      owner_id: ownerId,
+      client_id: clientId,
+      employee_id: employeeId
+    });
 
     const invNewShape = {
       owner_id: ownerId,
@@ -204,11 +219,28 @@ export async function seedOwnerDemoData(
 
     const invTry1 = await sb.from("invoices").insert(invNewShape).select("id").single();
     if (!invTry1.error && invTry1.data?.id) {
+      console.log("[seed-owner-demo] demo invoice inserted OK (new shape)", {
+        owner_id: ownerId,
+        invoice_id: invTry1.data.id as string,
+        client_id: clientId
+      });
       return { ok: true };
+    }
+
+    if (invTry1.error) {
+      console.warn("[seed-owner-demo] demo invoice new-shape insert failed, retrying legacy", {
+        owner_id: ownerId,
+        message: invTry1.error.message
+      });
     }
 
     const invTry2 = await sb.from("invoices").insert(invLegacyShape).select("id").single();
     if (!invTry2.error && invTry2.data?.id) {
+      console.log("[seed-owner-demo] demo invoice inserted OK (legacy shape)", {
+        owner_id: ownerId,
+        invoice_id: invTry2.data.id as string,
+        client_id: clientId
+      });
       return { ok: true };
     }
 
@@ -216,9 +248,11 @@ export async function seedOwnerDemoData(
     await sb.from("jobs").delete().eq("owner_id", ownerId).eq("client_id", clientId).eq("is_demo", true);
     await sb.from("employees").delete().eq("id", employeeId);
     await sb.from("clients").delete().eq("id", clientId);
+    console.error("[seed-owner-demo] demo invoice insert failed", { owner_id: ownerId, message: invErr?.message });
     return { ok: false, message: invErr?.message ?? "Failed to insert demo invoice" };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    console.error("[seed-owner-demo] unexpected error", { owner_id: ownerId, message: msg });
     return { ok: false, message: msg };
   }
 }

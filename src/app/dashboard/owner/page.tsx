@@ -5,12 +5,15 @@ import { getOwnerDashboardData } from "@/lib/dashboard/owner";
 import { invoiceReminderEmailTemplate, quoteFollowUpEmailTemplate, sendEmail } from "@/lib/email";
 import RevenueSparkline from "@/components/dashboard/revenue-sparkline";
 import OwnerDashboardQuickActions from "@/components/dashboard/owner-dashboard-quick-actions";
+import { DemoBadge } from "@/components/demo-badge";
 import {
   getGettingStartedChecklist,
   isIndustrySlug,
   ownerWelcomeLine,
   type IndustrySlug
 } from "@/lib/industries";
+
+export const dynamic = "force-dynamic";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(value);
@@ -255,7 +258,10 @@ export default async function OwnerDashboardPage() {
                 ) : (
                   glanceToday.map((job) => (
                     <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
-                      <p className="font-medium text-[var(--text-primary)]">{job.title ?? "Untitled job"}</p>
+                      <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--text-primary)]">
+                        <span>{job.title ?? "Untitled job"}</span>
+                        {job.is_demo ? <DemoBadge /> : null}
+                      </p>
                       <p className="text-xs text-[var(--text-muted)]">
                         {job.client_name ?? "—"}
                         {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
@@ -273,7 +279,10 @@ export default async function OwnerDashboardPage() {
                 ) : (
                   glanceTomorrow.map((job) => (
                     <li key={job.id} className="rounded border border-[var(--border)] px-3 py-2">
-                      <p className="font-medium text-[var(--text-primary)]">{job.title ?? "Untitled job"}</p>
+                      <p className="flex flex-wrap items-center gap-2 font-medium text-[var(--text-primary)]">
+                        <span>{job.title ?? "Untitled job"}</span>
+                        {job.is_demo ? <DemoBadge /> : null}
+                      </p>
                       <p className="text-xs text-[var(--text-muted)]">
                         {job.client_name ?? "—"}
                         {job.scheduled_start ? ` · ${job.scheduled_start.slice(0, 5)}` : ""}
@@ -298,7 +307,10 @@ export default async function OwnerDashboardPage() {
                   key={item.id}
                   className="flex items-start justify-between gap-2 rounded border border-[var(--border)] px-3 py-2"
                 >
-                  <span className="text-[var(--text-primary)]">{item.label}</span>
+                  <span className="flex flex-wrap items-center gap-2 text-[var(--text-primary)]">
+                    <span>{item.label}</span>
+                    {item.isDemo ? <DemoBadge /> : null}
+                  </span>
                   <span className="shrink-0 text-xs capitalize text-[var(--text-muted)]">{item.kind}</span>
                 </li>
               ))
@@ -330,7 +342,12 @@ export default async function OwnerDashboardPage() {
                 ) : (
                   recentJobs.map((job) => (
                     <tr key={job.id} className="border-b border-[var(--border)]">
-                      <td className="px-2 py-2 font-medium text-[var(--text-primary)]">{job.title ?? "Untitled job"}</td>
+                      <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
+                        <span className="inline-flex flex-wrap items-center gap-2">
+                          <span>{job.title ?? "Untitled job"}</span>
+                          {job.is_demo ? <DemoBadge /> : null}
+                        </span>
+                      </td>
                       <td className="px-2 py-2 text-[var(--text-secondary)]">{job.client_name ?? "-"}</td>
                       <td className="px-2 py-2">
                         <span className={`rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadgeClasses(job.status ?? null)}`}>

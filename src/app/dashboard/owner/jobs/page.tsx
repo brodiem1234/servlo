@@ -5,6 +5,8 @@ import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 
+export const dynamic = "force-dynamic";
+
 type JobsPageProps = {
   searchParams?: Promise<{ client?: string | string[] }>;
 };
@@ -58,6 +60,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     if (!owner) redirect("/auth/login");
     const { error } = await sb.from("jobs").insert({
       owner_id: owner.id,
+      is_demo: false,
       title: String(formData.get("title") ?? ""),
       description: String(formData.get("description") ?? ""),
       client_id: String(formData.get("client_id") ?? "") || null,
@@ -262,6 +265,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .from("clients")
       .insert({
         owner_id: owner.id,
+        is_demo: false,
         full_name,
         phone: phone || null,
         email: email || null,
@@ -283,6 +287,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         .from("clients")
         .insert({
           owner_id: owner.id,
+          is_demo: false,
           full_name,
           phone: phone || null,
           email: email || null,
@@ -315,6 +320,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .from("employees")
       .insert({
         owner_id: owner.id,
+        is_demo: false,
         full_name,
         email: "",
         phone: phone || null,
@@ -334,6 +340,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .from("employees")
       .insert({
         owner_id: owner.id,
+        is_demo: false,
         full_name,
         phone: phone || null,
         email: ""

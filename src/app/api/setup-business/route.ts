@@ -262,8 +262,15 @@ export async function POST(request: Request) {
 
   const demo = await seedOwnerDemoData(supabaseAdmin, userId);
   if (!demo.ok) {
-    console.error("[setup-business] demo seed failed (non-blocking)", demo.message);
+    console.error("[setup-business] demo seed FAILED", { userId, owner_id: userId, message: demo.message });
+  } else {
+    console.log("[setup-business] demo seed SUCCESS", { userId, owner_id: userId });
   }
 
-  return NextResponse.json({ success: true, businessId: bizRowId });
+  return NextResponse.json({
+    success: true,
+    businessId: bizRowId,
+    demoSeeded: demo.ok,
+    ...(demo.ok ? {} : { demoSeedError: demo.message ?? "Unknown demo seed error" })
+  });
 }
