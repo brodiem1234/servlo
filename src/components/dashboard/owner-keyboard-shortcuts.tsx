@@ -60,6 +60,24 @@ export default function OwnerKeyboardShortcuts({ targets }: { targets?: Shortcut
         invoices: targets?.invoices !== false,
         quotes: targets?.quotes !== false
       };
+      if (k === "j" && allow.jobs) {
+        e.preventDefault();
+        bufRef.current = "";
+        router.push("/dashboard/owner/jobs");
+        return;
+      }
+      if (k === "c" && allow.clients) {
+        e.preventDefault();
+        bufRef.current = "";
+        router.push("/dashboard/owner/clients");
+        return;
+      }
+      if (k === "i" && allow.invoices) {
+        e.preventDefault();
+        bufRef.current = "";
+        router.push("/dashboard/owner/invoices");
+        return;
+      }
       if (tail === "nj" && allow.jobs) {
         e.preventDefault();
         bufRef.current = "";
@@ -103,6 +121,15 @@ export default function OwnerKeyboardShortcuts({ targets }: { targets?: Shortcut
         </div>
         <p className="mt-2 text-xs text-[var(--text-muted)]">Press keys in sequence (within about one second).</p>
         <ul className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
+          <li>
+            <span className="font-mono text-[var(--text-primary)]">J</span> — Jobs
+          </li>
+          <li>
+            <span className="font-mono text-[var(--text-primary)]">C</span> — Clients
+          </li>
+          <li>
+            <span className="font-mono text-[var(--text-primary)]">I</span> — Invoices
+          </li>
           <li>
             <span className="font-mono text-[var(--text-primary)]">N</span> then{" "}
             <span className="font-mono text-[var(--text-primary)]">J</span> — Jobs

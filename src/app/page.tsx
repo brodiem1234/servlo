@@ -15,6 +15,7 @@ import {
 import { LandingHeader } from "@/components/landing-header";
 import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
 import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
+import { LandingScrollReveal } from "@/components/landing-scroll-reveal";
 
 const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
 
@@ -212,9 +213,10 @@ function HeroAppMock() {
 export default function HomePage() {
   return (
     <main className="min-h-screen scroll-smooth bg-slate-50 text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0f172a] dark:text-white">
+      <LandingScrollReveal />
       <LandingHeader />
 
-      <section className="bg-[#f1f5f9] dark:bg-[#1e3a5f]">
+      <section className="reveal-item bg-[#f1f5f9] dark:bg-[#1e3a5f]" data-reveal>
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:px-6 md:py-24">
           <div>
             <h1 className="text-4xl font-extrabold leading-tight text-[#1e3a5f] dark:text-white md:text-6xl">
@@ -245,7 +247,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 md:px-6">
+      <section className="reveal-item mx-auto max-w-7xl px-4 py-14 md:px-6" data-reveal>
         <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">Built for your industry</h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
           Choose your sector to jump to tailored workflows — new accounts default to trades, and you can pick multiple

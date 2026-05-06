@@ -164,7 +164,6 @@ export default function InvoicesManager({
   }, [invoices, initialBucket]);
 
   const overdue = invoices.filter((invoice) => {
-    if (invoice.is_demo) return false;
     if (!invoice.due_date || (invoice.status ?? "").toLowerCase() === "paid") return false;
     const due = new Date(invoice.due_date);
     due.setHours(0, 0, 0, 0);
@@ -217,7 +216,11 @@ export default function InvoicesManager({
           <ul className="mt-2 list-inside list-disc text-sm !text-red-800 dark:!text-red-200">
             {overdue.slice(0, 8).map((inv) => (
               <li key={inv.id}>
-                {inv.invoice_number ?? inv.id} · due{" "}
+                <span className="inline-flex items-center gap-2">
+                  <span>{inv.invoice_number ?? inv.id}</span>
+                  {inv.is_demo ? <DemoBadge /> : null}
+                </span>{" "}
+                · due{" "}
                 {inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-AU") : "—"}
               </li>
             ))}

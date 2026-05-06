@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { Button } from "@/components/ui/button";
+import { LoginSubmit } from "@/components/auth/login-submit";
 
 type LoginPageProps = {
   searchParams?: {
@@ -107,8 +108,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <ThemeToggleCorner />
       <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
       <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="mb-4 flex justify-center">
-          <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
+        <div className="mb-4 flex items-center justify-center gap-3">
+          <Image src="/logo.png" alt="SERVLO" width={48} height={48} />
+          <span className="text-lg font-bold tracking-wide text-[#1e3a5f] dark:text-white">SERVLO</span>
         </div>
         <h1 className="text-3xl font-bold text-white">Welcome back</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -123,7 +125,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <form action={signIn} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
               Email
             </label>
             <input
@@ -132,11 +134,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               type="email"
               defaultValue={emailValue}
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900"
             />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
               Password
             </label>
             <input
@@ -144,8 +146,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               name="password"
               type="password"
               required
-              className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900"
             />
+            <div className="mt-2 flex items-center justify-between">
+              <Link href="/auth/forgot-password" className="text-xs font-semibold text-[var(--accent-color)] hover:underline">
+                Forgot password?
+              </Link>
+              <span className="text-xs text-[var(--text-muted)]">Reset via email link</span>
+            </div>
           </div>
           <label className="flex items-center gap-2 text-sm text-slate-400">
             <input
@@ -159,8 +167,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {searchParams?.error ? (
             <p className="text-sm text-red-700">{searchParams.error}</p>
           ) : null}
-          <Button type="submit" className="w-full bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]">
-            Sign in
+          <LoginSubmit />
+          <Button type="button" disabled className="w-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-60">
+            Continue with Google (coming soon)
           </Button>
         </form>
 

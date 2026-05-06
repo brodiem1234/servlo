@@ -32,6 +32,10 @@
     @apply bg-background text-foreground antialiased;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   input,
   select,
   textarea {
@@ -49,6 +53,29 @@
   thead tr {
     background: #f1f5f9;
     color: var(--text-primary);
+  }
+}
+
+/* Landing scroll-reveal */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 600ms ease,
+    transform 600ms ease;
+  will-change: opacity, transform;
+}
+
+.reveal-item.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 

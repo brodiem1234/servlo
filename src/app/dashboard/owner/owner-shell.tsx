@@ -17,6 +17,7 @@ import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import OwnerKeyboardShortcuts from "@/components/dashboard/owner-keyboard-shortcuts";
 import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/owner-sidebar-todos";
 import type { OwnerNavItem } from "@/app/dashboard/owner/nav-config";
+import { ToastProvider } from "@/components/ui/toast";
 
 /** Dashboard is only active on the exact path; other items match their section. */
 function isNavItemActive(pathname: string, href: string) {
@@ -100,6 +101,7 @@ export default function OwnerShell({
   );
 
   return (
+    <ToastProvider>
     <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
@@ -287,5 +289,6 @@ export default function OwnerShell({
 
       <OwnerKeyboardShortcuts targets={shortcutTargets} />
     </div>
+    </ToastProvider>
   );
 }

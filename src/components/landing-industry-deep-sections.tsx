@@ -223,7 +223,8 @@ export function LandingIndustryDeepSections() {
           <section
             key={slug}
             id={`industry-${slug}`}
-            className={`scroll-mt-28 border-t py-20 md:py-28 ${
+            data-reveal
+            className={`reveal-item scroll-mt-28 border-t py-20 ${
               isOddStripe
                 ? "border-slate-200 bg-white dark:border-white/[0.06] dark:bg-[#151f2e]"
                 : "border-slate-200 bg-slate-50 dark:border-white/[0.06] dark:bg-[#1e2a3a]"
@@ -249,11 +250,10 @@ export function LandingIndustryDeepSections() {
                   <ul className="mt-8 max-w-xl space-y-5 md:space-y-6">
                     {copy.bullets.map((b) => (
                       <li key={b} className="flex gap-4 text-sm leading-relaxed text-[#475569] dark:text-slate-300 md:text-base">
-                        <span
-                          className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--accent-color)_40%,transparent)] bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] text-sm font-bold text-[var(--accent-color)] dark:border-[color-mix(in_srgb,var(--accent-color)_35%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_8%,transparent)]"
-                          aria-hidden
-                        >
-                          ✓
+                        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--accent-color)_40%,transparent)] bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)] dark:border-[color-mix(in_srgb,var(--accent-color)_35%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_8%,transparent)]" aria-hidden>
+                          <svg viewBox="0 0 20 20" className="h-4 w-4 text-[var(--accent-color)]" fill="none">
+                            <path d="M16.5 5.5L8.25 13.75L3.5 9" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                         </span>
                         <span>{b}</span>
                       </li>

@@ -24,13 +24,13 @@ export function LandingIndustryTiles() {
   }, []);
 
   const tileBase =
-    "group flex w-full flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-sm outline-none transition duration-200 ease-out will-change-transform dark:border-slate-700 dark:bg-[#111827] sm:gap-5 sm:p-8 md:p-9 lg:gap-6";
+    "group flex w-full flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm outline-none transition duration-200 ease-out will-change-transform dark:border-slate-700 dark:bg-[#111827]";
 
   const interactiveHover =
-    "hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/10 dark:hover:border-slate-600 dark:hover:shadow-black/40";
+    "hover:-translate-y-[2px] hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/10 dark:hover:border-slate-600 dark:hover:shadow-black/40";
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {LANDING_INDUSTRY_ORDER.map((slug) => {
         const copy = LANDING_INDUSTRY_COPY[slug];
         const Icon = ICONS[slug];
@@ -40,21 +40,18 @@ export function LandingIndustryTiles() {
             key={slug}
             type="button"
             onClick={() => focus(slug)}
-            className={`${tileBase} border-l-4 ${interactiveHover} ${
+            data-reveal
+            className={`reveal-item ${tileBase} border-l-[3px] ${interactiveHover} ${
               isActive
                 ? "border-l-[var(--accent-color)] border-[color-mix(in_srgb,var(--accent-color)_28%,#e2e8f0)] bg-[color-mix(in_srgb,var(--accent-color)_11%,#ffffff)] shadow-md ring-1 ring-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:border-[color-mix(in_srgb,var(--accent-color)_35%,#334155)] dark:bg-[color-mix(in_srgb,var(--accent-color)_14%,#111827)] dark:ring-[color-mix(in_srgb,var(--accent-color)_25%,transparent)]"
                 : "border-l-transparent"
             }`}
           >
-            <Icon
-              className="h-11 w-11 shrink-0 text-[var(--accent-color)] dark:text-cyan-400 sm:h-12 sm:w-12"
-              strokeWidth={1.75}
-              aria-hidden
-            />
-            <span className="text-xl font-extrabold leading-snug tracking-tight text-[#1e3a5f] dark:text-white">
+            <Icon className="h-11 w-11 shrink-0 text-[var(--accent-color)] dark:text-cyan-400" strokeWidth={1.75} aria-hidden />
+            <span className="text-[18px] font-bold leading-snug tracking-tight text-[#1e3a5f] dark:text-white">
               {copy.headline}
             </span>
-            <span className="text-[13px] leading-relaxed text-[#64748b] dark:text-slate-500 sm:text-sm">{copy.tileHint}</span>
+            <span className="text-[13px] leading-relaxed text-[#64748b] opacity-60 dark:text-slate-300">{copy.tileHint}</span>
           </button>
         );
       })}
