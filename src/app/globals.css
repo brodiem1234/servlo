@@ -63,7 +63,14 @@
   --border: #e2e8f0;
   --input-bg: #ffffff;
   --accent: #0db8c8;
-  --sidebar-bg: #1e3a5f;
+  --sidebar-bg: #f1f5f9;
+  --sidebar-text: #1e3a5f;
+  --sidebar-text-muted: #64748b;
+  --sidebar-divider: #cbd5e1;
+  --sidebar-hover-bg: #e2e8f0;
+  --sidebar-active-bg: #0db8c8;
+  --sidebar-active-text: #ffffff;
+  --sidebar-ring: #0db8c8;
 }
 
 :root.dark {
@@ -76,7 +83,14 @@
   --border: #2a4a6b;
   --input-bg: #162436;
   --accent: #0db8c8;
-  --sidebar-bg: #0d1a26;
+  --sidebar-bg: #1e3a5f;
+  --sidebar-text: #ffffff;
+  --sidebar-text-muted: #cbd5e1;
+  --sidebar-divider: rgba(13, 184, 200, 0.5);
+  --sidebar-hover-bg: #0d1a2e;
+  --sidebar-active-bg: #0db8c8;
+  --sidebar-active-text: #ffffff;
+  --sidebar-ring: #0db8c8;
 }
 
 .dashboard-theme,
@@ -216,33 +230,54 @@
   color: var(--accent);
 }
 
+/* Explicit primary-coloured links (overrides main `a` accent colour when contrast matters) */
+.dashboard-theme main a.dashboard-text-link {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.dashboard-theme main a.dashboard-text-link:hover {
+  color: var(--accent) !important;
+}
+
 .dashboard-theme .owner-sidebar nav a {
-  color: #ffffff !important;
+  color: var(--sidebar-text) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a:hover {
-  background-color: #0d1a2e !important;
-  color: #ffffff !important;
+  background-color: var(--sidebar-hover-bg) !important;
+  color: var(--sidebar-text) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a[data-active="true"] {
-  background-color: #0db8c8 !important;
-  color: #ffffff !important;
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
   font-weight: 700;
 }
 
 .dashboard-theme .owner-mobile-nav a {
-  color: #ffffff !important;
+  color: var(--sidebar-text) !important;
+}
+
+.dashboard-theme .owner-mobile-nav a svg {
+  color: var(--sidebar-text) !important;
 }
 
 .dashboard-theme .owner-mobile-nav a[data-active="true"] {
-  background-color: #0db8c8 !important;
-  color: #ffffff !important;
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
   font-weight: 700;
 }
 
+.dashboard-theme .owner-mobile-nav a[data-active="true"] svg {
+  color: var(--sidebar-active-text) !important;
+}
+
 .dashboard-theme .owner-mobile-nav a[data-active="false"]:hover {
-  background-color: #0d1a2e !important;
+  background-color: var(--sidebar-hover-bg) !important;
 }
 
 .dashboard-theme .text-white,

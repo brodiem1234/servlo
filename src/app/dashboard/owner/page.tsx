@@ -148,32 +148,63 @@ export default async function OwnerDashboardPage() {
       {trialDaysRemaining > 0 ? (
         <div className="rounded-lg border border-sky-200 bg-sky-100 px-4 py-3 text-sm text-sky-900">
           {trialDaysRemaining} days remaining in your free trial -{" "}
-          <a href="/dashboard/owner/settings" className="font-semibold underline">
+          <a
+            href="/dashboard/owner/settings"
+            className="font-semibold !text-sky-950 underline decoration-sky-800 underline-offset-2 hover:!text-sky-900"
+          >
             Upgrade now
           </a>
         </div>
       ) : (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Trial expired -{" "}
-          <a href="/dashboard/owner/settings" className="font-semibold underline">
+          <a
+            href="/dashboard/owner/settings"
+            className="font-semibold !text-amber-950 underline decoration-amber-900 underline-offset-2 hover:!text-amber-900"
+          >
             upgrade to continue
           </a>
         </div>
       )}
       <div>
-        <h1 className="text-2xl font-bold text-white md:text-3xl">Owner Dashboard</h1>
-        <p className="text-sm text-slate-400">Track operational performance in real time.</p>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">Owner Dashboard</h1>
+        <p className="text-sm text-[var(--text-muted)]">Track operational performance in real time.</p>
       </div>
 
       {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? (
-        <article className="rounded-xl border border-[#2a4a6b] bg-[#1a2f45] p-4">
-          <h2 className="text-lg font-semibold text-white">Getting Started Checklist</h2>
-          <ul className="mt-3 space-y-2 text-sm text-slate-200">
-            <li>1. <a href="/dashboard/owner/clients" className="font-medium text-white underline">Add your first client</a></li>
-            <li>2. <a href="/dashboard/owner/jobs" className="font-medium text-white underline">Create your first job</a></li>
-            <li>3. <a href="/dashboard/owner/quotes" className="font-medium text-white underline">Send your first quote</a></li>
-            <li>4. <a href="/dashboard/owner/invoices" className="font-medium text-white underline">Create your first invoice</a></li>
-            <li>5. <a href="/dashboard/owner/settings" className="font-medium text-white underline">Complete your business settings</a></li>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Getting Started Checklist</h2>
+          <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
+            <li>
+              1.{" "}
+              <a href="/dashboard/owner/clients" className="dashboard-text-link">
+                Add your first client
+              </a>
+            </li>
+            <li>
+              2.{" "}
+              <a href="/dashboard/owner/jobs" className="dashboard-text-link">
+                Create your first job
+              </a>
+            </li>
+            <li>
+              3.{" "}
+              <a href="/dashboard/owner/quotes" className="dashboard-text-link">
+                Send your first quote
+              </a>
+            </li>
+            <li>
+              4.{" "}
+              <a href="/dashboard/owner/invoices" className="dashboard-text-link">
+                Create your first invoice
+              </a>
+            </li>
+            <li>
+              5.{" "}
+              <a href="/dashboard/owner/settings" className="dashboard-text-link">
+                Complete your business settings
+              </a>
+            </li>
           </ul>
         </article>
       ) : null}
@@ -196,7 +227,7 @@ export default async function OwnerDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Revenue This Month</p>
-          <p className="mt-2 text-3xl font-bold text-teal-400">{formatCurrency(metrics.revenueThisMonth)}</p>
+          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{formatCurrency(metrics.revenueThisMonth)}</p>
           <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
             Paid invoices — last 7 days
           </p>
@@ -204,15 +235,15 @@ export default async function OwnerDashboardPage() {
         </article>
         <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Outstanding</p>
-          <p className="mt-2 text-3xl font-bold text-teal-400">{formatCurrency(metrics.outstandingAmount)}</p>
+          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{formatCurrency(metrics.outstandingAmount)}</p>
         </article>
         <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Jobs Completed This Week</p>
-          <p className="mt-2 text-3xl font-bold text-teal-400">{metrics.jobsCompletedThisWeek}</p>
+          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{metrics.jobsCompletedThisWeek}</p>
         </article>
         <article className="dashboard-card rounded-xl border-l-4 border-l-[#0db8c8] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Active Clients</p>
-          <p className="mt-2 text-3xl font-bold text-teal-400">{metrics.activeClientsCount}</p>
+          <p className="mt-2 text-3xl font-bold text-teal-800 dark:text-teal-300">{metrics.activeClientsCount}</p>
         </article>
       </div>
 
@@ -222,7 +253,7 @@ export default async function OwnerDashboardPage() {
           <p className="mt-1 text-sm text-[var(--text-secondary)]">Scheduled jobs for today and tomorrow.</p>
           <div className="mt-4 grid gap-6 md:grid-cols-2">
             <div>
-              <h3 className="text-sm font-semibold text-[#0db8c8]">Today</h3>
+              <h3 className="text-sm font-semibold text-teal-800 dark:text-teal-300">Today</h3>
               <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 {glanceToday.length === 0 ? (
                   <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
@@ -240,7 +271,7 @@ export default async function OwnerDashboardPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#0db8c8]">Tomorrow</h3>
+              <h3 className="text-sm font-semibold text-teal-800 dark:text-teal-300">Tomorrow</h3>
               <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 {glanceTomorrow.length === 0 ? (
                   <li className="text-[var(--text-muted)]">No jobs scheduled.</li>
@@ -282,12 +313,12 @@ export default async function OwnerDashboardPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-white">Recent Jobs</h2>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Jobs</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[500px] text-sm">
               <thead>
-                <tr className="border-b text-left text-slate-300">
+                <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
                   <th className="px-2 py-2 font-medium">Title</th>
                   <th className="px-2 py-2 font-medium">Client</th>
                   <th className="px-2 py-2 font-medium">Status</th>
@@ -297,21 +328,21 @@ export default async function OwnerDashboardPage() {
               <tbody>
                 {recentJobs.length === 0 ? (
                   <tr>
-                    <td className="px-2 py-4 text-slate-400" colSpan={4}>
+                    <td className="px-2 py-4 text-[var(--text-muted)]" colSpan={4}>
                       No jobs found.
                     </td>
                   </tr>
                 ) : (
                   recentJobs.map((job) => (
-                    <tr key={job.id} className="border-b">
-                      <td className="px-2 py-2 font-medium">{job.title ?? "Untitled job"}</td>
-                      <td className="px-2 py-2">{job.client_name ?? "-"}</td>
+                    <tr key={job.id} className="border-b border-[var(--border)]">
+                      <td className="px-2 py-2 font-medium text-[var(--text-primary)]">{job.title ?? "Untitled job"}</td>
+                      <td className="px-2 py-2 text-[var(--text-secondary)]">{job.client_name ?? "-"}</td>
                       <td className="px-2 py-2">
                         <span className={`rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadgeClasses(job.status ?? null)}`}>
                           {job.status ?? "pending"}
                         </span>
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2 py-2 text-[var(--text-secondary)]">
                         {job.scheduled_date
                           ? new Date(job.scheduled_date).toLocaleDateString("en-AU")
                           : "-"}
@@ -324,38 +355,48 @@ export default async function OwnerDashboardPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-white">Top Clients</h2>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Top Clients</h2>
           <div className="mt-3 space-y-2 text-sm">
             {topClients.map((client, idx) => (
-              <div key={`${client.client_name}-${idx}`} className="flex items-center justify-between rounded border px-3 py-2">
-                <p>{client.client_name}</p>
-                <p className="font-semibold">{formatCurrency(client.total)}</p>
+              <div
+                key={`${client.client_name}-${idx}`}
+                className="flex items-center justify-between rounded border border-[var(--border)] px-3 py-2"
+              >
+                <p className="text-[var(--text-primary)]">{client.client_name}</p>
+                <p className="font-semibold text-[var(--text-primary)]">{formatCurrency(client.total)}</p>
               </div>
             ))}
-            {topClients.length === 0 ? <p className="text-slate-400">No client revenue data yet.</p> : null}
+            {topClients.length === 0 ? <p className="text-[var(--text-muted)]">No client revenue data yet.</p> : null}
           </div>
         </article>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-white">Chase Invoices</h2>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Chase Invoices</h2>
           <div className="mt-3 space-y-2 text-sm">
             {chaseInvoices.map((invoice: any) => (
-              <div key={invoice.id} className="rounded border p-3">
+              <div key={invoice.id} className="rounded border border-[var(--border)] p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium">{invoice.invoice_number ?? "Invoice"} - {invoice.client_name}</p>
+                  <p className="font-medium text-[var(--text-primary)]">
+                    {invoice.invoice_number ?? "Invoice"} - {invoice.client_name}
+                  </p>
                   <form action={sendInvoiceReminderAction}>
                     <input type="hidden" name="invoice_id" value={invoice.id} />
-                    <button type="submit" className="rounded border px-2 py-1 text-xs">Send Reminder</button>
+                    <button
+                      type="submit"
+                      className="rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                    >
+                      Send Reminder
+                    </button>
                   </form>
                 </div>
-                <p className="text-slate-200">
+                <p className="text-[var(--text-secondary)]">
                   {formatCurrency(Number(invoice.amount ?? 0))} · Due{" "}
                   {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[var(--text-muted)]">
                   {invoice.last_reminder_sent
                     ? `Reminder sent ${Math.max(
                         0,
@@ -365,29 +406,36 @@ export default async function OwnerDashboardPage() {
                 </p>
               </div>
             ))}
-            {chaseInvoices.length === 0 ? <p className="text-slate-400">No unpaid invoices.</p> : null}
+            {chaseInvoices.length === 0 ? <p className="text-[var(--text-muted)]">No unpaid invoices.</p> : null}
           </div>
         </article>
 
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-white">Follow Up Needed (Quotes)</h2>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Follow Up Needed (Quotes)</h2>
           <div className="mt-3 space-y-2 text-sm">
             {quotesFollowUp.map((quote: any) => (
-              <div key={quote.id} className="rounded border p-3">
+              <div key={quote.id} className="rounded border border-[var(--border)] p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium">{quote.quote_number ?? "Quote"} - {quote.client_name}</p>
+                  <p className="font-medium text-[var(--text-primary)]">
+                    {quote.quote_number ?? "Quote"} - {quote.client_name}
+                  </p>
                   <form action={sendQuoteReminderAction}>
                     <input type="hidden" name="quote_id" value={quote.id} />
-                    <button type="submit" className="rounded border px-2 py-1 text-xs">Send Reminder</button>
+                    <button
+                      type="submit"
+                      className="rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                    >
+                      Send Reminder
+                    </button>
                   </form>
                 </div>
-                <p className="text-slate-200">
+                <p className="text-[var(--text-secondary)]">
                   Created {quote.created_at ? new Date(quote.created_at).toLocaleDateString("en-AU") : "-"} ·{" "}
                   {quote.status ?? "pending"}
                 </p>
               </div>
             ))}
-            {quotesFollowUp.length === 0 ? <p className="text-slate-400">No quote follow-ups needed.</p> : null}
+            {quotesFollowUp.length === 0 ? <p className="text-[var(--text-muted)]">No quote follow-ups needed.</p> : null}
           </div>
         </article>
       </div>
