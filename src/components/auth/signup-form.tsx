@@ -303,12 +303,7 @@ export function SignupForm() {
             ) : null}
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-                className="border-slate-500 text-slate-200 hover:bg-slate-800"
-              >
+              <Button type="button" variant="dark-ghost" onClick={handleBack}>
                 Back
               </Button>
               <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>
@@ -329,12 +324,7 @@ export function SignupForm() {
             <BrandAccentSwatches value={accentColour} onChange={setAccentColour} />
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-                className="border-slate-500 text-slate-200 hover:bg-slate-800"
-              >
+              <Button type="button" variant="dark-ghost" onClick={handleBack}>
                 Back
               </Button>
               <SubmitPrimary className={accentBtn}>Create account</SubmitPrimary>

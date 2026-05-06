@@ -11,7 +11,10 @@ const buttonVariants = cva(
         default: "bg-primary text-primary-foreground hover:opacity-90",
         secondary: "bg-secondary text-secondary-foreground hover:opacity-90",
         outline: "border bg-background hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground"
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        /** Auth shell, modals, dark panels — avoids `outline` / theme bg-background on dark surfaces */
+        "dark-ghost":
+          "border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800/90 hover:text-white"
       },
       size: {
         default: "h-10 px-4 py-2",
