@@ -4,7 +4,16 @@ import { createClient } from "@/lib/supabase/server";
 import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
 
-export default async function OwnerJobsPage() {
+type JobsPageProps = {
+  searchParams?: Promise<{ client?: string | string[] }>;
+};
+
+export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
+  const sp = searchParams ? await searchParams : {};
+  const clientRaw = sp.client;
+  const initialClientId =
+    typeof clientRaw === "string" ? clientRaw.trim() || undefined : undefined;
+
   const sb = await createClient();
   const {
     data: { user }
@@ -338,6 +347,7 @@ export default async function OwnerJobsPage() {
         }))}
         clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         employees={(employees ?? []).map((e) => ({ id: e.id, label: e.full_name ?? "Unnamed employee" }))}
+        initialClientId={initialClientId}
         createJobAction={createJobAction}
         updateJobAction={updateJobAction}
         updateJobStatusAction={updateJobStatusAction}

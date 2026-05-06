@@ -37,6 +37,7 @@ type Props = {
   jobs: Job[];
   clients: RefOpt[];
   employees: RefOpt[];
+  initialClientId?: string;
   createJobAction: (formData: FormData) => Promise<void>;
   updateJobAction: (formData: FormData) => Promise<void>;
   updateJobStatusAction: (formData: FormData) => Promise<void>;
@@ -113,6 +114,7 @@ export default function JobsManager({
   jobs,
   clients,
   employees,
+  initialClientId,
   createJobAction,
   updateJobAction,
   updateJobStatusAction,
@@ -158,6 +160,13 @@ export default function JobsManager({
   useEffect(() => {
     setEmployeeOptions(employees);
   }, [employees]);
+
+  useEffect(() => {
+    if (!initialClientId?.trim()) return;
+    const id = initialClientId.trim();
+    const exists = clients.some((c) => c.id === id);
+    if (exists) setClientFilter(id);
+  }, [initialClientId, clients]);
 
   const closeJobOverlay = () => {
     setOpen(false);

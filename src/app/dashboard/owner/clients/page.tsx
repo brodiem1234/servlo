@@ -1,9 +1,9 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import ClientsManager from "./clients-manager";
-import PortalShareButton from "./portal-share-button";
+import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clients-view";
 import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
 
 type ClientsPageProps = {
@@ -34,13 +34,21 @@ function formatDbError(error: {
     .join(" | ");
 }
 
+/** Legacy ?sort=created_at|full_name → new SortKey */
+function parseSort(raw: string | undefined): SortKey {
+  if (raw === "newest" || raw === "oldest" || raw === "name_asc" || raw === "name_desc") return raw;
+  if (raw === "created_at") return "newest";
+  if (raw === "full_name") return "name_asc";
+  return "name_asc";
+}
+
 async function ensureOwnerProfileExists(
   sb: Awaited<ReturnType<typeof createClient>>,
   owner: {
-  id: string;
-  email?: string | null;
-  user_metadata?: Record<string, unknown> | null;
-}
+    id: string;
+    email?: string | null;
+    user_metadata?: Record<string, unknown> | null;
+  }
 ) {
   const fullName =
     (owner.user_metadata?.full_name as string | undefined) ??
@@ -75,18 +83,13 @@ async function ensureOwnerProfileExists(
       console.error("ensureOwnerProfileExists admin upsert failed", {
         code: error.code,
         message: error.message,
-        details: error.details,
-        hint: error.hint,
         ownerId: owner.id
       });
     } else {
       return owner.id;
     }
   } catch (error) {
-    console.error("ensureOwnerProfileExists admin client error", {
-      ownerId: owner.id,
-      error
-    });
+    console.error("ensureOwnerProfileExists admin client error", { ownerId: owner.id, error });
   }
 
   const { error: fallbackError } = await sb.from("profiles").upsert(
@@ -103,8 +106,6 @@ async function ensureOwnerProfileExists(
     console.error("ensureOwnerProfileExists fallback upsert failed", {
       code: fallbackError.code,
       message: fallbackError.message,
-      details: fallbackError.details,
-      hint: fallbackError.hint,
       ownerId: owner.id
     });
   }
@@ -112,49 +113,48 @@ async function ensureOwnerProfileExists(
   return owner.id;
 }
 
-async function resolveOwnerIdCandidates(
-  sb: Awaited<ReturnType<typeof createClient>>,
-  owner: { id: string; email?: string | null; user_metadata?: Record<string, unknown> | null }
-) {
-  const candidates = new Set<string>();
-  candidates.add(owner.id);
-
-  const { data: profileById } = await sb
-    .from("profiles")
-    .select("id, business_id")
-    .eq("id", owner.id)
-    .maybeSingle();
-
-  if (profileById?.id) candidates.add(profileById.id);
-  if (profileById?.business_id) candidates.add(profileById.business_id);
-
-  if (owner.email) {
-    const { data: profileByEmail } = await sb
-      .from("profiles")
-      .select("id, business_id")
-      .eq("email", owner.email)
-      .maybeSingle();
-    if (profileByEmail?.id) candidates.add(profileByEmail.id);
-    if (profileByEmail?.business_id) candidates.add(profileByEmail.business_id);
-  }
-
-  return Array.from(candidates).filter(Boolean);
-}
-
 export default async function OwnerClientsPage({ searchParams }: ClientsPageProps) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const ownerScopeIds = await resolveOwnerIdCandidates(supabase, user);
-  const scopeForClientsQuery = ownerScopeIds.length > 0 ? ownerScopeIds : [user.id];
-
+  const ownerId = user.id;
   const view = searchParams?.view === "list" ? "list" : "card";
-  const sort = searchParams?.sort === "created_at" ? "created_at" : "full_name";
+  const sortKey = parseSort(searchParams?.sort);
+
+  let clientsQuery = supabase
+    .from("clients")
+    .select(
+      "id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at"
+    )
+    .eq("owner_id", ownerId);
+
+  if (sortKey === "newest") {
+    clientsQuery = clientsQuery.order("created_at", { ascending: false });
+  } else if (sortKey === "oldest") {
+    clientsQuery = clientsQuery.order("created_at", { ascending: true });
+  } else if (sortKey === "name_desc") {
+    clientsQuery = clientsQuery.order("full_name", { ascending: false });
+  } else {
+    clientsQuery = clientsQuery.order("full_name", { ascending: true });
+  }
+
+  const primaryClientsQuery = await clientsQuery;
+
+  console.log("[clients-page] clients SELECT", {
+    userId: ownerId,
+    rowCount: primaryClientsQuery.data?.length ?? 0,
+    error: primaryClientsQuery.error?.message ?? null,
+    errorCode: primaryClientsQuery.error?.code ?? null,
+    sampleOwnerIds: (primaryClientsQuery.data ?? []).slice(0, 6).map((r: { owner_id?: string | null }) => r.owner_id)
+  });
 
   let clients:
     | Array<{
         id: string;
+        owner_id?: string | null;
         full_name: string | null;
         email: string | null;
         phone: string | null;
@@ -172,23 +172,23 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       }>
     | null = null;
 
-  const primaryClientsQuery = await supabase
-    .from("clients")
-    .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at")
-    .in("owner_id", scopeForClientsQuery)
-    .order(sort, { ascending: true });
-
   if (primaryClientsQuery.error?.code === "PGRST204") {
+    const fbSortCol = sortKey === "newest" || sortKey === "oldest" ? "created_at" : "full_name";
+    const fbAscending = sortKey === "oldest" || sortKey === "name_asc";
     const fallbackClientsQuery = await supabase
       .from("clients")
-      .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
-      .in("owner_id", scopeForClientsQuery)
-      .order(sort, { ascending: true });
+      .select("id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
+      .eq("owner_id", ownerId)
+      .order(fbSortCol, { ascending: fbAscending });
     clients = (fallbackClientsQuery.data ?? []).map((client) => ({
       ...client,
       status: null,
-      source: null
+      source: null,
+      portal_token: null
     }));
+  } else if (primaryClientsQuery.error) {
+    console.error("[clients-page] clients query failed", primaryClientsQuery.error);
+    clients = [];
   } else {
     clients = primaryClientsQuery.data ?? [];
   }
@@ -200,18 +200,18 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
           .from("jobs")
           .select("id, client_id, scheduled_date")
           .in("client_id", clientIds)
-          .in("owner_id", scopeForClientsQuery)
+          .eq("owner_id", ownerId)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; scheduled_date: string | null }> }),
     clientIds.length
       ? supabase
           .from("invoices")
           .select("id, client_id, amount")
           .in("client_id", clientIds)
-          .in("owner_id", scopeForClientsQuery)
+          .eq("owner_id", ownerId)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; amount: number | null }> })
   ]);
 
-  const metricsByClient = new Map<string, { totalJobs: number; totalInvoiced: number; lastJobDate: string | null }>();
+  const metricsByClient = new Map<string, ClientMetric>();
   for (const clientId of clientIds) {
     metricsByClient.set(clientId, { totalJobs: 0, totalInvoiced: 0, lastJobDate: null });
   }
@@ -231,16 +231,19 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     metric.totalInvoiced += Number(invoice.amount ?? 0);
   }
 
+  const metricsRecord = Object.fromEntries(metricsByClient) as Record<string, ClientMetric>;
+
   async function createClientAction(formData: FormData): Promise<ClientActionResult> {
     "use server";
     const sb = await createClient();
-    const { data: { user: owner } } = await sb.auth.getUser();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) {
       return { ok: false, message: "You are not authenticated. Please sign in again." };
     }
 
     await ensureOwnerProfileExists(sb, owner);
-    const ownerIdCandidates = await resolveOwnerIdCandidates(sb, owner);
 
     const basePayload = {
       full_name: String(formData.get("full_name") ?? ""),
@@ -258,64 +261,44 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       notes: String(formData.get("notes") ?? "")
     };
 
-    let error: {
-      code?: string;
-      message?: string;
-      details?: string;
-      hint?: string;
-    } | null = null;
-    let successfulOwnerId: string | null = null;
+    let attempt = await sb.from("clients").insert({
+      owner_id: owner.id,
+      ...basePayload
+    });
 
-    for (const candidateOwnerId of ownerIdCandidates) {
-      const attempt = await sb.from("clients").insert({
-        owner_id: candidateOwnerId,
+    if (attempt.error?.code === "23503") {
+      await ensureOwnerProfileExists(sb, owner);
+      attempt = await sb.from("clients").insert({
+        owner_id: owner.id,
         ...basePayload
       });
-      if (!attempt.error) {
-        error = null;
-        successfulOwnerId = candidateOwnerId;
-        break;
-      }
-      error = attempt.error;
-      if (attempt.error.code !== "23503") {
-        break;
-      }
     }
 
-    // If production schema is missing optional columns, retry with core fields so save still succeeds.
-    if (error && error.code === "PGRST204") {
-      const fallbackPayload = {
+    if (attempt.error?.code === "PGRST204") {
+      const fallback = await sb.from("clients").insert({
         owner_id: owner.id,
         full_name: basePayload.full_name,
         email: basePayload.email,
         phone: basePayload.phone,
         notes: basePayload.notes
-      };
-      const fallback = await sb.from("clients").insert(fallbackPayload);
-      error = fallback.error;
+      });
+      attempt = fallback;
     }
 
-    if (error) {
+    if (attempt.error) {
       console.error("Create client failed", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
+        code: attempt.error.code,
+        message: attempt.error.message,
         ownerId: owner.id,
-        ownerIdCandidates,
         payload: basePayload
       });
       return {
         ok: false,
-        message: formatDbError(error) || "Failed to create client"
+        message: formatDbError(attempt.error) || "Failed to create client"
       };
     }
 
-    console.info("Create client succeeded", {
-      ownerId: owner.id,
-      successfulOwnerId
-    });
-
+    console.info("Create client succeeded", { ownerId: owner.id });
     revalidatePath("/dashboard/owner/clients");
     return { ok: true };
   }
@@ -323,12 +306,14 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   async function updateClientAction(formData: FormData): Promise<ClientActionResult> {
     "use server";
     const sb = await createClient();
-    const { data: { user: owner } } = await sb.auth.getUser();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
     if (!owner) {
       return { ok: false, message: "You are not authenticated. Please sign in again." };
     }
 
-    const resolvedOwnerId = await ensureOwnerProfileExists(sb, owner);
+    await ensureOwnerProfileExists(sb, owner);
 
     const id = String(formData.get("id") ?? "");
     const payload = {
@@ -350,7 +335,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       .from("clients")
       .update(payload)
       .eq("id", id)
-      .eq("owner_id", resolvedOwnerId);
+      .eq("owner_id", owner.id);
 
     if (error && error.code === "PGRST204") {
       const fallback = await sb
@@ -370,12 +355,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       console.error("Update client failed", {
         code: error.code,
         message: error.message,
-        details: error.details,
-        hint: error.hint,
         ownerId: owner.id,
-        resolvedOwnerId,
-        clientId: id,
-        payload
+        clientId: id
       });
       return {
         ok: false,
@@ -395,13 +376,11 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     } = await sb.auth.getUser();
     if (!owner) return;
     const clientId = String(formData.get("client_id") ?? "");
-    const ownerScopeIds = await resolveOwnerIdCandidates(sb, owner);
-    const scopeForPortal = ownerScopeIds.length > 0 ? ownerScopeIds : [owner.id];
     const { data: client } = await sb
       .from("clients")
       .select("full_name, email, portal_token")
       .eq("id", clientId)
-      .in("owner_id", scopeForPortal)
+      .eq("owner_id", owner.id)
       .maybeSingle();
     if (!client?.email || !client.portal_token) return;
     const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`;
@@ -416,135 +395,20 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     revalidatePath("/dashboard/owner/clients");
   }
 
-  return (
-    <section className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">Clients</h1>
-        <div className="flex gap-2 text-sm">
-          <ClientsManager
-            clients={clients ?? []}
-            createClientAction={createClientAction}
-            updateClientAction={updateClientAction}
-          />
-          <a href={`/dashboard/owner/clients?view=${view}&sort=full_name`} className="rounded border bg-white px-3 py-2">
-            Sort: Name
-          </a>
-          <a
-            href={`/dashboard/owner/clients?view=${view}&sort=created_at`}
-            className="rounded border bg-white px-3 py-2"
-          >
-            Sort: Newest
-          </a>
-          <a href={`/dashboard/owner/clients?view=card&sort=${sort}`} className="rounded border bg-white px-3 py-2">
-            Card
-          </a>
-          <a href={`/dashboard/owner/clients?view=list&sort=${sort}`} className="rounded border bg-white px-3 py-2">
-            List
-          </a>
-        </div>
-      </div>
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
 
-      {view === "list" ? (
-        <div className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
-          <table className="w-full min-w-[620px] text-sm">
-            <thead>
-              <tr className="border-b text-left text-[#1e3a5f]">
-                <th className="px-2 py-2">Name</th>
-                <th className="px-2 py-2">Email</th>
-                <th className="px-2 py-2">Phone</th>
-                <th className="px-2 py-2">Status</th>
-                <th className="px-2 py-2">Source</th>
-                <th className="px-2 py-2">Jobs</th>
-                <th className="px-2 py-2">Invoiced</th>
-                <th className="px-2 py-2">Last job</th>
-                <th className="px-2 py-2">Created</th>
-                <th className="px-2 py-2">Portal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(clients ?? []).map((client) => (
-                <tr key={client.id} className="border-b hover:bg-[#f1f5f9]">
-                  <td className="px-2 py-2 font-medium">
-                    <a className="text-[#1e3a5f] hover:underline" href={`/dashboard/owner/clients/${client.id}`}>
-                      {client.full_name ?? "-"}
-                    </a>
-                  </td>
-                  <td className="px-2 py-2">{client.email ?? "-"}</td>
-                  <td className="px-2 py-2">{client.phone ?? "-"}</td>
-                  <td className="px-2 py-2 capitalize">{client.status ?? "active"}</td>
-                  <td className="px-2 py-2 capitalize">{client.source ?? "other"}</td>
-                  <td className="px-2 py-2">{metricsByClient.get(client.id)?.totalJobs ?? 0}</td>
-                  <td className="px-2 py-2">${(metricsByClient.get(client.id)?.totalInvoiced ?? 0).toFixed(2)}</td>
-                  <td className="px-2 py-2">
-                    {metricsByClient.get(client.id)?.lastJobDate
-                      ? new Date(metricsByClient.get(client.id)!.lastJobDate!).toLocaleDateString("en-AU")
-                      : "-"}
-                  </td>
-                  <td className="px-2 py-2">
-                    {client.created_at ? new Date(client.created_at).toLocaleDateString("en-AU") : "-"}
-                  </td>
-                  <td className="px-2 py-2">
-                    {client.portal_token ? (
-                      <div className="flex items-center gap-2">
-                        <PortalShareButton
-                          url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`}
-                        />
-                        <form action={sendPortalEmailAction}>
-                          <input type="hidden" name="client_id" value={client.id} />
-                          <button type="submit" className="rounded border px-2 py-1 text-xs">Email Portal</button>
-                        </form>
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {(clients ?? []).length === 0 ? (
-                <tr>
-                  <td className="px-2 py-4 text-[#64748b]" colSpan={10}>
-                    No clients yet.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {(clients ?? []).map((client) => (
-            <a key={client.id} href={`/dashboard/owner/clients/${client.id}`} className="rounded-xl border bg-white p-4 shadow-sm hover:bg-[#f1f5f9]">
-              <p className="font-semibold text-[#1e3a5f]">{client.full_name ?? "Unnamed client"}</p>
-              <p className="mt-1 text-sm text-[#64748b]">{client.email ?? "No email"}</p>
-              <p className="text-sm text-[#64748b]">{client.phone ?? "No phone"}</p>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-[#64748b]">
-                <p>Status: <span className="font-medium capitalize">{client.status ?? "active"}</span></p>
-                <p>Source: <span className="font-medium capitalize">{client.source ?? "other"}</span></p>
-                <p>Jobs: <span className="font-medium">{metricsByClient.get(client.id)?.totalJobs ?? 0}</span></p>
-                <p>Invoiced: <span className="font-medium">${(metricsByClient.get(client.id)?.totalInvoiced ?? 0).toFixed(2)}</span></p>
-                <p className="col-span-2">
-                  Last job:{" "}
-                  <span className="font-medium">
-                    {metricsByClient.get(client.id)?.lastJobDate
-                      ? new Date(metricsByClient.get(client.id)!.lastJobDate!).toLocaleDateString("en-AU")
-                      : "-"}
-                  </span>
-                </p>
-              </div>
-              <div className="mt-3">
-                {client.portal_token ? (
-                  <PortalShareButton
-                    url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`}
-                  />
-                ) : null}
-              </div>
-            </a>
-          ))}
-          {(clients ?? []).length === 0 ? (
-            <p className="text-sm text-[#64748b]">No clients yet.</p>
-          ) : null}
-        </div>
-      )}
-    </section>
+  return (
+    <Suspense fallback={<div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-8 text-sm text-[var(--text-muted)]">Loading clients…</div>}>
+      <OwnerClientsView
+        clients={clients ?? []}
+        metrics={metricsRecord}
+        initialView={view}
+        initialSort={sortKey}
+        createClientAction={createClientAction}
+        updateClientAction={updateClientAction}
+        sendPortalEmailAction={sendPortalEmailAction}
+        appOrigin={appOrigin}
+      />
+    </Suspense>
   );
 }
