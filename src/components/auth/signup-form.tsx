@@ -2,7 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { ComponentProps, MouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import type { SignupFormState } from "@/app/auth/signup/signup-form-state";
+import { signUpAction } from "@/app/auth/signup/signup-actions";
 import {
   ClipboardList,
   HardHat,
@@ -63,12 +67,26 @@ const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: Luc
   }
 ];
 
-type Props = {
-  action: (formData: FormData) => Promise<void>;
-  error?: string;
-};
+const initialSignupState: SignupFormState = { error: null };
 
-export function SignupForm({ action, error }: Props) {
+function SubmitPrimary({
+  children,
+  className,
+  variant,
+  disabled,
+  ...props
+}: ComponentProps<typeof Button>) {
+  const { pending } = useFormStatus();
+  const mergedDisabled = pending || disabled;
+  return (
+    <Button type="submit" {...props} className={className} variant={variant} disabled={mergedDisabled}>
+      {pending ? "Working…" : children}
+    </Button>
+  );
+}
+
+export function SignupForm() {
+  const [state, formAction] = useFormState(signUpAction, initialSignupState);
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [role, setRole] = useState<"owner" | "client">("owner");
@@ -87,7 +105,7 @@ export function SignupForm({ action, error }: Props) {
     setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   }
 
-  function handleContinue(e: React.MouseEvent) {
+  function handleContinue(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     const form = formRef.current;
     if (!form?.checkValidity()) {
@@ -97,13 +115,12 @@ export function SignupForm({ action, error }: Props) {
     setStep(2);
   }
 
-  function handleContinueFromIndustries(e: React.MouseEvent) {
+  function handleContinueFromIndustries(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    if (selected.length === 0) return;
     setStep(3);
   }
 
-  function handleBack(e: React.MouseEvent) {
+  function handleBack(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     setStep((s) => (s === 3 ? 2 : 1));
   }
@@ -123,13 +140,13 @@ export function SignupForm({ action, error }: Props) {
           Start your 30 day free trial and set up your business in minutes.
         </p>
 
-        {error ? (
-          <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200">
-            {error}
+        {state.error ? (
+          <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200 whitespace-pre-wrap break-words">
+            {state.error}
           </p>
         ) : null}
 
-        <form ref={formRef} action={action} className="mt-6 space-y-6">
+        <form ref={formRef} action={formAction} className="mt-6 space-y-6">
           <input type="hidden" name="industry_tags_json" value={industriesJson} />
           <input type="hidden" name="industry_other_note" value={otherNote} />
           <input type="hidden" name="accent_colour" value={accentColour} readOnly />
@@ -223,9 +240,7 @@ export function SignupForm({ action, error }: Props) {
                   Continue
                 </Button>
               ) : (
-                <Button type="submit" className={`w-full sm:ml-auto sm:w-auto ${accentBtn}`}>
-                  Create account
-                </Button>
+                <SubmitPrimary className={`w-full sm:ml-auto sm:w-auto ${accentBtn}`}>Create account</SubmitPrimary>
               )}
             </div>
           </div>
@@ -233,7 +248,10 @@ export function SignupForm({ action, error }: Props) {
           <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
             <div>
               <h2 className="text-lg font-semibold text-white">What industries do you serve?</h2>
-              <p className="mt-1 text-sm text-slate-400">Select all that apply — we&apos;ll tailor your dashboard.</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Select all that apply — we&apos;ll tailor your dashboard. Optional: skip if you&apos;d rather set this up
+                later.
+              </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -293,12 +311,7 @@ export function SignupForm({ action, error }: Props) {
               >
                 Back
               </Button>
-              <Button
-                type="button"
-                disabled={selected.length === 0}
-                onClick={handleContinueFromIndustries}
-                className={`disabled:opacity-50 ${accentBtn}`}
-              >
+              <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>
                 Continue
               </Button>
             </div>
@@ -308,7 +321,8 @@ export function SignupForm({ action, error }: Props) {
             <div>
               <h2 className="text-lg font-semibold text-white">Choose your brand colour</h2>
               <p className="mt-1 text-sm text-slate-400">
-                Choose your brand colour — you can change this anytime in settings.
+                Choose your brand colour — you can change this anytime in settings. Default teal is fine if you want to
+                move on quickly.
               </p>
             </div>
 
@@ -323,9 +337,7 @@ export function SignupForm({ action, error }: Props) {
               >
                 Back
               </Button>
-              <Button type="submit" className={accentBtn}>
-                Create account
-              </Button>
+              <SubmitPrimary className={accentBtn}>Create account</SubmitPrimary>
             </div>
           </div>
         </form>

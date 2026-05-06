@@ -43,6 +43,20 @@ export function parseIndustryTagsJson(raw: string | null | undefined): IndustryS
   }
 }
 
+/** Industries saved on auth metadata as a comma-separated slug list (signup user_metadata). */
+export function industryTagsFromUserMeta(meta: Record<string, unknown>): IndustrySlug[] {
+  const raw = String(meta.industry_tags ?? "");
+  const parts = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const out: IndustrySlug[] = [];
+  for (const p of parts) {
+    if (isIndustrySlug(p) && !out.includes(p)) out.push(p);
+  }
+  return out;
+}
+
 const INDUSTRY_LABELS: Record<IndustrySlug, string> = {
   trades: "Trades",
   cleaning: "Cleaning",

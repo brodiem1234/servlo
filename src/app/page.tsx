@@ -11,8 +11,7 @@ import {
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing-header";
 import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
-import { LANDING_INDUSTRY_ORDER } from "@/lib/industries";
-import { LANDING_INDUSTRY_COPY } from "@/lib/industry-marketing";
+import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
 
 const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
 
@@ -236,31 +235,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {LANDING_INDUSTRY_ORDER.map((slug) => {
-        const copy = LANDING_INDUSTRY_COPY[slug];
-        return (
-          <section
-            key={slug}
-            id={`industry-${slug}`}
-            className="scroll-mt-28 border-t border-slate-200 bg-white py-14 dark:border-slate-700 dark:bg-[#111827]/40"
-          >
-            <div className="mx-auto max-w-7xl px-4 md:px-6">
-              <p className="text-xs font-bold uppercase tracking-wider text-[var(--accent-color)] dark:text-cyan-400">
-                {copy.headline}
-              </p>
-              <h3 className="mt-2 text-2xl font-bold text-[#1e3a5f] dark:text-white md:text-3xl">{copy.tagline}</h3>
-              <ul className="mt-6 max-w-3xl space-y-3 text-[#475569] dark:text-slate-300">
-                {copy.bullets.map((b) => (
-                  <li key={b} className="flex gap-3 text-sm leading-relaxed md:text-base">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent-color)] dark:bg-cyan-400" aria-hidden />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        );
-      })}
+      <LandingIndustryDeepSections />
 
       <section
         className="border-y border-slate-200 bg-white py-3 dark:border-slate-700 dark:bg-[#152238]/80"
