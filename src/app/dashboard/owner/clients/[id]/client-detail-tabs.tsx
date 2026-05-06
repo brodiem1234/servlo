@@ -76,7 +76,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes }: Pro
 
       {tab === "jobs" ? (
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-lg font-semibold text-[#1e3a5f]">Linked Jobs</h3>
+          <h3 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">Linked Jobs</h3>
           <div className="space-y-2 text-sm">
             {jobs.map((job) => (
               <div key={job.id} className="rounded border p-2">
@@ -93,7 +93,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes }: Pro
 
       {tab === "invoices" ? (
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-lg font-semibold text-[#1e3a5f]">Linked Invoices</h3>
+          <h3 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">Linked Invoices</h3>
           <div className="space-y-2 text-sm">
             {invoices.map((invoice) => (
               <div key={invoice.id} className="rounded border p-2">
@@ -110,7 +110,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes }: Pro
 
       {tab === "quotes" ? (
         <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-lg font-semibold text-[#1e3a5f]">Linked Quotes</h3>
+          <h3 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">Linked Quotes</h3>
           <div className="space-y-2 text-sm">
             {quotes.map((quote) => (
               <div key={quote.id} className="rounded border p-2">

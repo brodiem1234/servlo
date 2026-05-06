@@ -267,11 +267,13 @@ export async function POST(request: Request) {
     return jsonErr("Business saved but no id returned.", 500);
   }
 
+  console.log("[setup-business] seeding demo data (service role)", { userId, owner_id: userId });
+
   const demo = await seedOwnerDemoData(supabaseAdmin, userId);
   if (!demo.ok) {
-    console.error("[setup-business] demo seed FAILED", { userId, owner_id: userId, message: demo.message });
+    console.error("[setup-business] demo seed FAILED:", demo.message ?? demo);
   } else {
-    console.log("[setup-business] demo seed SUCCESS", { userId, owner_id: userId });
+    console.log("[setup-business] demo seed completed OK", { userId });
   }
 
   return NextResponse.json({

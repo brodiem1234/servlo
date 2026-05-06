@@ -145,7 +145,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
 
   return (
     <section className="space-y-6">
-      <h1 className="text-2xl font-bold text-[#1e3a5f]">Settings</h1>
+      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
 
       {demoBanner ? (
         <div
@@ -160,7 +160,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       ) : null}
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Business Profile</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Business Profile</h2>
         <form action={updateBusinessProfile} className="mt-3 grid gap-3 sm:grid-cols-2">
           <input name="business_name" defaultValue={profile?.business_name ?? businessName} className="h-10 rounded border px-3" placeholder="Business name" />
           <input name="abn" defaultValue={profile?.abn ?? ""} className="h-10 rounded border px-3" placeholder="ABN" />
@@ -173,7 +173,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       </article>
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Brand Colour</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Brand Colour</h2>
         <p className="mt-2 text-sm text-slate-600">
           Choose one of the preset brand accents — safe contrast on buttons, sidebar highlights and links across your dashboard.
         </p>
@@ -192,7 +192,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       />
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Demo data</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Demo data</h2>
         <p className="mt-2 text-sm text-slate-600">
           On signup we add sample clients, jobs, quotes and invoices so the dashboard is not empty. These rows are tagged as demo,
           stay out of financial totals where noted, and do not support billing emails or similar actions.
@@ -201,7 +201,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           <form action={resetDemoDataAction}>
             <button
               type="submit"
-              className="rounded border border-[#1e3a5f] bg-white px-4 py-2 text-sm font-medium text-[#1e3a5f] hover:bg-slate-50"
+              className="rounded border border-[var(--accent-color)] bg-[var(--bg-card)] px-4 py-2 text-sm font-medium text-[var(--accent-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))]"
             >
               Reset Demo Data
             </button>
@@ -218,7 +218,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       </article>
 
       <article className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Account</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Account</h2>
         <form action={changePassword} className="mt-3 flex flex-col gap-3 sm:max-w-md">
           <input name="new_password" type="password" minLength={8} required className="h-10 rounded border px-3" placeholder="New password" />
           <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Change Password</button>

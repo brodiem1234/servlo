@@ -60,7 +60,7 @@ export function BrandAccentSwatches({ name, value: controlled, defaultValue, onC
               aria-pressed={on}
               onClick={() => pick(p.hex)}
               title={p.label}
-              className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-100 ${
+              className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-color)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[var(--bg-card,#1a2f45)] ${
                 on
                   ? "z-[1] scale-105 border-white shadow-md ring-2 ring-[#0f172a] ring-offset-2 ring-offset-[var(--bg-card,#ffffff)] dark:border-white dark:ring-white dark:ring-offset-[var(--bg-card,#1a2f45)]"
                   : "border-slate-500/90 hover:scale-105 hover:border-slate-700 hover:shadow-md dark:border-slate-400 dark:hover:border-slate-200"

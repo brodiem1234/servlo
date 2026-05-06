@@ -371,7 +371,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">Jobs</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Jobs</h1>
       </div>
       <JobsManager
         jobs={visibleJobs}

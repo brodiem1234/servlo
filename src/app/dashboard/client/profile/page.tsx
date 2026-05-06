@@ -17,24 +17,24 @@ export default async function ClientProfilePage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-bold text-[#1e3a5f]">My Profile</h1>
+      <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Profile</h1>
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-[#64748b]">Full name</dt>
-            <dd className="font-medium text-[#1e3a5f]">{profile?.full_name ?? "-"}</dd>
+            <dt className="text-[var(--text-secondary)]">Full name</dt>
+            <dd className="font-medium text-[var(--text-primary)]">{profile?.full_name ?? "-"}</dd>
           </div>
           <div>
-            <dt className="text-[#64748b]">Email</dt>
-            <dd className="font-medium text-[#1e3a5f]">{profile?.email ?? user.email ?? "-"}</dd>
+            <dt className="text-[var(--text-secondary)]">Email</dt>
+            <dd className="font-medium text-[var(--text-primary)]">{profile?.email ?? user.email ?? "-"}</dd>
           </div>
           <div>
-            <dt className="text-[#64748b]">Phone</dt>
-            <dd className="font-medium text-[#1e3a5f]">{profile?.phone ?? "-"}</dd>
+            <dt className="text-[var(--text-secondary)]">Phone</dt>
+            <dd className="font-medium text-[var(--text-primary)]">{profile?.phone ?? "-"}</dd>
           </div>
           <div>
-            <dt className="text-[#64748b]">Business</dt>
-            <dd className="font-medium text-[#1e3a5f]">{profile?.business_name ?? "-"}</dd>
+            <dt className="text-[var(--text-secondary)]">Business</dt>
+            <dd className="font-medium text-[var(--text-primary)]">{profile?.business_name ?? "-"}</dd>
           </div>
         </dl>
       </article>

@@ -44,7 +44,7 @@ export default function QuotesManager({
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const statusColors: Record<string, string> = {
     draft: "bg-slate-100 text-slate-700",
-    sent: "bg-blue-100 text-blue-700",
+    sent: "bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)]",
     accepted: "bg-green-100 text-green-700",
     declined: "bg-red-100 text-red-700",
     rejected: "bg-red-100 text-red-700",

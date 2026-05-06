@@ -1,33 +1,43 @@
 import { useEffect, useLayoutEffect } from "react";
-import { normalizeAccentColour } from "@/lib/brand-accent";
-import { businessesOwnerOrEq } from "@/lib/businesses";
-import { applyAccentToDocument } from "@/lib/dashboard/accent-css";
+import { normalizeAccentHexForCss } from "@/lib/brand-accent";
+import { applyAccentToDocument, readStoredAccentHex } from "@/lib/dashboard/accent-css";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 /**
- * Keeps document root accent in sync with `businesses.accent_colour` for the signed-in user.
- * `serverAccentHex` runs from the server on first paint (via inline script); this reconciles after hydration.
+ * Hydration: prefer localStorage cache (instant, matches inline boot script), else SSR hex.
+ * Then confirm against `businesses.accent_colour` for `owner_id = auth.uid()` and persist cache.
  */
 export function useAccentColour(userId: string | null | undefined, serverAccentHex: string) {
   useLayoutEffect(() => {
+    const stored = readStoredAccentHex();
+    if (stored) {
+      applyAccentToDocument(stored);
+      return;
+    }
     applyAccentToDocument(serverAccentHex);
   }, [serverAccentHex]);
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const sb = createSupabaseBrowser();
         const { data, error } = await sb
           .from("businesses")
           .select("accent_colour")
-          .or(businessesOwnerOrEq(userId))
+          .eq("owner_id", userId)
           .maybeSingle();
-        if (cancelled || error || !data?.accent_colour) return;
-        applyAccentToDocument(normalizeAccentColour(String(data.accent_colour)));
-      } catch {
-        /* non-fatal */
+        if (cancelled) return;
+        if (error) {
+          console.warn("[accent] could not load businesses.accent_colour", error);
+          return;
+        }
+        if (data?.accent_colour) {
+          applyAccentToDocument(normalizeAccentHexForCss(String(data.accent_colour)), { persist: true });
+        }
+      } catch (e) {
+        console.warn("[accent] unexpected error loading accent_colour", e);
       }
     })();
     return () => {

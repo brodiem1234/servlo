@@ -2,6 +2,7 @@
 
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import { normalizeAccentColour, type AccentPresetHex } from "@/lib/brand-accent";
+import { applyAccentToDocument } from "@/lib/dashboard/accent-css";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { useEffect, useState, useTransition, type FormEvent } from "react";
 
@@ -57,11 +58,7 @@ export function BrandAccentForm({ savedAccent }: Props) {
           return;
         }
 
-        document.documentElement.style.setProperty("--accent-color", selectedColour);
-        document.documentElement.style.setProperty(
-          "--accent-hover",
-          `color-mix(in srgb, ${selectedColour} 82%, black)`
-        );
+        applyAccentToDocument(selectedColour, { persist: true });
         setAccent(selectedColour);
         setToast(true);
         window.setTimeout(() => setToast(false), 3000);

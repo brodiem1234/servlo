@@ -67,7 +67,7 @@ export default async function OwnerEmployeesPage() {
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">Employees</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Employees</h1>
       </div>
       <EmployeesManager
         employees={visibleEmployees}

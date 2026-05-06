@@ -180,7 +180,7 @@ export default function JobsManager({
   const statusPillClasses: Record<string, string> = {
     scheduled: "bg-orange-100 text-orange-900 ring-1 ring-inset ring-orange-300 dark:bg-orange-950 dark:text-orange-100 dark:ring-orange-700",
     in_progress:
-      "bg-blue-100 text-blue-900 ring-1 ring-inset ring-blue-300 dark:bg-blue-950 dark:text-blue-100 dark:ring-blue-700",
+      "bg-[color-mix(in_srgb,var(--accent-color)_16%,transparent)] text-[color-mix(in_srgb,var(--accent-color)_90%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_42%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]",
     completed:
       "bg-green-100 text-green-900 ring-1 ring-inset ring-green-300 dark:bg-green-950 dark:text-green-100 dark:ring-green-700",
     cancelled: "bg-red-100 text-red-900 ring-1 ring-inset ring-red-300 dark:bg-red-950 dark:text-red-100 dark:ring-red-700"
@@ -190,7 +190,7 @@ export default function JobsManager({
     scheduled:
       "border border-orange-300 bg-orange-100 text-orange-950 hover:bg-orange-200 dark:border-orange-700 dark:bg-orange-950/90 dark:text-orange-50 dark:hover:bg-orange-900",
     in_progress:
-      "border border-blue-300 bg-blue-100 text-blue-950 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-950/90 dark:text-blue-50 dark:hover:bg-blue-900",
+      "border border-[color-mix(in_srgb,var(--accent-color)_42%,transparent)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[var(--text-primary)] hover:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:border-[color-mix(in_srgb,var(--accent-color)_48%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_18%,var(--bg-card))] dark:text-[var(--text-primary)] dark:hover:bg-[color-mix(in_srgb,var(--accent-color)_26%,var(--bg-card))]",
     completed:
       "border border-green-300 bg-green-100 text-green-950 hover:bg-green-200 dark:border-green-700 dark:bg-green-950/90 dark:text-green-50 dark:hover:bg-green-900",
     cancelled:
@@ -785,7 +785,7 @@ export default function JobsManager({
             <span className="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-900 ring-1 ring-inset ring-orange-200 dark:bg-orange-950 dark:text-orange-100 dark:ring-orange-800">
               Pending · {listStats.pending}
             </span>
-            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-900 ring-1 ring-inset ring-blue-200 dark:bg-blue-950 dark:text-blue-100 dark:ring-blue-800">
+            <span className="rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] px-2.5 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_38%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]">
               In progress · {listStats.inProgress}
             </span>
             <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-900 ring-1 ring-inset ring-green-200 dark:bg-green-950 dark:text-green-100 dark:ring-green-800">

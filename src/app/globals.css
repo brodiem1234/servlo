@@ -42,13 +42,13 @@
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: #1e3a5f;
+    border-color: var(--accent-color);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 35%, transparent);
   }
 
   thead tr {
     background: #f1f5f9;
-    color: #1e3a5f;
+    color: var(--text-primary);
   }
 }
 
@@ -64,7 +64,6 @@
   --text-muted: #94a3b8;
   --border: #e2e8f0;
   --input-bg: #ffffff;
-  --accent: var(--accent-color);
   --sidebar-bg: #f1f5f9;
   --sidebar-text: #1e3a5f;
   --sidebar-text-muted: #64748b;
@@ -86,7 +85,6 @@
   --text-muted: #94a3b8;
   --border: #2a4a6b;
   --input-bg: #162436;
-  --accent: var(--accent-color);
   --sidebar-bg: #1e3a5f;
   --sidebar-text: #ffffff;
   --sidebar-text-muted: #cbd5e1;
@@ -235,7 +233,7 @@
 /* Links in main content / auth — not sidebar */
 .dashboard-theme main a,
 .auth-theme a {
-  color: var(--accent);
+  color: var(--accent-color);
 }
 
 /* Explicit primary-coloured links (overrides main `a` accent colour when contrast matters) */
@@ -248,22 +246,42 @@
 }
 
 .dashboard-theme main a.dashboard-text-link:hover {
-  color: var(--accent) !important;
+  color: var(--accent-color) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a {
+  border-left: 4px solid transparent;
   color: var(--sidebar-text) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a:hover {
+  border-left-color: color-mix(in srgb, var(--accent-color) 42%, transparent);
   background-color: var(--sidebar-hover-bg) !important;
   color: var(--sidebar-text) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a[data-active="true"] {
+  border-left-color: var(--accent-color);
   background-color: var(--sidebar-active-bg) !important;
   color: var(--sidebar-active-text) !important;
   font-weight: 700;
+}
+
+.dashboard-theme .owner-sidebar nav a[data-active="true"]:hover {
+  border-left-color: var(--accent-color);
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
+}
+
+.dashboard-theme input[type="checkbox"] {
+  accent-color: var(--accent-color);
+}
+
+.dashboard-theme :where(a, button, input:not([type="hidden"]), select, textarea):focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--bg-card),
+    0 0 0 4px var(--accent-color);
 }
 
 .dashboard-theme .owner-mobile-nav a {

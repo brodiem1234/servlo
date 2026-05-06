@@ -68,7 +68,7 @@ export default function InvoicesManager({
     return {
       label: label.charAt(0).toUpperCase() + label.slice(1),
       className:
-        "border border-amber-600/40 bg-amber-50 !text-amber-950 dark:border-amber-500/50 dark:bg-amber-950 dark:!text-amber-100"
+        "border border-[color-mix(in_srgb,var(--accent-color)_42%,transparent)] bg-[color-mix(in_srgb,var(--accent-color)_12%,transparent)] !text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] dark:border-[color-mix(in_srgb,var(--accent-color)_48%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:!text-[color-mix(in_srgb,var(--accent-color)_92%,white)]"
     };
   };
 

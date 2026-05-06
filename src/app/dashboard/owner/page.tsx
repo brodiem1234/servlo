@@ -24,7 +24,7 @@ function getStatusBadgeClasses(status: string | null) {
   if (key === "completed" || key === "complete") return "bg-green-100 text-green-700";
   if (key === "in_progress" || key === "in-progress") return "bg-orange-100 text-orange-700";
   if (key === "cancelled") return "bg-red-100 text-red-700";
-  return "bg-blue-100 text-blue-700";
+  return "bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)]";
 }
 
 export default async function OwnerDashboardPage() {
@@ -162,11 +162,11 @@ export default async function OwnerDashboardPage() {
   return (
     <section className="space-y-6">
       {trialDaysRemaining > 0 ? (
-        <div className="rounded-lg border border-sky-200 bg-sky-100 px-4 py-3 text-sm text-sky-900">
+        <div className="rounded-lg border border-[color-mix(in_srgb,var(--accent-color)_42%,var(--border))] bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))] px-4 py-3 text-sm text-[var(--text-primary)]">
           {trialDaysRemaining} days remaining in your free trial -{" "}
           <a
             href="/dashboard/owner/settings"
-            className="font-semibold !text-sky-950 underline decoration-sky-800 underline-offset-2 hover:!text-sky-900"
+            className="font-semibold text-[var(--accent-color)] underline decoration-[color-mix(in_srgb,var(--accent-color)_50%,var(--border))] underline-offset-2 hover:opacity-90"
           >
             Upgrade now
           </a>
@@ -214,7 +214,7 @@ export default async function OwnerDashboardPage() {
         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-100">
           Pending · {jobsByStatus.pending}
         </span>
-        <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-900 dark:bg-sky-950 dark:text-sky-100">
+        <span className="rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] px-3 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_38%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]">
           In progress · {jobsByStatus.inProgress}
         </span>
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">

@@ -1,10 +1,36 @@
-import { normalizeAccentColour } from "@/lib/brand-accent";
+import { normalizeAccentHexForCss } from "@/lib/brand-accent";
 
-/** Sets owner accent on <html> so all dashboard pages and portals using var(--accent-*) update together. */
-export function applyAccentToDocument(rawHex: string) {
+/** Cache key — keep in sync with inline boot script in `accent-inline-script.tsx`. */
+export const ACCENT_LOCAL_STORAGE_KEY = "accent-color";
+
+export type ApplyAccentOptions = {
+  /** When true, also writes `ACCENT_LOCAL_STORAGE_KEY` (Settings save + DB confirmation). */
+  persist?: boolean;
+};
+
+export function readStoredAccentHex(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(ACCENT_LOCAL_STORAGE_KEY);
+    const v = (raw ?? "").trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) return v.toUpperCase();
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/** Sets owner accent on `<html>` + optional localStorage cache. */
+export function applyAccentToDocument(rawHex: string, options?: ApplyAccentOptions) {
   if (typeof document === "undefined") return;
-  const hex = normalizeAccentColour(rawHex);
+  const hex = normalizeAccentHexForCss(rawHex);
   const root = document.documentElement;
   root.style.setProperty("--accent-color", hex);
   root.style.setProperty("--accent-hover", `color-mix(in srgb, ${hex} 82%, black)`);
+  if (options?.persist !== true) return;
+  try {
+    localStorage.setItem(ACCENT_LOCAL_STORAGE_KEY, hex);
+  } catch {
+    /* ignore */
+  }
 }

@@ -14,6 +14,15 @@ export type AccentPresetHex = (typeof ACCENT_PRESETS)[number]["hex"];
 
 export const DEFAULT_ACCENT_HEX: AccentPresetHex = "#0891B2";
 
+const HEX_SIX = /^#[0-9A-Fa-f]{6}$/;
+
+/** Normalises DB/API/localStorage values: any `#RRGGBB` is kept; otherwise preset matching or default. */
+export function normalizeAccentHexForCss(raw: string | null | undefined): string {
+  const v = (raw ?? "").trim();
+  if (HEX_SIX.test(v)) return v.toUpperCase();
+  return normalizeAccentColour(v);
+}
+
 export function normalizeAccentColour(raw: string | null | undefined): AccentPresetHex {
   const v = (raw ?? "").trim().toUpperCase();
   const match = ACCENT_PRESETS.find((p) => p.hex.toUpperCase() === v);

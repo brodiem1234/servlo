@@ -92,7 +92,7 @@ export default function EmployeesManager({
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
         <table className="w-full min-w-[760px] text-sm">
           <thead>
-            <tr className="border-b text-left text-[#1e3a5f]">
+            <tr className="border-b text-left text-[var(--text-primary)]">
               <th className="px-2 py-2">Name</th><th className="px-2 py-2">Email</th><th className="px-2 py-2">Phone</th><th className="px-2 py-2">Trade</th><th className="px-2 py-2">Rate</th><th className="px-2 py-2">Actions</th>
             </tr>
           </thead>
@@ -100,7 +100,7 @@ export default function EmployeesManager({
             {employees.map((employee) => {
               const demo = Boolean(employee.is_demo);
               return (
-              <tr key={employee.id} className="border-b hover:bg-[#f1f5f9]">
+              <tr key={employee.id} className="border-b hover:bg-[var(--bg-primary)]">
                 <td className="px-2 py-2 font-medium">
                   <div className="flex flex-wrap items-center gap-2">
                     <span>{employee.full_name ?? "-"}</span>

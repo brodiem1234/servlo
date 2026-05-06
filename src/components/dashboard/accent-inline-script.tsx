@@ -1,14 +1,18 @@
-import { DEFAULT_ACCENT_HEX, normalizeAccentColour } from "@/lib/brand-accent";
+import { ACCENT_LOCAL_STORAGE_KEY } from "@/lib/dashboard/accent-css";
+import { DEFAULT_ACCENT_HEX, normalizeAccentHexForCss } from "@/lib/brand-accent";
 
 type Props = {
   accentHex: string;
 };
 
 /**
- * Runs synchronously when parsed so the first paint uses the saved accent instead of default teal.
+ * Runs synchronously when parsed: applies cached localStorage accent first (no flash),
+ * otherwise falls back to the server-loaded value from `businesses.accent_colour`.
  */
 export function AccentInlineScript({ accentHex }: Props) {
-  const safe = normalizeAccentColour(accentHex || DEFAULT_ACCENT_HEX);
-  const js = `(function(){try{var h=${JSON.stringify(safe)};var r=document.documentElement;r.style.setProperty("--accent-color",h);r.style.setProperty("--accent-hover","color-mix(in srgb, "+h+" 82%, black)");}catch(e){}})();`;
+  const fallback = normalizeAccentHexForCss(accentHex || DEFAULT_ACCENT_HEX);
+  const keyJson = JSON.stringify(ACCENT_LOCAL_STORAGE_KEY);
+  const fallbackJson = JSON.stringify(fallback);
+  const js = `(function(){try{var KEY=${keyJson};var FALLBACK=${fallbackJson};var r=document.documentElement;var cand=null;try{cand=localStorage.getItem(KEY);}catch(e){}function hover(h){return "color-mix(in srgb, "+h+" 82%, black)";}function ok(h){return typeof h==="string"&&/^#[0-9A-Fa-f]{6}$/.test(h.trim());}var h=ok(cand)?cand.trim().toUpperCase():FALLBACK;r.style.setProperty("--accent-color",h);r.style.setProperty("--accent-hover",hover(h));}catch(e){}})();`;
   return <script dangerouslySetInnerHTML={{ __html: js }} />;
 }

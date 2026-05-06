@@ -55,7 +55,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
         >
           <div className="mb-6">
             <div className="flex items-center gap-2">
-              <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent-color)] p-0.5 shadow-inner ring-2 ring-white/25">
+              <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent-color)] p-0.5 shadow-inner ring-2 ring-[color-mix(in_srgb,var(--accent-color)_55%,white)]">
                 <span className="overflow-hidden rounded-full bg-white">
                   <Image src="/logo.png" alt="SERVLO" width={36} height={36} className="block" />
                 </span>
@@ -111,7 +111,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <div className="relative">
                 <button
                   type="button"
-                  className="relative rounded border border-[var(--border)] p-2 text-[var(--text-primary)]"
+                  className={`relative rounded border border-[var(--border)] p-2 text-[var(--text-primary)] transition-shadow ${alerts.length > 0 ? "ring-2 ring-[var(--accent-color)] ring-offset-2 ring-offset-[var(--bg-secondary)]" : ""}`}
                   onClick={() => setAlertsOpen((prev) => !prev)}
                   aria-label="Notifications"
                 >

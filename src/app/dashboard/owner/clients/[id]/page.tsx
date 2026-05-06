@@ -46,7 +46,7 @@ export default async function OwnerClientDetailPage({ params }: Props) {
   if (!client) {
     return (
       <section className="space-y-3">
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">Client not found</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Client not found</h1>
         <a href="/dashboard/owner/clients" className="text-sm text-[#3b82f6] hover:underline">
           Back to clients
         </a>
@@ -58,7 +58,7 @@ export default async function OwnerClientDetailPage({ params }: Props) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1e3a5f]">{client.full_name ?? "Client Profile"}</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{client.full_name ?? "Client Profile"}</h1>
           <p className="text-sm text-slate-600">Client profile, jobs, invoices and quotes</p>
         </div>
         <a href="/dashboard/owner/clients" className="rounded border px-3 py-2 text-sm">

@@ -74,7 +74,7 @@ export default function SubscriptionCards({ email, currentPlan, success, priceId
 
   return (
     <article className="rounded-xl border bg-white p-4 shadow-sm">
-      <h2 className="text-lg font-semibold text-[#1e3a5f]">Subscription</h2>
+      <h2 className="text-lg font-semibold text-[var(--text-primary)]">Subscription</h2>
       {success ? (
         <p className="mt-2 rounded bg-green-50 px-3 py-2 text-sm text-[#22c55e]">
           Subscription checkout completed successfully.
@@ -95,9 +95,9 @@ export default function SubscriptionCards({ email, currentPlan, success, priceId
                   : "border-slate-200"
               }`}
             >
-              <p className="text-lg font-semibold text-[#1e3a5f]">{plan.label}</p>
+              <p className="text-lg font-semibold text-[var(--text-primary)]">{plan.label}</p>
               <p className="mt-1 text-xl font-bold">{plan.price}</p>
-              <p className="mt-2 text-sm text-[#64748b]">{plan.description}</p>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">{plan.description}</p>
               {isCurrent ? (
                 <p className="mt-3 text-sm font-medium text-[var(--accent-color)]">Current plan</p>
               ) : (
