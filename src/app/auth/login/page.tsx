@@ -166,7 +166,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <p className="mt-5 text-sm text-slate-400">
           New to SERVLO?{" "}
-          <Link href="/auth/signup" className="font-semibold text-teal-400 hover:text-teal-300">
+          <Link href="/auth/signup" className="font-semibold text-[var(--accent-color)] hover:underline">
             Create an account
           </Link>
         </p>

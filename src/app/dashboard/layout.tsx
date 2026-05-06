@@ -11,6 +11,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     data: { user }
   } = await supabase.auth.getUser();
 
+  /** Persisted brand accent from `businesses.accent_colour` (inline script avoids teal flash). */
   let serverAccentHex = DEFAULT_ACCENT_HEX;
   if (user?.id) {
     const { data: businessRow } = await supabase

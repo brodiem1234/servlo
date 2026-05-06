@@ -1,10 +1,9 @@
 "use client";
 
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
-import { applyAccentToDocument } from "@/lib/dashboard/accent-css";
 import { normalizeAccentColour, type AccentPresetHex } from "@/lib/brand-accent";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { useEffect, useState, useTransition, type FormEvent } from "react";
-import { saveBrandAccentAction } from "./brand-accent-action";
 
 type Props = {
   savedAccent: AccentPresetHex;
@@ -23,20 +22,49 @@ export function BrandAccentForm({ savedAccent }: Props) {
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErr(null);
-    const form = e.currentTarget;
-    const fd = new FormData(form);
     startTransition(() => {
       void (async () => {
-        const res = await saveBrandAccentAction(fd);
-        if (res.ok) {
-          const hex = normalizeAccentColour(String(fd.get("accent_colour") ?? accent));
-          applyAccentToDocument(hex);
-          setAccent(hex);
-          setToast(true);
-          window.setTimeout(() => setToast(false), 3000);
-        } else {
-          setErr(res.message);
+        const selectedColour = normalizeAccentColour(accent);
+        const supabase = createSupabaseBrowser();
+        const {
+          data: { session }
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+          setErr("Your session expired. Sign in again.");
+          return;
         }
+
+        const res = await fetch("/api/update-accent-colour", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ accentColour: selectedColour })
+        });
+
+        let parsed: { success?: boolean; error?: string };
+        try {
+          parsed = (await res.json()) as typeof parsed;
+        } catch {
+          setErr("Invalid response from server.");
+          return;
+        }
+
+        if (!res.ok || parsed.error) {
+          setErr(parsed.error ?? `Could not save (${res.status}).`);
+          return;
+        }
+
+        document.documentElement.style.setProperty("--accent-color", selectedColour);
+        document.documentElement.style.setProperty(
+          "--accent-hover",
+          `color-mix(in srgb, ${selectedColour} 82%, black)`
+        );
+        setAccent(selectedColour);
+        setToast(true);
+        window.setTimeout(() => setToast(false), 3000);
       })();
     });
   }

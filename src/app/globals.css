@@ -90,7 +90,7 @@
   --sidebar-bg: #1e3a5f;
   --sidebar-text: #ffffff;
   --sidebar-text-muted: #cbd5e1;
-  --sidebar-divider: rgba(8, 145, 178, 0.45);
+  --sidebar-divider: color-mix(in srgb, var(--accent-color) 45%, transparent);
   --sidebar-hover-bg: #0d1a2e;
   --sidebar-active-bg: var(--accent-color);
   --sidebar-active-text: #ffffff;
