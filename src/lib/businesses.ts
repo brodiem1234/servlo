@@ -10,6 +10,9 @@ export function businessesRowForOwner(ownerUserId: string, fields: { accent_colo
   };
 }
 
+/** Unique constraint used for PostgREST upsert — prefer `user_id` when both columns exist. */
+export const BUSINESSES_UPSERT_ON_CONFLICT = "user_id" as const;
+
 /** Prefer matching either column for reads (legacy rows / migrations). */
 export function businessesOwnerOrEq(userId: string): string {
   return `owner_id.eq.${userId},user_id.eq.${userId}`;

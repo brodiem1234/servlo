@@ -2,11 +2,50 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import type { IndustrySlug } from "@/lib/industries";
-import { businessesRowForOwner } from "@/lib/businesses";
+import { businessesRowForOwner, BUSINESSES_UPSERT_ON_CONFLICT } from "@/lib/businesses";
 
 export function describeSupabaseError(prefix: string, err: { message?: string; code?: string; details?: string }) {
   const bits = [prefix, err.code ? `(${err.code})` : null, err.message, err.details].filter(Boolean);
   return bits.join(" ").trim();
+}
+
+/** Upsert owner business row (accent). Use when profile already exists but business insert failed. */
+export async function upsertOwnerBusinessRow(
+  admin: SupabaseClient,
+  ownerUserId: string,
+  accentColourRaw: string
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  try {
+    const accent_colour = normalizeAccentColour(accentColourRaw);
+    const bizRes = await admin.from("businesses").upsert(businessesRowForOwner(ownerUserId, { accent_colour }), {
+      onConflict: BUSINESSES_UPSERT_ON_CONFLICT
+    });
+    if (bizRes.error) {
+      console.error("[upsertOwnerBusinessRow] failed", bizRes.error);
+      return {
+        ok: false,
+        message: describeSupabaseError("Business record setup failed:", bizRes.error)
+      };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("[upsertOwnerBusinessRow] threw", e);
+    return {
+      ok: false,
+      message: e instanceof Error ? `Business record setup failed: ${e.message}` : "Business record setup failed."
+    };
+  }
+}
+
+export async function seedOwnerDemoNonFatal(admin: SupabaseClient, ownerUserId: string): Promise<void> {
+  try {
+    const seeded = await seedOwnerDemoData(admin, ownerUserId);
+    if (!seeded.ok) {
+      console.warn("[seedOwnerDemoNonFatal] demo seed failed (non-fatal)", seeded.message);
+    }
+  } catch (e) {
+    console.warn("[seedOwnerDemoNonFatal] demo seed threw (non-fatal)", e);
+  }
 }
 
 export type BootstrapSignupParams = {
@@ -85,37 +124,11 @@ export async function bootstrapSignupWrites(
   }
 
   if (role === "owner") {
-    try {
-      const accent_colour = normalizeAccentColour(params.accentColourRaw);
-      const bizRes = await admin.from("businesses").upsert(businessesRowForOwner(params.userId, { accent_colour }), {
-        onConflict: "owner_id"
-      });
-      if (bizRes.error) {
-        console.error("[bootstrapSignupWrites] businesses upsert failed", bizRes.error);
-        return {
-          ok: false,
-          step: "business",
-          message: describeSupabaseError("Business record setup failed:", bizRes.error)
-        };
-      }
-    } catch (e) {
-      console.error("[bootstrapSignupWrites] businesses upsert threw", e);
-      return {
-        ok: false,
-        step: "business",
-        message:
-          e instanceof Error ? `Business record setup failed: ${e.message}` : "Business record setup failed."
-      };
+    const biz = await upsertOwnerBusinessRow(admin, params.userId, params.accentColourRaw);
+    if (!biz.ok) {
+      return { ok: false, step: "business", message: biz.message };
     }
-
-    try {
-      const seeded = await seedOwnerDemoData(admin, params.userId);
-      if (!seeded.ok) {
-        console.warn("[bootstrapSignupWrites] demo seed failed (non-fatal)", seeded.message);
-      }
-    } catch (e) {
-      console.warn("[bootstrapSignupWrites] demo seed threw (non-fatal)", e);
-    }
+    await seedOwnerDemoNonFatal(admin, params.userId);
   }
 
   return { ok: true, role };

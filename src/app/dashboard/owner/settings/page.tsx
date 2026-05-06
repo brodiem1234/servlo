@@ -6,7 +6,11 @@ import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
 import SubscriptionCards from "./subscription-cards";
-import { businessesOwnerOrEq, businessesRowForOwner } from "@/lib/businesses";
+import {
+  BUSINESSES_UPSERT_ON_CONFLICT,
+  businessesOwnerOrEq,
+  businessesRowForOwner
+} from "@/lib/businesses";
 
 type SettingsPageProps = {
   searchParams?: {
@@ -70,7 +74,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     if (!owner) redirect("/auth/login");
     const accent_colour = normalizeAccentColour(String(formData.get("accent_colour") ?? ""));
     const { error } = await sb.from("businesses").upsert(businessesRowForOwner(owner.id, { accent_colour }), {
-      onConflict: "owner_id"
+      onConflict: BUSINESSES_UPSERT_ON_CONFLICT
     });
     if (error) {
       console.error("[settings] brand accent upsert failed", error);

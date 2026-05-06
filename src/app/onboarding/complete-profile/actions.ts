@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { bootstrapSignupWrites } from "@/lib/signup/bootstrap-writes";
+import {
+  bootstrapSignupWrites,
+  seedOwnerDemoNonFatal,
+  upsertOwnerBusinessRow
+} from "@/lib/signup/bootstrap-writes";
 import { industryTagsFromUserMeta } from "@/lib/industries";
 
 import type { CompleteProfileState } from "./state";
@@ -60,6 +64,17 @@ export async function retryCompleteProfileSetup(
 
   const { data: sessionProbe } = await supabase.auth.getSession();
   console.info("[onboarding] session present before bootstrap", Boolean(sessionProbe.session));
+
+  const { data: profileRow } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
+
+  if (profileRow?.role === "owner") {
+    const bizRetry = await upsertOwnerBusinessRow(admin, user.id, accentColourRaw);
+    if (bizRetry.ok) {
+      await seedOwnerDemoNonFatal(admin, user.id);
+      redirect("/dashboard/owner" as Parameters<typeof redirect>[0]);
+    }
+    console.warn("[onboarding] business-only retry failed, falling back to full bootstrap", bizRetry.message);
+  }
 
   const bootstrap = await bootstrapSignupWrites(
     admin,

@@ -33,8 +33,7 @@ export function CompleteProfileClient({ flash, signedIn, email }: Props) {
       <div className="auth-card mx-auto w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-white">Finish setting up your account</h1>
         <p className="mt-2 text-sm text-slate-400">
-          Your sign-in may have succeeded before your profile finished saving. Use the button below to retry — or sign in if
-          this isn&apos;t your device.
+          If signup stopped early, retry completes your profile and business record (brand colour and demo data). Sign in first if this isn&apos;t your device.
         </p>
 
         {email ? (
