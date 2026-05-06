@@ -1,11 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug, parseIndustryTagsJson } from "@/lib/industries";
 import { bootstrapSignupProfiles } from "@/lib/signup/bootstrap-writes";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
+
+console.log("SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log("SERVICE_KEY exists:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 type SetupBusinessBody = {
   userId?: string;
@@ -20,7 +22,24 @@ function jsonErr(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-/** Bearer JWT must identify the same user as body.userId (prevents arbitrary writes). */
+function logBusinessInsertError(scope: string, err: unknown) {
+  if (err && typeof err === "object") {
+    const e = err as { code?: string; message?: string; details?: string; hint?: string };
+    console.error(scope, {
+      code: e.code,
+      message: e.message,
+      details: e.details,
+      hint: e.hint,
+      fullError: err
+    });
+  } else {
+    console.error(scope, err);
+  }
+}
+
+/**
+ * Validates the caller JWT only (not used for PostgREST). Database work uses `supabaseAdmin` below.
+ */
 async function verifyBearerMatchesUserId(
   bearerToken: string,
   expectedUserId: string
@@ -31,7 +50,7 @@ async function verifyBearerMatchesUserId(
     return { ok: false, message: "Server misconfiguration: missing Supabase URL or anon key." };
   }
 
-  const anonSb = createClient(url, anon, {
+  const verificationClient = createClient(url, anon, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -47,7 +66,7 @@ async function verifyBearerMatchesUserId(
   const {
     data: { user },
     error
-  } = await anonSb.auth.getUser();
+  } = await verificationClient.auth.getUser();
 
   if (error || !user?.id) {
     return { ok: false, message: error?.message ?? "Invalid or expired session." };
@@ -95,18 +114,24 @@ export async function POST(request: Request) {
     return jsonErr(verified.message, 401);
   }
 
-  let admin;
-  try {
-    admin = createAdminClient();
-  } catch (e) {
-    console.error("[setup-business] admin client unavailable", e);
-    return jsonErr("Server misconfiguration: SUPABASE_SERVICE_ROLE_KEY or Supabase URL is invalid.", 500);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("[setup-business] missing URL or SUPABASE_SERVICE_ROLE_KEY");
+    return jsonErr("Server misconfiguration: missing Supabase URL or service role key.", 500);
   }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
 
   const {
     data: authUserRes,
     error: authLookupErr
-  } = await admin.auth.admin.getUserById(userId);
+  } = await supabaseAdmin.auth.admin.getUserById(userId);
 
   if (authLookupErr || !authUserRes?.user) {
     console.error("[setup-business] admin.getUserById failed", authLookupErr);
@@ -149,7 +174,7 @@ export async function POST(request: Request) {
   const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   const profileBootstrap = await bootstrapSignupProfiles(
-    admin,
+    supabaseAdmin,
     {
       userId,
       email,
@@ -182,7 +207,7 @@ export async function POST(request: Request) {
   };
 
   let bizRowId: string | null = null;
-  const insertAttempt = await admin
+  const insertAttempt = await supabaseAdmin
     .from("businesses")
     .upsert(insertPayload, { onConflict: "user_id" })
     .select("id")
@@ -191,8 +216,8 @@ export async function POST(request: Request) {
   if (!insertAttempt.error && insertAttempt.data?.id) {
     bizRowId = insertAttempt.data.id as string;
   } else if (insertAttempt.error) {
-    console.warn("[setup-business] full business upsert failed, retrying minimal columns", insertAttempt.error);
-    const minimal = await admin
+    logBusinessInsertError("[setup-business] businesses upsert (full) failed", insertAttempt.error);
+    const minimal = await supabaseAdmin
       .from("businesses")
       .upsert(
         {
@@ -206,7 +231,9 @@ export async function POST(request: Request) {
       .single();
 
     if (minimal.error || !minimal.data?.id) {
-      console.error("[setup-business] minimal business upsert failed", minimal.error ?? insertAttempt.error);
+      if (minimal.error) {
+        logBusinessInsertError("[setup-business] businesses upsert (minimal) failed", minimal.error);
+      }
       const msg =
         minimal.error?.message ??
         insertAttempt.error?.message ??
@@ -221,7 +248,7 @@ export async function POST(request: Request) {
     return jsonErr("Business saved but no id returned.", 500);
   }
 
-  const demo = await seedOwnerDemoData(admin, userId);
+  const demo = await seedOwnerDemoData(supabaseAdmin, userId);
   if (!demo.ok) {
     console.error("[setup-business] demo seed failed", demo.message);
     return jsonErr(demo.message ?? "Demo data seed failed.", 500);
