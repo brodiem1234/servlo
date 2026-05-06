@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ComponentProps, MouseEvent } from "react";
+import type { ComponentProps, FormEvent, MouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 import type { SignupFormState } from "@/app/auth/signup/signup-form-state";
 import { signUpAction } from "@/app/auth/signup/signup-actions";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import {
   ClipboardList,
   HardHat,
@@ -74,18 +76,21 @@ function SubmitPrimary({
   className,
   variant,
   disabled,
+  externalPending,
   ...props
-}: ComponentProps<typeof Button>) {
+}: ComponentProps<typeof Button> & { externalPending?: boolean }) {
   const { pending } = useFormStatus();
-  const mergedDisabled = pending || disabled;
+  const busy = pending || Boolean(externalPending);
+  const mergedDisabled = busy || disabled;
   return (
     <Button type="submit" {...props} className={className} variant={variant} disabled={mergedDisabled}>
-      {pending ? "Working…" : children}
+      {busy ? "Working…" : children}
     </Button>
   );
 }
 
 export function SignupForm() {
+  const router = useRouter();
   const [state, formAction] = useFormState(signUpAction, initialSignupState);
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -93,13 +98,20 @@ export function SignupForm() {
   const [selected, setSelected] = useState<IndustrySlug[]>([]);
   const [otherNote, setOtherNote] = useState("");
   const [accentColour, setAccentColour] = useState<AccentPresetHex>(DEFAULT_ACCENT_HEX);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [ownerSubmitting, setOwnerSubmitting] = useState(false);
 
   const needsOtherNote = selected.includes("other");
   const industriesJson = useMemo(() => JSON.stringify(selected), [selected]);
+  const displayedError = localError ?? state.error;
 
   useEffect(() => {
     if (!selected.includes("other")) setOtherNote("");
   }, [selected]);
+
+  useEffect(() => {
+    setLocalError(null);
+  }, [role]);
 
   function toggleIndustry(slug: IndustrySlug) {
     setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
@@ -125,6 +137,114 @@ export function SignupForm() {
     setStep((s) => (s === 3 ? 2 : 1));
   }
 
+  async function handleOwnerSignup(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (role !== "owner" || step !== 3) return;
+
+    const form = formRef.current;
+    if (!form?.checkValidity()) {
+      form?.reportValidity();
+      return;
+    }
+
+    setLocalError(null);
+    setOwnerSubmitting(true);
+
+    try {
+      const fd = new FormData(form);
+      const fullName = String(fd.get("name") ?? "").trim();
+      const email = String(fd.get("email") ?? "").trim();
+      const password = String(fd.get("password") ?? "");
+      const businessName = String(fd.get("business_name") ?? "").trim();
+      const abn = String(fd.get("abn") ?? "").trim();
+      const phoneNumber = String(fd.get("phone_number") ?? "").trim();
+
+      if (!email || !password) {
+        setLocalError("Email and password are required.");
+        return;
+      }
+
+      const supabase = createSupabaseBrowser();
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: fullName,
+            business_name: businessName,
+            abn,
+            phone_number: phoneNumber,
+            role: "owner",
+            industry_tags: selected.join(","),
+            industry_other_note: otherNote || "",
+            accent_colour: accentColour
+          }
+        }
+      });
+
+      if (authError) {
+        console.error("[signup/owner] signUp failed", authError);
+        setLocalError(authError.message);
+        return;
+      }
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        setLocalError(
+          "Account signup did not return a user id. If email confirmation is required, check your inbox — otherwise contact support."
+        );
+        return;
+      }
+
+      const accessToken = authData.session?.access_token;
+      if (!accessToken) {
+        setLocalError(
+          "Account created. Confirm your email if your project requires it, then sign in to finish setup."
+        );
+        return;
+      }
+
+      const res = await fetch("/api/setup-business", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          userId,
+          businessName,
+          abn,
+          phone: phoneNumber,
+          industries: selected,
+          accentColour
+        })
+      });
+
+      const raw = await res.text();
+      let parsed: { success?: boolean; businessId?: string; error?: string };
+      try {
+        parsed = JSON.parse(raw) as typeof parsed;
+      } catch {
+        setLocalError(raw.slice(0, 280) || "Invalid response from server.");
+        return;
+      }
+
+      if (!res.ok || parsed.error) {
+        console.error("[signup/owner] setup-business failed", res.status, parsed);
+        setLocalError(parsed.error ?? `Setup failed (${res.status}).`);
+        return;
+      }
+
+      router.push("/dashboard/owner");
+      router.refresh();
+    } catch (err) {
+      console.error("[signup/owner] unexpected error", err);
+      setLocalError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setOwnerSubmitting(false);
+    }
+  }
+
   const accentBtn = "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]";
   const industrySelectedRing =
     "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--accent-color)_45%,transparent)]";
@@ -140,13 +260,18 @@ export function SignupForm() {
           Start your 30 day free trial and set up your business in minutes.
         </p>
 
-        {state.error ? (
+        {displayedError ? (
           <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200 whitespace-pre-wrap break-words">
-            {state.error}
+            {displayedError}
           </p>
         ) : null}
 
-        <form ref={formRef} action={formAction} className="mt-6 space-y-6">
+        <form
+          ref={formRef}
+          action={role === "client" ? formAction : undefined}
+          onSubmit={role === "owner" ? handleOwnerSignup : undefined}
+          className="mt-6 space-y-6"
+        >
           <input type="hidden" name="industry_tags_json" value={industriesJson} />
           <input type="hidden" name="industry_other_note" value={otherNote} />
           <input type="hidden" name="accent_colour" value={accentColour} readOnly />
@@ -327,7 +452,9 @@ export function SignupForm() {
               <Button type="button" variant="dark-ghost" onClick={handleBack}>
                 Back
               </Button>
-              <SubmitPrimary className={accentBtn}>Create account</SubmitPrimary>
+              <SubmitPrimary externalPending={ownerSubmitting} className={accentBtn}>
+                Create account
+              </SubmitPrimary>
             </div>
           </div>
         </form>
