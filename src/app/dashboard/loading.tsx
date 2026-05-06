@@ -1,5 +1,5 @@
 import OwnerRouteSkeleton from "@/components/dashboard/owner-route-skeleton";
 
-export default function OwnerLoading() {
+export default function Loading() {
   return <OwnerRouteSkeleton />;
 }

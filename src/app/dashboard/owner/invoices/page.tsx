@@ -140,7 +140,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
 
   return (
     <section className="space-y-5">
-      <h1 className="text-2xl font-bold text-[#1e3a5f]">Invoices</h1>
+      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Invoices</h1>
       <InvoicesManager
         invoices={allInvoices}
         clients={(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}

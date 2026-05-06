@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -711,7 +712,14 @@ export default function JobsManager({
                   <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                     {(jobPhotosByJob[values.id] ?? []).map((photo, idx) => (
                       <div key={`${photo.url}-${idx}`} className="rounded border p-2">
-                        <img src={photo.url} alt={`Job photo ${idx + 1}`} className="h-24 w-full rounded object-cover" />
+                        <Image
+                          src={photo.url}
+                          alt={`Job photo ${idx + 1}`}
+                          width={320}
+                          height={96}
+                          className="h-24 w-full rounded object-cover"
+                          unoptimized
+                        />
                         <p className="mt-1 text-xs font-medium capitalize text-slate-300">{photo.label}</p>
                       </div>
                     ))}

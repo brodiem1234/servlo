@@ -40,11 +40,33 @@ export default function InvoicesManager({
 }: Props) {
   const getStatusBadge = (invoice: Invoice) => {
     const status = (invoice.status ?? "").toLowerCase();
-    if (status === "paid") return { label: "Paid", className: "bg-green-100 text-green-700" };
-    if (invoice.due_date && status !== "paid" && new Date(invoice.due_date) < new Date()) {
-      return { label: "Overdue", className: "bg-orange-100 text-orange-700" };
+    const paid = status === "paid";
+    const overdue =
+      !paid &&
+      Boolean(invoice.due_date) &&
+      new Date(invoice.due_date as string).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+
+    if (paid) {
+      return {
+        label: "Paid",
+        className:
+          "border border-emerald-600/40 bg-emerald-100 !text-emerald-900 dark:border-emerald-500/50 dark:bg-emerald-950 dark:!text-emerald-100"
+      };
     }
-    return { label: "Unpaid", className: "bg-red-100 text-red-700" };
+    if (overdue) {
+      return {
+        label: "Overdue",
+        className:
+          "border border-red-600/70 bg-red-100 !text-red-900 dark:border-red-400 dark:bg-red-950 dark:!text-red-100"
+      };
+    }
+    const label =
+      status === "draft" ? "Draft" : status === "sent" ? "Sent" : status ? status : "Unpaid";
+    return {
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      className:
+        "border border-amber-600/40 bg-amber-50 !text-amber-950 dark:border-amber-500/50 dark:bg-amber-950 dark:!text-amber-100"
+    };
   };
 
   const [open, setOpen] = useState(false);
@@ -119,8 +141,12 @@ export default function InvoicesManager({
   };
 
   const overdue = invoices.filter((invoice) => {
-    if (!invoice.due_date) return false;
-    return invoice.status !== "paid" && new Date(invoice.due_date) < new Date();
+    if (!invoice.due_date || (invoice.status ?? "").toLowerCase() === "paid") return false;
+    const due = new Date(invoice.due_date);
+    due.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return due < today;
   });
   const nextInvoiceNumber = `INV-${String(invoices.length + 1).padStart(3, "0")}`;
 
@@ -152,25 +178,39 @@ export default function InvoicesManager({
       <button onClick={startCreate} className="rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]">
         New Invoice
       </button>
-      <article className="rounded-xl border border-red-200 bg-red-50 p-4">
-        <h2 className="font-semibold text-red-700">Overdue Invoices ({overdue.length})</h2>
+      <article className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-950/80">
+        <h2 className="font-semibold !text-red-900 dark:!text-red-100">Overdue invoices ({overdue.length})</h2>
+        {overdue.length > 0 ? (
+          <ul className="mt-2 list-inside list-disc text-sm !text-red-800 dark:!text-red-200">
+            {overdue.slice(0, 8).map((inv) => (
+              <li key={inv.id}>
+                {inv.invoice_number ?? inv.id} · due{" "}
+                {inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-AU") : "—"}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 text-sm !text-red-800/90 dark:!text-red-200/90">No overdue invoices.</p>
+        )}
       </article>
-      <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
+      <article className="dashboard-card overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
         <table className="w-full min-w-[700px] text-sm">
           <thead>
-            <tr className="border-b text-left text-[#1e3a5f]">
+            <tr className="border-b border-[var(--border)] text-left text-[var(--text-primary)]">
               <th className="px-2 py-2">Invoice #</th><th className="px-2 py-2">Amount</th><th className="px-2 py-2">Due</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {invoices.map((invoice) => (
-              <tr key={invoice.id} className="border-b hover:bg-slate-50">
-                <td className="px-2 py-2">{invoice.invoice_number ?? "-"}</td>
-                <td className="px-2 py-2">${Number(invoice.amount ?? 0).toFixed(2)}</td>
-                <td className="px-2 py-2">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}</td>
+            {invoices.map((invoice) => {
+              const badge = getStatusBadge(invoice);
+              return (
+              <tr key={invoice.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-primary)]">
+                <td className="px-2 py-2 text-[var(--text-primary)]">{invoice.invoice_number ?? "-"}</td>
+                <td className="px-2 py-2 text-[var(--text-primary)]">${Number(invoice.amount ?? 0).toFixed(2)}</td>
+                <td className="px-2 py-2 text-[var(--text-secondary)]">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}</td>
                 <td className="px-2 py-2">
-                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadge(invoice).className}`}>
-                    {getStatusBadge(invoice).label}
+                  <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${badge.className}`}>
+                    {badge.label}
                   </span>
                 </td>
                 <td className="px-2 py-2 space-x-2">
@@ -178,15 +218,16 @@ export default function InvoicesManager({
                   <button onClick={() => downloadPdf(invoice)} className="rounded border px-2 py-1 text-xs">Download PDF</button>
                 </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </article>
 
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
-          <div className="ml-auto h-full w-full max-w-3xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-100">{editingId ? "Edit Invoice" : "New Invoice"}</h2>
+          <div className="ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-[var(--bg-card)] p-5 shadow-xl">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">{editingId ? "Edit Invoice" : "New Invoice"}</h2>
             <form action={action} className="mt-4 space-y-3">
               <input type="hidden" name="id" value={editingId} />
               <input type="hidden" name="line_items" value={JSON.stringify(lineItems)} />

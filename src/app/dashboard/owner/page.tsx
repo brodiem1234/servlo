@@ -26,14 +26,14 @@ export default async function OwnerDashboardPage() {
     redirect("/auth/login");
   }
 
-  const { data: profile } = await sb
-    .from("profiles")
-    .select("trial_end")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: profile }, dashboardData] = await Promise.all([
+    sb.from("profiles").select("trial_end").eq("id", user.id).maybeSingle(),
+    getOwnerDashboardData(user.id)
+  ]);
+
   const trialEnd = profile?.trial_end ?? null;
 
-  const { metrics, recentJobs, topClients, chaseInvoices, quotesFollowUp } = await getOwnerDashboardData(user.id);
+  const { metrics, recentJobs, topClients, chaseInvoices, quotesFollowUp } = dashboardData;
   const trialDaysRemaining = trialEnd
     ? Math.max(
         0,

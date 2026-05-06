@@ -2,17 +2,23 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Bell, Briefcase, FileText, Home, Menu, Moon, Sun, Users } from "lucide-react";
 
-const ownerNav = [
-  { href: "/dashboard/owner", label: "Dashboard" },
-  { href: "/dashboard/owner/jobs", label: "Jobs" },
-  { href: "/dashboard/owner/clients", label: "Clients" },
-  { href: "/dashboard/owner/invoices", label: "Invoices" },
-  { href: "/dashboard/owner/quotes", label: "Quotes" },
-  { href: "/dashboard/owner/employees", label: "Employees" },
-  { href: "/dashboard/owner/settings", label: "Settings" }
+const ownerNavSections = [
+  [{ href: "/dashboard/owner", label: "Dashboard" }],
+  [
+    { href: "/dashboard/owner/jobs", label: "Jobs" },
+    { href: "/dashboard/owner/clients", label: "Clients" }
+  ],
+  [
+    { href: "/dashboard/owner/invoices", label: "Invoices" },
+    { href: "/dashboard/owner/quotes", label: "Quotes" }
+  ],
+  [
+    { href: "/dashboard/owner/employees", label: "Employees" },
+    { href: "/dashboard/owner/settings", label: "Settings" }
+  ]
 ];
 
 /** Dashboard is only active on the exact path; other items match their section. */
@@ -64,21 +70,33 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
             </div>
             <div className="mt-2 h-[2px] w-full bg-[#0db8c8]" />
           </div>
-          <nav className="grid gap-2">
-            {ownerNav.map((item) => {
-              const active = isNavItemActive(pathname, item.href);
-              return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  data-active={active ? "true" : "false"}
-                  onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2 text-sm text-white transition-colors"
-                >
-                  {item.label}
-                </a>
-              );
-            })}
+          <nav className="flex flex-col gap-0">
+            {ownerNavSections.map((section, sectionIndex) => (
+              <Fragment key={`nav-section-${sectionIndex}`}>
+                {sectionIndex > 0 ? (
+                  <hr
+                    className="my-3 border-0 border-t border-[#0db8c8]/40"
+                    aria-hidden
+                  />
+                ) : null}
+                <div className="flex flex-col gap-2">
+                  {section.map((item) => {
+                    const active = isNavItemActive(pathname, item.href);
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        data-active={active ? "true" : "false"}
+                        onClick={() => setOpen(false)}
+                        className="rounded-md px-3 py-2 text-sm text-white transition-colors"
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  })}
+                </div>
+              </Fragment>
+            ))}
           </nav>
         </aside>
 
