@@ -1,80 +1,195 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ThemeTogglePublic } from "@/components/theme-toggle-public";
+import {
+  CalendarDays,
+  Users,
+  FileText,
+  UserCog,
+  LayoutDashboard,
+  Camera,
+  type LucideIcon
+} from "lucide-react";
+import { LandingHeader } from "@/components/landing-header";
 
-const features = [
+const tealIcon = "text-[#0db8c8] dark:text-cyan-400";
+
+const features: Array<{ Icon: LucideIcon; title: string; description: string }> = [
   {
-    emoji: "🔧",
+    Icon: CalendarDays,
     title: "Jobs & Scheduling",
     description: "Calendar view, assign employees, track status"
   },
   {
-    emoji: "👥",
+    Icon: Users,
     title: "Client Management",
     description: "Full history, portal, auto follow-ups"
   },
   {
-    emoji: "🧾",
+    Icon: FileText,
     title: "Invoices & Quotes",
     description: "Professional PDFs, send via email, get paid faster"
   },
   {
-    emoji: "👷",
+    Icon: UserCog,
     title: "Employee Management",
     description: "Clock in/out, timesheets, job assignments"
   },
   {
-    emoji: "📊",
+    Icon: LayoutDashboard,
     title: "Business Dashboard",
     description: "Revenue, profit margins, outstanding invoices"
   },
   {
-    emoji: "📸",
+    Icon: Camera,
     title: "Job Photos",
     description: "Before/after photos attached to every job"
   }
 ];
 
+const testimonials = [
+  {
+    name: "Jake T.",
+    role: "Electrician, Adelaide SA",
+    quote: "Finally an app that doesn't need a manual. My crew was using it same day."
+  },
+  {
+    name: "Mick S.",
+    role: "Plumber, Adelaide SA",
+    quote: "Chasing invoices used to take hours. Now it's two taps."
+  },
+  {
+    name: "Dave R.",
+    role: "Builder, Adelaide SA",
+    quote: "I can see where every job is at without calling anyone. Game changer."
+  }
+];
+
+const pricingPlans = [
+  {
+    name: "Solo",
+    price: "$29/mo",
+    popular: false,
+    list: [
+      "1 user",
+      "Jobs & scheduling",
+      "Clients",
+      "Invoices & quotes",
+      "PDF generation",
+      "Email notifications"
+    ]
+  },
+  {
+    name: "Team",
+    price: "$79/mo",
+    popular: true,
+    list: [
+      "Up to 5 users",
+      "All Solo features",
+      "Employee management",
+      "GPS clock in/out",
+      "Job photos",
+      "Priority support"
+    ]
+  },
+  {
+    name: "Business",
+    price: "$179/mo",
+    popular: false,
+    list: [
+      "Up to 20 users",
+      "All Team features",
+      "Contractor management",
+      "Advanced reporting",
+      "API access",
+      "Dedicated support"
+    ]
+  }
+];
+
+function HeroAppMock() {
+  return (
+    <div className="relative mx-auto w-full max-w-lg md:max-w-none">
+      <div
+        aria-hidden
+        className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[#0db8c8]/25 via-cyan-400/10 to-[#1e3a5f]/20 blur-2xl dark:from-cyan-400/20 dark:via-teal-500/10 dark:to-[#0f172a]/40"
+      />
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_80px_-12px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 dark:border-cyan-400/25 dark:bg-[#0c1525] dark:shadow-[0_28px_90px_-16px_rgba(0,0,0,0.65)] dark:ring-white/10">
+        <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/90 px-4 py-3 dark:border-white/10 dark:bg-[#111f36]/90">
+          <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+          <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+          <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+          <span className="ml-3 truncate text-xs font-medium text-slate-500 dark:text-slate-400">servlo.app · Jobs</span>
+        </div>
+
+        <div className="bg-gradient-to-b from-slate-50 to-white p-5 dark:from-[#0f172a] dark:to-[#0c1525]">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Today</p>
+              <p className="text-lg font-bold text-[#1e3a5f] dark:text-white">Wed 7 May</p>
+            </div>
+            <div className="rounded-lg bg-[#0db8c8]/15 px-3 py-1.5 text-right dark:bg-cyan-400/15">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#0a8a98] dark:text-cyan-200">This week</p>
+              <p className="text-sm font-bold tabular-nums text-[#1e3a5f] dark:text-white">12 jobs</p>
+            </div>
+          </div>
+
+          <article className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-8px_rgba(30,58,95,0.25)] dark:border-white/10 dark:bg-[#152238] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.5)]">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-[#1a2d47]/80">
+              <div className="min-w-0 flex-1">
+                <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-800 ring-1 ring-inset ring-blue-200 dark:bg-blue-500/20 dark:text-blue-100 dark:ring-blue-400/30">
+                  In progress
+                </span>
+                <h3 className="mt-2 truncate text-base font-bold text-[#1e3a5f] dark:text-white">Switchboard upgrade</h3>
+                <p className="truncate text-sm font-medium text-slate-600 dark:text-slate-300">Norwood Community Centre</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-2xl font-extrabold tabular-nums tracking-tight text-[#0db8c8] dark:text-cyan-300">$4,850</p>
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Inc. GST · Approved</p>
+              </div>
+            </div>
+            <div className="grid gap-3 px-4 py-3 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-500 dark:text-slate-400">Client</span>
+                <span className="truncate font-semibold text-[#1e3a5f] dark:text-white">Brightspark Electrical Pty Ltd</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-500 dark:text-slate-400">Scheduled</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">9:00 AM – 3:00 PM</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="inline-flex rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-900 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-100 dark:ring-emerald-500/30">
+                  Paid deposit
+                </span>
+                <span className="inline-flex rounded-md bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-500/30">
+                  Materials on site
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm dark:border-white/10 dark:bg-[#152238]/90">
+              <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">Outstanding</p>
+              <p className="text-lg font-bold tabular-nums text-[#1e3a5f] dark:text-white">$12,450</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm dark:border-white/10 dark:bg-[#152238]/90">
+              <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">This month</p>
+              <p className="text-lg font-bold tabular-nums text-[#0db8c8] dark:text-cyan-300">$48.2k</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
     <main className="min-h-screen scroll-smooth bg-slate-50 text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0f172a] dark:text-white">
-      <header className="sticky top-0 z-50 border-b border-t-2 border-teal-400 border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#1e3a5f]/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="SERVLO" width={36} height={36} />
-            <span className="text-lg font-bold tracking-wide text-[#1e3a5f] dark:text-white">SERVLO</span>
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm text-[#334155] dark:text-slate-200 md:flex">
-            <a href="#features" className="hover:text-[#0db8c8] dark:hover:text-cyan-300">
-              Features
-            </a>
-            <a href="#pricing" className="hover:text-[#0db8c8] dark:hover:text-cyan-300">
-              Pricing
-            </a>
-            <a href="#about" className="hover:text-[#0db8c8] dark:hover:text-cyan-300">
-              About
-            </a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <ThemeTogglePublic />
-            <Link
-              href="/auth/login"
-              className="rounded-md border border-[#0db8c8]/45 px-3 py-2 text-sm text-[#1e3a5f] hover:bg-slate-100 dark:border-cyan-300/40 dark:text-white dark:hover:bg-white/10"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="rounded-md bg-[#0db8c8] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0a9dab] dark:text-[#0f172a] dark:bg-cyan-400 dark:hover:bg-cyan-300"
-            >
-              Start Free Trial
-            </Link>
-          </div>
-        </div>
-      </header>
+      <LandingHeader />
 
       <section className="bg-[#f1f5f9] dark:bg-[#1e3a5f]">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:px-6 md:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:px-6 md:py-24">
           <div>
             <h1 className="text-4xl font-extrabold leading-tight text-[#1e3a5f] dark:text-white md:text-6xl">
               Run Your Trade Business From Your Phone
@@ -85,13 +200,13 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/auth/signup"
-                className="rounded-lg bg-[#0db8c8] px-6 py-3 text-base font-semibold text-white hover:bg-[#0a9dab] dark:text-[#0f172a] dark:bg-cyan-400 dark:hover:bg-cyan-300"
+                className="rounded-lg bg-[#0db8c8] px-6 py-3 text-base font-semibold text-white shadow-md shadow-[#0db8c8]/25 hover:bg-[#0a9dab] dark:text-[#0f172a] dark:bg-cyan-400 dark:shadow-cyan-400/20 dark:hover:bg-cyan-300"
               >
                 Start 30-Day Free Trial
               </Link>
               <a
                 href="#features"
-                className="rounded-lg border border-[#0db8c8]/50 px-6 py-3 text-base font-semibold text-[#1e3a5f] hover:bg-white dark:border-cyan-300/50 dark:text-cyan-100 dark:hover:bg-white/10"
+                className="rounded-lg border-2 border-[#0db8c8] bg-white px-6 py-3 text-base font-semibold text-[#1e3a5f] shadow-sm hover:bg-slate-50 dark:border-cyan-300/60 dark:bg-[#1e3a5f]/80 dark:text-white dark:shadow-none dark:hover:bg-[#256090]"
               >
                 See How It Works
               </a>
@@ -100,21 +215,30 @@ export default function HomePage() {
               No credit card required • Cancel anytime • Australian owned
             </p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-cyan-300/30 dark:bg-[#0f172a]/60 dark:shadow-2xl">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-cyan-300/20 dark:bg-slate-900">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-              </div>
-              <div className="grid gap-2 text-sm text-[#475569] dark:text-slate-300">
-                <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">Today: 8 Jobs • 3 Invoices Due</div>
-                <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">Crew Assigned: 5 Employees</div>
-                <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">Outstanding: $12,450</div>
-                <div className="rounded bg-slate-100 p-2 dark:bg-slate-800">Revenue This Month: $48,200</div>
-              </div>
-            </div>
-          </div>
+          <HeroAppMock />
+        </div>
+      </section>
+
+      <section
+        className="border-y border-slate-200 bg-white py-3 dark:border-slate-700 dark:bg-[#152238]/80"
+        aria-label="Social proof"
+      >
+        <div className="mx-auto max-w-5xl px-4 text-center text-xs font-medium leading-relaxed text-[#475569] dark:text-slate-300 sm:text-sm">
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span className="text-[#1e3a5f] dark:text-white">500+ jobs managed</span>
+            <span className="hidden text-slate-300 sm:inline dark:text-slate-600" aria-hidden>
+              ·
+            </span>
+            <span className="text-[#1e3a5f] dark:text-white">$2M+ invoiced</span>
+            <span className="hidden text-slate-300 sm:inline dark:text-slate-600" aria-hidden>
+              ·
+            </span>
+            <span className="text-[#1e3a5f] dark:text-white">Built in Adelaide SA</span>
+            <span className="hidden text-slate-300 sm:inline dark:text-slate-600" aria-hidden>
+              ·
+            </span>
+            <span className="text-[#1e3a5f] dark:text-white">30-day free trial</span>
+          </p>
         </div>
       </section>
 
@@ -145,14 +269,14 @@ export default function HomePage() {
           Everything a tradie needs, nothing they don&apos;t
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => (
+          {features.map(({ Icon, title, description }) => (
             <article
-              key={feature.title}
+              key={title}
               className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
             >
-              <p className="text-2xl">{feature.emoji}</p>
-              <h3 className="mt-3 text-lg font-semibold text-[#1e3a5f] dark:text-white">{feature.title}</h3>
-              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{feature.description}</p>
+              <Icon className={`h-9 w-9 ${tealIcon}`} strokeWidth={1.75} aria-hidden />
+              <h3 className="mt-3 text-lg font-semibold text-[#1e3a5f] dark:text-white">{title}</h3>
+              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{description}</p>
             </article>
           ))}
         </div>
@@ -161,36 +285,37 @@ export default function HomePage() {
       <section id="pricing" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Simple pricing, no surprises</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[
-            { name: "Solo", price: "$29/mo", list: ["1 user", "All core features"], popular: false },
-            { name: "Team", price: "$79/mo", list: ["Up to 5 employees", "All Solo features"], popular: true },
-            { name: "Business", price: "$179/mo", list: ["Up to 20 employees", "All features"], popular: false }
-          ].map((plan) => (
+          {pricingPlans.map((plan) => (
             <article
               key={plan.name}
-              className={`rounded-xl border p-6 ${
+              className={`flex flex-col rounded-xl border p-6 ${
                 plan.popular
-                  ? "border-[#0db8c8] bg-[#e6f9fb] dark:border-cyan-400 dark:bg-[#10283a]"
+                  ? "border-[#0db8c8] bg-[#e6f9fb] shadow-md shadow-[#0db8c8]/15 dark:border-cyan-400 dark:bg-[#10283a]"
                   : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
               }`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h3 className="text-2xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
                 {plan.popular ? (
-                  <span className="rounded-full bg-[#0db8c8] px-2 py-1 text-xs font-semibold text-white dark:bg-cyan-400 dark:text-[#0f172a]">
+                  <span className="shrink-0 rounded-full bg-[#0db8c8] px-2 py-1 text-xs font-semibold text-white dark:bg-cyan-400 dark:text-[#0f172a]">
                     Most Popular
                   </span>
                 ) : null}
               </div>
               <p className="mt-2 text-3xl font-extrabold text-[#1e3a5f] dark:text-white">{plan.price}</p>
-              <ul className="mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-200">
+              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
                 {plan.list.map((item) => (
-                  <li key={item}>✓ {item}</li>
+                  <li key={item} className="flex gap-2">
+                    <span className="mt-0.5 shrink-0 text-[#0db8c8] dark:text-cyan-400" aria-hidden>
+                      ✓
+                    </span>
+                    <span>{item}</span>
+                  </li>
                 ))}
               </ul>
               <Link
                 href="/auth/signup"
-                className="mt-6 inline-block rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a9dab] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
+                className="mt-6 inline-block rounded-md bg-[#0db8c8] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0a9dab] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
               >
                 Start Free Trial
               </Link>
@@ -209,23 +334,36 @@ export default function HomePage() {
           improve cash flow, and keep your team aligned.
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[
-            "Jake T. — Electrician, Adelaide SA",
-            "Mick S. — Plumber, Adelaide SA",
-            "Dave R. — Builder, Adelaide SA"
-          ].map((name) => (
+          {testimonials.map((t) => (
             <article
-              key={name}
+              key={t.name}
               className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
             >
               <p className="text-amber-500 dark:text-amber-300">★★★★★</p>
-              <p className="mt-3 text-sm text-[#334155] dark:text-slate-200">
-                &quot;SERVLO has simplified how we run jobs and chase invoices. It&apos;s become part of our daily
-                workflow.&quot;
+              <p className="mt-3 text-sm leading-relaxed text-[#334155] dark:text-slate-200">&quot;{t.quote}&quot;</p>
+              <p className="mt-3 text-xs font-semibold text-[#1e3a5f] dark:text-white">
+                {t.name}
+                <span className="mt-0.5 block font-normal text-[#64748b] dark:text-slate-400">{t.role}</span>
               </p>
-              <p className="mt-3 text-xs text-[#64748b] dark:text-slate-400">{name}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-[#1e3a5f] px-4 py-16 dark:bg-[#0b1628]" aria-labelledby="cta-heading">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 id="cta-heading" className="text-3xl font-bold text-white md:text-4xl">
+            Ready to run your business smarter?
+          </h2>
+          <p className="mt-4 text-lg text-cyan-100/95 md:text-xl">
+            Join Australian trade businesses already using SERVLO.
+          </p>
+          <Link
+            href="/auth/signup"
+            className="mt-8 inline-flex min-w-[220px] items-center justify-center rounded-xl bg-[#0db8c8] px-10 py-4 text-lg font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[#0a9dab] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
+          >
+            Start Free Trial
+          </Link>
         </div>
       </section>
 
