@@ -82,7 +82,26 @@
 .dashboard-theme,
 .auth-theme {
   background: var(--bg-primary);
-  color: var(--text-primary);
+  color: var(--text-secondary);
+}
+
+/* Light mode: headings navy; dark mode: headings light */
+.dashboard-theme h1,
+.dashboard-theme h2,
+.dashboard-theme h3,
+.dashboard-theme h4,
+.auth-theme h1,
+.auth-theme h2,
+.auth-theme h3,
+.auth-theme h4 {
+  color: var(--text-primary) !important;
+}
+
+:root.dark .dashboard-theme h1,
+:root.dark .dashboard-theme h2,
+:root.dark .dashboard-theme h3,
+:root.dark .dashboard-theme h4 {
+  color: #f0f4f8 !important;
 }
 
 .dashboard-theme .bg-white,
@@ -90,7 +109,25 @@
 .dashboard-theme .dashboard-panel,
 .auth-theme .auth-card {
   background: var(--bg-card) !important;
+}
+
+/* Cards / panels: subtle borders — dark blue in dark mode */
+.dashboard-theme .dashboard-card,
+.dashboard-theme .dashboard-panel,
+.auth-theme .auth-card {
   border-color: var(--border) !important;
+}
+
+:root.dark .dashboard-theme .dashboard-card,
+:root.dark .dashboard-theme .dashboard-panel,
+:root.dark .auth-theme .auth-card {
+  border-color: #2a4a6b !important;
+}
+
+:root.dark .dashboard-theme .border-white,
+:root.dark .dashboard-theme .border-slate-100,
+:root.dark .dashboard-theme .border-slate-200 {
+  border-color: #2a4a6b !important;
 }
 
 .dashboard-theme input,
@@ -102,6 +139,15 @@
   background: var(--input-bg) !important;
   border-color: var(--border) !important;
   color: var(--text-primary) !important;
+}
+
+:root.dark .dashboard-theme input,
+:root.dark .dashboard-theme select,
+:root.dark .dashboard-theme textarea,
+:root.dark .auth-theme input,
+:root.dark .auth-theme select,
+:root.dark .auth-theme textarea {
+  border-color: #2a4a6b !important;
 }
 
 .dashboard-theme input::placeholder,
@@ -119,20 +165,26 @@
   background: color-mix(in oklab, var(--bg-card) 88%, #000 12%);
 }
 
+:root.dark .dashboard-theme thead tr {
+  background: color-mix(in oklab, var(--bg-card) 85%, #000 15%);
+  color: #cbd5e1;
+}
+
+/* Table borders — navy in dark mode */
+:root.dark .dashboard-theme table,
+:root.dark .dashboard-theme th,
+:root.dark .dashboard-theme td {
+  border-color: #1e3a5f !important;
+}
+
 .dashboard-theme label,
 .auth-theme label {
   color: var(--text-secondary) !important;
 }
 
-.dashboard-theme h1,
-.dashboard-theme h2,
-.dashboard-theme h3,
-.dashboard-theme h4,
-.auth-theme h1,
-.auth-theme h2,
-.auth-theme h3,
-.auth-theme h4 {
-  color: var(--text-primary) !important;
+:root.dark .dashboard-theme label,
+:root.dark .auth-theme label {
+  color: #cbd5e1 !important;
 }
 
 .dashboard-theme p,
@@ -144,9 +196,53 @@
   color: var(--text-secondary);
 }
 
-.dashboard-theme a,
+:root.dark .dashboard-theme p,
+:root.dark .dashboard-theme span,
+:root.dark .dashboard-theme td,
+:root.dark .dashboard-theme th,
+:root.dark .auth-theme p,
+:root.dark .auth-theme span {
+  color: #cbd5e1;
+}
+
+:root.dark .dashboard-theme .text-muted,
+:root.dark .auth-theme .text-muted {
+  color: #94a3b8 !important;
+}
+
+/* Links in main content / auth — not sidebar */
+.dashboard-theme main a,
 .auth-theme a {
   color: var(--accent);
+}
+
+.dashboard-theme .owner-sidebar nav a {
+  color: #ffffff !important;
+}
+
+.dashboard-theme .owner-sidebar nav a:hover {
+  background-color: #0d1a2e !important;
+  color: #ffffff !important;
+}
+
+.dashboard-theme .owner-sidebar nav a[data-active="true"] {
+  background-color: #0db8c8 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.dashboard-theme .owner-mobile-nav a {
+  color: #ffffff !important;
+}
+
+.dashboard-theme .owner-mobile-nav a[data-active="true"] {
+  background-color: #0db8c8 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.dashboard-theme .owner-mobile-nav a[data-active="false"]:hover {
+  background-color: #0d1a2e !important;
 }
 
 .dashboard-theme .text-white,
@@ -173,7 +269,24 @@
   color: var(--text-secondary) !important;
 }
 
+:root.dark .dashboard-theme .text-slate-300,
+:root.dark .dashboard-theme .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
+:root.dark .dashboard-theme .text-slate-500,
+:root.dark .dashboard-theme .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
 .dashboard-theme .dashboard-primary {
   background: var(--accent) !important;
   color: #fff !important;
+}
+
+/* Modal / slide-over cards — dark blue border (not white) */
+:root.dark .dashboard-theme .rounded-xl.border,
+:root.dark .dashboard-theme .rounded-lg.border,
+:root.dark .dashboard-theme .border.border-slate-700 {
+  border-color: #2a4a6b !important;
 }

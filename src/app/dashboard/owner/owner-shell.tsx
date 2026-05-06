@@ -42,10 +42,10 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
   };
 
   return (
-    <div className="dashboard-theme min-h-screen bg-[#f8fafc] text-[#1e3a5f]">
+    <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
+          className={`owner-sidebar fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
           style={{ background: "var(--sidebar-bg)" }}
@@ -53,7 +53,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <Image src="/logo.png" alt="SERVLO" width={36} height={36} />
-              <p className="text-xl font-bold tracking-wide">SERVLO</p>
+              <p className="text-xl font-bold tracking-wide text-white">SERVLO</p>
             </div>
             <div className="mt-2 h-[2px] w-full bg-[#0db8c8]" />
           </div>
@@ -64,10 +64,9 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                 <a
                   key={item.href}
                   href={item.href}
+                  data-active={active ? "true" : "false"}
                   onClick={() => setOpen(false)}
-                  className={`rounded-md px-3 py-2 text-sm font-medium ${
-                    active ? "bg-[#0db8c8] text-white" : "hover:bg-[#16324b]"
-                  }`}
+                  className="rounded-md px-3 py-2 text-sm text-white transition-colors"
                 >
                   {item.label}
                 </a>
@@ -77,21 +76,21 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
         </aside>
 
         <div className="flex min-h-screen flex-col">
-          <header className="flex items-center justify-between border-b bg-white px-4 py-3 md:px-6">
+          <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 md:px-6">
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="rounded border p-2 md:hidden"
+                className="rounded border border-[var(--border)] p-2 text-[var(--text-primary)] md:hidden"
                 onClick={() => setOpen((prev) => !prev)}
               >
                 <Menu size={18} />
               </button>
-              <p className="text-sm font-semibold md:text-base" style={{ color: "var(--text-primary)" }}>{businessName}</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">{businessName}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded border p-2"
+                className="rounded border border-[var(--border)] p-2 text-[var(--text-primary)]"
                 onClick={toggleTheme}
                 aria-label="Toggle dark and light mode"
               >
@@ -100,7 +99,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <div className="relative">
                 <button
                   type="button"
-                  className="relative rounded border p-2"
+                  className="relative rounded border border-[var(--border)] p-2 text-[var(--text-primary)]"
                   onClick={() => setAlertsOpen((prev) => !prev)}
                   aria-label="Notifications"
                 >
@@ -112,14 +111,17 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
                   ) : null}
                 </button>
                 {alertsOpen ? (
-                  <div className="absolute right-0 z-40 mt-2 w-80 rounded-md border bg-white p-2 shadow-lg">
-                    <p className="px-2 py-1 text-xs font-semibold text-[#64748b]">Notifications</p>
+                  <div className="absolute right-0 z-40 mt-2 w-80 rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-lg">
+                    <p className="px-2 py-1 text-xs font-semibold text-[var(--text-muted)]">Notifications</p>
                     <div className="max-h-72 overflow-auto">
                       {alerts.length === 0 ? (
-                        <p className="px-2 py-2 text-sm text-[#64748b]">No new alerts.</p>
+                        <p className="px-2 py-2 text-sm text-[var(--text-muted)]">No new alerts.</p>
                       ) : (
                         alerts.map((alert) => (
-                          <p key={alert.id} className="rounded px-2 py-2 text-sm hover:bg-[#f1f5f9]">
+                          <p
+                            key={alert.id}
+                            className="rounded px-2 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"
+                          >
                             {alert.text}
                           </p>
                         ))
@@ -131,7 +133,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="dashboard-primary rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a9dab]"
+                  className="dashboard-primary rounded-md bg-[#0db8c8] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a9dab]"
                 >
                   Sign Out
                 </button>
@@ -152,7 +154,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
         />
       ) : null}
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-white md:hidden">
+      <nav className="owner-mobile-nav fixed inset-x-0 bottom-0 z-30 border-t border-[#2a4a6b] bg-[#0d1a26] md:hidden">
         <div className="grid grid-cols-4">
           {[
             { href: "/dashboard/owner", label: "Dashboard", icon: Home },
@@ -166,12 +168,11 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
               <a
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center py-2 text-xs ${
-                  active ? "text-[#0db8c8]" : "text-[#64748b]"
-                }`}
+                data-active={active ? "true" : "false"}
+                className="flex min-h-[52px] flex-col items-center justify-center px-1 py-2 text-xs text-white"
               >
-                <Icon size={16} />
-                {item.label}
+                <Icon size={16} className="text-white" />
+                <span className="mt-0.5 leading-tight">{item.label}</span>
               </a>
             );
           })}
@@ -180,5 +181,3 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
     </div>
   );
 }
-
-

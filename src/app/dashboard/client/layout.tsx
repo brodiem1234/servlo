@@ -20,18 +20,24 @@ export default async function ClientLayout({ children }: { children: React.React
   if (profile?.role !== "client") redirect("/dashboard");
 
   return (
-    <div className="dashboard-theme min-h-screen bg-[#f8fafc]">
-      <header className="border-b bg-white">
+    <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <header className="border-b border-[var(--border)] bg-[var(--bg-secondary)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div>
-            <p className="text-lg font-semibold text-[#1e3a5f]">Client Portal</p>
-            <p className="text-sm text-[#64748b]">{profile?.full_name ?? user.email}</p>
+            <p className="text-lg font-semibold text-[var(--text-primary)]">Client Portal</p>
+            <p className="text-sm text-[var(--text-secondary)]">{profile?.full_name ?? user.email}</p>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/dashboard/client" className="rounded border border-[#1e3a5f] px-3 py-2 text-sm text-[#1e3a5f]">
+            <a
+              href="/dashboard/client"
+              className="rounded border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-primary)]"
+            >
               Dashboard
             </a>
-            <a href="/dashboard/client/profile" className="rounded border border-[#1e3a5f] px-3 py-2 text-sm text-[#1e3a5f]">
+            <a
+              href="/dashboard/client/profile"
+              className="rounded border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-primary)]"
+            >
               Profile
             </a>
             <form action={signOut}>

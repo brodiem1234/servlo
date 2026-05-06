@@ -79,9 +79,9 @@ export default async function EmployeeDashboardPage() {
   }
 
   return (
-    <section className="dashboard-theme min-h-screen space-y-6 bg-[#f8fafc] p-4 md:p-6">
-      <h1 className="text-2xl font-bold text-[#1e3a5f]">Employee Dashboard</h1>
-      <p className="text-sm text-[#64748b]">Welcome {profile?.full_name ?? user.email}</p>
+    <section className="dashboard-theme min-h-screen space-y-6 bg-[var(--bg-primary)] p-4 text-[var(--text-primary)] md:p-6">
+      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Employee Dashboard</h1>
+      <p className="text-sm text-[var(--text-secondary)]">Welcome {profile?.full_name ?? user.email}</p>
 
       <div className="flex gap-2">
         <form action={clockInAction}>
@@ -90,51 +90,54 @@ export default async function EmployeeDashboardPage() {
           </button>
         </form>
         <form action={clockOutAction}>
-          <button type="submit" className="rounded border border-[#1e3a5f] bg-white px-6 py-3 text-base font-semibold text-[#1e3a5f]">
+          <button
+            type="submit"
+            className="rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-6 py-3 text-base font-semibold text-[var(--text-primary)]"
+          >
             Clock Out
           </button>
         </form>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">Today</h2>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Today</h2>
           <div className="mt-3 space-y-2 text-sm">
             {(todayJobs ?? []).map((job) => (
-              <div key={job.id} className="rounded border p-2">
-                <p className="font-medium">{job.title ?? "Job"}</p>
-                <p className="text-[#64748b]">{job.scheduled_start ?? "--:--"} · {job.status ?? "scheduled"}</p>
+              <div key={job.id} className="rounded border border-[var(--border)] p-2">
+                <p className="font-medium text-[var(--text-primary)]">{job.title ?? "Job"}</p>
+                <p className="text-[var(--text-secondary)]">{job.scheduled_start ?? "--:--"} · {job.status ?? "scheduled"}</p>
               </div>
             ))}
-            {(todayJobs ?? []).length === 0 ? <p className="text-[#64748b]">No jobs today.</p> : null}
+            {(todayJobs ?? []).length === 0 ? <p className="text-[var(--text-secondary)]">No jobs today.</p> : null}
           </div>
         </article>
 
-        <article className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#1e3a5f]">This Week</h2>
+        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">This Week</h2>
           <div className="mt-3 space-y-2 text-sm">
             {(weekJobs ?? []).map((job) => (
-              <div key={job.id} className="rounded border p-2">
-                <p className="font-medium">{job.title ?? "Job"}</p>
-                <p className="text-[#64748b]">
+              <div key={job.id} className="rounded border border-[var(--border)] p-2">
+                <p className="font-medium text-[var(--text-primary)]">{job.title ?? "Job"}</p>
+                <p className="text-[var(--text-secondary)]">
                   {job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString("en-AU") : "-"} · {job.status ?? "scheduled"}
                 </p>
               </div>
             ))}
-            {(weekJobs ?? []).length === 0 ? <p className="text-[#64748b]">No jobs this week.</p> : null}
+            {(weekJobs ?? []).length === 0 ? <p className="text-[var(--text-secondary)]">No jobs this week.</p> : null}
           </div>
         </article>
       </div>
 
-      <article className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1e3a5f]">Timesheet History</h2>
+      <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Timesheet History</h2>
         <div className="mt-3 space-y-2 text-sm">
           {(timesheets ?? []).map((entry: any) => (
-            <div key={entry.id} className="rounded border p-2">
-              <p className="font-medium">
+            <div key={entry.id} className="rounded border border-[var(--border)] p-2">
+              <p className="font-medium text-[var(--text-primary)]">
                 {entry.created_at ? new Date(entry.created_at).toLocaleDateString("en-AU") : "-"}
               </p>
-              <p className="text-[#64748b]">
+              <p className="text-[var(--text-secondary)]">
                 {entry.clock_in ? new Date(entry.clock_in).toLocaleTimeString("en-AU") : "--"} -{" "}
                 {entry.clock_out ? new Date(entry.clock_out).toLocaleTimeString("en-AU") : "--"} ·{" "}
                 {Number(entry.worked_hours ?? 0).toFixed(2)}h
