@@ -10,6 +10,9 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing-header";
+import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
+import { LANDING_INDUSTRY_ORDER } from "@/lib/industries";
+import { LANDING_INDUSTRY_COPY } from "@/lib/industry-marketing";
 
 const tealIcon = "text-[#0db8c8] dark:text-cyan-400";
 
@@ -17,32 +20,32 @@ const features: Array<{ Icon: LucideIcon; title: string; description: string }> 
   {
     Icon: CalendarDays,
     title: "Jobs & Scheduling",
-    description: "Calendar view, assign employees, track status"
+    description: "Shared calendars, assignments and statuses everyone can see in real time"
   },
   {
     Icon: Users,
     title: "Client Management",
-    description: "Full history, portal, auto follow-ups"
+    description: "Central CRM with history, portals and reminders so nothing slips through"
   },
   {
     Icon: FileText,
     title: "Invoices & Quotes",
-    description: "Professional PDFs, send via email, get paid faster"
+    description: "GST-ready PDFs, email delivery and faster approvals — no generic templates"
   },
   {
     Icon: UserCog,
-    title: "Employee Management",
-    description: "Clock in/out, timesheets, job assignments"
+    title: "Team & Rosters",
+    description: "Clock in/out, timesheets and clear ownership on every booking"
   },
   {
     Icon: LayoutDashboard,
     title: "Business Dashboard",
-    description: "Revenue, profit margins, outstanding invoices"
+    description: "Revenue, margins and aged debt at a glance — built for operators, not analysts"
   },
   {
     Icon: Camera,
-    title: "Job Photos",
-    description: "Before/after photos attached to every job"
+    title: "Proof & Photos",
+    description: "Before/after and on-site evidence attached to every job for disputes and QA"
   }
 ];
 
@@ -50,17 +53,20 @@ const testimonials = [
   {
     name: "Jake T.",
     role: "Electrician, Adelaide SA",
+    trade: "Trades",
     quote: "Finally an app that doesn't need a manual. My crew was using it same day."
   },
   {
-    name: "Mick S.",
-    role: "Plumber, Adelaide SA",
-    quote: "Chasing invoices used to take hours. Now it's two taps."
+    name: "Lisa M.",
+    role: "Cleaning services, Adelaide SA",
+    trade: "Cleaning",
+    quote: "NDIS cleans and commercial sites live in one calendar — invoicing actually matches what we did."
   },
   {
-    name: "Dave R.",
-    role: "Builder, Adelaide SA",
-    quote: "I can see where every job is at without calling anyone. Game changer."
+    name: "Sam K.",
+    role: "Event coordinator, Adelaide SA",
+    trade: "Events",
+    quote: "Bump-in to bump-out lives in SERVLO now. Crew and hire gear finally match the run sheet."
   }
 ];
 
@@ -192,10 +198,10 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:px-6 md:py-24">
           <div>
             <h1 className="text-4xl font-extrabold leading-tight text-[#1e3a5f] dark:text-white md:text-6xl">
-              Run Your Trade Business From Your Phone
+              Run Your Service Business From Your Phone
             </h1>
             <p className="mt-4 max-w-xl text-lg text-[#475569] dark:text-cyan-100">
-              Jobs, clients, invoices, quotes and employees — all in one place. Built for Australian tradies.
+              Jobs, clients, invoices, quotes and scheduling — built for Australian service businesses.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -218,6 +224,43 @@ export default function HomePage() {
           <HeroAppMock />
         </div>
       </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-14 md:px-6">
+        <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">Built for your industry</h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
+          Choose your sector to jump to tailored workflows — new accounts default to trades, and you can pick multiple
+          industries when you sign up.
+        </p>
+        <div className="mt-10">
+          <LandingIndustryTiles />
+        </div>
+      </section>
+
+      {LANDING_INDUSTRY_ORDER.map((slug) => {
+        const copy = LANDING_INDUSTRY_COPY[slug];
+        return (
+          <section
+            key={slug}
+            id={`industry-${slug}`}
+            className="scroll-mt-28 border-t border-slate-200 bg-white py-14 dark:border-slate-700 dark:bg-[#111827]/40"
+          >
+            <div className="mx-auto max-w-7xl px-4 md:px-6">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#0db8c8] dark:text-cyan-400">
+                {copy.headline}
+              </p>
+              <h3 className="mt-2 text-2xl font-bold text-[#1e3a5f] dark:text-white md:text-3xl">{copy.tagline}</h3>
+              <ul className="mt-6 max-w-3xl space-y-3 text-[#475569] dark:text-slate-300">
+                {copy.bullets.map((b) => (
+                  <li key={b} className="flex gap-3 text-sm leading-relaxed md:text-base">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0db8c8] dark:bg-cyan-400" aria-hidden />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        );
+      })}
 
       <section
         className="border-y border-slate-200 bg-white py-3 dark:border-slate-700 dark:bg-[#152238]/80"
@@ -266,7 +309,7 @@ export default function HomePage() {
 
       <section id="features" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">
-          Everything a tradie needs, nothing they don&apos;t
+          Everything your business needs, nothing it doesn&apos;t
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map(({ Icon, title, description }) => (
@@ -328,10 +371,11 @@ export default function HomePage() {
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Built by a tradie, for tradies</h2>
+        <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Built in Australia for service operators</h2>
         <p className="mt-4 max-w-3xl text-[#475569] dark:text-slate-300">
-          SERVLO was built in Australia specifically for the trades industry. Every screen is designed to save time on-site,
-          improve cash flow, and keep your team aligned.
+          SERVLO began with trades teams on tools and grew into the workspace Australian cleaners, field crews, events teams,
+          agencies and clinics reach for daily. Every workflow stays fast on mobile, sharp on desktop and honest about cash
+          flow.
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {testimonials.map((t) => (
@@ -339,7 +383,8 @@ export default function HomePage() {
               key={t.name}
               className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
             >
-              <p className="text-amber-500 dark:text-amber-300">★★★★★</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#0db8c8] dark:text-cyan-400">{t.trade}</p>
+              <p className="mt-2 text-amber-500 dark:text-amber-300">★★★★★</p>
               <p className="mt-3 text-sm leading-relaxed text-[#334155] dark:text-slate-200">&quot;{t.quote}&quot;</p>
               <p className="mt-3 text-xs font-semibold text-[#1e3a5f] dark:text-white">
                 {t.name}
@@ -356,7 +401,7 @@ export default function HomePage() {
             Ready to run your business smarter?
           </h2>
           <p className="mt-4 text-lg text-cyan-100/95 md:text-xl">
-            Join Australian trade businesses already using SERVLO.
+            Join Australian service businesses already using SERVLO.
           </p>
           <Link
             href="/auth/signup"
@@ -364,6 +409,9 @@ export default function HomePage() {
           >
             Start Free Trial
           </Link>
+          <p className="mx-auto mt-5 max-w-lg text-sm text-cyan-100/80">
+            Tell us your industry on signup and we&apos;ll personalise your dashboard.
+          </p>
         </div>
       </section>
 
@@ -375,7 +423,7 @@ export default function HomePage() {
               <p className="font-bold text-[#1e3a5f] dark:text-white">SERVLO</p>
             </div>
             <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
-              The operating system for Australian trade businesses
+              The operating system for Australian service businesses
             </p>
             <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
               Questions? We&apos;re based in Adelaide, South Australia. Email us at hello@servlo.com.au

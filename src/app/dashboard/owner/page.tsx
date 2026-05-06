@@ -5,6 +5,12 @@ import { getOwnerDashboardData } from "@/lib/dashboard/owner";
 import { invoiceReminderEmailTemplate, quoteFollowUpEmailTemplate, sendEmail } from "@/lib/email";
 import RevenueSparkline from "@/components/dashboard/revenue-sparkline";
 import OwnerDashboardQuickActions from "@/components/dashboard/owner-dashboard-quick-actions";
+import {
+  getGettingStartedChecklist,
+  isIndustrySlug,
+  ownerWelcomeLine,
+  type IndustrySlug
+} from "@/lib/industries";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(value);
@@ -29,11 +35,16 @@ export default async function OwnerDashboardPage() {
   }
 
   const [{ data: profile }, dashboardData] = await Promise.all([
-    sb.from("profiles").select("trial_end").eq("id", user.id).maybeSingle(),
+    sb.from("profiles").select("trial_end, industry_tags, industry_other_note").eq("id", user.id).maybeSingle(),
     getOwnerDashboardData(user.id)
   ]);
 
   const trialEnd = profile?.trial_end ?? null;
+  const industryTags: IndustrySlug[] = Array.isArray((profile as { industry_tags?: unknown })?.industry_tags)
+    ? ((profile as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))
+    : [];
+  const welcomeLine = ownerWelcomeLine(industryTags.length ? industryTags : null);
+  const checklistItems = getGettingStartedChecklist(industryTags.length ? industryTags : null);
 
   const {
     metrics,
@@ -169,42 +180,24 @@ export default async function OwnerDashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">Owner Dashboard</h1>
         <p className="text-sm text-[var(--text-muted)]">Track operational performance in real time.</p>
+        {welcomeLine ? (
+          <p className="mt-2 text-sm font-medium text-teal-800 dark:text-teal-300">{welcomeLine}</p>
+        ) : null}
       </div>
 
       {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? (
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Getting Started Checklist</h2>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Personalised from your industry selections at signup.</p>
           <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
-            <li>
-              1.{" "}
-              <a href="/dashboard/owner/clients" className="dashboard-text-link">
-                Add your first client
-              </a>
-            </li>
-            <li>
-              2.{" "}
-              <a href="/dashboard/owner/jobs" className="dashboard-text-link">
-                Create your first job
-              </a>
-            </li>
-            <li>
-              3.{" "}
-              <a href="/dashboard/owner/quotes" className="dashboard-text-link">
-                Send your first quote
-              </a>
-            </li>
-            <li>
-              4.{" "}
-              <a href="/dashboard/owner/invoices" className="dashboard-text-link">
-                Create your first invoice
-              </a>
-            </li>
-            <li>
-              5.{" "}
-              <a href="/dashboard/owner/settings" className="dashboard-text-link">
-                Complete your business settings
-              </a>
-            </li>
+            {checklistItems.map((item, idx) => (
+              <li key={`${item.href}-${item.label}`}>
+                {idx + 1}.{" "}
+                <a href={item.href} className="dashboard-text-link">
+                  {item.label}
+                </a>
+              </li>
+            ))}
           </ul>
         </article>
       ) : null}
