@@ -15,6 +15,14 @@ const ownerNav = [
   { href: "/dashboard/owner/settings", label: "Settings" }
 ];
 
+/** Dashboard is only active on the exact path; other items match their section. */
+function isNavItemActive(pathname: string, href: string) {
+  if (href === "/dashboard/owner") {
+    return pathname === "/dashboard/owner";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 type Props = {
   businessName: string;
   signOutAction: (formData: FormData) => Promise<void>;
@@ -45,21 +53,20 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
     <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
         <aside
-          className={`owner-sidebar fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto transform px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
+          className={`owner-sidebar fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto bg-[#1e3a5f] transform px-4 py-6 text-white transition-transform md:static md:w-auto md:translate-x-0 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
-          style={{ background: "var(--sidebar-bg)" }}
         >
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <Image src="/logo.png" alt="SERVLO" width={36} height={36} />
-              <p className="text-xl font-bold tracking-wide text-white">SERVLO</p>
+              <p className="text-xl font-bold tracking-wide !text-white">SERVLO</p>
             </div>
             <div className="mt-2 h-[2px] w-full bg-[#0db8c8]" />
           </div>
           <nav className="grid gap-2">
             {ownerNav.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const active = isNavItemActive(pathname, item.href);
               return (
                 <a
                   key={item.href}
@@ -162,7 +169,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
             { href: "/dashboard/owner/clients", label: "Clients", icon: Users },
             { href: "/dashboard/owner/invoices", label: "Invoices", icon: FileText }
           ].map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const active = isNavItemActive(pathname, item.href);
             const Icon = item.icon;
             return (
               <a
