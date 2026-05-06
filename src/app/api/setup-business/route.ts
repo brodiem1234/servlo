@@ -90,6 +90,13 @@ function parseIndustriesField(raw: unknown): IndustrySlug[] {
 }
 
 export async function POST(request: Request) {
+  console.log('ENV CHECK:', {
+    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    serviceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length ?? 0,
+    serviceKeyStart: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) ?? 'MISSING'
+  });
+
   let body: SetupBusinessBody;
   try {
     body = (await request.json()) as SetupBusinessBody;
