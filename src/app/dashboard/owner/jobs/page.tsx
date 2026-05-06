@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import JobsManager from "./jobs-manager";
@@ -9,7 +8,7 @@ import { filterDemoEntities } from "@/lib/demo/visibility";
 export const dynamic = "force-dynamic";
 
 type JobsPageProps = {
-  searchParams?: Promise<{ client?: string | string[] }>;
+  searchParams?: Promise<{ client?: string | string[]; openJob?: string; today?: string }>;
 };
 
 export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
@@ -17,6 +16,9 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
   const clientRaw = sp.client;
   const initialClientId =
     typeof clientRaw === "string" ? clientRaw.trim() || undefined : undefined;
+  const initialOpenJobId =
+    typeof sp.openJob === "string" ? sp.openJob.trim() || undefined : undefined;
+  const initialScheduleToday = sp.today !== "all";
 
   const sb = await createClient();
   const {
@@ -128,7 +130,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .eq("id", id)
       .eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
-    revalidatePath("/dashboard/owner/jobs");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   async function updateJobStatusAction(formData: FormData) {
@@ -142,7 +144,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     const status = String(formData.get("status") ?? "scheduled");
     const { error } = await sb.from("jobs").update({ status }).eq("id", id).eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
-    revalidatePath("/dashboard/owner/jobs");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   async function createInvoiceFromJobAction(formData: FormData) {
@@ -192,7 +194,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .eq("id", id)
       .eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
-    revalidatePath("/dashboard/owner/jobs");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   async function updateJobEmployeeAction(formData: FormData) {
@@ -228,7 +230,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         );
       }
     }
-    revalidatePath("/dashboard/owner/jobs");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   async function uploadJobPhotoAction(formData: FormData) {
@@ -260,7 +262,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         label
       });
     }
-    revalidatePath("/dashboard/owner/jobs");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   type QuickCreateJobRefResult = { ok: boolean; id?: string; label?: string; message?: string };
@@ -311,12 +313,10 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         .select("id, full_name")
         .maybeSingle();
       if (fb.error) return { ok: false, message: fb.error.message };
-      revalidatePath("/dashboard/owner/jobs");
-      revalidatePath("/dashboard/owner/clients");
+      revalidateOwnerWorkspaceRoutes();
       return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
     }
-    revalidatePath("/dashboard/owner/jobs");
-    revalidatePath("/dashboard/owner/clients");
+    revalidateOwnerWorkspaceRoutes();
     return { ok: true, id: data?.id, label: data?.full_name ?? full_name };
   }
 
@@ -347,8 +347,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .select("id, full_name")
       .maybeSingle();
     if (!full.error && full.data) {
-      revalidatePath("/dashboard/owner/jobs");
-      revalidatePath("/dashboard/owner/employees");
+      revalidateOwnerWorkspaceRoutes();
       return { ok: true, id: full.data.id, label: full.data.full_name ?? full_name };
     }
     const fb = await sb
@@ -363,8 +362,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .select("id, full_name")
       .maybeSingle();
     if (fb.error) return { ok: false, message: fb.error.message };
-    revalidatePath("/dashboard/owner/jobs");
-    revalidatePath("/dashboard/owner/employees");
+    revalidateOwnerWorkspaceRoutes();
     return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
   }
 
@@ -393,6 +391,8 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         clients={clientRefs}
         employees={employeeRefs}
         initialClientId={initialClientId}
+        initialScheduleToday={initialScheduleToday}
+        initialOpenJobId={initialOpenJobId}
         createJobAction={createJobAction}
         updateJobAction={updateJobAction}
         updateJobStatusAction={updateJobStatusAction}

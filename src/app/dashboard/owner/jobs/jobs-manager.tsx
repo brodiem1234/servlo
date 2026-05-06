@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { DemoBadge } from "@/components/demo-badge";
-import { useEffect, useMemo, useState, type CSSProperties, type DragEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, useRef, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 type Job = {
@@ -40,6 +40,10 @@ type Props = {
   clients: RefOpt[];
   employees: RefOpt[];
   initialClientId?: string;
+  /** When true (default), list view opens filtered to today only. Pass false via ?today=all to show everything. */
+  initialScheduleToday?: boolean;
+  /** Opens the job editor for this id once jobs are loaded (e.g. from schedule links). */
+  initialOpenJobId?: string;
   createJobAction: (formData: FormData) => Promise<void>;
   updateJobAction: (formData: FormData) => Promise<void>;
   updateJobStatusAction: (formData: FormData) => Promise<void>;
@@ -117,6 +121,8 @@ export default function JobsManager({
   clients,
   employees,
   initialClientId,
+  initialScheduleToday = true,
+  initialOpenJobId,
   createJobAction,
   updateJobAction,
   updateJobStatusAction,
@@ -155,6 +161,7 @@ export default function JobsManager({
   const [employeeOptions, setEmployeeOptions] = useState<RefOpt[]>(employees);
   const [quickClientSaving, setQuickClientSaving] = useState(false);
   const [quickEmployeeSaving, setQuickEmployeeSaving] = useState(false);
+  const openJobDeepLinkDone = useRef(false);
 
   useEffect(() => {
     setClientOptions(clients);
@@ -170,6 +177,24 @@ export default function JobsManager({
     const exists = clients.some((c) => c.id === id);
     if (exists) setClientFilter(id);
   }, [initialClientId, clients]);
+
+  useEffect(() => {
+    if (initialScheduleToday === false) return;
+    const k = toDateKey(new Date());
+    setFromDate(k);
+    setToDate(k);
+  }, [initialScheduleToday]);
+
+  useEffect(() => {
+    const id = initialOpenJobId?.trim();
+    if (!id || openJobDeepLinkDone.current) return;
+    const job = jobs.find((j) => j.id === id);
+    if (job) {
+      startEdit(job);
+      openJobDeepLinkDone.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOpenJobId, jobs]);
 
   const closeJobOverlay = () => {
     setOpen(false);
@@ -310,6 +335,12 @@ export default function JobsManager({
     try {
       if (editing) await updateJobAction(fd);
       else await createJobAction(fd);
+      setSearch("");
+      setClientFilter("all");
+      setStatusFilter("all");
+      setPriorityFilter("all");
+      setFromDate("");
+      setToDate("");
       router.refresh();
       setToast({ type: "success", message: editing ? "Job updated" : "Job created" });
       closeJobOverlay();
@@ -595,6 +626,17 @@ export default function JobsManager({
         </select>
         <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-10 rounded border px-3 text-sm" />
         <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-10 rounded border px-3 text-sm" />
+        <button
+          type="button"
+          onClick={() => {
+            const k = toDateKey(new Date());
+            setFromDate(k);
+            setToDate(k);
+          }}
+          className="h-10 rounded border border-[color-mix(in_srgb,var(--accent-color)_45%,var(--border))] bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))] px-3 text-sm font-semibold text-[var(--text-primary)]"
+        >
+          Today
+        </button>
         <button type="button" onClick={clearFilters} className="h-10 rounded border px-3 text-sm">
           Clear filters
         </button>

@@ -41,6 +41,50 @@ function bucketJobStatus(status: string | null): "pending" | "in_progress" | "co
   return "pending";
 }
 
+function parseTimeToMinutes(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const trimmed = value.slice(0, 5);
+  const [hours, minutes] = trimmed.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
+}
+
+export function jobScheduledHours(job: {
+  scheduled_start?: string | null;
+  scheduled_end?: string | null;
+  labour_hours?: number | null;
+}): number {
+  const a = parseTimeToMinutes(job.scheduled_start ?? null);
+  const b = parseTimeToMinutes(job.scheduled_end ?? null);
+  if (a != null && b != null && b > a) return (b - a) / 60;
+  const lh = Number(job.labour_hours ?? 0);
+  if (Number.isFinite(lh) && lh > 0) return lh;
+  return 0;
+}
+
+function invoiceBucket(invoice: {
+  status?: string | null;
+  due_date?: string | null;
+}): "draft" | "unpaid" | "overdue" | "paid" {
+  const status = (invoice.status ?? "").toLowerCase();
+  if (status === "paid") return "paid";
+  const overdue =
+    status !== "paid" &&
+    Boolean(invoice.due_date) &&
+    new Date(invoice.due_date as string).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+  if (overdue) return "overdue";
+  if (status === "draft") return "draft";
+  return "unpaid";
+}
+
+function quoteBucket(statusRaw: string | null | undefined): "draft" | "awaiting" | "accepted" | "declined" {
+  const s = (statusRaw ?? "").toLowerCase();
+  if (s === "draft") return "draft";
+  if (s === "accepted") return "accepted";
+  if (s === "declined" || s === "rejected") return "declined";
+  return "awaiting";
+}
+
 export async function getOwnerContext() {
   const supabase = await createClient();
   const {
@@ -106,7 +150,7 @@ export async function getOwnerDashboardData(ownerId: string) {
     supabase
       .from("jobs")
       .select(
-        "id, title, status, scheduled_date, scheduled_start, client_name, is_demo, clients:clients(full_name)"
+        "id, title, status, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, labour_hours, client_name, is_demo, clients:clients(full_name)"
       )
       .eq("owner_id", ownerId),
     supabase
@@ -117,9 +161,10 @@ export async function getOwnerDashboardData(ownerId: string) {
       .order("due_date", { ascending: true }),
     supabase
       .from("quotes")
-      .select("id, quote_number, status, created_at, client_name, is_demo, clients:clients(full_name), last_reminder_sent")
+      .select(
+        "id, quote_number, status, created_at, total, client_name, is_demo, clients:clients(full_name), client_id, last_reminder_sent"
+      )
       .eq("owner_id", ownerId)
-      .neq("status", "accepted")
       .order("created_at", { ascending: true }),
     supabase
       .from("invoices")
@@ -195,6 +240,10 @@ export async function getOwnerDashboardData(ownerId: string) {
 
   const glanceToday: GlanceJobRow[] = [];
   const glanceTomorrow: GlanceJobRow[] = [];
+  let jobsTodayHoursTotal = 0;
+  let jobsTomorrowHoursTotal = 0;
+  const mapJobsToday: Array<{ id: string; title: string | null; addressLine: string }> = [];
+
   for (const job of visibleJobs as any[]) {
     const row: GlanceJobRow = {
       id: job.id,
@@ -206,8 +255,20 @@ export async function getOwnerDashboardData(ownerId: string) {
       is_demo: job.is_demo ?? null
     };
     const d = job.scheduled_date ? String(job.scheduled_date).slice(0, 10) : "";
-    if (d === todayKey) glanceToday.push(row);
-    else if (d === tomorrowKey) glanceTomorrow.push(row);
+    const hrs = jobScheduledHours(job);
+    if (d === todayKey) {
+      glanceToday.push(row);
+      jobsTodayHoursTotal += hrs;
+      const parts = [job.address, job.suburb, job.state].filter(Boolean);
+      mapJobsToday.push({
+        id: job.id,
+        title: job.title ?? null,
+        addressLine: parts.length ? parts.join(", ") : (job.address ?? job.suburb ?? "Address pending")
+      });
+    } else if (d === tomorrowKey) {
+      glanceTomorrow.push(row);
+      jobsTomorrowHoursTotal += hrs;
+    }
   }
   const sortByStart = (a: GlanceJobRow, b: GlanceJobRow) =>
     String(a.scheduled_start ?? "").localeCompare(String(b.scheduled_start ?? ""));
@@ -321,16 +382,37 @@ export async function getOwnerDashboardData(ownerId: string) {
     ...invoice,
     client_name: invoice.client_name ?? invoice.clients?.full_name ?? "Unknown client"
   }));
-  const quotesFollowUp = excludeDemoFinancial(safeQuotes as Array<{ is_demo?: boolean | null }>)
+
+  const invoiceStatusCounts = { draft: 0, unpaid: 0, overdue: 0, paid: 0 };
+  for (const invoice of invoicesMoney) {
+    invoiceStatusCounts[invoiceBucket(invoice)] += 1;
+  }
+
+  const quotesMoney = excludeDemoFinancial(safeQuotes as Array<{ is_demo?: boolean | null }>);
+  const quoteStatusCounts = { draft: 0, awaiting: 0, accepted: 0, declined: 0 };
+  for (const quote of quotesMoney as Array<{ status?: string | null }>) {
+    quoteStatusCounts[quoteBucket(quote.status)] += 1;
+  }
+
+  const quotesFollowUp = quotesMoney
     .filter((quote: any) => {
-      if (!quote.created_at) return false;
-      const ageDays = Math.floor((Date.now() - new Date(quote.created_at).getTime()) / (1000 * 60 * 60 * 24));
+      const st = (quote.status ?? "").toLowerCase();
+      if (st !== "sent" && st !== "pending") return false;
+      const ref = quote.created_at;
+      if (!ref) return false;
+      const ageDays = Math.floor((Date.now() - new Date(ref).getTime()) / (1000 * 60 * 60 * 24));
       return ageDays >= 3;
     })
-    .map((quote: any) => ({
-      ...quote,
-      client_name: quote.client_name ?? quote.clients?.full_name ?? "Unknown client"
-    }));
+    .map((quote: any) => {
+      const ref = quote.created_at;
+      const ageDays = ref ? Math.floor((Date.now() - new Date(ref).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+      return {
+        ...quote,
+        client_name: quote.client_name ?? quote.clients?.full_name ?? "Unknown client",
+        quote_amount: Number(quote.total ?? 0),
+        days_waiting: ageDays
+      };
+    });
 
   const visibleInvoicesList = filterDemoEntities(safeInvoices as Array<{ is_demo?: boolean | null }>);
 
@@ -345,7 +427,18 @@ export async function getOwnerDashboardData(ownerId: string) {
     glanceToday,
     glanceTomorrow,
     jobsByStatus,
-    recentActivity
+    recentActivity,
+    invoiceStatusCounts,
+    quoteStatusCounts,
+    jobsTodayStat: { count: glanceToday.length, hours: jobsTodayHoursTotal },
+    jobsTomorrowStat: { count: glanceTomorrow.length, hours: jobsTomorrowHoursTotal },
+    mapJobsToday,
+    onboardingCounts: {
+      clients: visibleClients.length,
+      jobs: visibleJobs.length,
+      quotes: quotesMoney.length,
+      invoices: invoicesMoney.length
+    }
   };
 }
 

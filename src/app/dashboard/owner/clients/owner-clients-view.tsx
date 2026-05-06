@@ -130,7 +130,10 @@ export default function OwnerClientsView({
         }}
         createClientAction={createClientAction}
         updateClientAction={updateClientAction}
-        onSaveSuccess={(message) => setBanner({ type: "success", message })}
+        onSaveSuccess={(message) => {
+          setBanner({ type: "success", message });
+          setSearch("");
+        }}
       />
 
       {banner ? (

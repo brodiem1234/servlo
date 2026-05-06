@@ -5,6 +5,10 @@ import { getOwnerDashboardData } from "@/lib/dashboard/owner";
 import { invoiceReminderEmailTemplate, quoteFollowUpEmailTemplate, sendEmail } from "@/lib/email";
 import RevenueSparkline from "@/components/dashboard/revenue-sparkline";
 import OwnerDashboardQuickActions from "@/components/dashboard/owner-dashboard-quick-actions";
+import InvoiceQuoteStatusGrids from "@/components/dashboard/invoice-quote-status-grids";
+import JobDayStatCards from "@/components/dashboard/job-day-stat-cards";
+import GettingStartedRing from "@/components/dashboard/getting-started-ring";
+import TodayJobsMapCollapsible from "@/components/dashboard/today-jobs-map-collapsible";
 import { DemoBadge } from "@/components/demo-badge";
 import {
   getGettingStartedChecklist,
@@ -28,6 +32,13 @@ function getStatusBadgeClasses(status: string | null) {
   return "bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)]";
 }
 
+function isoLocal(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export default async function OwnerDashboardPage() {
   const sb = await createClient();
   const {
@@ -42,7 +53,7 @@ export default async function OwnerDashboardPage() {
     sb
       .from("profiles")
       .select(
-        "trial_end, trial_end_date, trial_start, subscription_status, industry_tags, industry_other_note"
+        "trial_end, trial_end_date, trial_start, subscription_status, industry_tags, industry_other_note, business_name"
       )
       .eq("id", user.id)
       .maybeSingle(),
@@ -63,6 +74,29 @@ export default async function OwnerDashboardPage() {
   const welcomeLine = ownerWelcomeLine(industryTags.length ? industryTags : null);
   const checklistItems = getGettingStartedChecklist(industryTags.length ? industryTags : null);
 
+  const onboardingCounts = dashboardData.onboardingCounts;
+  const bizDone = Boolean(((profile as { business_name?: string | null })?.business_name ?? "").trim());
+
+  function checklistDone(href: string): boolean {
+    const h = href.toLowerCase();
+    if (h.includes("/clients")) return onboardingCounts.clients > 0;
+    if (h.includes("/jobs")) return onboardingCounts.jobs > 0;
+    if (h.includes("/quotes")) return onboardingCounts.quotes > 0;
+    if (h.includes("/invoices")) return onboardingCounts.invoices > 0;
+    if (h.includes("/settings")) return bizDone;
+    return false;
+  }
+
+  const ringTasks = checklistItems.map((item) => ({
+    ...item,
+    done: checklistDone(item.href)
+  }));
+
+  const todayIso = isoLocal(new Date());
+  const tomorrowD = new Date();
+  tomorrowD.setDate(tomorrowD.getDate() + 1);
+  const tomorrowIso = isoLocal(tomorrowD);
+
   const {
     metrics,
     recentJobs,
@@ -73,7 +107,12 @@ export default async function OwnerDashboardPage() {
     glanceToday,
     glanceTomorrow,
     jobsByStatus,
-    recentActivity
+    recentActivity,
+    invoiceStatusCounts,
+    quoteStatusCounts,
+    jobsTodayStat,
+    jobsTomorrowStat,
+    mapJobsToday
   } = dashboardData;
 
   const sparkLabels = Array.from({ length: 7 }, (_, i) => {
@@ -190,30 +229,25 @@ export default async function OwnerDashboardPage() {
           </a>
         </div>
       )}
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">Owner Dashboard</h1>
-        <p className="text-sm text-[var(--text-muted)]">Track operational performance in real time.</p>
-        {welcomeLine ? (
-          <p className="mt-2 text-sm font-medium text-accent-strong">{welcomeLine}</p>
-        ) : null}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">Owner Dashboard</h1>
+          <p className="text-sm text-[var(--text-muted)]">Track operational performance in real time.</p>
+          {welcomeLine ? (
+            <p className="mt-2 text-sm font-medium text-accent-strong">{welcomeLine}</p>
+          ) : null}
+        </div>
+        <JobDayStatCards
+          todayKeyIso={todayIso}
+          tomorrowKeyIso={tomorrowIso}
+          today={jobsTodayStat}
+          tomorrow={jobsTomorrowStat}
+        />
       </div>
 
-      {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? (
-        <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Getting Started Checklist</h2>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Personalised from your industry selections at signup.</p>
-          <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
-            {checklistItems.map((item, idx) => (
-              <li key={`${item.href}-${item.label}`}>
-                {idx + 1}.{" "}
-                <a href={item.href} className="dashboard-text-link">
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </article>
-      ) : null}
+      {metrics.activeClientsCount === 0 && recentJobs.length === 0 ? <GettingStartedRing tasks={ringTasks} /> : null}
+
+      <InvoiceQuoteStatusGrids invoices={invoiceStatusCounts} quotes={quoteStatusCounts} />
 
       <OwnerDashboardQuickActions />
 
@@ -327,6 +361,8 @@ export default async function OwnerDashboardPage() {
         </article>
       </div>
 
+      <TodayJobsMapCollapsible jobs={mapJobsToday} />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Jobs</h2>
@@ -432,12 +468,13 @@ export default async function OwnerDashboardPage() {
 
         <article className="dashboard-card rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Follow Up Needed (Quotes)</h2>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Awaiting acceptance for more than 3 days.</p>
           <div className="mt-3 space-y-2 text-sm">
             {quotesFollowUp.map((quote: any) => (
               <div key={quote.id} className="rounded border border-[var(--border)] p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-medium text-[var(--text-primary)]">
-                    {quote.quote_number ?? "Quote"} - {quote.client_name}
+                    {quote.client_name} · {quote.quote_number ?? "Quote"}
                   </p>
                   <form action={sendQuoteReminderAction}>
                     <input type="hidden" name="quote_id" value={quote.id} />
@@ -445,13 +482,13 @@ export default async function OwnerDashboardPage() {
                       type="submit"
                       className="rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
                     >
-                      Send Reminder
+                      Send Follow Up
                     </button>
                   </form>
                 </div>
                 <p className="text-[var(--text-secondary)]">
-                  Created {quote.created_at ? new Date(quote.created_at).toLocaleDateString("en-AU") : "-"} ·{" "}
-                  {quote.status ?? "pending"}
+                  {formatCurrency(Number(quote.quote_amount ?? quote.total ?? 0))} · Waiting{" "}
+                  {quote.days_waiting ?? 0} days · Status {quote.status ?? "pending"}
                 </p>
               </div>
             ))}

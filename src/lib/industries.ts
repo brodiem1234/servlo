@@ -81,14 +81,14 @@ export function ownerWelcomeLine(tags: IndustrySlug[] | null | undefined): strin
   return `You've told us you work across ${listed} — here's your snapshot.`;
 }
 
-export type ChecklistItem = { href: string; label: string };
+export type ChecklistItem = { href: string; label: string; optional?: boolean };
 
 const BASE_CHECKLIST: ChecklistItem[] = [
-  { href: "/dashboard/owner/clients", label: "Add your first client" },
-  { href: "/dashboard/owner/jobs", label: "Create your first job" },
-  { href: "/dashboard/owner/quotes", label: "Send your first quote" },
-  { href: "/dashboard/owner/invoices", label: "Create your first invoice" },
-  { href: "/dashboard/owner/settings", label: "Complete your business settings" }
+  { href: "/dashboard/owner/clients", label: "Add your first client", optional: false },
+  { href: "/dashboard/owner/jobs", label: "Create your first job", optional: false },
+  { href: "/dashboard/owner/quotes", label: "Send your first quote", optional: false },
+  { href: "/dashboard/owner/invoices", label: "Create your first invoice", optional: false },
+  { href: "/dashboard/owner/settings", label: "Complete your business settings", optional: false }
 ];
 
 const INDUSTRY_CHECKLIST_LEAD: Partial<Record<IndustrySlug, ChecklistItem[]>> = {
@@ -144,7 +144,10 @@ function dedupeItems(items: ChecklistItem[]): ChecklistItem[] {
 /** Up to 5 items: industry-specific first, then generic without duplicates */
 export function getGettingStartedChecklist(tags: IndustrySlug[] | null | undefined): ChecklistItem[] {
   const primary = tags?.find((t) => t !== "other") ?? tags?.[0];
-  const lead = primary ? INDUSTRY_CHECKLIST_LEAD[primary] ?? [] : [];
-  const merged = dedupeItems([...lead, ...BASE_CHECKLIST]);
+  const lead = primary
+    ? (INDUSTRY_CHECKLIST_LEAD[primary] ?? []).map((item) => ({ ...item, optional: true }))
+    : [];
+  const base = BASE_CHECKLIST.map((item) => ({ ...item, optional: item.optional ?? false }));
+  const merged = dedupeItems([...lead, ...base]);
   return merged.slice(0, 5);
 }

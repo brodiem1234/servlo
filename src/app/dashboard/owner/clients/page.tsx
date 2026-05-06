@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clients-view";
 import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
@@ -272,14 +272,14 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       owner_id: owner.id,
       is_demo: false,
       ...basePayload
-    });
+    }).select("id").maybeSingle();
 
     if (attempt.error?.code === "23503") {
       await ensureOwnerProfileExists(sb, owner);
       attempt = await sb.from("clients").insert({
         owner_id: owner.id,
         ...basePayload
-      });
+      }).select("id").maybeSingle();
     }
 
     if (attempt.error?.code === "PGRST204") {
@@ -290,25 +290,25 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         email: basePayload.email,
         phone: basePayload.phone,
         notes: basePayload.notes
-      });
+      }).select("id").maybeSingle();
       attempt = fallback;
     }
 
-    if (attempt.error) {
+    if (attempt.error || !attempt.data?.id) {
       console.error("Create client failed", {
-        code: attempt.error.code,
-        message: attempt.error.message,
+        code: attempt.error?.code,
+        message: attempt.error?.message ?? (!attempt.data?.id ? "Insert returned no row id" : undefined),
         ownerId: owner.id,
         payload: basePayload
       });
       return {
         ok: false,
-        message: formatDbError(attempt.error) || "Failed to create client"
+        message: attempt.error ? formatDbError(attempt.error) || "Failed to create client" : "Failed to create client"
       };
     }
 
-    console.info("Create client succeeded", { ownerId: owner.id });
-    revalidatePath("/dashboard/owner/clients");
+    console.info("Create client succeeded", { ownerId: owner.id, clientId: attempt.data.id });
+    revalidateOwnerWorkspaceRoutes();
     return { ok: true };
   }
 
@@ -373,7 +373,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       };
     }
 
-    revalidatePath("/dashboard/owner/clients");
+    revalidateOwnerWorkspaceRoutes();
     return { ok: true };
   }
 
@@ -402,7 +402,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         portalUrl
       })
     );
-    revalidatePath("/dashboard/owner/clients");
+    revalidateOwnerWorkspaceRoutes();
   }
 
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";

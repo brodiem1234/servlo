@@ -225,7 +225,7 @@ export function SignupForm() {
 
       let res = await postSetup(normalizeAccentColour(accentColour));
       let raw = await res.text();
-      let parsed: { success?: boolean; businessId?: string; error?: string };
+      let parsed: { success?: boolean; businessId?: string; demoSeeded?: boolean; demoSeedError?: string; error?: string };
       try {
         parsed = JSON.parse(raw) as typeof parsed;
       } catch {
@@ -248,6 +248,24 @@ export function SignupForm() {
         router.push("/dashboard/owner");
         router.refresh();
         return;
+      }
+
+      if (parsed.demoSeeded !== true) {
+        try {
+          const demoRes = await fetch("/api/setup-business", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ userId, demoOnly: true })
+          });
+          if (!demoRes.ok) {
+            console.warn("[signup/owner] demo-only seed retry failed", demoRes.status, await demoRes.text());
+          }
+        } catch (demoErr) {
+          console.warn("[signup/owner] demo-only seed retry threw", demoErr);
+        }
       }
 
       router.push("/dashboard/owner");

@@ -25,9 +25,18 @@ type Props = {
   updateQuoteAction: (formData: FormData) => Promise<void>;
   acceptQuoteAction: (formData: FormData) => Promise<void>;
   convertToInvoiceAction: (formData: FormData) => Promise<void>;
+  initialBucket?: string | null;
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
+
+function classifyQuoteBucket(status: string | null): "draft" | "awaiting" | "accepted" | "declined" {
+  const s = (status ?? "").toLowerCase();
+  if (s === "draft") return "draft";
+  if (s === "accepted") return "accepted";
+  if (s === "declined" || s === "rejected") return "declined";
+  return "awaiting";
+}
 
 export default function QuotesManager({
   quotes,
@@ -35,7 +44,8 @@ export default function QuotesManager({
   createQuoteAction,
   updateQuoteAction,
   acceptQuoteAction,
-  convertToInvoiceAction
+  convertToInvoiceAction,
+  initialBucket
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -56,6 +66,12 @@ export default function QuotesManager({
     const gst = lineItems.reduce((s, i) => s + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0);
     return sub + gst;
   }, [lineItems]);
+
+  const filteredQuotes = useMemo(() => {
+    const key = (initialBucket ?? "").toLowerCase().trim();
+    if (!key || !["draft", "awaiting", "accepted", "declined"].includes(key)) return quotes;
+    return quotes.filter((q) => classifyQuoteBucket(q.status) === key);
+  }, [quotes, initialBucket]);
 
   function startNew() {
     setEditingId("");
@@ -108,11 +124,19 @@ export default function QuotesManager({
       <button onClick={startNew} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
         New Quote
       </button>
+      {(initialBucket ?? "").trim() ? (
+        <p className="text-xs text-[var(--text-muted)]">
+          Showing quotes in <strong className="text-[var(--text-primary)]">{(initialBucket ?? "").trim()}</strong> ·{" "}
+          <a href="/dashboard/owner/quotes" className="dashboard-text-link font-semibold">
+            Clear filter
+          </a>
+        </p>
+      ) : null}
       <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
         <table className="w-full min-w-[720px] text-sm">
           <thead><tr className="border-b text-left text-slate-300"><th className="px-2 py-2">Quote #</th><th className="px-2 py-2">Client</th><th className="px-2 py-2">Total</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
           <tbody>
-            {quotes.map((quote) => {
+            {filteredQuotes.map((quote) => {
               const demo = Boolean(quote.is_demo);
               return (
               <tr key={quote.id} className="border-b hover:bg-slate-50">

@@ -214,7 +214,6 @@ export async function POST(request: Request) {
     .update({
       trial_start: trialStart.toISOString(),
       trial_end: trialEnd.toISOString(),
-      trial_end_date: trialEnd.toISOString(),
       subscription_status: "trialing",
       subscription_tier: "solo"
     })
@@ -222,6 +221,15 @@ export async function POST(request: Request) {
 
   if (trialReinforce.error) {
     console.error("[setup-business] trial dates reinforcement failed", trialReinforce.error);
+  }
+
+  const trialEndDateSync = await supabaseAdmin
+    .from("profiles")
+    .update({ trial_end_date: trialEnd.toISOString() })
+    .eq("id", userId);
+
+  if (trialEndDateSync.error) {
+    console.warn("[setup-business] trial_end_date sync skipped (column may not exist yet)", trialEndDateSync.error);
   }
 
   const buildBusinessPayload = (accentHex: string) => ({

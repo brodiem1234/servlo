@@ -30,16 +30,30 @@ type Props = {
     prefill_date?: string;
     prefill_job_id?: string;
   };
+  initialBucket?: string | null;
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
+
+function classifyInvoiceBucket(invoice: Invoice): "draft" | "unpaid" | "overdue" | "paid" {
+  const status = (invoice.status ?? "").toLowerCase();
+  if (status === "paid") return "paid";
+  const overdue =
+    status !== "paid" &&
+    Boolean(invoice.due_date) &&
+    new Date(invoice.due_date as string).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+  if (overdue) return "overdue";
+  if (status === "draft") return "draft";
+  return "unpaid";
+}
 
 export default function InvoicesManager({
   invoices,
   clients,
   createInvoiceAction,
   updateInvoiceAction,
-  prefill
+  prefill,
+  initialBucket
 }: Props) {
   const getStatusBadge = (invoice: Invoice) => {
     const status = (invoice.status ?? "").toLowerCase();
@@ -143,6 +157,12 @@ export default function InvoicesManager({
     }
   };
 
+  const filteredInvoices = useMemo(() => {
+    const key = (initialBucket ?? "").toLowerCase().trim();
+    if (!key || !["draft", "unpaid", "overdue", "paid"].includes(key)) return invoices;
+    return invoices.filter((inv) => classifyInvoiceBucket(inv) === key);
+  }, [invoices, initialBucket]);
+
   const overdue = invoices.filter((invoice) => {
     if (invoice.is_demo) return false;
     if (!invoice.due_date || (invoice.status ?? "").toLowerCase() === "paid") return false;
@@ -183,6 +203,14 @@ export default function InvoicesManager({
       <button onClick={startCreate} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
         New Invoice
       </button>
+      {(initialBucket ?? "").trim() ? (
+        <p className="text-xs text-[var(--text-muted)]">
+          Showing invoices in <strong className="text-[var(--text-primary)]">{(initialBucket ?? "").trim()}</strong> ·{" "}
+          <a href="/dashboard/owner/invoices" className="dashboard-text-link font-semibold">
+            Clear filter
+          </a>
+        </p>
+      ) : null}
       <article className="rounded-xl border border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-950/80">
         <h2 className="font-semibold !text-red-900 dark:!text-red-100">Overdue invoices ({overdue.length})</h2>
         {overdue.length > 0 ? (
@@ -206,7 +234,7 @@ export default function InvoicesManager({
             </tr>
           </thead>
           <tbody>
-            {invoices.map((invoice) => {
+            {filteredInvoices.map((invoice) => {
               const badge = getStatusBadge(invoice);
               const demo = Boolean(invoice.is_demo);
               return (

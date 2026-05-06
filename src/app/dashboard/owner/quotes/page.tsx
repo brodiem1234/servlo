@@ -19,7 +19,12 @@ function getNextNumber(
   return `${prefix}-${String(max + 1).padStart(3, "0")}`;
 }
 
-export default async function OwnerQuotesPage() {
+type QuotesPageProps = {
+  searchParams?: Promise<{ bucket?: string }>;
+};
+
+export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps) {
+  const sp = (await searchParams) ?? {};
   const sb = await createClient();
   const {
     data: { user }
@@ -188,6 +193,7 @@ export default async function OwnerQuotesPage() {
         updateQuoteAction={updateQuoteAction}
         acceptQuoteAction={acceptQuoteAction}
         convertToInvoiceAction={convertToInvoiceAction}
+        initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
       />
     </section>
   );

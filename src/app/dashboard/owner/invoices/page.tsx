@@ -17,15 +17,17 @@ function getNextNumber(existing: Array<{ invoice_number: string | null }>, prefi
 }
 
 type InvoicesPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     prefill_client_id?: string;
     prefill_title?: string;
     prefill_date?: string;
     prefill_job_id?: string;
-  };
+    bucket?: string;
+  }>;
 };
 
 export default async function OwnerInvoicesPage({ searchParams }: InvoicesPageProps) {
+  const sp = (await searchParams) ?? {};
   const sb = await createClient();
   const {
     data: { user }
@@ -192,7 +194,8 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
         clients={filterDemoEntities(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         createInvoiceAction={createInvoiceAction}
         updateInvoiceAction={updateInvoiceAction}
-        prefill={searchParams}
+        prefill={sp}
+        initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
       />
     </section>
   );

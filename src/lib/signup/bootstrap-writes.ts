@@ -143,7 +143,6 @@ export async function bootstrapSignupProfiles(
     abn: params.abn || null,
     trial_start: trialStart.toISOString(),
     trial_end: trialEnd.toISOString(),
-    trial_end_date: trialEnd.toISOString(),
     subscription_status: "trialing",
     subscription_tier: "solo"
   };
@@ -167,6 +166,14 @@ export async function bootstrapSignupProfiles(
         };
       }
       console.warn("[bootstrapSignupProfiles] extended profile update failed (non-fatal)", extRes.error);
+    } else {
+      const legacyTrialEndDate = await admin
+        .from("profiles")
+        .update({ trial_end_date: trialEnd.toISOString() })
+        .eq("id", params.userId);
+      if (legacyTrialEndDate.error) {
+        console.warn("[bootstrapSignupProfiles] trial_end_date sync skipped", legacyTrialEndDate.error);
+      }
     }
   } catch (e) {
     if (role === "owner") {
