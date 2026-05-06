@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
-import { Bell, Briefcase, FileText, Home, Menu, Moon, Sun, Users } from "lucide-react";
+import { Bell, Briefcase, HardHat, Home, Menu, Moon, Sun, Users } from "lucide-react";
 
 const ownerNavSections = [
   [{ href: "/dashboard/owner", label: "Dashboard" }],
@@ -17,8 +17,9 @@ const ownerNavSections = [
   ],
   [
     { href: "/dashboard/owner/employees", label: "Employees" },
-    { href: "/dashboard/owner/settings", label: "Settings" }
-  ]
+    { href: "/dashboard/contractors", label: "Contractors" }
+  ],
+  [{ href: "/dashboard/owner/settings", label: "Settings" }]
 ];
 
 /** Dashboard is only active on the exact path; other items match their section. */
@@ -185,7 +186,7 @@ export default function OwnerShell({ businessName, signOutAction, alerts, childr
             { href: "/dashboard/owner", label: "Dashboard", icon: Home },
             { href: "/dashboard/owner/jobs", label: "Jobs", icon: Briefcase },
             { href: "/dashboard/owner/clients", label: "Clients", icon: Users },
-            { href: "/dashboard/owner/invoices", label: "Invoices", icon: FileText }
+            { href: "/dashboard/contractors", label: "Contractors", icon: HardHat }
           ].map((item) => {
             const active = isNavItemActive(pathname, item.href);
             const Icon = item.icon;

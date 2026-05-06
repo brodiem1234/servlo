@@ -146,6 +146,9 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  const ownerScopeIds = await resolveOwnerIdCandidates(supabase, user);
+  const scopeForClientsQuery = ownerScopeIds.length > 0 ? ownerScopeIds : [user.id];
+
   const view = searchParams?.view === "list" ? "list" : "card";
   const sort = searchParams?.sort === "created_at" ? "created_at" : "full_name";
 
@@ -172,14 +175,14 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   const primaryClientsQuery = await supabase
     .from("clients")
     .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at")
-    .eq("owner_id", user.id)
+    .in("owner_id", scopeForClientsQuery)
     .order(sort, { ascending: true });
 
   if (primaryClientsQuery.error?.code === "PGRST204") {
     const fallbackClientsQuery = await supabase
       .from("clients")
       .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at")
-      .eq("owner_id", user.id)
+      .in("owner_id", scopeForClientsQuery)
       .order(sort, { ascending: true });
     clients = (fallbackClientsQuery.data ?? []).map((client) => ({
       ...client,
@@ -197,14 +200,14 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
           .from("jobs")
           .select("id, client_id, scheduled_date")
           .in("client_id", clientIds)
-          .eq("owner_id", user.id)
+          .in("owner_id", scopeForClientsQuery)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; scheduled_date: string | null }> }),
     clientIds.length
       ? supabase
           .from("invoices")
           .select("id, client_id, amount")
           .in("client_id", clientIds)
-          .eq("owner_id", user.id)
+          .in("owner_id", scopeForClientsQuery)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; amount: number | null }> })
   ]);
 
@@ -392,11 +395,13 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     } = await sb.auth.getUser();
     if (!owner) return;
     const clientId = String(formData.get("client_id") ?? "");
+    const ownerScopeIds = await resolveOwnerIdCandidates(sb, owner);
+    const scopeForPortal = ownerScopeIds.length > 0 ? ownerScopeIds : [owner.id];
     const { data: client } = await sb
       .from("clients")
       .select("full_name, email, portal_token")
       .eq("id", clientId)
-      .eq("owner_id", owner.id)
+      .in("owner_id", scopeForPortal)
       .maybeSingle();
     if (!client?.email || !client.portal_token) return;
     const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`;

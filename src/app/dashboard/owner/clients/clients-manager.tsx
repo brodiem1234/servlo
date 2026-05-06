@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type ClientRecord = {
@@ -41,6 +42,7 @@ const defaultValues = {
 };
 
 export default function ClientsManager({ clients, createClientAction, updateClientAction }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
@@ -83,6 +85,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
     if (result.ok) {
       setToast({ type: "success", message: editing ? "Client updated" : "Client added" });
       setOpen(false);
+      router.refresh();
       return;
     }
     setToast({ type: "error", message: result.message ?? "Unable to save client" });
