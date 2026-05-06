@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { normalizeAccentColour } from "@/lib/brand-accent";
+import { normalizeAccentColour, DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
 import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug, parseIndustryTagsJson } from "@/lib/industries";
 import { bootstrapSignupProfiles } from "@/lib/signup/bootstrap-writes";
@@ -161,11 +161,13 @@ export async function POST(request: Request) {
       .filter((s): s is IndustrySlug => isIndustrySlug(s));
   }
 
-  const accentColourRaw =
+  /** Accent only from request body (signup keeps colour in UI state until this insert). */
+  const accent_colour = normalizeAccentColour(
     typeof body.accentColour === "string" && body.accentColour.trim()
       ? body.accentColour.trim()
-      : String(meta.accent_colour ?? "");
-  const accent_colour = normalizeAccentColour(accentColourRaw);
+      : DEFAULT_ACCENT_HEX
+  );
+  const teal_fallback = normalizeAccentColour(DEFAULT_ACCENT_HEX);
 
   const otherNote =
     industries.includes("other") ? String(meta.industry_other_note ?? "").trim() || null : null;
@@ -184,7 +186,8 @@ export async function POST(request: Request) {
       role: "owner",
       industry_tags: industries,
       otherNote,
-      accentColourRaw: accent_colour,
+      // Unused by bootstrapSignupProfiles for DB writes; accent is saved only on businesses insert below.
+      accentColourRaw: DEFAULT_ACCENT_HEX,
       full_name: fullName
     },
     trialStart,
@@ -196,22 +199,31 @@ export async function POST(request: Request) {
     return jsonErr(profileBootstrap.message, 500);
   }
 
-  const insertPayload = {
+  const buildBusinessPayload = (accentHex: string) => ({
     user_id: userId,
     owner_id: userId,
     business_name: businessName || null,
     abn: abn || null,
     phone: phone || null,
     industries,
-    accent_colour
-  };
+    accent_colour: accentHex
+  });
 
   let bizRowId: string | null = null;
-  const insertAttempt = await supabaseAdmin
+  let insertAttempt = await supabaseAdmin
     .from("businesses")
-    .upsert(insertPayload, { onConflict: "user_id" })
+    .upsert(buildBusinessPayload(accent_colour), { onConflict: "user_id" })
     .select("id")
     .single();
+
+  if (insertAttempt.error && accent_colour !== teal_fallback) {
+    logBusinessInsertError("[setup-business] businesses upsert (chosen accent) failed — retrying teal", insertAttempt.error);
+    insertAttempt = await supabaseAdmin
+      .from("businesses")
+      .upsert(buildBusinessPayload(teal_fallback), { onConflict: "user_id" })
+      .select("id")
+      .single();
+  }
 
   if (!insertAttempt.error && insertAttempt.data?.id) {
     bizRowId = insertAttempt.data.id as string;
@@ -223,7 +235,7 @@ export async function POST(request: Request) {
         {
           user_id: userId,
           owner_id: userId,
-          accent_colour
+          accent_colour: teal_fallback
         },
         { onConflict: "user_id" }
       )
@@ -250,8 +262,7 @@ export async function POST(request: Request) {
 
   const demo = await seedOwnerDemoData(supabaseAdmin, userId);
   if (!demo.ok) {
-    console.error("[setup-business] demo seed failed", demo.message);
-    return jsonErr(demo.message ?? "Demo data seed failed.", 500);
+    console.error("[setup-business] demo seed failed (non-blocking)", demo.message);
   }
 
   return NextResponse.json({ success: true, businessId: bizRowId });

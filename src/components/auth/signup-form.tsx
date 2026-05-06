@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
 import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
-import { DEFAULT_ACCENT_HEX, type AccentPresetHex } from "@/lib/brand-accent";
+import { DEFAULT_ACCENT_HEX, normalizeAccentColour, type AccentPresetHex } from "@/lib/brand-accent";
 
 const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
   {
@@ -176,8 +176,7 @@ export function SignupForm() {
             phone_number: phoneNumber,
             role: "owner",
             industry_tags: selected.join(","),
-            industry_other_note: otherNote || "",
-            accent_colour: accentColour
+            industry_other_note: otherNote || ""
           }
         }
       });
@@ -204,34 +203,49 @@ export function SignupForm() {
         return;
       }
 
-      const res = await fetch("/api/setup-business", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          userId,
-          businessName,
-          abn,
-          phone: phoneNumber,
-          industries: selected,
-          accentColour
-        })
-      });
+      const baseSetupBody = {
+        userId,
+        businessName,
+        abn,
+        phone: phoneNumber,
+        industries: selected
+      };
 
-      const raw = await res.text();
+      const postSetup = async (accentForInsert: string) => {
+        return fetch("/api/setup-business", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ ...baseSetupBody, accentColour: accentForInsert })
+        });
+      };
+
+      let res = await postSetup(normalizeAccentColour(accentColour));
+      let raw = await res.text();
       let parsed: { success?: boolean; businessId?: string; error?: string };
       try {
         parsed = JSON.parse(raw) as typeof parsed;
       } catch {
-        setLocalError(raw.slice(0, 280) || "Invalid response from server.");
-        return;
+        parsed = { error: raw.slice(0, 280) || "Invalid response from server." };
       }
 
       if (!res.ok || parsed.error) {
-        console.error("[signup/owner] setup-business failed", res.status, parsed);
-        setLocalError(parsed.error ?? `Setup failed (${res.status}).`);
+        console.warn("[signup/owner] setup-business failed — retrying with default teal", res.status, parsed);
+        res = await postSetup(DEFAULT_ACCENT_HEX);
+        raw = await res.text();
+        try {
+          parsed = JSON.parse(raw) as typeof parsed;
+        } catch {
+          parsed = { error: raw.slice(0, 280) || "Invalid response from server." };
+        }
+      }
+
+      if (!res.ok || parsed.error) {
+        console.error("[signup/owner] setup-business failed after teal retry — continuing to dashboard", parsed);
+        router.push("/dashboard/owner");
+        router.refresh();
         return;
       }
 
@@ -274,7 +288,9 @@ export function SignupForm() {
         >
           <input type="hidden" name="industry_tags_json" value={industriesJson} />
           <input type="hidden" name="industry_other_note" value={otherNote} />
-          <input type="hidden" name="accent_colour" value={accentColour} readOnly />
+          {role === "client" ? (
+            <input type="hidden" name="accent_colour" value={accentColour} readOnly />
+          ) : null}
 
           <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
             <div className="sm:col-span-2">
