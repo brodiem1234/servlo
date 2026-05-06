@@ -7,6 +7,9 @@ import {
   UserCog,
   LayoutDashboard,
   Camera,
+  CircleDollarSign,
+  MessagesSquare,
+  Inbox,
   type LucideIcon
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing-header";
@@ -14,6 +17,24 @@ import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
 import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
 
 const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
+
+const painPoints: Array<{ Icon: LucideIcon; title: string; copy: string }> = [
+  {
+    Icon: CircleDollarSign,
+    title: "Chasing unpaid invoices at midnight",
+    copy: "Cashflow suffers when follow-ups fall behind."
+  },
+  {
+    Icon: MessagesSquare,
+    title: "Texting job details to employees one by one",
+    copy: "Manual updates waste time and create mistakes."
+  },
+  {
+    Icon: Inbox,
+    title: "Losing quotes in your email inbox",
+    copy: "Missed follow-up means missed revenue."
+  }
+];
 
 const features: Array<{ Icon: LucideIcon; title: string; description: string }> = [
   {
@@ -238,25 +259,49 @@ export default function HomePage() {
       <LandingIndustryDeepSections />
 
       <section
-        className="border-y border-slate-200 bg-white py-3 dark:border-slate-700 dark:bg-[#152238]/80"
+        className="border-y border-slate-200 bg-white py-4 dark:border-slate-700 dark:bg-[#152238]/80"
         aria-label="Social proof"
       >
-        <div className="mx-auto max-w-5xl px-4 text-center text-xs font-medium leading-relaxed text-[#475569] dark:text-slate-300 sm:text-sm">
-          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-            <span className="text-[#1e3a5f] dark:text-white">500+ jobs managed</span>
-            <span className="hidden text-slate-300 sm:inline dark:text-slate-600" aria-hidden>
+        <div className="mx-auto max-w-5xl px-4 text-center sm:px-6">
+          <ul className="flex flex-wrap items-baseline justify-center gap-x-4 gap-y-3 sm:gap-x-8 md:gap-x-10">
+            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
+              <span className="text-base font-bold tabular-nums text-[#1e3a5f] dark:text-white sm:text-lg">
+                500+
+              </span>
+              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
+                jobs managed
+              </span>
+            </li>
+            <li className="hidden text-slate-300 sm:block dark:text-slate-600" aria-hidden>
               ·
-            </span>
-            <span className="text-[#1e3a5f] dark:text-white">$2M+ invoiced</span>
-            <span className="hidden text-slate-300 sm:inline dark:text-slate-600" aria-hidden>
+            </li>
+            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
+              <span className="text-base font-bold tabular-nums text-[#1e3a5f] dark:text-white sm:text-lg">
+                $2M+
+              </span>
+              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
+                invoiced
+              </span>
+            </li>
+            <li className="hidden text-slate-300 sm:block dark:text-slate-600" aria-hidden>
               ·
-            </span>
-            <span className="text-[#1e3a5f] dark:text-white">Built in Adelaide SA</span>
-            <span className="hidden text-slate-300 sm:inline dark:text-slate-600" aria-hidden>
+            </li>
+            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
+              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
+                Built in
+              </span>
+              <span className="text-base font-bold text-[#1e3a5f] dark:text-white sm:text-lg">Adelaide SA</span>
+            </li>
+            <li className="hidden text-slate-300 sm:block dark:text-slate-600" aria-hidden>
               ·
-            </span>
-            <span className="text-[#1e3a5f] dark:text-white">30-day free trial</span>
-          </p>
+            </li>
+            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
+              <span className="text-base font-bold tabular-nums text-[#1e3a5f] dark:text-white sm:text-lg">30</span>
+              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
+                day free trial
+              </span>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -265,16 +310,12 @@ export default function HomePage() {
           Still running your business on paper and WhatsApp?
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[
-            ["📋", "Chasing unpaid invoices at midnight", "Cashflow suffers when follow-ups fall behind."],
-            ["📱", "Texting job details to employees one by one", "Manual updates waste time and create mistakes."],
-            ["🗂️", "Losing quotes in your email inbox", "Missed follow-up means missed revenue."]
-          ].map(([icon, title, copy]) => (
+          {painPoints.map(({ Icon, title, copy }) => (
             <article
               key={title}
               className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
             >
-              <p className="text-2xl">{icon}</p>
+              <Icon className={`h-9 w-9 ${tealIcon}`} strokeWidth={1.75} aria-hidden />
               <h3 className="mt-3 text-lg font-semibold text-[#1e3a5f] dark:text-white">{title}</h3>
               <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{copy}</p>
             </article>
@@ -360,7 +401,7 @@ export default function HomePage() {
             >
               <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-color)] dark:text-cyan-400">{t.trade}</p>
               <p className="mt-2 text-amber-500 dark:text-amber-300">★★★★★</p>
-              <p className="mt-3 text-sm leading-relaxed text-[#334155] dark:text-slate-200">&quot;{t.quote}&quot;</p>
+              <p className="mt-3 text-sm leading-relaxed text-[#334155] dark:text-slate-200">{t.quote}</p>
               <p className="mt-3 text-xs font-semibold text-[#1e3a5f] dark:text-white">
                 {t.name}
                 <span className="mt-0.5 block font-normal text-[#64748b] dark:text-slate-400">{t.role}</span>
