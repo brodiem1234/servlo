@@ -6,7 +6,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clients-view";
 import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
-import { filterDemoEntities } from "@/lib/demo/visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -151,13 +150,12 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
 
   const primaryClientsQuery = await clientsQuery;
 
-  console.log("[clients-page] clients SELECT", {
-    userId: ownerId,
-    rowCount: primaryClientsQuery.data?.length ?? 0,
-    error: primaryClientsQuery.error?.message ?? null,
-    errorCode: primaryClientsQuery.error?.code ?? null,
-    sampleOwnerIds: (primaryClientsQuery.data ?? []).slice(0, 6).map((r: { owner_id?: string | null }) => r.owner_id)
-  });
+  console.log("[clients-page] owner_id (= Supabase auth user id)", ownerId);
+  console.log("[clients-page] Supabase SELECT error", primaryClientsQuery.error ?? null);
+  console.log(
+    "[clients-page] Supabase SELECT raw rows (full array)",
+    JSON.stringify(primaryClientsQuery.data ?? [], null, 2)
+  );
 
   let clients:
     | Array<{
@@ -195,7 +193,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       status: null,
       source: null,
       portal_token: null,
-      is_demo: false,
+      /** Preserve seeded demo rows; never strip demo markers in this path. */
+      is_demo: (client as { is_demo?: boolean | null }).is_demo ?? false,
       client_type: "customer"
     }));
   } else if (primaryClientsQuery.error) {
@@ -205,9 +204,12 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     clients = primaryClientsQuery.data ?? [];
   }
 
-  const visibleClients = filterDemoEntities(clients ?? []);
+  console.log("[clients-page] clients after query handling (full array, includes demo + real)", JSON.stringify(clients ?? [], null, 2));
 
-  const clientIds = visibleClients.map((client) => client.id);
+  /** All rows where owner_id = auth uid(), including `is_demo: true`. */
+  const clientsForUi = clients ?? [];
+
+  const clientIds = clientsForUi.map((client) => client.id);
   const [{ data: jobs }, { data: invoices }] = await Promise.all([
     clientIds.length
       ? supabase
@@ -425,7 +427,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   return (
     <Suspense fallback={<div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-8 text-sm text-[var(--text-muted)]">Loading clients…</div>}>
       <OwnerClientsView
-        clients={visibleClients}
+        clients={clientsForUi}
         metrics={metricsRecord}
         initialView={view}
         initialSort={sortKey}

@@ -1,5 +1,5 @@
--- Clients RLS: one policy aligned with dashboard queries (WHERE owner_id = auth.uid()).
--- Includes both is_demo rows and owner-created rows. Apply in SQL Editor when debugging empty lists.
+-- Single policy so owners can SELECT/INSERT/UPDATE/DELETE only their rows (demo + real).
+-- Run in dashboard SQL Editor if migrating manually; NOTIFY refreshes PostgREST cache.
 
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 

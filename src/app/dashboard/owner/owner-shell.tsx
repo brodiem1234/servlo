@@ -8,7 +8,6 @@ import {
   FileText,
   Home,
   LayoutGrid,
-  Menu,
   MoreHorizontal,
   Users
 } from "lucide-react";
@@ -63,7 +62,6 @@ export default function OwnerShell({
   children
 }: Props) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -103,12 +101,7 @@ export default function OwnerShell({
   return (
     <ToastProvider>
     <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
-      <div className="grid min-h-screen md:grid-cols-[260px_1fr]">
-        <aside
-          className={`owner-sidebar fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto bg-[var(--sidebar-bg)] transform px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] transition-transform md:static md:w-auto md:translate-x-0 md:shadow-none ${
-            open ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
+        <aside className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto bg-[var(--sidebar-bg)] px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex">
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent-color)] p-0.5 shadow-inner ring-2 ring-[color-mix(in_srgb,var(--accent-color)_55%,white)]">
@@ -146,7 +139,6 @@ export default function OwnerShell({
                         key={item.href}
                         href={item.href}
                         data-active={active ? "true" : "false"}
-                        onClick={() => setOpen(false)}
                         className="rounded-md px-3 py-2 text-sm text-[var(--sidebar-text)] transition-colors"
                       >
                         {item.label}
@@ -160,16 +152,9 @@ export default function OwnerShell({
           <OwnerSidebarTodos initialTasks={initialTasks} />
         </aside>
 
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen flex-col md:pl-[256px]">
           <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 md:px-6">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="rounded border border-[var(--border)] p-2 text-[var(--text-primary)] md:hidden"
-                onClick={() => setOpen((prev) => !prev)}
-              >
-                <Menu size={18} />
-              </button>
               <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">{businessName}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -218,16 +203,6 @@ export default function OwnerShell({
 
           <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>
         </div>
-      </div>
-
-      {open ? (
-        <button
-          type="button"
-          aria-label="Close navigation"
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
-          onClick={() => setOpen(false)}
-        />
-      ) : null}
 
       <nav className="owner-mobile-nav fixed inset-x-0 bottom-0 z-30 border-t border-[var(--sidebar-divider)] bg-[var(--sidebar-bg)] md:hidden">
         <div className="grid grid-cols-5">
@@ -240,7 +215,6 @@ export default function OwnerShell({
                 href={item.href}
                 data-active={active ? "true" : "false"}
                 onClick={() => {
-                  setOpen(false);
                   setMoreOpen(false);
                 }}
                 className="flex min-h-[52px] flex-col items-center justify-center px-1 py-2 text-[11px] text-[var(--sidebar-text)]"
