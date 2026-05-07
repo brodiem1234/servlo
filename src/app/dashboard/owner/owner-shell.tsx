@@ -1,12 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import {
   Bell,
   Briefcase,
-  ChevronDown,
   FileText,
   Home,
   LayoutGrid,
@@ -14,7 +13,6 @@ import {
   Users
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import OwnerKeyboardShortcuts from "@/components/dashboard/owner-keyboard-shortcuts";
 import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/owner-sidebar-todos";
 import type { OwnerNavItem, OwnerNavSection } from "@/app/dashboard/owner/nav-config";
@@ -29,6 +27,24 @@ const CORE_LOGO_FILTER =
 function isNavItemActive(pathname: string, href: string) {
   if (href === "/dashboard/owner") {
     return pathname === "/dashboard/owner";
+  }
+  // Finance aggregate item — also match legacy direct routes
+  if (href === "/dashboard/owner/finance") {
+    return (
+      pathname.startsWith("/dashboard/owner/finance") ||
+      pathname.startsWith("/dashboard/owner/invoices") ||
+      pathname.startsWith("/dashboard/owner/quotes") ||
+      pathname.startsWith("/dashboard/owner/purchase-orders")
+    );
+  }
+  // Team aggregate item — also match legacy direct routes
+  if (href === "/dashboard/owner/team") {
+    return (
+      pathname.startsWith("/dashboard/owner/team") ||
+      pathname.startsWith("/dashboard/owner/employees") ||
+      pathname.startsWith("/dashboard/owner/timesheets") ||
+      pathname.startsWith("/dashboard/contractors")
+    );
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -71,24 +87,6 @@ export default function OwnerShell({
   const pathname = usePathname();
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
-  // Auto-expand groups that contain the active route
-  useEffect(() => {
-    const initial: Record<string, boolean> = {};
-    for (const section of navSections) {
-      if (section.groupLabel) {
-        const hasActive = section.items.some((item) => isNavItemActive(pathname, item.href));
-        if (hasActive) initial[section.groupLabel] = true;
-      }
-    }
-    setOpenGroups(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function toggleGroup(label: string) {
-    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
-  }
 
   const mainSections = useMemo(() => navSections.filter((s) => !s.pinnedBottom), [navSections]);
   const bottomSections = useMemo(() => navSections.filter((s) => s.pinnedBottom), [navSections]);
@@ -139,36 +137,7 @@ export default function OwnerShell({
     );
   }
 
-  function renderSection(section: OwnerNavSection, index: number, isLast: boolean) {
-    if (section.groupLabel) {
-      const isOpen = Boolean(openGroups[section.groupLabel]);
-      const hasActive = section.items.some((item) => isNavItemActive(pathname, item.href));
-      return (
-        <div key={`section-${index}`}>
-          <button
-            type="button"
-            onClick={() => toggleGroup(section.groupLabel!)}
-            className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--sidebar-text-muted)] transition-colors hover:bg-[var(--sidebar-hover-bg)]"
-            aria-expanded={isOpen}
-          >
-            <span className={hasActive && !isOpen ? "text-[var(--product-accent-light)]" : ""}>
-              {section.groupLabel}
-            </span>
-            <ChevronDown
-              size={12}
-              className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-              aria-hidden
-            />
-          </button>
-          {isOpen ? (
-            <div className="mt-1 flex flex-col gap-1 pl-2">
-              {section.items.map((item) => renderNavItem(item))}
-            </div>
-          ) : null}
-        </div>
-      );
-    }
-
+  function renderSection(section: OwnerNavSection, index: number) {
     return (
       <div key={`section-${index}`} className="flex flex-col gap-1">
         {section.items.map((item) => renderNavItem(item))}
@@ -204,14 +173,7 @@ export default function OwnerShell({
           {/* Scrollable nav area */}
           <div className="flex-1 overflow-y-auto">
             <nav className="flex flex-col gap-2">
-              {mainSections.map((section, i) => (
-                <Fragment key={`main-${i}`}>
-                  {i > 0 ? (
-                    <hr className="border-0 border-t border-[var(--sidebar-divider)]" aria-hidden />
-                  ) : null}
-                  {renderSection(section, i, i === mainSections.length - 1)}
-                </Fragment>
-              ))}
+              {mainSections.map((section, i) => renderSection(section, i))}
             </nav>
             <OwnerSidebarTodos initialTasks={initialTasks} />
           </div>
@@ -231,10 +193,9 @@ export default function OwnerShell({
         <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
           <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 md:px-6">
             <div className="flex items-center gap-3">
-              <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">{businessName}</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">SERVLO Core</p>
             </div>
             <div className="flex items-center gap-2">
-              <ThemeToggleButton />
               <div className="relative">
                 <button
                   type="button"

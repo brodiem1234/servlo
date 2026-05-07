@@ -18,32 +18,16 @@ export type OwnerNavSection = {
 };
 
 export const OWNER_NAV_SECTIONS: OwnerNavSection[] = [
-  { items: [{ href: "/dashboard/owner", label: "Dashboard", req: null }] },
   {
-    groupLabel: "Jobs & Schedule",
     items: [
-      { href: "/dashboard/owner/jobs", label: "Jobs", req: "scheduling" },
-      { href: "/dashboard/schedule", label: "Schedule", req: "scheduling" },
+      { href: "/dashboard/owner",         label: "Dashboard", req: null },
+      { href: "/dashboard/owner/jobs",    label: "Jobs",      req: "scheduling" },
+      { href: "/dashboard/owner/clients", label: "Clients",   req: "client_management" },
+      { href: "/dashboard/owner/finance", label: "Finance",   req: "finance_any" },
+      { href: "/dashboard/owner/team",    label: "Team",      req: "team_any" },
+      { href: "/dashboard/reports",       label: "Reports",   req: "reports_bundle" },
     ],
   },
-  { items: [{ href: "/dashboard/owner/clients", label: "Clients", req: "client_management" }] },
-  {
-    groupLabel: "Finance",
-    items: [
-      { href: "/dashboard/owner/invoices", label: "Invoices", req: "invoices" },
-      { href: "/dashboard/owner/quotes", label: "Quotes", req: "quotes" },
-      { href: "/dashboard/owner/purchase-orders", label: "Purchase orders", req: "purchase_orders" },
-    ],
-  },
-  {
-    groupLabel: "Team",
-    items: [
-      { href: "/dashboard/owner/employees", label: "Employees", req: "employee_management" },
-      { href: "/dashboard/contractors", label: "Contractors", req: "contractors" },
-      { href: "/dashboard/owner/timesheets", label: "Timesheets", req: "timesheets" },
-    ],
-  },
-  { items: [{ href: "/dashboard/reports", label: "Reports", req: "reports_bundle" }] },
   { pinnedBottom: true, items: [{ href: "/dashboard/owner/settings", label: "Settings", req: null }] },
 ];
 

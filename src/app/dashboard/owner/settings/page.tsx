@@ -71,7 +71,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     if (tags.length) primaryIndustry = primaryIndustrySlug(tags);
   }
 
-  const businessName = businessRow?.business_name ?? "SERVLO Business";
+  const businessName = businessRow?.business_name ?? "SERVLO Core";
   const subscriptionTier = profile?.subscription_tier ?? "solo";
   const savedAccent = normalizeAccentColour(businessRow?.accent_colour);
   const digestOn = (profile as { email_digest_enabled?: boolean | null } | null)?.email_digest_enabled !== false;

@@ -6,7 +6,6 @@ import { LayoutDashboard, Megaphone, Share2, Star, Users2 } from "lucide-react";
 import React, { useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
-import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 const GROW_COLOR = "#8B5CF6";
@@ -126,7 +125,6 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
             </span>
           </p>
           <div className="flex items-center gap-2">
-            <ThemeToggleButton />
             <button
               type="button"
               onClick={handleSignOut}

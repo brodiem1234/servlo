@@ -91,7 +91,7 @@ export async function getOwnerContext() {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user) return { user: null, businessName: "SERVLO Business" };
+  if (!user) return { user: null, businessName: "SERVLO Core" };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -119,7 +119,7 @@ export async function getOwnerContext() {
 
   return {
     user,
-    businessName: businessRow?.business_name ?? "SERVLO Business",
+    businessName: businessRow?.business_name ?? "SERVLO Core",
     trialEnd,
     subscriptionTier: profile?.subscription_tier ?? "solo"
   };

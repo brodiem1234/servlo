@@ -6,7 +6,6 @@ import React, { useCallback } from "react";
 import { LayoutDashboard, ShoppingBag, ClipboardList, GitBranch } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
-import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 const LEADS_COLOR = "#F59E0B";
@@ -125,7 +124,6 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
             </span>
           </p>
           <div className="flex items-center gap-2">
-            <ThemeToggleButton />
             <button
               type="button"
               onClick={handleSignOut}

@@ -402,6 +402,7 @@
   --product-muted: #1a2e4a;
   --product-sidebar: #0d1b36;
   --product-main: #080f1e;
+  background-color: #080f1e !important;
 }
 [data-product="grow"] {
   --product-accent: #8B5CF6;
@@ -409,6 +410,7 @@
   --product-muted: #2a1650;
   --product-sidebar: #120a2e;
   --product-main: #0a0614;
+  background-color: #0a0614 !important;
 }
 [data-product="leads"] {
   --product-accent: #F59E0B;
@@ -416,6 +418,7 @@
   --product-muted: #3d2000;
   --product-sidebar: #1f1200;
   --product-main: #120b00;
+  background-color: #120b00 !important;
 }
 
 /* Active nav item uses product muted bg + accent-light text inside product shells */

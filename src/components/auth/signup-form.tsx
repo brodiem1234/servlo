@@ -13,7 +13,6 @@ import {
   abnDigitsFromInput,
   formatAbnDigits,
   validateAbnChecksum,
-  toPhoneE164,
   type PasswordRequirementState,
   type PasswordRuleKey
 } from "@/lib/auth/signup-field-validation";
@@ -40,57 +39,202 @@ import {
   primaryIndustrySlug,
   recommendedFeaturesForIndustry
 } from "@/lib/workspace-features";
+import type { Stripe, StripeCardElement } from "@stripe/stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
-// ── Phone country selector ──────────────────────────────────────────────────
+// ── Stripe (loaded once, outside component) ─────────────────────────────────
 
-const PHONE_COUNTRIES = [
-  { code: "AU", flag: "🇦🇺", dialCode: "61", label: "+61" },
-  { code: "NZ", flag: "🇳🇿", dialCode: "64", label: "+64" },
-  { code: "GB", flag: "🇬🇧", dialCode: "44", label: "+44" },
-  { code: "US", flag: "🇺🇸", dialCode: "1",  label: "+1" },
-  { code: "CA", flag: "🇨🇦", dialCode: "1",  label: "+1 CA" },
-] as const;
-type PhoneCountryCode = typeof PHONE_COUNTRIES[number]["code"];
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
 
-function formatLocalPhone(value: string, countryCode: PhoneCountryCode): string {
+function getPriceId(tier: string): string | null {
+  const ids: Record<string, string> = {
+    solo:     "price_1TTiL8K1tzStyRcJQAfbuJ5n",
+    team:     "price_1TTiLaK1tzStyRcJNOgCeg0X",
+    business: "price_1TTiLyK1tzStyRcJ4BVJz0o8",
+  };
+  return ids[tier] ?? null;
+}
+
+// ── Phone helpers (AU-only, E.164) ──────────────────────────────────────────
+
+function formatAUPhone(value: string): string {
   const digits = value.replace(/\D/g, "");
-  if (countryCode === "AU" || countryCode === "NZ") {
-    const d = digits.slice(0, 10);
-    if (d.length <= 4) return d;
-    if (d.length <= 7) return `${d.slice(0, 4)} ${d.slice(4)}`;
-    return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`;
-  }
-  if (countryCode === "GB") {
-    const d = digits.slice(0, 11);
-    if (d.length <= 5) return d;
-    return `${d.slice(0, 5)} ${d.slice(5)}`;
-  }
-  // US / CA
-  const d = digits.slice(0, 10);
+  // Strip leading 0 if present
+  const local = digits.startsWith("0") ? digits.slice(1) : digits;
+  const d = local.slice(0, 9); // Max 9 local digits
   if (d.length <= 3) return d;
   if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
   return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
 }
 
 function phoneLocalDigits(value: string): string {
-  return value.replace(/\D/g, "");
+  return value.replace(/\D/g, "").replace(/^0/, "");
 }
 
 function isPhoneValid(value: string): boolean {
-  return phoneLocalDigits(value).length >= 8;
+  return phoneLocalDigits(value).length >= 9;
 }
 
 // ── Industry options ────────────────────────────────────────────────────────
 
 const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
-  { slug: "trades",        label: "Trades",               sub: "Electricians, plumbers, builders, landscapers, concreters, painters", Icon: HardHat },
-  { slug: "cleaning",      label: "Cleaning",             sub: "Residential, commercial, NDIS",                                       Icon: Sparkles },
-  { slug: "events",        label: "Events & hire",        sub: "Coordinators, AV, equipment hire",                                   Icon: PartyPopper },
-  { slug: "marketing",     label: "Marketing & agencies", sub: "Studios, freelancers, digital shops",                                 Icon: Megaphone },
-  { slug: "health",        label: "Health & wellness",    sub: "Clinics, mobile practitioners, studios",                             Icon: HeartPulse },
-  { slug: "field_services",label: "Field services",       sub: "Pest control, inspections, maintenance",                             Icon: ClipboardList },
-  { slug: "other",         label: "Other",                sub: "We'll learn how you work",                                           Icon: Tags },
+  { slug: "trades",         label: "Trades",               sub: "Electricians, plumbers, builders, landscapers, concreters, painters", Icon: HardHat },
+  { slug: "cleaning",       label: "Cleaning",             sub: "Residential, commercial, NDIS",                                       Icon: Sparkles },
+  { slug: "events",         label: "Events & hire",        sub: "Coordinators, AV, equipment hire",                                   Icon: PartyPopper },
+  { slug: "marketing",      label: "Marketing & agencies", sub: "Studios, freelancers, digital shops",                                 Icon: Megaphone },
+  { slug: "health",         label: "Health & wellness",    sub: "Clinics, mobile practitioners, studios",                             Icon: HeartPulse },
+  { slug: "field_services", label: "Field services",       sub: "Pest control, inspections, maintenance",                             Icon: ClipboardList },
+  { slug: "other",          label: "Other",                sub: "We'll learn how you work",                                           Icon: Tags },
 ];
+
+// ── Product options ─────────────────────────────────────────────────────────
+
+type ProductOption = {
+  id: string;
+  name: string;
+  tagline: string;
+  color: string;
+  description: string;
+  price: string;
+  recommended?: boolean;
+  comingSoon?: boolean;
+};
+
+const PRODUCT_OPTIONS: ProductOption[] = [
+  {
+    id: "core",
+    name: "SERVLO Core",
+    tagline: "Business Management",
+    color: "#3B82F6",
+    description: "Jobs, invoicing, clients, team management and more.",
+    price: "from $49/mo",
+  },
+  {
+    id: "grow",
+    name: "SERVLO Grow",
+    tagline: "Marketing & Ads",
+    color: "#8B5CF6",
+    description: "AI ad creation, social content, Google review campaigns.",
+    price: "from $59/mo",
+    comingSoon: true,
+  },
+  {
+    id: "leads",
+    name: "SERVLO Leads",
+    tagline: "Lead Generation",
+    color: "#F59E0B",
+    description: "Browse and purchase qualified leads in your area.",
+    price: "from $49/mo",
+    comingSoon: true,
+  },
+  {
+    id: "core+grow",
+    name: "Core + Grow",
+    tagline: "Essential Bundle",
+    color: "#3B82F6",
+    description: "Full business management plus marketing tools.",
+    price: "from $89/mo",
+  },
+  {
+    id: "core+leads",
+    name: "Core + Leads",
+    tagline: "Starter Bundle",
+    color: "#3B82F6",
+    description: "Business management plus lead generation.",
+    price: "from $79/mo",
+  },
+  {
+    id: "grow+leads",
+    name: "Grow + Leads",
+    tagline: "Growth Bundle",
+    color: "#8B5CF6",
+    description: "Marketing and lead generation combo.",
+    price: "from $99/mo",
+    comingSoon: true,
+  },
+  {
+    id: "core+grow+leads",
+    name: "Full Platform",
+    tagline: "Complete SERVLO",
+    color: "#3B82F6",
+    description: "Everything: business management, marketing and leads.",
+    price: "from $129/mo",
+    recommended: true,
+  },
+];
+
+// ── Plan tier options ───────────────────────────────────────────────────────
+
+type PlanTier = {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  recommended?: boolean;
+};
+
+const CORE_TIERS: PlanTier[] = [
+  {
+    id: "solo",
+    name: "Solo",
+    price: "$49",
+    description: "Perfect for soloists",
+    features: ["1 user", "All Core features", "Unlimited clients & invoices"],
+  },
+  {
+    id: "team",
+    name: "Team",
+    price: "$119",
+    description: "For growing businesses",
+    features: ["Up to 10 users", "Team timesheets & scheduling", "Priority support"],
+    recommended: true,
+  },
+  {
+    id: "business",
+    name: "Business",
+    price: "$249",
+    description: "Scaling operations",
+    features: ["Unlimited users", "Advanced reporting", "Dedicated account manager"],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: "$499",
+    description: "Custom solutions",
+    features: ["Custom integrations", "White-glove onboarding", "SLA guarantee"],
+  },
+];
+
+const GROW_TIERS: PlanTier[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: "$59",
+    description: "Get started with marketing",
+    features: ["1 business", "AI ad creation", "5 campaigns/mo"],
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: "$119",
+    description: "Scale your reach",
+    features: ["Up to 3 businesses", "Unlimited campaigns", "Google review automation"],
+    recommended: true,
+  },
+  {
+    id: "agency",
+    name: "Agency",
+    price: "$299",
+    description: "Manage all your clients",
+    features: ["Unlimited businesses", "White-label reports", "Priority support"],
+  },
+];
+
+function tiersForProduct(productCombo: string): PlanTier[] {
+  const hasCore = productCombo === "core" || productCombo.startsWith("core+");
+  return hasCore ? CORE_TIERS : GROW_TIERS;
+}
 
 // ── SVG icons ───────────────────────────────────────────────────────────────
 
@@ -116,7 +260,7 @@ function MicrosoftLogoSmall() {
   );
 }
 
-// ── Password hint display ───────────────────────────────────────────────────
+// ── Password hints ──────────────────────────────────────────────────────────
 
 function passwordHintLabel(rule: PasswordRuleKey): string {
   switch (rule) {
@@ -135,9 +279,9 @@ function PasswordStrengthHints({ rules }: { rules: PasswordRequirementState }) {
       {order.map((key) => {
         const ok = rules[key];
         return (
-          <li key={key} className={`flex items-center gap-2 ${ok ? "text-emerald-600 dark:text-emerald-400" : "text-[#94a3b8]"}`}>
-            <span className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${ok ? "bg-emerald-600/15" : "bg-slate-700/40"}`}>
-              {ok ? <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} aria-hidden /> : null}
+          <li key={key} className={`flex items-center gap-2 ${ok ? "text-emerald-400" : "text-slate-500"}`}>
+            <span className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${ok ? "bg-emerald-600/20" : "bg-slate-700/40"}`}>
+              {ok ? <Check className="h-2.5 w-2.5 text-emerald-400" strokeWidth={3} aria-hidden /> : null}
             </span>
             <span>{passwordHintLabel(key)}</span>
           </li>
@@ -147,14 +291,14 @@ function PasswordStrengthHints({ rules }: { rules: PasswordRequirementState }) {
   );
 }
 
-// ── Main form component ─────────────────────────────────────────────────────
+// ── Main component ──────────────────────────────────────────────────────────
 
 export function SignupForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Step state (1 = credentials, 2 = industries, 3 = workspace preview)
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Step 1=credentials, 2=industries, 3=products, 4=plan tier, 5=workspace, 6=trial
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
   // Credential fields
   const [nameInput, setNameInput] = useState("");
@@ -166,16 +310,24 @@ export function SignupForm() {
   const [abnInput, setAbnInput] = useState("");
   const [abnConfirmed, setAbnConfirmed] = useState(false);
 
-  // Phone
+  // Phone (AU-only)
   const [phoneInput, setPhoneInput] = useState("");
-  const [phoneCountry, setPhoneCountry] = useState<PhoneCountryCode>("AU");
 
   // Industry selection
   const [selected, setSelected] = useState<IndustrySlug[]>([]);
   const [otherNote, setOtherNote] = useState("");
 
-  // Feature toggles
+  // Product + plan
+  const [selectedProductCombo, setSelectedProductCombo] = useState("core");
+  const [selectedPlanTier, setSelectedPlanTier] = useState("solo");
+
+  // Feature toggles (step 5)
   const [optionalFeatureOn, setOptionalFeatureOn] = useState<Record<string, boolean>>({});
+
+  // Stripe refs
+  const stripeRef = useRef<Stripe | null>(null);
+  const cardElementRef = useRef<StripeCardElement | null>(null);
+  const cardMountRef = useRef<HTMLDivElement>(null);
 
   // UI state
   const [error, setError] = useState<string | null>(null);
@@ -225,10 +377,51 @@ export function SignupForm() {
     if (!selected.includes("other")) setOtherNote("");
   }, [selected]);
 
-  // Reset ABN confirmation when ABN changes
   useEffect(() => {
     setAbnConfirmed(false);
   }, [abnInput]);
+
+  // Mount Stripe card element when reaching step 6 (for Core-containing products)
+  useEffect(() => {
+    if (step !== 6) return;
+    const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
+    const priceId = getPriceId(selectedPlanTier);
+    if (!hasCore || !priceId) return;
+
+    let mounted = true;
+    stripePromise.then((stripeInstance) => {
+      if (!stripeInstance || !cardMountRef.current || !mounted) return;
+      if (cardElementRef.current) {
+        cardElementRef.current.destroy();
+        cardElementRef.current = null;
+      }
+      const elements = stripeInstance.elements();
+      const card = elements.create("card", {
+        style: {
+          base: {
+            color: "#e2e8f0",
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontSize: "14px",
+            "::placeholder": { color: "#64748b" },
+          },
+          invalid: { color: "#ef4444" },
+        },
+      });
+      card.mount(cardMountRef.current);
+      stripeRef.current = stripeInstance;
+      cardElementRef.current = card;
+    });
+
+    return () => {
+      mounted = false;
+      cardElementRef.current?.destroy();
+      cardElementRef.current = null;
+    };
+    // Re-mount if product/tier changes while on step 6
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, selectedProductCombo, selectedPlanTier]);
+
+  // ── Keyboard / input helpers ─────────────────────────────────────────────
 
   function blockAbnKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" || e.key.startsWith("Arrow")) return;
@@ -244,21 +437,21 @@ export function SignupForm() {
     e.preventDefault();
   }
 
+  // ── Validation ───────────────────────────────────────────────────────────
+
   function validateStep1(): string | null {
     if (!nameInput.trim()) return "Full name is required.";
     if (!emailInput.trim()) return "Email is required.";
     if (!businessNameInput.trim()) return "Business name is required.";
     if (!allPasswordRequirementsMet(passwordRules)) return "Please meet every password requirement before continuing.";
-    if (!isPhoneValid(phoneInput)) return "Enter a valid phone number.";
+    if (!isPhoneValid(phoneInput)) return "Enter a valid Australian phone number (9 digits).";
     if (!abnHas11) return "ABN must be 11 digits.";
     if (!abnValid) return "Invalid ABN — please re-enter your 11-digit ABN.";
     if (!abnConfirmed) return "Please confirm your ABN before continuing.";
     return null;
   }
 
-  function toggleIndustry(slug: IndustrySlug) {
-    setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
-  }
+  // ── Step navigation ──────────────────────────────────────────────────────
 
   function handleContinue(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -270,26 +463,43 @@ export function SignupForm() {
 
   function handleContinueFromIndustries(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
+    setStep(3);
+  }
+
+  function handleContinueFromProducts(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    // Reset plan tier to sensible default for the selected product
+    const tiers = tiersForProduct(selectedProductCombo);
+    setSelectedPlanTier(tiers[0].id);
+    setStep(4);
+  }
+
+  function handleContinueFromPlanTier(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
     const nextOptional = Object.fromEntries(signupOptionalIds.map((id) => [id, false]));
     setOptionalFeatureOn(nextOptional);
-    setStep(3);
+    setStep(5);
   }
 
   function handleContinueFromWorkspacePreview(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    formRef.current?.requestSubmit();
+    setStep(6);
   }
 
   function handleBack(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     setError(null);
-    setStep((s) => (s === 3 ? 2 : s === 2 ? 1 : 1) as 1 | 2 | 3);
+    setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
   }
 
-  async function handleOwnerSignup(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (step !== 3) return;
+  function toggleIndustry(slug: IndustrySlug) {
+    setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
+  }
 
+  // ── Core signup logic ────────────────────────────────────────────────────
+
+  async function doSignup() {
+    if (step !== 6) return;
     setError(null);
 
     const gate = validateStep1();
@@ -298,9 +508,12 @@ export function SignupForm() {
     setOwnerSubmitting(true);
 
     try {
-      const selectedCountry = PHONE_COUNTRIES.find((c) => c.code === phoneCountry) ?? PHONE_COUNTRIES[0];
-      const phoneE164 = toPhoneE164(phoneInput, selectedCountry.dialCode);
-      const abnRaw = abnDigitsFromInput(abnInput); // digits only
+      // E.164 phone — AU only
+      const phoneDigits = phoneInput.replace(/\s/g, "");
+      const phoneLocal  = phoneDigits.startsWith("0") ? phoneDigits.slice(1) : phoneDigits;
+      const phoneE164   = `+61${phoneLocal}`;
+
+      const abnRaw = abnDigitsFromInput(abnInput);
 
       const supabase = createSupabaseBrowser();
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -315,7 +528,9 @@ export function SignupForm() {
             role: "owner",
             industry_tags: selected.join(","),
             industry_other_note: otherNote || "",
-            accent_colour: DEFAULT_ACCENT_HEX
+            accent_colour: DEFAULT_ACCENT_HEX,
+            selected_products: selectedProductCombo,
+            plan_tier: selectedPlanTier,
           }
         }
       });
@@ -336,9 +551,7 @@ export function SignupForm() {
 
       const accessToken = authData.session?.access_token;
       if (!accessToken) {
-        setError(
-          "Account created. Confirm your email if required, then sign in to finish setup."
-        );
+        setError("Account created. Confirm your email if required, then sign in to finish setup.");
         return;
       }
 
@@ -371,7 +584,7 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
-        console.warn("[signup/owner] setup-business failed — retrying with default accent", res.status, parsed);
+        console.warn("[signup/owner] setup-business failed — retrying", res.status, parsed);
         res = await fetch("/api/setup-business", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
@@ -407,6 +620,40 @@ export function SignupForm() {
         }
       }
 
+      // ── Stripe trial (Core-containing products with a known price tier) ─
+      const hasCore  = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
+      const priceId  = getPriceId(selectedPlanTier);
+
+      if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
+        try {
+          const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
+            type: "card",
+            card: cardElementRef.current,
+          });
+          if (pmError) throw new Error(pmError.message);
+
+          const trialRes = await fetch("/api/stripe/create-trial", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              paymentMethodId: paymentMethod!.id,
+              selectedProductCombo,
+              selectedPlanTier,
+            }),
+          });
+
+          if (!trialRes.ok) {
+            const trialErr = (await trialRes.json()) as { error?: string };
+            console.warn("[signup/owner] trial setup failed", trialErr);
+          }
+        } catch (stripeErr) {
+          console.warn("[signup/owner] stripe trial error — proceeding anyway", stripeErr);
+        }
+      }
+
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
@@ -417,9 +664,14 @@ export function SignupForm() {
     }
   }
 
-  const accentBtn = "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]";
-  const industrySelectedRing =
-    "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--accent-color)_45%,transparent)]";
+  async function handleOwnerSignup(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    await doSignup();
+  }
+
+  // ── Derived ──────────────────────────────────────────────────────────────
+
+  const accentBtn = "bg-[#3B82F6] text-white hover:bg-blue-500";
 
   const step1Disabled =
     !allPasswordRequirementsMet(passwordRules) ||
@@ -427,320 +679,486 @@ export function SignupForm() {
     !abnValid ||
     !abnConfirmed;
 
+  const hasCore  = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
+  const priceId  = getPriceId(selectedPlanTier);
+  const needsCard = hasCore && !!priceId;
+
+  const currentTiers = tiersForProduct(selectedProductCombo);
+
+  // ── Render ───────────────────────────────────────────────────────────────
+
   return (
     <>
       <ThemeToggleCorner />
-      <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
-      <div className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="mb-4 flex justify-center">
-          <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
-        </div>
-        <h1 className="text-3xl font-bold text-white">Create your account</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Start your 30 day free trial and set up your business in minutes.
-        </p>
-
-        {/* OAuth — only on step 1 */}
-        {step === 1 ? (
-          <div className="mt-5 flex flex-col gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={oauthWorking}
-              onClick={onGoogleSignUp}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white font-medium text-[#374151] shadow-sm hover:bg-slate-50 disabled:opacity-60"
-            >
-              <GoogleLogoSmall />
-              Continue with Google
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={oauthWorking}
-              onClick={onMicrosoftSignUp}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white font-medium text-[#374151] shadow-sm hover:bg-slate-50 disabled:opacity-60"
-            >
-              <MicrosoftLogoSmall />
-              Continue with Microsoft
-            </Button>
-            <div className="flex items-center gap-3">
-              <span className="h-px flex-1 bg-slate-200" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">or sign up with email</span>
-              <span className="h-px flex-1 bg-slate-200" />
-            </div>
-          </div>
-        ) : null}
-
-        {error ? (
-          <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200 whitespace-pre-wrap break-words">
-            {error}
-          </p>
-        ) : null}
-
-        <form
-          ref={formRef}
-          onSubmit={handleOwnerSignup}
-          className="mt-6 space-y-6"
+      <main
+        className="auth-theme flex min-h-screen items-center justify-center px-6 py-16"
+        style={{ backgroundColor: "#0a0f1e" }}
+      >
+        <div
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border p-8 shadow-sm"
+          style={{ backgroundColor: "#111827", borderColor: "#1e293b" }}
         >
-          <input type="hidden" name="industry_tags_json" value={industriesJson} />
-          <input type="hidden" name="industry_other_note" value={otherNote} />
-          <input type="hidden" name="accent_colour" value={DEFAULT_ACCENT_HEX} readOnly />
+          <div className="mb-4 flex justify-center">
+            <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
+          </div>
+          <h1 className="text-3xl font-bold" style={{ color: "#f8fafc" }}>
+            Create your account
+          </h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Start your 30-day free trial and set up your business in minutes.
+          </p>
 
-          {/* ── Step 1: Credentials ── */}
-          <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
-            <div>
-              <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-300">
-                Full name
-              </label>
-              <input
-                id="name"
-                name="name"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                required
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+          {/* Step indicator */}
+          <div className="mt-4 flex items-center gap-1">
+            {([1, 2, 3, 4, 5, 6] as const).map((s) => (
+              <div
+                key={s}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  s < step ? "bg-[#3B82F6]" : s === step ? "bg-[#3B82F6] opacity-60" : "bg-slate-700"
+                }`}
               />
-            </div>
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                required
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                required
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-              />
-              <PasswordStrengthHints rules={passwordRules} />
-            </div>
+            ))}
+          </div>
 
-            <div>
-              <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
-                Business name
-              </label>
-              <input
-                id="business_name"
-                name="business_name"
-                value={businessNameInput}
-                onChange={(e) => setBusinessNameInput(e.target.value)}
-                required
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-              />
-            </div>
-
-            {/* ABN */}
-            <div>
-              <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
-                ABN
-              </label>
-              <div className="relative">
-                <input
-                  id="abn"
-                  name="abn"
-                  value={abnInput}
-                  inputMode="numeric"
-                  autoComplete="off"
-                  placeholder="51 824 753 556"
-                  onKeyDown={blockAbnKeyDown}
-                  onChange={(e) => setAbnInput(formatAbnDigits(e.target.value.replace(/\D/g, "")))}
-                  className={[
-                    "h-10 w-full rounded-md border px-3 pr-9 text-sm text-slate-200 transition-colors",
-                    abnHas11
-                      ? abnValid
-                        ? "border-emerald-500"
-                        : "border-red-500"
-                      : "border-slate-300"
-                  ].join(" ")}
-                  required
-                />
-                {abnValid ? (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500" aria-label="Valid ABN">
-                    <Check size={15} strokeWidth={3} />
-                  </span>
-                ) : null}
-              </div>
-              {abnInput.trim() && !abnHas11 ? (
-                <p className="mt-1 text-xs font-medium text-amber-500">ABN must be 11 digits</p>
-              ) : abnHas11 && !abnValid ? (
-                <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please re-enter</p>
-              ) : null}
-              {/* Confirmation checkbox — only shown when checksum passes */}
-              {abnValid ? (
-                <label className="mt-2 flex cursor-pointer items-start gap-2">
-                  <input
-                    type="checkbox"
-                    checked={abnConfirmed}
-                    onChange={(e) => setAbnConfirmed(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent-color)]"
-                  />
-                  <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
-                </label>
-              ) : null}
-            </div>
-
-            {/* Phone number with country selector */}
-            <div className="sm:col-span-2">
-              <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
-                Phone number
-              </label>
-              <div className="flex gap-2">
-                <select
-                  value={phoneCountry}
-                  onChange={(e) => {
-                    setPhoneCountry(e.target.value as PhoneCountryCode);
-                    setPhoneInput("");
-                  }}
-                  aria-label="Country code"
-                  className="h-10 shrink-0 rounded-md border border-slate-300 px-2 text-sm text-slate-200"
-                  style={{ minWidth: "92px" }}
-                >
-                  {PHONE_COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.flag} {c.label}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  id="phone_number"
-                  name="phone_number"
-                  type="tel"
-                  value={phoneInput}
-                  autoComplete="tel-national"
-                  inputMode="tel"
-                  placeholder="0412 345 678"
-                  onKeyDown={blockPhoneKeyDown}
-                  onChange={(e) => setPhoneInput(formatLocalPhone(e.target.value, phoneCountry))}
-                  required
-                  className="h-10 flex-1 rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-                />
-              </div>
-              {phoneInput.trim() && !isPhoneValid(phoneInput) ? (
-                <p className="mt-1 text-xs font-medium text-amber-500">Enter a valid phone number.</p>
-              ) : null}
-            </div>
-
-            <div className="sm:col-span-2 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          {/* OAuth — only on step 1 */}
+          {step === 1 ? (
+            <div className="mt-5 flex flex-col gap-2">
               <Button
                 type="button"
-                onClick={handleContinue}
-                disabled={step1Disabled}
-                className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                variant="outline"
+                disabled={oauthWorking}
+                onClick={onGoogleSignUp}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-600 bg-slate-800 font-medium text-slate-200 shadow-sm hover:bg-slate-700 disabled:opacity-60"
               >
-                Continue
+                <GoogleLogoSmall />
+                Continue with Google
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={oauthWorking}
+                onClick={onMicrosoftSignUp}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-600 bg-slate-800 font-medium text-slate-200 shadow-sm hover:bg-slate-700 disabled:opacity-60"
+              >
+                <MicrosoftLogoSmall />
+                Continue with Microsoft
+              </Button>
+              <div className="flex items-center gap-3">
+                <span className="h-px flex-1 bg-slate-700" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">or sign up with email</span>
+                <span className="h-px flex-1 bg-slate-700" />
+              </div>
             </div>
-          </div>
+          ) : null}
 
-          {/* ── Step 2: Industries ── */}
-          <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
-            <div>
-              <h2 className="text-lg font-semibold text-white">What industries do you serve?</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Select all that apply — we&apos;ll tailor your dashboard. Optional: skip if you&apos;d rather set this up
-                later.
-              </p>
-            </div>
+          {error ? (
+            <p className="mt-4 rounded-md bg-red-950/40 px-3 py-2 text-sm text-red-300 whitespace-pre-wrap break-words">
+              {error}
+            </p>
+          ) : null}
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {OPTIONS.map(({ slug, label, sub, Icon }) => {
-                const on = selected.includes(slug);
-                return (
-                  <button
-                    key={slug}
-                    type="button"
-                    onClick={() => toggleIndustry(slug)}
-                    className={`flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition ${
-                      on ? industrySelectedRing : "border-slate-600 hover:border-slate-500"
-                    }`}
-                  >
-                    <div className="flex w-full items-start gap-2">
-                      <span
-                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
-                          on
-                            ? "border-[var(--accent-color)] bg-[var(--accent-color)] text-white"
-                            : "border-slate-500 text-transparent"
-                        }`}
-                        aria-hidden
-                      >
-                        ✓
-                      </span>
-                      <Icon className="h-5 w-5 shrink-0 text-[var(--accent-color)]" aria-hidden />
-                      <span className="text-sm font-semibold text-white">{label}</span>
-                    </div>
-                    <p className="pl-9 text-xs text-slate-400">{sub}</p>
-                  </button>
-                );
-              })}
-            </div>
+          <form ref={formRef} onSubmit={handleOwnerSignup} className="mt-6 space-y-6">
+            <input type="hidden" name="industry_tags_json" value={industriesJson} />
+            <input type="hidden" name="industry_other_note" value={otherNote} />
+            <input type="hidden" name="accent_colour" value={DEFAULT_ACCENT_HEX} readOnly />
 
-            {needsOtherNote ? (
+            {/* ── Step 1: Credentials ──────────────────────────────────── */}
+            <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
               <div>
-                <label htmlFor="industry_other_field" className="mb-1 block text-sm font-medium text-slate-300">
-                  Tell us about your business
+                <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-300">
+                  Full name
                 </label>
-                <textarea
-                  id="industry_other_field"
-                  value={otherNote}
-                  onChange={(e) => setOtherNote(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-200"
-                  placeholder="e.g. Plumbing and gas fitting across Adelaide"
+                <input
+                  id="name" name="name" value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  required
+                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
                 />
               </div>
-            ) : null}
+              <div>
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
+                  Email
+                </label>
+                <input
+                  id="email" name="email" type="email" autoComplete="email"
+                  value={emailInput} onChange={(e) => setEmailInput(e.target.value)}
+                  required
+                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
+                  Password
+                </label>
+                <input
+                  id="password" name="password" type="password" autoComplete="new-password"
+                  value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)}
+                  required
+                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                />
+                <PasswordStrengthHints rules={passwordRules} />
+              </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <Button type="button" variant="dark-ghost" onClick={handleBack}>
-                Back
-              </Button>
-              <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>
-                Continue
-              </Button>
+              <div>
+                <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
+                  Business name
+                </label>
+                <input
+                  id="business_name" name="business_name"
+                  value={businessNameInput} onChange={(e) => setBusinessNameInput(e.target.value)}
+                  required
+                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                />
+              </div>
+
+              {/* ABN */}
+              <div>
+                <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
+                  ABN
+                </label>
+                <div className="relative">
+                  <input
+                    id="abn" name="abn" value={abnInput}
+                    inputMode="numeric" autoComplete="off"
+                    placeholder="51 824 753 556"
+                    onKeyDown={blockAbnKeyDown}
+                    onChange={(e) => setAbnInput(formatAbnDigits(e.target.value.replace(/\D/g, "")))}
+                    className={[
+                      "h-10 w-full rounded-md border bg-slate-800 px-3 pr-9 text-sm text-slate-200 transition-colors focus:outline-none",
+                      abnHas11
+                        ? abnValid ? "border-emerald-500" : "border-red-500"
+                        : "border-slate-600"
+                    ].join(" ")}
+                    required
+                  />
+                  {abnValid ? (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400" aria-label="Valid ABN">
+                      <Check size={15} strokeWidth={3} />
+                    </span>
+                  ) : null}
+                </div>
+                {abnInput.trim() && !abnHas11 ? (
+                  <p className="mt-1 text-xs font-medium text-amber-400">ABN must be 11 digits</p>
+                ) : abnHas11 && !abnValid ? (
+                  <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please re-enter</p>
+                ) : null}
+                {abnValid ? (
+                  <label className="mt-2 flex cursor-pointer items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={abnConfirmed}
+                      onChange={(e) => setAbnConfirmed(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
+                    />
+                    <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
+                  </label>
+                ) : null}
+              </div>
+
+              {/* Phone — AU only with static prefix */}
+              <div className="sm:col-span-2">
+                <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
+                  Phone number
+                </label>
+                <div className="flex h-10 items-center overflow-hidden rounded-md border border-slate-600 bg-slate-800 focus-within:border-[#3B82F6]">
+                  <span className="select-none border-r border-slate-600 bg-slate-700 px-3 text-sm text-slate-300 h-full flex items-center gap-1.5 shrink-0">
+                    🇦🇺 +61
+                  </span>
+                  <input
+                    id="phone_number" name="phone_number" type="tel"
+                    value={phoneInput}
+                    autoComplete="tel-national" inputMode="tel"
+                    placeholder="412 345 678"
+                    onKeyDown={blockPhoneKeyDown}
+                    onChange={(e) => setPhoneInput(formatAUPhone(e.target.value))}
+                    required
+                    className="h-full flex-1 bg-transparent px-3 text-sm text-slate-200 outline-none placeholder:text-slate-500"
+                  />
+                </div>
+                {phoneInput.trim() && !isPhoneValid(phoneInput) ? (
+                  <p className="mt-1 text-xs font-medium text-amber-400">Enter a valid Australian number (e.g. 412 345 678).</p>
+                ) : null}
+              </div>
+
+              <div className="sm:col-span-2 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  onClick={handleContinue}
+                  disabled={step1Disabled}
+                  className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                >
+                  Continue
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* ── Step 3: Workspace preview / create account ── */}
-          <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
-            <WorkspaceSetupPreview
-              primaryIndustryLabel={signupIndustryHeadline}
-              recommendedIds={signupRecommendedIds}
-              optionalIds={signupOptionalIds}
-              optionalOn={optionalFeatureOn}
-              setOptionalOn={(id, on) => setOptionalFeatureOn((prev) => ({ ...prev, [id]: on }))}
-              onBack={handleBack}
-              onContinue={handleContinueFromWorkspacePreview}
-              submitting={ownerSubmitting}
-            />
-          </div>
-        </form>
+            {/* ── Step 2: Industries ───────────────────────────────────── */}
+            <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                  What industries do you serve?
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Select all that apply — we&apos;ll tailor your dashboard. Optional: skip if you&apos;d rather set this up later.
+                </p>
+              </div>
 
-        <p className="mt-5 text-sm text-slate-400">
-          Already have an account?{" "}
-          <Link href="/auth/login" className="font-semibold text-[var(--accent-color)] hover:underline">
-            Sign in
-          </Link>
-        </p>
-      </div>
-    </main>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {OPTIONS.map(({ slug, label, sub, Icon }) => {
+                  const on = selected.includes(slug);
+                  return (
+                    <button
+                      key={slug} type="button"
+                      onClick={() => toggleIndustry(slug)}
+                      className={`flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition ${
+                        on
+                          ? "border-[#3B82F6] bg-[#3B82F6]/10 ring-2 ring-[#3B82F6]/40"
+                          : "border-slate-600 hover:border-slate-500"
+                      }`}
+                    >
+                      <div className="flex w-full items-start gap-2">
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
+                            on ? "border-[#3B82F6] bg-[#3B82F6] text-white" : "border-slate-500 text-transparent"
+                          }`}
+                          aria-hidden
+                        >
+                          ✓
+                        </span>
+                        <Icon className="h-5 w-5 shrink-0 text-[#3B82F6]" aria-hidden />
+                        <span className="text-sm font-semibold text-slate-100">{label}</span>
+                      </div>
+                      <p className="pl-9 text-xs text-slate-400">{sub}</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {needsOtherNote ? (
+                <div>
+                  <label htmlFor="industry_other_field" className="mb-1 block text-sm font-medium text-slate-300">
+                    Tell us about your business
+                  </label>
+                  <textarea
+                    id="industry_other_field"
+                    value={otherNote}
+                    onChange={(e) => setOtherNote(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                    placeholder="e.g. Plumbing and gas fitting across Adelaide"
+                  />
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
+                <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>Continue</Button>
+              </div>
+            </div>
+
+            {/* ── Step 3: Product selection ────────────────────────────── */}
+            <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                  Choose your products
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Pick the SERVLO products that match your goals. You can add more later.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {PRODUCT_OPTIONS.map((opt) => {
+                  const on = selectedProductCombo === opt.id;
+                  return (
+                    <button
+                      key={opt.id} type="button"
+                      onClick={() => setSelectedProductCombo(opt.id)}
+                      className={`relative flex flex-col items-start gap-1 rounded-lg border p-4 text-left transition ${
+                        on
+                          ? `border-[${opt.color}] ring-2 ring-[${opt.color}]/40`
+                          : "border-slate-600 hover:border-slate-500"
+                      }`}
+                      style={on ? { borderColor: opt.color, boxShadow: `0 0 0 2px ${opt.color}33` } : undefined}
+                    >
+                      {opt.recommended ? (
+                        <span className="absolute right-3 top-2 rounded-full bg-[#3B82F6]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#93C5FD]">
+                          Best value
+                        </span>
+                      ) : null}
+                      {opt.comingSoon ? (
+                        <span className="absolute right-3 top-2 rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          Coming soon
+                        </span>
+                      ) : null}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: opt.color }}
+                          aria-hidden
+                        />
+                        <span className="text-sm font-bold text-slate-100">{opt.name}</span>
+                      </div>
+                      <p className="text-xs font-medium" style={{ color: opt.color }}>{opt.tagline}</p>
+                      <p className="mt-1 text-xs text-slate-400">{opt.description}</p>
+                      <p className="mt-2 text-xs font-semibold text-slate-300">{opt.price}</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
+                <Button type="button" onClick={handleContinueFromProducts} className={accentBtn}>Continue</Button>
+              </div>
+            </div>
+
+            {/* ── Step 4: Plan tier ────────────────────────────────────── */}
+            <div className={step === 4 ? "space-y-4" : "hidden"} aria-hidden={step !== 4}>
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                  Choose your plan
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  All plans include a 30-day free trial — no charge until your trial ends.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {currentTiers.map((tier) => {
+                  const on = selectedPlanTier === tier.id;
+                  return (
+                    <button
+                      key={tier.id} type="button"
+                      onClick={() => setSelectedPlanTier(tier.id)}
+                      className={`relative flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition ${
+                        on
+                          ? "border-[#3B82F6] ring-2 ring-[#3B82F6]/40"
+                          : "border-slate-600 hover:border-slate-500"
+                      }`}
+                    >
+                      {tier.recommended ? (
+                        <span className="absolute right-3 top-2 rounded-full bg-[#3B82F6]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#93C5FD]">
+                          Most popular
+                        </span>
+                      ) : null}
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-bold text-slate-100">{tier.price}</span>
+                        <span className="text-xs text-slate-400">/ month</span>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-200">{tier.name}</p>
+                      <p className="text-xs text-slate-400">{tier.description}</p>
+                      <ul className="mt-1 space-y-0.5">
+                        {tier.features.map((f) => (
+                          <li key={f} className="flex items-center gap-1.5 text-xs text-slate-300">
+                            <Check size={11} className="shrink-0 text-[#3B82F6]" strokeWidth={3} aria-hidden />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
+                <Button type="button" onClick={handleContinueFromPlanTier} className={accentBtn}>Continue</Button>
+              </div>
+            </div>
+
+            {/* ── Step 5: Workspace preview ────────────────────────────── */}
+            <div className={step === 5 ? "space-y-4" : "hidden"} aria-hidden={step !== 5}>
+              <WorkspaceSetupPreview
+                primaryIndustryLabel={signupIndustryHeadline}
+                recommendedIds={signupRecommendedIds}
+                optionalIds={signupOptionalIds}
+                optionalOn={optionalFeatureOn}
+                setOptionalOn={(id, on) => setOptionalFeatureOn((prev) => ({ ...prev, [id]: on }))}
+                onBack={handleBack}
+                onContinue={handleContinueFromWorkspacePreview}
+                submitting={false}
+              />
+            </div>
+
+            {/* ── Step 6: Trial / Stripe ───────────────────────────────── */}
+            <div className={step === 6 ? "space-y-5" : "hidden"} aria-hidden={step !== 6}>
+              <div>
+                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                  {needsCard ? "Start your 30-day free trial" : "Reserve your spot"}
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  {needsCard
+                    ? "Enter your card details — you won't be charged until your trial ends."
+                    : "This product is coming soon. Reserve your spot and we'll notify you at launch."}
+                </p>
+              </div>
+
+              {/* Summary */}
+              <div className="rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-200">
+                      {PRODUCT_OPTIONS.find((p) => p.id === selectedProductCombo)?.name ?? selectedProductCombo}
+                    </p>
+                    <p className="text-xs text-slate-400 capitalize">{selectedPlanTier} plan</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-100">
+                      {currentTiers.find((t) => t.id === selectedPlanTier)?.price ?? "—"}<span className="text-xs font-normal text-slate-400">/mo</span>
+                    </p>
+                    {needsCard ? (
+                      <p className="text-xs text-emerald-400">30-day trial free</p>
+                    ) : (
+                      <p className="text-xs text-slate-400">Reserve — no charge</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stripe card element (Core + known price only) */}
+              {needsCard ? (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">Card details</label>
+                  <div
+                    ref={cardMountRef}
+                    className="rounded-md border border-slate-600 bg-slate-800 px-3 py-3 focus-within:border-[#3B82F6]"
+                    style={{ minHeight: "40px" }}
+                  />
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    Secured by Stripe. Your card will not be charged during the trial.
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <Button type="button" variant="dark-ghost" onClick={handleBack} disabled={ownerSubmitting}>
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => doSignup()}
+                  disabled={ownerSubmitting}
+                  className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                >
+                  {ownerSubmitting
+                    ? "Setting up…"
+                    : needsCard
+                      ? "Start 30-Day Free Trial"
+                      : "Reserve My Spot"}
+                </Button>
+              </div>
+            </div>
+          </form>
+
+          <p className="mt-5 text-sm text-slate-400">
+            Already have an account?{" "}
+            <Link href="/auth/login" className="font-semibold text-[#3B82F6] hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </main>
     </>
   );
 }
