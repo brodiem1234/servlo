@@ -325,7 +325,8 @@ export function SignupForm() {
             phone_number: phoneNumber,
             role: signupIntentRole,
             industry_tags: selected.join(","),
-            industry_other_note: otherNote || ""
+            industry_other_note: otherNote || "",
+            accent_colour: normalizeAccentColour(accentColour)
           }
         }
       });

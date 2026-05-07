@@ -29,6 +29,27 @@ export function isWorkspaceFeatureId(v: string): v is WorkspaceFeatureId {
   return (WORKSPACE_FEATURE_IDS as readonly string[]).includes(v);
 }
 
+/** Features the owner can toggle on/off. Everything else is always-on core. */
+export const OPTIONAL_FEATURE_IDS = [
+  "timesheets",
+  "purchase_orders",
+  "contractors",
+  "crm_pipeline",
+  "client_portal",
+  "project_tracking"
+] as const satisfies readonly WorkspaceFeatureId[];
+
+export type OptionalFeatureId = (typeof OPTIONAL_FEATURE_IDS)[number];
+
+export const CORE_FEATURE_IDS = WORKSPACE_FEATURE_IDS.filter(
+  (id): id is Exclude<WorkspaceFeatureId, OptionalFeatureId> =>
+    !(OPTIONAL_FEATURE_IDS as readonly string[]).includes(id)
+);
+
+export function isOptionalFeatureId(v: string): v is OptionalFeatureId {
+  return (OPTIONAL_FEATURE_IDS as readonly string[]).includes(v);
+}
+
 export const FEATURE_LABELS: Record<WorkspaceFeatureId, string> = {
   jobs_scheduling: "Jobs & Scheduling",
   appointments_scheduling: "Appointments / Scheduling",

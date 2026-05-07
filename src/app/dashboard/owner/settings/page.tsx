@@ -12,9 +12,11 @@ import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug } from "@/lib/industries";
 import {
+  CORE_FEATURE_IDS,
   FEATURE_DESCRIPTIONS,
   FEATURE_LABELS,
-  WORKSPACE_FEATURE_IDS,
+  OPTIONAL_FEATURE_IDS,
+  isOptionalFeatureId,
   isRecommendedFeatureForIndustry,
   isWorkspaceFeatureId,
   primaryIndustrySlug,
@@ -82,9 +84,10 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     if (prof?.role && prof.role !== "owner") redirect("/dashboard");
 
     const raw = formData.getAll("feature");
-    const next = new Set<WorkspaceFeatureId>();
+    // Core features are always on; only optional ones are submitted by the form.
+    const next = new Set<WorkspaceFeatureId>(CORE_FEATURE_IDS);
     for (const x of raw) {
-      if (typeof x === "string" && isWorkspaceFeatureId(x)) next.add(x);
+      if (typeof x === "string" && isOptionalFeatureId(x)) next.add(x);
     }
     const payload = serializeFeatureFlags(next);
     const { error } = await sb.from("businesses").update({ feature_flags: payload }).eq("owner_id", owner.id);
@@ -264,27 +267,53 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </span>{" "}
           match your industry defaults.
         </p>
-        <form action={updateWorkspaceFeaturesAction} className="mt-4 space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {WORKSPACE_FEATURE_IDS.map((id) => (
-              <WorkspaceFeatureSwitch
-                key={id}
-                featureId={id}
-                formName="feature"
-                defaultChecked={workspaceFeatures.has(id)}
-                label={
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span>{FEATURE_LABELS[id]}</span>
-                    {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                      <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">
-                        Recommended
-                      </span>
-                    ) : null}
-                  </span>
-                }
-                description={FEATURE_DESCRIPTIONS[id]}
-              />
-            ))}
+        <form action={updateWorkspaceFeaturesAction} className="mt-4 space-y-5">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Core features — always on</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {CORE_FEATURE_IDS.map((id) => (
+                <WorkspaceFeatureSwitch
+                  key={id}
+                  disabled
+                  checked
+                  label={
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span>{FEATURE_LABELS[id]}</span>
+                      {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                        <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">
+                          Recommended
+                        </span>
+                      ) : null}
+                    </span>
+                  }
+                  description={FEATURE_DESCRIPTIONS[id]}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Optional features — toggle on or off</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {OPTIONAL_FEATURE_IDS.map((id) => (
+                <WorkspaceFeatureSwitch
+                  key={id}
+                  featureId={id}
+                  formName="feature"
+                  defaultChecked={workspaceFeatures.has(id)}
+                  label={
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span>{FEATURE_LABELS[id]}</span>
+                      {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                        <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">
+                          Recommended
+                        </span>
+                      ) : null}
+                    </span>
+                  }
+                  description={FEATURE_DESCRIPTIONS[id]}
+                />
+              ))}
+            </div>
           </div>
           <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
             Save features
