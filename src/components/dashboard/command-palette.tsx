@@ -77,7 +77,7 @@ export function CommandPalette() {
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIdx((i) => Math.min(i + 1, results.length - 1)); }
     if (e.key === "ArrowUp")   { e.preventDefault(); setSelectedIdx((i) => Math.max(i - 1, 0)); }
     if (e.key === "Enter" && results[selectedIdx]) {
-      router.push(results[selectedIdx].href);
+      router.push(results[selectedIdx].href as any);
       setOpen(false);
     }
   }
@@ -132,7 +132,7 @@ export function CommandPalette() {
             <button
               key={r.id}
               type="button"
-              onClick={() => { router.push(r.href); setOpen(false); }}
+              onClick={() => { router.push(r.href as any); setOpen(false); }}
               className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
                 i === selectedIdx ? "bg-[var(--bg-secondary)]" : "hover:bg-[var(--bg-secondary)]"
               }`}
