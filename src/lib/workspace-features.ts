@@ -50,6 +50,27 @@ export const FEATURE_LABELS: Record<WorkspaceFeatureId, string> = {
   project_tracking: "Project Tracking"
 };
 
+/** Short helper text shown under feature names in Settings and onboarding. */
+export const FEATURE_DESCRIPTIONS: Record<WorkspaceFeatureId, string> = {
+  jobs_scheduling: "Job list, calendars, statuses and scheduling tools.",
+  appointments_scheduling: "Book and manage timed appointments separately from field jobs.",
+  client_management: "Client records, portals and segmentation.",
+  quotes: "Create, send and track quotes.",
+  invoices: "Raise invoices and track payments.",
+  recurring_jobs: "Templates and repeats for cyclical work.",
+  employee_management: "Team roster, roles and assignments.",
+  gps_clock: "Mobile clock-in with location hints for your crew.",
+  job_photos: "Attach before / after imagery to jobs.",
+  timesheets: "Capture labour hours linked to jobs and staff.",
+  purchase_orders: "Supplier POs tied to suppliers and optionally jobs.",
+  contractors: "Subcontractor records and linkage to work.",
+  crm_pipeline: "Simple pipeline tracking for prospects and wins.",
+  email_marketing: "Newsletters or bulk email touchpoints.",
+  client_portal: "Let approved clients review jobs and invoices online.",
+  equipment_hire: "Track hires, hires-out and fleet-style assets.",
+  project_tracking: "Higher-level milestones across multiple jobs."
+};
+
 const ALL_FEATURE_SET: ReadonlySet<WorkspaceFeatureId> = new Set(WORKSPACE_FEATURE_IDS);
 
 const RECOMMENDED: Record<IndustrySlug, readonly WorkspaceFeatureId[]> = {

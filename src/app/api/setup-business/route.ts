@@ -138,6 +138,7 @@ export async function POST(request: Request) {
   });
 
   if (body.demoOnly === true) {
+    console.log("[setup-business] demoOnly: seed demo template rows for JWT user id (owner_id)", userId);
     const demo = await seedOwnerDemoData(supabaseAdmin, userId);
     return NextResponse.json(
       {

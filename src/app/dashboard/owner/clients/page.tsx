@@ -40,7 +40,9 @@ function formatDbError(error: {
 
 /** Legacy ?sort=created_at|full_name → new SortKey */
 function parseSort(raw: string | undefined): SortKey {
-  if (raw === "newest" || raw === "oldest" || raw === "name_asc" || raw === "name_desc") return raw;
+  if (raw === "newest" || raw === "oldest" || raw === "name_asc" || raw === "name_desc" || raw === "most_jobs") {
+    return raw;
+  }
   if (raw === "created_at") return "newest";
   if (raw === "full_name") return "name_asc";
   return "name_asc";
@@ -150,6 +152,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
 
   const primaryClientsQuery = await clientsQuery;
 
+  console.log("Fetching clients for owner:", ownerId);
+  console.log("Raw results:", JSON.stringify(primaryClientsQuery.data ?? []));
   console.log("[clients-page] owner_id (= Supabase auth user id)", ownerId);
   console.log("[clients-page] Supabase SELECT error", primaryClientsQuery.error ?? null);
   console.log(
@@ -207,9 +211,9 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   console.log("[clients-page] clients after query handling (full array, includes demo + real)", JSON.stringify(clients ?? [], null, 2));
 
   /** All rows where owner_id = auth uid(), including `is_demo: true`. */
-  const clientsForUi = clients ?? [];
+  const clientsBase = clients ?? [];
 
-  const clientIds = clientsForUi.map((client) => client.id);
+  const clientIds = clientsBase.map((client) => client.id);
   const [{ data: jobs }, { data: invoices }] = await Promise.all([
     clientIds.length
       ? supabase
@@ -248,6 +252,15 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   }
 
   const metricsRecord = Object.fromEntries(metricsByClient) as Record<string, ClientMetric>;
+
+  const clientsForUi =
+    sortKey === "most_jobs"
+      ? [...clientsBase].sort((a, b) => {
+          const ja = metricsByClient.get(a.id)?.totalJobs ?? 0;
+          const jb = metricsByClient.get(b.id)?.totalJobs ?? 0;
+          return jb - ja;
+        })
+      : clientsBase;
 
   async function createClientAction(formData: FormData): Promise<ClientActionResult> {
     "use server";

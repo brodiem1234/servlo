@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { LayoutGrid, LayoutList, Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { LayoutGrid, LayoutList, Plus, Search, Users } from "lucide-react";
 import ClientFormSheet from "./client-form-sheet";
 import PortalShareButton from "./portal-share-button";
 import { DemoBadge } from "@/components/demo-badge";
@@ -35,7 +35,7 @@ export type ClientRow = {
   client_type?: string | null;
 };
 
-export type SortKey = "newest" | "oldest" | "name_asc" | "name_desc";
+export type SortKey = "newest" | "oldest" | "name_asc" | "name_desc" | "most_jobs";
 
 export type ClientTypeTab = "all" | "customer" | "supplier" | "lead";
 
@@ -92,7 +92,9 @@ export default function OwnerClientsView({
 
   const sortQs = searchParams.get("sort") as SortKey | null;
   const sortParam: SortKey =
-    sortQs === "newest" || sortQs === "oldest" || sortQs === "name_desc" || sortQs === "name_asc" ? sortQs : initialSort;
+    sortQs === "newest" || sortQs === "oldest" || sortQs === "name_desc" || sortQs === "name_asc" || sortQs === "most_jobs"
+      ? sortQs
+      : initialSort;
 
   const clientTypeQs = searchParams.get("client_type");
   const clientTypeTab: ClientTypeTab =
@@ -104,6 +106,11 @@ export default function OwnerClientsView({
   const [sheetClient, setSheetClient] = useState<ClientRow | null>(null);
   const [banner, setBanner] = useState<{ type: "success"; message: string } | null>(null);
   const [search, setSearch] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (!banner) return;
@@ -179,6 +186,7 @@ export default function OwnerClientsView({
           <div className="relative min-w-[200px] flex-1 lg:max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)]" aria-hidden />
             <input
+              ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search clients…"
@@ -195,10 +203,11 @@ export default function OwnerClientsView({
               className="h-10 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)]"
               aria-label="Sort by"
             >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
               <option value="name_asc">Name A–Z</option>
               <option value="name_desc">Name Z–A</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="most_jobs">Most jobs</option>
             </select>
           </label>
 
@@ -228,7 +237,7 @@ export default function OwnerClientsView({
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[var(--accent-color)] px-4 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[var(--accent-color)] px-5 text-sm font-bold text-white shadow-md shadow-teal-900/20 hover:bg-[var(--accent-hover)] dark:shadow-black/40"
           >
             <Plus className="size-4" aria-hidden />
             Add Client
@@ -249,10 +258,10 @@ export default function OwnerClientsView({
             key={value}
             type="button"
             onClick={() => pushParams({ client_type: value })}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+            className={`rounded-full px-4 py-2 text-xs font-bold transition shadow-sm ${
               clientTypeTab === value
-                ? "border-[var(--accent-color)] bg-[var(--accent-color)] text-white"
-                : "border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"
+                ? "border-2 border-[var(--accent-color)] bg-[var(--accent-color)] text-white shadow-md"
+                : "border-2 border-dashed border-[var(--border)] bg-transparent text-[var(--text-muted)] hover:border-[color-mix(in_srgb,var(--accent-color)_45%,var(--border))] hover:bg-[color-mix(in_srgb,var(--accent-color)_6%,transparent)] hover:text-[var(--text-secondary)] dark:hover:bg-[color-mix(in_srgb,var(--accent-color)_12%,transparent)]"
             }`}
           >
             {label}
@@ -260,7 +269,23 @@ export default function OwnerClientsView({
         ))}
       </div>
 
-      {effectiveView === "list" ? (
+      {clients.length === 0 ? (
+        <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-8 py-16 text-center shadow-sm">
+          <div className="flex size-16 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[var(--accent-color)]">
+            <Users className="size-8" aria-hidden />
+          </div>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">No clients yet</h2>
+          <p className="max-w-md text-sm text-[var(--text-secondary)]">Add your first client to get started.</p>
+          <button
+            type="button"
+            onClick={openCreate}
+            className="mt-2 inline-flex h-11 items-center gap-2 rounded-lg bg-[var(--accent-color)] px-6 text-sm font-bold text-white shadow-md hover:bg-[var(--accent-hover)]"
+          >
+            <Plus className="size-4" aria-hidden />
+            Add Client
+          </button>
+        </div>
+      ) : effectiveView === "list" ? (
         <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
           <table className="w-full min-w-[800px] text-sm">
             <thead>
@@ -357,7 +382,7 @@ export default function OwnerClientsView({
               {filteredClients.length === 0 ? (
                 <tr>
                   <td className="px-2 py-6 text-[var(--text-muted)]" colSpan={12}>
-                    {clients.length === 0 ? "No clients yet." : "No clients match your search."}
+                    No clients match your filters or search.
                   </td>
                 </tr>
               ) : null}
@@ -378,29 +403,28 @@ export default function OwnerClientsView({
                   openEdit(client);
                 }
               }}
-              className="flex cursor-pointer flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm transition hover:bg-[var(--bg-primary)]"
+              className="flex cursor-pointer flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm transition hover:bg-[color-mix(in_srgb,var(--accent-color)_5%,var(--bg-primary))]"
             >
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-semibold text-[var(--text-primary)]">{client.full_name ?? "Unnamed client"}</p>
+                <p className="text-lg font-semibold leading-tight text-[var(--text-primary)]">{client.full_name ?? "Unnamed client"}</p>
                 {client.is_demo ? <DemoBadge /> : null}
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${clientTypeBadgeClass(client.client_type)}`}
-                >
-                  {clientTypeLabel(client.client_type)}
-                </span>
               </div>
-              {client.company_name ? <p className="mt-0.5 text-sm text-[var(--text-secondary)]">{client.company_name}</p> : null}
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">{client.phone ?? "No phone"}</p>
-              <p className="text-sm text-[var(--text-secondary)]">{client.email ?? "No email"}</p>
+              {client.company_name ? (
+                <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">{client.company_name}</p>
+              ) : null}
+              <p className="mt-3 text-sm text-[var(--text-primary)]">{client.phone ?? "—"}</p>
+              <p className="text-sm text-[var(--text-primary)]">{client.email ?? "—"}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(client.status)}`}>
-                  {client.status ?? "active"}
+                <span
+                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(client.status)}`}
+                >
+                  {(client.status ?? "active").replace(/-/g, " ")}
                 </span>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+              <div className="mt-5 flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/dashboard/owner/jobs?client=${encodeURIComponent(client.id)}`}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--accent-color)]/10"
+                  className="rounded-lg bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
                 >
                   View Jobs
                 </Link>
@@ -411,7 +435,7 @@ export default function OwnerClientsView({
             </div>
           ))}
           {filteredClients.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)]">{clients.length === 0 ? "No clients yet." : "No clients match your search."}</p>
+            <div className="col-span-full py-14 text-center text-sm text-[var(--text-muted)]">No clients match your filters or search.</div>
           ) : null}
         </div>
       )}

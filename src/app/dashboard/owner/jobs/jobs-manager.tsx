@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Image from "next/image";
+import { ClipboardList } from "lucide-react";
 import { DemoBadge } from "@/components/demo-badge";
 import { useEffect, useMemo, useState, useRef, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +41,7 @@ type Props = {
   clients: RefOpt[];
   employees: RefOpt[];
   initialClientId?: string;
-  /** When true (default), list view opens filtered to today only. Pass false via ?today=all to show everything. */
+  /** When true, list view sets date filters to today (?today=today). Default shows all schedules. */
   initialScheduleToday?: boolean;
   /** Opens the job editor for this id once jobs are loaded (e.g. from schedule links). */
   initialOpenJobId?: string;
@@ -110,6 +111,13 @@ function startOfWeek(date: Date) {
   return clone;
 }
 
+/** Monday–Sunday for the week containing `date`. */
+function calendarWeekBoundsFrom(date: Date) {
+  const start = startOfWeek(date);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  return { fromKey: toDateKey(start), toKey: toDateKey(end) };
+}
+
 function sortJobsByStartTime(dayJobs: Job[]) {
   return [...dayJobs].sort(
     (a, b) => (parseTimeToMinutes(a.scheduled_start) ?? 0) - (parseTimeToMinutes(b.scheduled_start) ?? 0)
@@ -121,7 +129,7 @@ export default function JobsManager({
   clients,
   employees,
   initialClientId,
-  initialScheduleToday = true,
+  initialScheduleToday = false,
   initialOpenJobId,
   createJobAction,
   updateJobAction,
@@ -205,7 +213,7 @@ export default function JobsManager({
   const statusPillClasses: Record<string, string> = {
     scheduled: "bg-orange-100 text-orange-900 ring-1 ring-inset ring-orange-300 dark:bg-orange-950 dark:text-orange-100 dark:ring-orange-700",
     in_progress:
-      "bg-[color-mix(in_srgb,var(--accent-color)_16%,transparent)] text-[color-mix(in_srgb,var(--accent-color)_90%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_42%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]",
+      "bg-sky-100 text-sky-950 ring-1 ring-inset ring-sky-300 dark:bg-sky-950 dark:text-sky-100 dark:ring-sky-700",
     completed:
       "bg-green-100 text-green-900 ring-1 ring-inset ring-green-300 dark:bg-green-950 dark:text-green-100 dark:ring-green-700",
     cancelled: "bg-red-100 text-red-900 ring-1 ring-inset ring-red-300 dark:bg-red-950 dark:text-red-100 dark:ring-red-700"
@@ -215,7 +223,7 @@ export default function JobsManager({
     scheduled:
       "border border-orange-300 bg-orange-100 text-orange-950 hover:bg-orange-200 dark:border-orange-700 dark:bg-orange-950/90 dark:text-orange-50 dark:hover:bg-orange-900",
     in_progress:
-      "border border-[color-mix(in_srgb,var(--accent-color)_42%,transparent)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[var(--text-primary)] hover:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:border-[color-mix(in_srgb,var(--accent-color)_48%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_18%,var(--bg-card))] dark:text-[var(--text-primary)] dark:hover:bg-[color-mix(in_srgb,var(--accent-color)_26%,var(--bg-card))]",
+      "border border-sky-300 bg-sky-100 text-sky-950 hover:bg-sky-200 dark:border-sky-700 dark:bg-sky-950/90 dark:text-sky-50 dark:hover:bg-sky-900",
     completed:
       "border border-green-300 bg-green-100 text-green-950 hover:bg-green-200 dark:border-green-700 dark:bg-green-950/90 dark:text-green-50 dark:hover:bg-green-900",
     cancelled:
@@ -596,50 +604,94 @@ export default function JobsManager({
         </div>
         <button onClick={startAdd} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">Add Job</button>
       </div>
-      <div className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-4">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search title or client"
-          className="h-10 rounded border px-3 text-sm"
-        />
-        <select value={clientFilter} onChange={(e) => setClientFilter(e.target.value)} className="h-10 rounded border px-3 text-sm">
-          <option value="all">All clients</option>
-          {clients.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.label}
-            </option>
-          ))}
-        </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 rounded border px-3 text-sm">
-          <option value="all">All statuses</option>
-          <option value="scheduled">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="h-10 rounded border px-3 text-sm">
-          <option value="all">All priorities</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-10 rounded border px-3 text-sm" />
-        <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-10 rounded border px-3 text-sm" />
-        <button
-          type="button"
-          onClick={() => {
-            const k = toDateKey(new Date());
-            setFromDate(k);
-            setToDate(k);
-          }}
-          className="h-10 rounded border border-[color-mix(in_srgb,var(--accent-color)_45%,var(--border))] bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))] px-3 text-sm font-semibold text-[var(--text-primary)]"
-        >
-          Today
-        </button>
-        <button type="button" onClick={clearFilters} className="h-10 rounded border px-3 text-sm">
-          Clear filters
-        </button>
+      <div className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="min-w-[220px] flex-1 xl:max-w-md">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search title or client"
+              className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const { fromKey, toKey } = calendarWeekBoundsFrom(new Date());
+              setFromDate(fromKey);
+              setToDate(toKey);
+            }}
+            className="h-10 shrink-0 rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--accent-color)_8%,var(--bg-secondary))] px-4 text-sm font-semibold text-[var(--text-primary)] hover:bg-[color-mix(in_srgb,var(--accent-color)_14%,var(--bg-secondary))]"
+          >
+            This Week
+          </button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <select
+            value={clientFilter}
+            onChange={(e) => setClientFilter(e.target.value)}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+          >
+            <option value="all">All clients</option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+          >
+            <option value="all">All statuses</option>
+            <option value="scheduled">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+          >
+            <option value="all">All priorities</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="h-10 rounded-lg border border-[var(--border)] px-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+          >
+            Clear filters
+          </button>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+          />
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const k = toDateKey(new Date());
+              setFromDate(k);
+              setToDate(k);
+            }}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+          >
+            Today only
+          </button>
+          <span className="hidden xl:block" aria-hidden />
+        </div>
       </div>
 
       {toast ? (
@@ -821,19 +873,35 @@ export default function JobsManager({
         <>
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 shadow-sm">
             <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Summary</span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-100">
+            <span className="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-900 ring-1 ring-inset ring-slate-400/70 dark:bg-slate-700 dark:text-slate-50 dark:ring-slate-500">
               Total · {listStats.total}
             </span>
             <span className="rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-900 ring-1 ring-inset ring-orange-200 dark:bg-orange-950 dark:text-orange-100 dark:ring-orange-800">
               Pending · {listStats.pending}
             </span>
-            <span className="rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] px-2.5 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--accent-color)_88%,#000)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent-color)_38%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent-color)_22%,transparent)] dark:text-[color-mix(in_srgb,var(--accent-color)_92%,white)] dark:ring-[color-mix(in_srgb,var(--accent-color)_48%,transparent)]">
+            <span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-950 ring-1 ring-inset ring-sky-200 dark:bg-sky-950 dark:text-sky-100 dark:ring-sky-700">
               In progress · {listStats.inProgress}
             </span>
             <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-900 ring-1 ring-inset ring-green-200 dark:bg-green-950 dark:text-green-100 dark:ring-green-800">
               Completed · {listStats.completed}
             </span>
           </div>
+          {jobs.length === 0 ? (
+            <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-8 py-16 text-center shadow-sm">
+              <div className="flex size-16 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] text-[var(--accent-color)]">
+                <ClipboardList className="size-8 shrink-0" aria-hidden />
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">No jobs yet</h2>
+              <p className="max-w-md text-sm text-[var(--text-secondary)]">Create your first job to get started.</p>
+              <button
+                type="button"
+                onClick={startAdd}
+                className="mt-2 inline-flex h-11 items-center rounded-lg bg-[var(--accent-color)] px-6 text-sm font-bold text-white hover:bg-[var(--accent-hover)]"
+              >
+                Add Job
+              </button>
+            </div>
+          ) : (
           <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
             <table className="w-full min-w-[840px] text-sm">
               <thead>
@@ -852,11 +920,7 @@ export default function JobsManager({
                 {filteredJobs.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="px-2 py-8 text-center text-sm text-[var(--text-muted)]">
-                      {jobs.length === 0 ? (
-                        <p>No jobs yet. Use &quot;Add Job&quot; above to create one.</p>
-                      ) : (
-                        <p>No jobs match your filters. Try adjusting search or filters.</p>
-                      )}
+                      <p>No jobs match your filters. Try adjusting search, dates or filters.</p>
                     </td>
                   </tr>
                 ) : (
@@ -876,7 +940,7 @@ export default function JobsManager({
                         }}
                         className="cursor-pointer border-b border-[var(--border)] hover:bg-[var(--bg-primary)]"
                       >
-                        <td className="whitespace-nowrap px-2 py-2 font-mono text-xs font-semibold text-[var(--text-primary)]">
+                        <td className="whitespace-nowrap px-2 py-2 font-mono text-xs font-medium tabular-nums text-[var(--text-muted)]">
                           {jobNumberById.get(job.id) ?? "—"}
                         </td>
                         <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
@@ -943,6 +1007,7 @@ export default function JobsManager({
               </tbody>
             </table>
           </div>
+          )}
         </>
       )}
 

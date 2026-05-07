@@ -20,7 +20,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     typeof clientRaw === "string" ? clientRaw.trim() || undefined : undefined;
   const initialOpenJobId =
     typeof sp.openJob === "string" ? sp.openJob.trim() || undefined : undefined;
-  const initialScheduleToday = sp.today !== "all";
+  const initialScheduleToday = sp.today === "today";
 
   const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "scheduling");
@@ -33,6 +33,9 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
     sb.from("employees").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
+
+  console.log("Fetching jobs for owner:", user.id);
+  console.log("Raw results:", JSON.stringify(jobsRaw ?? []));
 
   if (jobsErr) {
     console.error("[jobs-page] jobs query failed", jobsErr);

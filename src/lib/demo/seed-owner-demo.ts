@@ -42,12 +42,21 @@ export async function seedOwnerDemoData(
   ownerId: string
 ): Promise<{ ok: boolean; message?: string }> {
   try {
+    if (!ownerId?.trim()) {
+      return { ok: false, message: "Missing owner id for demo seed." };
+    }
+    console.log("[seed-owner-demo] seeding demo rows for auth user id:", ownerId);
     await removeAllDemoForOwner(sb, ownerId);
 
     const today = localDateKey();
     const overdueKey = localDateKey(new Date(Date.now() - 1000 * 60 * 60 * 24 * 7));
 
-    const { data: clientRow, error: clientErr } = await sb
+    const token =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `demo-portal-${ownerId}`;
+
+    let clientAttempt = await sb
       .from("clients")
       .insert({
         owner_id: ownerId,
@@ -61,10 +70,38 @@ export async function seedOwnerDemoData(
         state: "SA",
         postcode: "5000",
         notes: "Demo client — replace with your real clients",
+        client_type: "customer",
+        status: "active",
+        source: "other",
+        portal_token: token,
         is_demo: true
       })
       .select("id")
       .single();
+
+    if (clientAttempt.error || !clientAttempt.data?.id) {
+      console.warn("[seed-owner-demo] client full insert failed, retrying minimal shape", clientAttempt.error?.message);
+      clientAttempt = await sb
+        .from("clients")
+        .insert({
+          owner_id: ownerId,
+          full_name: "Alex Johnson",
+          email: "demo-client@servlo.com.au",
+          phone: "0412 345 678",
+          company_name: "Johnson Properties",
+          abn: "",
+          address: "12 Example Street",
+          suburb: "Adelaide",
+          state: "SA",
+          postcode: "5000",
+          notes: "Demo client — replace with your real clients",
+          is_demo: true
+        })
+        .select("id")
+        .single();
+    }
+
+    const { data: clientRow, error: clientErr } = clientAttempt;
 
     if (clientErr || !clientRow?.id) {
       console.error("Demo client insert failed:", clientErr);
@@ -223,20 +260,30 @@ export async function seedOwnerDemoData(
     };
 
     const invTry1 = await sb.from("invoices").insert(invNewShape).select("id").single();
-    if (!invTry1.error && invTry1.data?.id) {
-      // continue to seed quote
-    } else if (invTry1.error) {
-      // retry legacy shape below
+
+    let invoiceOk = Boolean(!invTry1.error && invTry1.data?.id);
+    let invErrCombined = invTry1.error ?? null;
+
+    if (!invoiceOk && invTry1.error) {
+      const invTry2 = await sb.from("invoices").insert(invLegacyShape).select("id").single();
+      invoiceOk = Boolean(!invTry2.error && invTry2.data?.id);
+      invErrCombined = invTry2.error ?? invTry1.error;
     }
 
-    const invTry2 = await sb.from("invoices").insert(invLegacyShape).select("id").single();
-    if (invTry1.error && (invTry2.error || !invTry2.data?.id)) {
-      const invErr = invTry2.error ?? invTry1.error;
+    if (!invoiceOk) {
+      const invErr = invErrCombined;
       await sb.from("jobs").delete().eq("owner_id", ownerId).eq("client_id", clientId).eq("is_demo", true);
       await sb.from("employees").delete().eq("id", employeeId);
       await sb.from("clients").delete().eq("id", clientId);
       console.error("Demo invoice insert failed:", invErr);
-      return { ok: false, message: invErr?.message ?? "Failed to insert demo invoice" };
+      const msg =
+        invErr &&
+        typeof invErr === "object" &&
+        "message" in invErr &&
+        typeof (invErr as { message: unknown }).message === "string"
+          ? (invErr as { message: string }).message
+          : "Failed to insert demo invoice";
+      return { ok: false, message: msg };
     }
 
     const quoteNewShape = {
@@ -269,6 +316,7 @@ export async function seedOwnerDemoData(
       }
     }
 
+    console.log("[seed-owner-demo] finished OK for owner", ownerId);
     return { ok: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

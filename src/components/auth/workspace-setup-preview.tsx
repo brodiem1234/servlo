@@ -3,7 +3,8 @@
 import type { MouseEventHandler } from "react";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceFeatureId } from "@/lib/workspace-features";
-import { FEATURE_LABELS } from "@/lib/workspace-features";
+import { FEATURE_DESCRIPTIONS, FEATURE_LABELS } from "@/lib/workspace-features";
+import { WorkspaceFeatureSwitch } from "@/components/workspace-feature-switch";
 import { Check, ChevronRight } from "lucide-react";
 
 type Props = {
@@ -53,17 +54,14 @@ export function WorkspaceSetupPreview({
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Optional — toggle on or off</p>
           <ul className="mt-3 space-y-3">
             {optionalIds.map((id) => (
-              <li key={id} className="flex items-center justify-between gap-3 text-sm text-slate-200">
-                <span>{FEATURE_LABELS[id]}</span>
-                <label className="inline-flex cursor-pointer items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-500 accent-[var(--accent-color)]"
-                    checked={Boolean(optionalOn[id])}
-                    onChange={(e) => setOptionalOn(id, e.target.checked)}
-                  />
-                  <span className="text-xs text-slate-400">{optionalOn[id] ? "On" : "Off"}</span>
-                </label>
+              <li key={id}>
+                <WorkspaceFeatureSwitch
+                  checked={Boolean(optionalOn[id])}
+                  onCheckedChange={(on) => setOptionalOn(id, on)}
+                  className="border-slate-600/70 bg-slate-950/35 hover:bg-slate-900/65"
+                  label={<span className="text-slate-100">{FEATURE_LABELS[id]}</span>}
+                  description={<span className="text-slate-400">{FEATURE_DESCRIPTIONS[id]}</span>}
+                />
               </li>
             ))}
           </ul>

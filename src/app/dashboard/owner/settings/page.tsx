@@ -12,6 +12,7 @@ import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug } from "@/lib/industries";
 import {
+  FEATURE_DESCRIPTIONS,
   FEATURE_LABELS,
   WORKSPACE_FEATURE_IDS,
   isRecommendedFeatureForIndustry,
@@ -20,6 +21,7 @@ import {
   serializeFeatureFlags,
   type WorkspaceFeatureId
 } from "@/lib/workspace-features";
+import { WorkspaceFeatureSwitch } from "@/components/workspace-feature-switch";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 
 type SettingsPageProps = {
@@ -237,35 +239,35 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         <BrandAccentForm savedAccent={savedAccent} />
       </article>
 
-      <article className="rounded-xl border bg-white p-4 shadow-sm">
+      <article className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Workspace features</h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Turn modules on or off for your workspace. The sidebar and dashboard update immediately after you save. Features marked{" "}
-          <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-900">Recommended</span> match your industry defaults.
+          <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-900 dark:bg-teal-950 dark:text-teal-100">
+            Recommended
+          </span>{" "}
+          match your industry defaults.
         </p>
         <form action={updateWorkspaceFeaturesAction} className="mt-4 space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             {WORKSPACE_FEATURE_IDS.map((id) => (
-              <label
+              <WorkspaceFeatureSwitch
                 key={id}
-                className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm hover:bg-slate-50"
-              >
-                <input
-                  type="checkbox"
-                  name="feature"
-                  value={id}
-                  defaultChecked={workspaceFeatures.has(id)}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent-color)]"
-                />
-                <span className="flex flex-1 flex-wrap items-center gap-2">
-                  <span className="font-medium text-[var(--text-primary)]">{FEATURE_LABELS[id]}</span>
-                  {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                    <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-teal-900">
-                      Recommended
-                    </span>
-                  ) : null}
-                </span>
-              </label>
+                featureId={id}
+                formName="feature"
+                defaultChecked={workspaceFeatures.has(id)}
+                label={
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span>{FEATURE_LABELS[id]}</span>
+                    {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                      <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">
+                        Recommended
+                      </span>
+                    ) : null}
+                  </span>
+                }
+                description={FEATURE_DESCRIPTIONS[id]}
+              />
             ))}
           </div>
           <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">
