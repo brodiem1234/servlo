@@ -67,7 +67,7 @@ export const FEATURE_LABELS: Record<WorkspaceFeatureId, string> = {
   email_marketing: "Email Marketing",
   client_portal: "Client Portal",
   equipment_hire: "Equipment / Hire Tracking",
-  project_tracking: "Project Tracking"
+  project_tracking: "Reports & Analytics"
 };
 
 /** Short helper text shown under feature names in Settings and onboarding. */
@@ -88,7 +88,7 @@ export const FEATURE_DESCRIPTIONS: Record<WorkspaceFeatureId, string> = {
   email_marketing: "Newsletters or bulk email touchpoints.",
   client_portal: "Let approved clients review jobs and invoices online.",
   equipment_hire: "Track hires, hires-out and fleet-style assets.",
-  project_tracking: "Higher-level milestones across multiple jobs."
+  project_tracking: "Revenue, margin and activity reports across jobs and clients."
 };
 
 const ALL_FEATURE_SET: ReadonlySet<WorkspaceFeatureId> = new Set(WORKSPACE_FEATURE_IDS);
@@ -139,7 +139,7 @@ const RECOMMENDED: Record<IndustrySlug, readonly WorkspaceFeatureId[]> = {
 };
 
 const OPTIONAL: Record<IndustrySlug, readonly WorkspaceFeatureId[]> = {
-  trades: ["contractors", "crm_pipeline", "email_marketing"],
+  trades: ["contractors", "client_portal", "project_tracking", "email_marketing", "crm_pipeline"],
   cleaning: ["gps_clock", "job_photos", "purchase_orders"],
   events: ["employee_management", "timesheets", "gps_clock"],
   marketing: ["employee_management", "timesheets", "job_photos"],

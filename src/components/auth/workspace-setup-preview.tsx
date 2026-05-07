@@ -78,11 +78,11 @@ export function WorkspaceSetupPreview({
           type="button"
           onClick={onContinue}
           disabled={submitting}
-          className="inline-flex items-center gap-2 bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] disabled:pointer-events-none disabled:opacity-60"
+          className="inline-flex items-center gap-2 bg-[#3B82F6] text-white hover:bg-blue-500 disabled:pointer-events-none disabled:opacity-60"
         >
           {submitting ? "Working…" : (
             <>
-              Create account
+              Looks good, let&apos;s go!
               <ChevronRight className="size-4" aria-hidden />
             </>
           )}

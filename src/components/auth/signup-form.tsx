@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { authUrl } from "@/lib/auth/site-origin";
+import { lookupABN, type AbnLookupResult } from "@/app/auth/signup/lookup-abn";
 import {
   allPasswordRequirementsMet,
   normalizePasswordStrength,
@@ -89,81 +90,38 @@ const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: Luc
   { slug: "other",          label: "Other",                sub: "We'll learn how you work",                                           Icon: Tags },
 ];
 
-// ── Product options ─────────────────────────────────────────────────────────
+// ── Product selection data ───────────────────────────────────────────────────
 
-type ProductOption = {
-  id: string;
-  name: string;
-  tagline: string;
-  color: string;
-  description: string;
-  price: string;
-  recommended?: boolean;
-  comingSoon?: boolean;
-};
+type IndividualProduct = { id: string; name: string; color: string; desc: string; price: string; badge: string; available: boolean };
+type BundlePair       = { id: string; name: string; colors: [string, string]; subtitle: string; price: string; savings: string; comingSoon: boolean };
 
-const PRODUCT_OPTIONS: ProductOption[] = [
-  {
-    id: "core",
-    name: "SERVLO Core",
-    tagline: "Business Management",
-    color: "#3B82F6",
-    description: "Jobs, invoicing, clients, team management and more.",
-    price: "from $49/mo",
-  },
-  {
-    id: "grow",
-    name: "SERVLO Grow",
-    tagline: "Marketing & Ads",
-    color: "#8B5CF6",
-    description: "AI ad creation, social content, Google review campaigns.",
-    price: "from $59/mo",
-    comingSoon: true,
-  },
-  {
-    id: "leads",
-    name: "SERVLO Leads",
-    tagline: "Lead Generation",
-    color: "#F59E0B",
-    description: "Browse and purchase qualified leads in your area.",
-    price: "from $49/mo",
-    comingSoon: true,
-  },
-  {
-    id: "core+grow",
-    name: "Core + Grow",
-    tagline: "Essential Bundle",
-    color: "#3B82F6",
-    description: "Full business management plus marketing tools.",
-    price: "from $89/mo",
-  },
-  {
-    id: "core+leads",
-    name: "Core + Leads",
-    tagline: "Starter Bundle",
-    color: "#3B82F6",
-    description: "Business management plus lead generation.",
-    price: "from $79/mo",
-  },
-  {
-    id: "grow+leads",
-    name: "Grow + Leads",
-    tagline: "Growth Bundle",
-    color: "#8B5CF6",
-    description: "Marketing and lead generation combo.",
-    price: "from $99/mo",
-    comingSoon: true,
-  },
-  {
-    id: "core+grow+leads",
-    name: "Full Platform",
-    tagline: "Complete SERVLO",
-    color: "#3B82F6",
-    description: "Everything: business management, marketing and leads.",
-    price: "from $129/mo",
-    recommended: true,
-  },
+const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
+  { id: "core",  name: "SERVLO Core",  color: "#3B82F6", desc: "Job management, invoicing, scheduling", price: "From $49/mo",   badge: "Available now",   available: true  },
+  { id: "grow",  name: "SERVLO Grow",  color: "#8B5CF6", desc: "AI ads, reviews and social content",   price: "From $59/mo",   badge: "Coming Q3 2026", available: false },
+  { id: "leads", name: "SERVLO Leads", color: "#F59E0B", desc: "Verified job leads marketplace",       price: "From $12/lead", badge: "Coming Q4 2026", available: false },
 ];
+
+const BUNDLE_PAIRS: BundlePair[] = [
+  { id: "core+grow",   name: "Core + Grow",   colors: ["#3B82F6", "#8B5CF6"], subtitle: "Essential Bundle", price: "$149/mo", savings: "Save $29/mo", comingSoon: false },
+  { id: "core+leads",  name: "Core + Leads",  colors: ["#3B82F6", "#F59E0B"], subtitle: "Starter Bundle",   price: "$99/mo",  savings: "Save $12/mo", comingSoon: false },
+  { id: "grow+leads",  name: "Grow + Leads",  colors: ["#8B5CF6", "#F59E0B"], subtitle: "Growth Bundle",    price: "$199/mo", savings: "Coming 2026", comingSoon: true  },
+];
+
+const FULL_PLATFORM = {
+  id: "core+grow+leads",
+  name: "SERVLO Full Platform",
+  subtitle: "Everything included. All products. One login.",
+  price: "$249/mo",
+  badge: "⭐ Best Value — Save $58/mo",
+  features: [
+    "Jobs, scheduling, invoicing & client management",
+    "Team management, timesheets & GPS clock-in",
+    "AI-powered ads and social content generation",
+    "Google review automation and referral tracking",
+    "Verified job leads matched to your trade",
+    "30-day free trial — no charge until it ends",
+  ],
+};
 
 // ── Plan tier options ───────────────────────────────────────────────────────
 
@@ -311,6 +269,8 @@ export function SignupForm() {
   // ABN
   const [abnInput, setAbnInput] = useState("");
   const [abnConfirmed, setAbnConfirmed] = useState(false);
+  const [abnLookup, setAbnLookup] = useState<AbnLookupResult | null>(null);
+  const [abnLookupLoading, setAbnLookupLoading] = useState(false);
 
   // Phone (AU-only)
   const [phoneInput, setPhoneInput] = useState("");
@@ -335,6 +295,7 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
+  const [productTooltip, setProductTooltip] = useState<string | null>(null);
 
   const onGoogleSignUp = useCallback(async () => {
     setOauthLoading("google");
@@ -388,7 +349,27 @@ export function SignupForm() {
 
   useEffect(() => {
     setAbnConfirmed(false);
+    setAbnLookup(null);
+    setAbnLookupLoading(false);
   }, [abnInput]);
+
+  // ABN lookup — fires whenever abnDigits changes and the checksum is valid
+  useEffect(() => {
+    if (!abnValid) return;
+    let cancelled = false;
+    setAbnLookupLoading(true);
+    setAbnLookup(null);
+    lookupABN(abnDigits).then((result) => {
+      if (cancelled) return;
+      setAbnLookup(result);
+      setAbnLookupLoading(false);
+    }).catch(() => {
+      if (cancelled) return;
+      setAbnLookup({ status: "error", message: "Lookup failed" });
+      setAbnLookupLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [abnDigits, abnValid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mount Stripe card element when reaching step 6 (for Core-containing products)
   useEffect(() => {
@@ -691,7 +672,8 @@ export function SignupForm() {
     !allPasswordRequirementsMet(passwordRules) ||
     !isPhoneValid(phoneInput) ||
     !abnValid ||
-    !abnConfirmed;
+    !abnConfirmed ||
+    abnLookupLoading;
 
   const hasCore  = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
   const priceId  = getPriceId(selectedPlanTier);
@@ -868,17 +850,50 @@ export function SignupForm() {
                 ) : abnHas11 && !abnValid ? (
                   <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please re-enter</p>
                 ) : null}
-                {abnValid ? (
-                  <label className="mt-2 flex cursor-pointer items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={abnConfirmed}
-                      onChange={(e) => setAbnConfirmed(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
-                    />
-                    <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
-                  </label>
-                ) : null}
+                {/* ABN lookup result */}
+                {abnLookupLoading ? (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
+                    <Loader2 size={12} className="animate-spin" />
+                    Looking up ABN in the Australian Business Register…
+                  </p>
+                ) : abnLookup?.status === "active" ? (
+                  <>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                      <Check size={12} strokeWidth={3} aria-hidden />
+                      {abnLookup.entityName} — is this your business?
+                    </p>
+                    <label className="mt-2 flex cursor-pointer items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={abnConfirmed}
+                        onChange={(e) => setAbnConfirmed(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
+                      />
+                      <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
+                    </label>
+                  </>
+                ) : abnLookup?.status === "inactive" ? (
+                  <p className="mt-1.5 text-xs font-medium text-amber-400">
+                    ⚠ {abnLookup.entityName} — this ABN is not currently active. Please check and try again.
+                  </p>
+                ) : abnLookup?.status === "not_found" ? (
+                  <p className="mt-1.5 text-xs font-medium text-amber-400">
+                    ABN not found in the Australian Business Register — please check and try again.
+                  </p>
+                ) : (
+                  /* skipped (no GUID) or error — fall back to algorithm-only confirm checkbox */
+                  abnValid ? (
+                    <label className="mt-2 flex cursor-pointer items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={abnConfirmed}
+                        onChange={(e) => setAbnConfirmed(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
+                      />
+                      <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
+                    </label>
+                  ) : null
+                )}
               </div>
 
               {/* Phone — AU only with static prefix */}
@@ -983,55 +998,202 @@ export function SignupForm() {
             </div>
 
             {/* ── Step 3: Product selection ────────────────────────────── */}
-            <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
+            <div className={step === 3 ? "space-y-5" : "hidden"} aria-hidden={step !== 3}>
               <div>
                 <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
                   Choose your products
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Pick the SERVLO products that match your goals. You can add more later.
+                  Start with what you need. You can add more later.
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {PRODUCT_OPTIONS.map((opt) => {
-                  const on = selectedProductCombo === opt.id;
+              {/* Row 1 — individual products */}
+              <div className="grid gap-3 sm:grid-cols-3">
+                {INDIVIDUAL_PRODUCTS.map((prod) => {
+                  const isSelected = selectedProductCombo.split("+").includes(prod.id);
                   return (
                     <button
-                      key={opt.id} type="button"
-                      onClick={() => setSelectedProductCombo(opt.id)}
-                      className={`relative flex flex-col items-start gap-1 rounded-lg border p-4 text-left transition ${
-                        on
-                          ? `border-[${opt.color}] ring-2 ring-[${opt.color}]/40`
-                          : "border-slate-600 hover:border-slate-500"
-                      }`}
-                      style={on ? { borderColor: opt.color, boxShadow: `0 0 0 2px ${opt.color}33` } : undefined}
+                      key={prod.id}
+                      type="button"
+                      onClick={() => {
+                        const hasProd = selectedProductCombo.split("+").includes(prod.id);
+                        if (prod.id === "core") {
+                          // Core is always the base — clicking it goes to solo core
+                          if (!selectedProductCombo.includes("grow") && !selectedProductCombo.includes("leads")) {
+                            setSelectedProductCombo("core");
+                          }
+                          return;
+                        }
+                        // Grow / Leads require Core
+                        if (!selectedProductCombo.startsWith("core")) {
+                          setProductTooltip("SERVLO Core is required to use this product.");
+                          setTimeout(() => setProductTooltip(null), 3000);
+                          return;
+                        }
+                        setProductTooltip(null);
+                        const hasGrow  = selectedProductCombo.includes("grow");
+                        const hasLeads = selectedProductCombo.includes("leads");
+                        if (prod.id === "grow") {
+                          if (hasProd) setSelectedProductCombo(hasLeads ? "core+leads" : "core");
+                          else         setSelectedProductCombo(hasLeads ? "core+grow+leads" : "core+grow");
+                        } else if (prod.id === "leads") {
+                          if (hasProd) setSelectedProductCombo(hasGrow ? "core+grow" : "core");
+                          else         setSelectedProductCombo(hasGrow ? "core+grow+leads" : "core+leads");
+                        }
+                      }}
+                      className="relative flex flex-col rounded-xl border p-4 text-left transition"
+                      style={
+                        isSelected
+                          ? { borderColor: prod.color, boxShadow: `0 0 0 2px ${prod.color}44`, background: `${prod.color}12` }
+                          : { borderColor: "#334155" }
+                      }
                     >
-                      {opt.recommended ? (
-                        <span className="absolute right-3 top-2 rounded-full bg-[#3B82F6]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#93C5FD]">
-                          Best value
-                        </span>
-                      ) : null}
-                      {opt.comingSoon ? (
-                        <span className="absolute right-3 top-2 rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                          Coming soon
-                        </span>
-                      ) : null}
-                      <div className="flex items-center gap-2">
+                      {isSelected ? (
                         <span
-                          className="h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: opt.color }}
-                          aria-hidden
-                        />
-                        <span className="text-sm font-bold text-slate-100">{opt.name}</span>
-                      </div>
-                      <p className="text-xs font-medium" style={{ color: opt.color }}>{opt.tagline}</p>
-                      <p className="mt-1 text-xs text-slate-400">{opt.description}</p>
-                      <p className="mt-2 text-xs font-semibold text-slate-300">{opt.price}</p>
+                          className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
+                          style={{ backgroundColor: prod.color }}
+                        >
+                          <Check size={11} strokeWidth={3} className="text-white" />
+                        </span>
+                      ) : null}
+                      <div
+                        className="mb-2 h-1 w-8 rounded-full"
+                        style={{ backgroundColor: prod.color }}
+                      />
+                      <p className="text-sm font-bold text-slate-100">{prod.name}</p>
+                      <p className="mt-1 text-xs text-slate-400">{prod.desc}</p>
+                      <p className="mt-3 text-xs font-semibold text-slate-300">{prod.price}</p>
+                      <span
+                        className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          prod.available
+                            ? "bg-emerald-500/15 text-emerald-300"
+                            : "bg-slate-700 text-slate-400"
+                        }`}
+                      >
+                        {prod.badge}
+                      </span>
                     </button>
                   );
                 })}
               </div>
+
+              {/* Row 2 — bundle pairs */}
+              <div className="grid gap-3 sm:grid-cols-3">
+                {BUNDLE_PAIRS.map((bundle) => {
+                  const isSelected = selectedProductCombo === bundle.id ||
+                    (bundle.id === "core+grow"  && selectedProductCombo === "core+grow+leads") ||
+                    (bundle.id === "core+leads" && selectedProductCombo === "core+grow+leads");
+                  const isActive = selectedProductCombo === bundle.id;
+                  return (
+                    <button
+                      key={bundle.id}
+                      type="button"
+                      onClick={() => {
+                        if (bundle.comingSoon) return;
+                        setSelectedProductCombo(bundle.id);
+                        setProductTooltip(null);
+                      }}
+                      disabled={bundle.comingSoon}
+                      className="relative flex flex-col rounded-xl border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={
+                        isActive
+                          ? { borderColor: bundle.colors[0], boxShadow: `0 0 0 2px ${bundle.colors[0]}44`, background: `${bundle.colors[0]}12` }
+                          : { borderColor: "#334155" }
+                      }
+                    >
+                      {isActive ? (
+                        <span
+                          className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
+                          style={{ backgroundColor: bundle.colors[0] }}
+                        >
+                          <Check size={11} strokeWidth={3} className="text-white" />
+                        </span>
+                      ) : null}
+                      {/* Diagonal split accent bar */}
+                      <div
+                        className="mb-2 h-1 w-full rounded-full"
+                        style={{ background: `linear-gradient(90deg, ${bundle.colors[0]} 50%, ${bundle.colors[1]} 50%)` }}
+                      />
+                      <p className="text-sm font-bold text-slate-100">{bundle.name}</p>
+                      <p className="text-xs text-slate-400">{bundle.subtitle}</p>
+                      <p className="mt-3 text-xs font-semibold text-slate-300">{bundle.price}</p>
+                      <span
+                        className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          bundle.comingSoon
+                            ? "bg-slate-700 text-slate-400"
+                            : "bg-emerald-500/15 text-emerald-300"
+                        }`}
+                      >
+                        {bundle.savings}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Row 3 — full platform (full width, most prominent) */}
+              {(() => {
+                const isActive = selectedProductCombo === FULL_PLATFORM.id;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedProductCombo(FULL_PLATFORM.id); setProductTooltip(null); }}
+                    className="relative w-full overflow-hidden rounded-xl border p-5 text-left transition"
+                    style={
+                      isActive
+                        ? { borderColor: "#8B5CF6", boxShadow: "0 0 0 2px #8B5CF644, 0 8px 24px -4px rgba(139,92,246,0.25)", background: "linear-gradient(135deg, #3B82F612, #8B5CF612, #F59E0B12)" }
+                        : { borderColor: "#4B5563", background: "linear-gradient(135deg, #3B82F608, #8B5CF608, #F59E0B08)" }
+                    }
+                  >
+                    {/* Triple gradient top bar */}
+                    <div
+                      className="absolute left-0 right-0 top-0 h-1.5 rounded-t-xl"
+                      style={{ background: "linear-gradient(90deg, #3B82F6, #8B5CF6, #F59E0B)" }}
+                    />
+                    <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-base font-bold text-white">{FULL_PLATFORM.name}</p>
+                          <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-500/30">
+                            {FULL_PLATFORM.badge}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-sm text-slate-400">{FULL_PLATFORM.subtitle}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-white">{FULL_PLATFORM.price}</p>
+                          <p className="text-xs text-emerald-400">30-day trial free</p>
+                        </div>
+                        {isActive ? (
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#8B5CF6]">
+                            <Check size={14} strokeWidth={3} className="text-white" />
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                      {FULL_PLATFORM.features.map((f) => (
+                        <li key={f} className="flex items-center gap-2 text-xs text-slate-300">
+                          <Check size={11} strokeWidth={3} className="shrink-0 text-emerald-400" aria-hidden />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-4 text-xs font-semibold text-slate-400">
+                      Most businesses choose this
+                    </p>
+                  </button>
+                );
+              })()}
+
+              {/* Core requirement tooltip */}
+              {productTooltip ? (
+                <p className="rounded-md border border-amber-700/40 bg-amber-950/30 px-3 py-2 text-xs font-medium text-amber-300">
+                  {productTooltip}
+                </p>
+              ) : null}
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
@@ -1125,7 +1287,7 @@ export function SignupForm() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-200">
-                      {PRODUCT_OPTIONS.find((p) => p.id === selectedProductCombo)?.name ?? selectedProductCombo}
+                      {(INDIVIDUAL_PRODUCTS.find((p) => p.id === selectedProductCombo) ?? BUNDLE_PAIRS.find((p) => p.id === selectedProductCombo) ?? (FULL_PLATFORM.id === selectedProductCombo ? FULL_PLATFORM : null))?.name ?? selectedProductCombo}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">{selectedPlanTier} plan</p>
                   </div>
