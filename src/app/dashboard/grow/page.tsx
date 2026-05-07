@@ -170,7 +170,7 @@ export default async function GrowDashboardPage() {
             {QUICK_START.map(({ title, description, href, Icon }) => (
               <Link
                 key={href}
-                href={href}
+                href={href as any}
                 className="group flex flex-col gap-3 rounded-xl border p-5 transition-colors hover:border-purple-500/50"
                 style={{
                   background: "rgb(139 92 246 / 0.06)",

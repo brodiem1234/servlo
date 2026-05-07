@@ -163,7 +163,7 @@ export default async function LeadsDashboardPage() {
             ].map(({ title, description, href, Icon }) => (
               <Link
                 key={href}
-                href={href}
+                href={href as any}
                 className="group flex flex-col gap-3 rounded-xl border p-5 transition hover:border-amber-500/40"
                 style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
               >
