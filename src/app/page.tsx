@@ -10,6 +10,10 @@ import {
   CircleDollarSign,
   MessagesSquare,
   Inbox,
+  TrendingUp,
+  Zap,
+  Briefcase,
+  Lock,
   type LucideIcon
 } from "lucide-react";
 import { LandingHeader } from "@/components/landing-header";
@@ -220,10 +224,10 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:px-6 md:py-24">
           <div>
             <h1 className="text-4xl font-extrabold leading-tight text-[#1e3a5f] dark:text-white md:text-6xl">
-              Run Your Service Business From Your Phone
+              The Complete Platform for Australian Service Businesses
             </h1>
             <p className="mt-4 max-w-xl text-lg text-[#475569] dark:text-cyan-100">
-              Jobs, clients, invoices, quotes and scheduling — built for Australian service businesses.
+              Manage your work, grow your marketing, and fill your pipeline — three products, one platform.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -244,6 +248,114 @@ export default function HomePage() {
             </p>
           </div>
           <HeroAppMock />
+        </div>
+      </section>
+
+      {/* ── The complete platform ───────────────────────────────────────────── */}
+      <section id="platform" className="reveal-item mx-auto max-w-7xl px-4 py-16 md:px-6" data-reveal>
+        <div className="mb-2 text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
+            Three products, one platform
+          </span>
+        </div>
+        <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">
+          The complete SERVLO platform
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
+          Start with Core to run your business. Add Grow to market it. Use Leads to fill your pipeline.
+        </p>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {/* Core */}
+          <article className="relative flex flex-col rounded-xl border border-[var(--accent-color)] bg-white p-6 shadow-md dark:border-cyan-400/60 dark:bg-[#111827]">
+            <div className="mb-3 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)]">
+                <Briefcase size={18} className="text-[var(--accent-color)] dark:text-cyan-400" />
+              </span>
+              <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Core</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#475569] dark:text-slate-300">
+              The operating system for your service business — jobs, clients, invoices and your team in one place.
+            </p>
+            <ul className="flex-1 space-y-2 text-sm text-[#334155] dark:text-slate-200">
+              {["Jobs & scheduling", "Client management", "Invoices & quotes", "Team timesheets", "Purchase orders"].map((f) => (
+                <li key={f} className="flex gap-2">
+                  <span className="mt-0.5 shrink-0 text-[var(--accent-color)] dark:text-cyan-400" aria-hidden>✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-xl font-bold text-[#1e3a5f] dark:text-white">From $49/mo</p>
+            <Link
+              href="/auth/signup"
+              className="mt-3 block rounded-lg bg-[var(--accent-color)] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
+            >
+              Start free trial
+            </Link>
+          </article>
+
+          {/* Grow */}
+          <article className="relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+            <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30">
+              <Lock size={9} />
+              Launching soon
+            </div>
+            <div className="mb-3 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-500/15">
+                <TrendingUp size={18} className="text-purple-600 dark:text-purple-400" />
+              </span>
+              <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Grow</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#475569] dark:text-slate-300">
+              AI-powered marketing built for service businesses — ads, social content, review automation and referrals.
+            </p>
+            <ul className="flex-1 space-y-2 text-sm text-[#334155] dark:text-slate-200">
+              {["AI ad creation", "Social media content", "Google review automation", "Referral tracking", "Campaign analytics"].map((f) => (
+                <li key={f} className="flex gap-2">
+                  <span className="mt-0.5 shrink-0 text-purple-500 dark:text-purple-400" aria-hidden>✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-xl font-bold text-[#1e3a5f] dark:text-white">From $59/mo</p>
+            <button
+              disabled
+              className="mt-3 block w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
+            >
+              Launching soon
+            </button>
+          </article>
+
+          {/* Leads */}
+          <article className="relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+            <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30">
+              <Lock size={9} />
+              Launching soon
+            </div>
+            <div className="mb-3 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
+                <Zap size={18} className="text-amber-600 dark:text-amber-400" />
+              </span>
+              <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Leads</h3>
+            </div>
+            <p className="mb-4 text-sm text-[#475569] dark:text-slate-300">
+              Buy qualified leads matched to your industry and location — pay per lead, no lock-in.
+            </p>
+            <ul className="flex-1 space-y-2 text-sm text-[#334155] dark:text-slate-200">
+              {["Browse leads marketplace", "Industry-filtered leads", "Lead pipeline tracking", "Pay per lead", "Quality guaranteed"].map((f) => (
+                <li key={f} className="flex gap-2">
+                  <span className="mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" aria-hidden>✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-xl font-bold text-[#1e3a5f] dark:text-white">From $12/lead</p>
+            <button
+              disabled
+              className="mt-3 block w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
+            >
+              Launching soon
+            </button>
+          </article>
         </div>
       </section>
 
@@ -345,7 +457,12 @@ export default function HomePage() {
 
       <section id="pricing" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Simple pricing, no surprises</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+
+        {/* Core pricing */}
+        <p className="mt-6 mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
+          SERVLO Core — Manage
+        </p>
+        <div className="grid gap-4 md:grid-cols-3">
           {pricingPlans.map((plan) => (
             <article
               key={plan.name}
@@ -384,8 +501,102 @@ export default function HomePage() {
           ))}
         </div>
         <p className="mt-4 text-sm text-[#64748b] dark:text-slate-300">
-          All plans include a 30-day free trial. No credit card required.
+          All Core plans include a 30-day free trial. No credit card required.
         </p>
+
+        {/* Grow pricing */}
+        <p className="mt-10 mb-4 text-xs font-semibold uppercase tracking-widest text-purple-600 dark:text-purple-400">
+          SERVLO Grow — Market
+        </p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: "Grow Starter", price: "$59/mo", list: ["1 user", "10 ads/mo", "20 social posts/mo", "Review automation", "Basic analytics"] },
+            { name: "Grow Pro", price: "$99/mo", popular: true, list: ["Up to 3 users", "Unlimited ads", "Unlimited social posts", "Review automation", "Referral program", "Full analytics"] },
+            { name: "Grow Agency", price: "$199/mo", list: ["Up to 10 users", "All Pro features", "Multi-location", "White-label reports", "Priority support"] },
+          ].map((plan) => (
+            <article
+              key={plan.name}
+              className={`relative flex flex-col rounded-xl border p-6 ${
+                (plan as { popular?: boolean }).popular
+                  ? "border-purple-400 bg-purple-50 shadow-md dark:border-purple-500/60 dark:bg-[#1a1030]"
+                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
+              }`}
+            >
+              {(plan as { popular?: boolean }).popular && (
+                <span className="absolute right-4 top-4 shrink-0 rounded-full bg-purple-600 px-2 py-1 text-xs font-semibold text-white">
+                  Most Popular
+                </span>
+              )}
+              <div className="mb-1 flex items-center gap-1.5">
+                <Lock size={11} className="text-slate-400" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Launching soon</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
+              <p className="mt-1 text-3xl font-extrabold text-[#1e3a5f] dark:text-white">{plan.price}</p>
+              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
+                {plan.list.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="mt-0.5 shrink-0 text-purple-500" aria-hidden>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <button
+                disabled
+                className="mt-6 w-full cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
+              >
+                Launching soon
+              </button>
+            </article>
+          ))}
+        </div>
+
+        {/* Leads pricing */}
+        <p className="mt-10 mb-4 text-xs font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+          SERVLO Leads — Fill your pipeline
+        </p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: "Pay-as-you-go", price: "$12/lead", list: ["No monthly fee", "Buy only what you need", "Industry-filtered leads", "Quality guarantee", "Instant delivery"] },
+            { name: "Lead Bundle", price: "$99/mo", popular: true, list: ["10 leads/mo included", "Save 17% vs PAYG", "Priority lead access", "Pipeline tracking", "CRM integration"] },
+            { name: "Lead Pro", price: "$249/mo", list: ["30 leads/mo included", "Save 30% vs PAYG", "Exclusive leads", "Dedicated account manager", "Full analytics"] },
+          ].map((plan) => (
+            <article
+              key={plan.name}
+              className={`relative flex flex-col rounded-xl border p-6 ${
+                (plan as { popular?: boolean }).popular
+                  ? "border-amber-400 bg-amber-50 shadow-md dark:border-amber-500/60 dark:bg-[#1c1508]"
+                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
+              }`}
+            >
+              {(plan as { popular?: boolean }).popular && (
+                <span className="absolute right-4 top-4 shrink-0 rounded-full bg-amber-500 px-2 py-1 text-xs font-semibold text-white">
+                  Best Value
+                </span>
+              )}
+              <div className="mb-1 flex items-center gap-1.5">
+                <Lock size={11} className="text-slate-400" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Launching soon</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
+              <p className="mt-1 text-3xl font-extrabold text-[#1e3a5f] dark:text-white">{plan.price}</p>
+              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
+                {plan.list.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="mt-0.5 shrink-0 text-amber-500" aria-hidden>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <button
+                disabled
+                className="mt-6 w-full cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
+              >
+                Launching soon
+              </button>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
