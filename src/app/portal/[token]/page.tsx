@@ -5,16 +5,17 @@ import { revalidatePath } from "next/cache";
 import { PortalClient } from "./portal-client";
 
 type Props = {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 };
 
 export default async function ClientPortalPage({ params }: Props) {
+  const { token } = await params;
   const supabase = await createClient();
 
   const { data: client } = await supabase
     .from("clients")
     .select("id, full_name, email, owner_id")
-    .eq("portal_token", params.token)
+    .eq("portal_token", token)
     .maybeSingle();
 
   if (!client) return notFound();
@@ -121,7 +122,7 @@ export default async function ClientPortalPage({ params }: Props) {
       invoices={invoices ?? []}
       quotes={quotes ?? []}
       business={business ?? null}
-      token={params.token}
+      token={token}
       acceptQuoteAction={acceptQuoteAction}
       declineQuoteAction={declineQuoteAction}
       requestServiceAction={requestServiceAction}

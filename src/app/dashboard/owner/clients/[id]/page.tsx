@@ -4,16 +4,15 @@ import { revalidatePath } from "next/cache";
 import ClientDetailTabs from "./client-detail-tabs";
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function OwnerClientDetailPage({ params }: Props) {
+  const { id: clientId } = await params;
   const { user, enabled, supabase } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "client_management");
-
-  const clientId = params.id;
 
   let client = null;
   let jobs: Array<{ id: string; title: string | null; status: string | null; scheduled_date: string | null; materials_cost: number | null; labour_hours: number | null; hourly_rate: number | null }> = [];

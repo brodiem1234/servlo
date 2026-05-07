@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const { data: invoice } = await supabase
       .from("invoices")
       .select("*, clients(name, email, address)")
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("owner_id", user.id)
       .single();
 
@@ -94,7 +95,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return new NextResponse(html, {
       headers: {
         "Content-Type": "text/html",
-        "Content-Disposition": `inline; filename="invoice-${invoice.invoice_number || invoice.id.slice(0, 8)}.html"`,
+        "Content-Disposition": `inline; filename="invoice-${invoice.invoice_number || id.slice(0, 8)}.html"`,
       },
     });
   } catch (err) {
