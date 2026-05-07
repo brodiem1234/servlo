@@ -20,7 +20,7 @@ export function ProductSwitcher({ activeProduct }: { activeProduct: ProductId })
         return (
           <Link
             key={product.id}
-            href={product.href}
+            href={product.href as any}
             title={product.comingSoon && !isActive ? "Coming soon" : undefined}
             className={[
               "relative flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-semibold transition-colors no-underline",
