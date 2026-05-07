@@ -5,6 +5,7 @@ import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 import PurchaseOrdersManager from "./purchase-orders-manager";
+import { purchaseOrderEmailTemplate, sendEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,7 @@ export default async function PurchaseOrdersPage() {
       .select("id, full_name, email, client_type, is_demo")
       .eq("owner_id", user.id)
       .order("full_name"),
-    sb.from("jobs").select("id, title, is_demo").eq("owner_id", user.id).order("scheduled_date", { ascending: false })
+    sb.from("jobs").select("id, title, job_number, is_demo").eq("owner_id", user.id).order("scheduled_date", { ascending: false })
   ]);
 
   const pos = posResult.data ?? [];
@@ -192,17 +193,113 @@ export default async function PurchaseOrdersPage() {
     return (data ?? []) as Array<{ description: string; quantity: number; unit_price: number }>;
   }
 
+  type QuickCreateResult = { ok: boolean; id?: string; label?: string; message?: string };
+
+  async function quickCreateSupplierAction(formData: FormData): Promise<QuickCreateResult> {
+    "use server";
+    const sb2 = await createClient();
+    const { data: { user: owner } } = await sb2.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const full_name = String(formData.get("full_name") ?? "").trim();
+    if (!full_name) return { ok: false, message: "Company name is required" };
+    const email = String(formData.get("email") ?? "").trim();
+    const phone = String(formData.get("phone") ?? "").trim();
+    const abn = String(formData.get("abn") ?? "").trim();
+    const { data, error } = await sb2
+      .from("clients")
+      .insert({
+        owner_id: owner.id,
+        is_demo: false,
+        full_name,
+        email: email || null,
+        phone: phone || null,
+        client_type: "supplier",
+        status: "active",
+        source: "other",
+        portal_token: crypto.randomUUID(),
+        company_name: full_name,
+        abn: abn || "",
+        address: "",
+        suburb: "",
+        state: "",
+        postcode: "",
+        notes: ""
+      })
+      .select("id, full_name")
+      .maybeSingle();
+    if (error) {
+      const fb = await sb2
+        .from("clients")
+        .insert({ owner_id: owner.id, is_demo: false, full_name, email: email || null, phone: phone || null, client_type: "supplier", notes: "" })
+        .select("id, full_name")
+        .maybeSingle();
+      if (fb.error) return { ok: false, message: fb.error.message };
+      revalidatePath("/dashboard/owner/clients");
+      return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
+    }
+    revalidatePath("/dashboard/owner/clients");
+    return { ok: true, id: data?.id, label: data?.full_name ?? full_name };
+  }
+
+  async function sendPOEmailAction(formData: FormData): Promise<void> {
+    "use server";
+    const sb2 = await createClient();
+    const { data: { user: owner } } = await sb2.auth.getUser();
+    if (!owner) return;
+    const poId = String(formData.get("po_id") ?? "");
+    if (!poId) return;
+    const { data: po } = await sb2
+      .from("purchase_orders")
+      .select("po_number, supplier_client_id, notes, total")
+      .eq("id", poId)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (!po) return;
+    const [supplierRes, bizRes, itemsRes] = await Promise.all([
+      sb2.from("clients").select("email, full_name").eq("id", po.supplier_client_id ?? "").maybeSingle(),
+      sb2.from("businesses").select("business_name, accent_colour").eq("owner_id", owner.id).maybeSingle(),
+      sb2.from("purchase_order_items").select("description, quantity, unit_price").eq("purchase_order_id", poId).order("sort_order")
+    ]);
+    if (!supplierRes.data?.email) {
+      throw new Error("Supplier has no email address — add one in the Clients page first.");
+    }
+    const supplier = supplierRes.data;
+    const biz = bizRes.data;
+    const items = (itemsRes.data ?? []) as Array<{ description: string; quantity: number; unit_price: number }>;
+    await sendEmail(
+      supplier.email,
+      `Purchase Order ${po.po_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
+      purchaseOrderEmailTemplate({
+        supplierName: supplier.full_name ?? "Supplier",
+        businessName: biz?.business_name ?? "SERVLO",
+        poNumber: po.po_number ?? "PO",
+        items,
+        total: Number(po.total ?? 0),
+        notes: po.notes,
+        accentHex: biz?.accent_colour ?? undefined
+      }),
+      "SERVLO <hello@servlo.com.au>"
+    );
+    await sb2.from("purchase_orders").update({ status: "sent" }).eq("id", poId).eq("owner_id", owner.id);
+    revalidatePath("/dashboard/owner/purchase-orders");
+  }
+
   const rows = (pos ?? []) as PORow[];
 
   return (
     <PurchaseOrdersManager
       pos={rows}
       suppliers={supplierRows.map((s: { id: string; full_name: string | null; email?: string | null }) => ({ id: s.id, label: s.full_name ?? s.id, email: s.email ?? null }))}
-      jobs={jobRows.map((j: { id: string; title: string | null }) => ({ id: j.id, label: j.title ?? j.id }))}
+      jobs={jobRows.map((j: { id: string; title: string | null; job_number?: string | null }) => ({
+        id: j.id,
+        label: j.job_number ? `${j.job_number} — ${j.title ?? j.id}` : (j.title ?? j.id)
+      }))}
       createPurchaseOrderAction={createPurchaseOrderAction}
       updatePurchaseOrderAction={updatePurchaseOrderAction}
       updatePOStatusAction={updatePOStatusAction}
       loadPOItemsAction={loadPOItemsAction}
+      quickCreateSupplierAction={quickCreateSupplierAction}
+      sendPOEmailAction={sendPOEmailAction}
     />
   );
 }

@@ -240,6 +240,58 @@ export function welcomeOwnerEmailTemplate(args: {
   `);
 }
 
+export function purchaseOrderEmailTemplate(args: {
+  supplierName: string;
+  businessName: string;
+  poNumber: string;
+  items: Array<{ description: string; quantity: number; unit_price: number }>;
+  total: number;
+  notes?: string | null;
+  accentHex?: string;
+}) {
+  const accent = args.accentHex ?? "#0891B2";
+  const rows = args.items
+    .map(
+      (item) =>
+        `<tr>
+          <td style="padding:6px 4px;color:#334155;border-bottom:1px solid #f1f5f9;">${item.description}</td>
+          <td style="padding:6px 4px;text-align:right;color:#334155;border-bottom:1px solid #f1f5f9;">${item.quantity}</td>
+          <td style="padding:6px 4px;text-align:right;color:#334155;border-bottom:1px solid #f1f5f9;">$${Number(item.unit_price).toFixed(2)}</td>
+          <td style="padding:6px 4px;text-align:right;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;">$${(item.quantity * item.unit_price).toFixed(2)}</td>
+        </tr>`
+    )
+    .join("");
+  const notesBlock = args.notes
+    ? `<p style="color:#64748b;font-size:13px;margin:12px 0 0;">Notes: ${args.notes}</p>`
+    : "";
+  return wrapEmail(
+    `
+    <h2 style="margin:0 0 8px;color:#0f172a;font-size:20px;">Purchase Order from ${args.businessName}</h2>
+    <p style="margin:0 0 20px;color:#64748b;">Dear ${args.supplierName},</p>
+    <p style="color:#334155;">Please find the purchase order details below.</p>
+    <p style="margin:16px 0 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;">PO Number: ${args.poNumber}</p>
+    <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;">
+      <thead>
+        <tr style="background:#f8fafc;">
+          <th style="padding:8px 4px;text-align:left;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Description</th>
+          <th style="padding:8px 4px;text-align:right;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Qty</th>
+          <th style="padding:8px 4px;text-align:right;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Unit</th>
+          <th style="padding:8px 4px;text-align:right;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;">Total</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="text-align:right;padding:12px 0;border-top:2px solid #e2e8f0;">
+      <span style="font-size:16px;font-weight:700;color:#0f172a;">Total: $${args.total.toFixed(2)}</span>
+    </div>
+    ${notesBlock}
+    <p style="color:#334155;margin:16px 0;">Please confirm receipt and proceed with the order. Contact us if you have any questions.</p>
+    <p style="color:#64748b;">— ${args.businessName}</p>
+  `,
+    accent
+  );
+}
+
 export function ownerDailyDigestEmailTemplate(args: {
   jobsSection: string;
   invoicesSection: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type PORow = {
   id: string;
@@ -16,6 +16,7 @@ type PORow = {
 type SupplierRef = { id: string; label: string; email?: string | null };
 type JobRef = { id: string; label: string };
 type LineItem = { description: string; quantity: number; unit_price: number };
+type QuickCreateResult = { ok: boolean; id?: string; label?: string; message?: string };
 
 type Props = {
   pos: PORow[];
@@ -25,6 +26,8 @@ type Props = {
   updatePurchaseOrderAction: (formData: FormData) => Promise<void>;
   updatePOStatusAction: (formData: FormData) => Promise<void>;
   loadPOItemsAction: (poId: string) => Promise<LineItem[]>;
+  quickCreateSupplierAction: (formData: FormData) => Promise<QuickCreateResult>;
+  sendPOEmailAction: (formData: FormData) => Promise<void>;
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0 };
@@ -51,7 +54,9 @@ export default function PurchaseOrdersManager({
   createPurchaseOrderAction,
   updatePurchaseOrderAction,
   updatePOStatusAction,
-  loadPOItemsAction
+  loadPOItemsAction,
+  quickCreateSupplierAction,
+  sendPOEmailAction
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -62,6 +67,21 @@ export default function PurchaseOrdersManager({
   const [notes, setNotes] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([{ ...emptyLine }]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [sendingPO, setSendingPO] = useState<string | null>(null);
+
+  // Local supplier list — appends newly quick-created suppliers without page reload
+  const [localSuppliers, setLocalSuppliers] = useState<SupplierRef[]>(suppliers);
+  useEffect(() => setLocalSuppliers(suppliers), [suppliers]);
+
+  // Quick-create supplier modal
+  const [newSupplierOpen, setNewSupplierOpen] = useState(false);
+  const [newSupplierName, setNewSupplierName] = useState("");
+  const [newSupplierEmail, setNewSupplierEmail] = useState("");
+  const [newSupplierPhone, setNewSupplierPhone] = useState("");
+  const [newSupplierAbn, setNewSupplierAbn] = useState("");
+  const [savingNewSupplier, setSavingNewSupplier] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (!toast) return;
@@ -109,6 +129,53 @@ export default function PurchaseOrdersManager({
     }
   };
 
+  const handleQuickCreateSupplier = async () => {
+    const name = newSupplierName.trim();
+    if (!name) return;
+    setSavingNewSupplier(true);
+    const fd = new FormData();
+    fd.set("full_name", name);
+    fd.set("email", newSupplierEmail.trim());
+    fd.set("phone", newSupplierPhone.trim());
+    fd.set("abn", newSupplierAbn.trim());
+    try {
+      const result = await quickCreateSupplierAction(fd);
+      if (result.ok && result.id) {
+        const newEntry: SupplierRef = { id: result.id, label: result.label ?? name };
+        setLocalSuppliers((prev) => [...prev, newEntry]);
+        setSupplierId(result.id);
+        setNewSupplierOpen(false);
+        setNewSupplierName("");
+        setNewSupplierEmail("");
+        setNewSupplierPhone("");
+        setNewSupplierAbn("");
+        setToast({ type: "success", message: `Supplier "${result.label ?? name}" added` });
+      } else {
+        setToast({ type: "error", message: result.message ?? "Could not create supplier" });
+      }
+    } catch {
+      setToast({ type: "error", message: "Could not create supplier" });
+    } finally {
+      setSavingNewSupplier(false);
+    }
+  };
+
+  const handleSendPO = async (po: PORow) => {
+    if (sendingPO) return;
+    setSendingPO(po.id);
+    const fd = new FormData();
+    fd.set("po_id", po.id);
+    try {
+      await sendPOEmailAction(fd);
+      setToast({ type: "success", message: `PO ${po.po_number ?? ""} sent to supplier` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to send PO";
+      setToast({ type: "error", message: msg });
+    } finally {
+      setSendingPO(null);
+    }
+  };
+
   return (
     <section className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -139,17 +206,17 @@ export default function PurchaseOrdersManager({
         </div>
       ) : null}
 
-      {suppliers.length === 0 ? (
+      {localSuppliers.length === 0 ? (
         <div className="rounded-xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm dark:border-orange-800 dark:bg-orange-950/40">
           <strong className="text-orange-900 dark:text-orange-100">No suppliers found.</strong>
           <span className="ml-1 text-orange-800 dark:text-orange-200">
-            Go to <a href="/dashboard/owner/clients" className="font-semibold underline">Clients</a>, add a client and set their type to <em>Supplier</em>.
+            Go to <a href="/dashboard/owner/clients" className="font-semibold underline">Clients</a>, add a client and set their type to <em>Supplier</em>. Or use the <strong>+ New Supplier</strong> button when creating a PO.
           </span>
         </div>
       ) : null}
 
       <article className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[680px] text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               <th className="px-2 py-3">PO #</th>
@@ -170,7 +237,8 @@ export default function PurchaseOrdersManager({
               </tr>
             ) : (
               pos.map((row) => {
-                const supplierLabel = suppliers.find((s) => s.id === row.supplier_client_id)?.label ?? "—";
+                const supplierLabel = localSuppliers.find((s) => s.id === row.supplier_client_id)?.label ?? "—";
+                const supplierHasEmail = Boolean(localSuppliers.find((s) => s.id === row.supplier_client_id)?.email);
                 const jobLabel = jobs.find((j) => j.id === row.job_id)?.label ?? "—";
                 return (
                   <tr
@@ -205,13 +273,25 @@ export default function PurchaseOrdersManager({
                       {row.created_at ? new Date(row.created_at).toLocaleDateString("en-AU") : "—"}
                     </td>
                     <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => startEdit(row)}
-                        className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(row)}
+                          className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                        >
+                          Edit
+                        </button>
+                        {supplierHasEmail && (row.status ?? "draft") !== "sent" && (row.status ?? "draft") !== "billed" ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSendPO(row)}
+                            disabled={sendingPO === row.id}
+                            className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)] disabled:opacity-60"
+                          >
+                            {sendingPO === row.id ? "Sending…" : "Send"}
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -237,15 +317,24 @@ export default function PurchaseOrdersManager({
               </button>
             </div>
 
-            <form action={onSubmit} className="space-y-5">
+            <form ref={formRef} action={onSubmit} className="space-y-5">
               <input type="hidden" name="id" value={editingId} />
               <input type="hidden" name="line_items" value={JSON.stringify(lineItems)} />
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    Supplier <span className="text-red-500">*</span>
-                  </label>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                      Supplier <span className="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setNewSupplierOpen(true)}
+                      className="text-xs font-medium text-[var(--accent-color)] hover:underline"
+                    >
+                      + New Supplier
+                    </button>
+                  </div>
                   <select
                     name="supplier_client_id"
                     value={supplierId}
@@ -254,7 +343,7 @@ export default function PurchaseOrdersManager({
                     className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
                   >
                     <option value="">Select supplier…</option>
-                    {suppliers.map((s) => (
+                    {localSuppliers.map((s) => (
                       <option key={s.id} value={s.id}>{s.label}</option>
                     ))}
                   </select>
@@ -411,6 +500,82 @@ export default function PurchaseOrdersManager({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Quick-create supplier modal */}
+      {newSupplierOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Supplier</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Company Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  value={newSupplierName}
+                  onChange={(e) => setNewSupplierName(e.target.value)}
+                  placeholder="Supplier company name"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Email (for sending POs)
+                </label>
+                <input
+                  type="email"
+                  value={newSupplierEmail}
+                  onChange={(e) => setNewSupplierEmail(e.target.value)}
+                  placeholder="orders@supplier.com.au"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    value={newSupplierPhone}
+                    onChange={(e) => setNewSupplierPhone(e.target.value)}
+                    placeholder="07xx xxx xxx"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    ABN
+                  </label>
+                  <input
+                    value={newSupplierAbn}
+                    onChange={(e) => setNewSupplierAbn(e.target.value)}
+                    placeholder="12 345 678 901"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setNewSupplierOpen(false); setNewSupplierName(""); setNewSupplierEmail(""); setNewSupplierPhone(""); setNewSupplierAbn(""); }}
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!newSupplierName.trim() || savingNewSupplier}
+                onClick={handleQuickCreateSupplier}
+                className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              >
+                {savingNewSupplier ? "Saving…" : "Add Supplier"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

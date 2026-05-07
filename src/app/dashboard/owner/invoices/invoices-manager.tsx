@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import { DemoBadge } from "@/components/demo-badge";
 
@@ -20,6 +20,7 @@ type Invoice = {
 
 type ClientRef = { id: string; label: string };
 type LineItem = { description: string; quantity: number; unit_price: number; gst_applicable: boolean };
+type QuickCreateResult = { ok: boolean; id?: string; label?: string; message?: string };
 
 type Props = {
   invoices: Invoice[];
@@ -29,6 +30,7 @@ type Props = {
   markPaidAction: (formData: FormData) => Promise<void>;
   sendInvoiceEmailAction: (formData: FormData) => Promise<void>;
   loadLineItemsAction: (invoiceId: string) => Promise<LineItem[]>;
+  quickCreateClientForInvoiceAction: (formData: FormData) => Promise<QuickCreateResult>;
   prefill?: {
     prefill_client_id?: string;
     prefill_title?: string;
@@ -81,6 +83,7 @@ export default function InvoicesManager({
   markPaidAction,
   sendInvoiceEmailAction,
   loadLineItemsAction,
+  quickCreateClientForInvoiceAction,
   prefill,
   initialBucket,
   businessProfile,
@@ -96,6 +99,21 @@ export default function InvoicesManager({
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [markingPaid, setMarkingPaid] = useState<string | null>(null);
+
+  // Local client list — gets new clients appended without a page reload
+  const [localClients, setLocalClients] = useState<ClientRef[]>(clients);
+  useEffect(() => setLocalClients(clients), [clients]);
+
+  // Track whether the user clicked "Create & Send" vs "Save as Draft"
+  const sendIntentRef = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Quick-create client modal state
+  const [newClientOpen, setNewClientOpen] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [savingNewClient, setSavingNewClient] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -157,14 +175,49 @@ export default function InvoicesManager({
   }
 
   const action = async (fd: FormData) => {
+    fd.set("send_immediately", sendIntentRef.current ? "true" : "false");
     try {
       if (editingId) await updateInvoiceAction(fd);
       else await createInvoiceAction(fd);
-      setToast({ type: "success", message: editingId ? "Invoice updated" : "Invoice created" });
+      const msg = editingId
+        ? "Invoice updated"
+        : sendIntentRef.current
+        ? "Invoice created and sent"
+        : "Invoice saved as draft";
+      setToast({ type: "success", message: msg });
       setOpen(false);
     } catch (error) {
       setToast({ type: "error", message: "Unable to save invoice" });
       console.error(error);
+    }
+  };
+
+  const handleQuickCreateClient = async () => {
+    const name = newClientName.trim();
+    if (!name) return;
+    setSavingNewClient(true);
+    const fd = new FormData();
+    fd.set("full_name", name);
+    fd.set("email", newClientEmail.trim());
+    fd.set("phone", newClientPhone.trim());
+    try {
+      const result = await quickCreateClientForInvoiceAction(fd);
+      if (result.ok && result.id) {
+        const newEntry = { id: result.id, label: result.label ?? name };
+        setLocalClients((prev) => [...prev, newEntry]);
+        setClientId(result.id);
+        setNewClientOpen(false);
+        setNewClientName("");
+        setNewClientEmail("");
+        setNewClientPhone("");
+        setToast({ type: "success", message: `Client "${result.label ?? name}" added` });
+      } else {
+        setToast({ type: "error", message: result.message ?? "Could not create client" });
+      }
+    } catch {
+      setToast({ type: "error", message: "Could not create client" });
+    } finally {
+      setSavingNewClient(false);
     }
   };
 
@@ -190,7 +243,7 @@ export default function InvoicesManager({
     const abn = businessProfile?.abn;
     const phone = businessProfile?.phone;
     const address = businessProfile?.address;
-    const clientLabel = clients.find((c) => c.id === invoice.client_id)?.label ?? "—";
+    const clientLabel = localClients.find((c) => c.id === invoice.client_id)?.label ?? "—";
 
     let y = 18;
     doc.setFontSize(20);
@@ -375,7 +428,7 @@ export default function InvoicesManager({
               filteredInvoices.map((invoice) => {
                 const badge = getStatusBadgeInfo(invoice);
                 const demo = Boolean(invoice.is_demo);
-                const clientLabel = clients.find((c) => c.id === invoice.client_id)?.label;
+                const clientLabel = localClients.find((c) => c.id === invoice.client_id)?.label;
                 return (
                   <tr
                     key={invoice.id}
@@ -465,15 +518,24 @@ export default function InvoicesManager({
                 Cancel
               </button>
             </div>
-            <form action={action} className="space-y-5">
+            <form ref={formRef} action={action} className="space-y-5">
               <input type="hidden" name="id" value={editingId} />
               <input type="hidden" name="line_items" value={JSON.stringify(lineItems)} />
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    Client
-                  </label>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                      Client
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setNewClientOpen(true)}
+                      className="text-xs font-medium text-[var(--accent-color)] hover:underline"
+                    >
+                      + New Client
+                    </button>
+                  </div>
                   <select
                     name="client_id"
                     value={clientId}
@@ -482,7 +544,7 @@ export default function InvoicesManager({
                     required
                   >
                     <option value="">Select client…</option>
-                    {clients.map((c) => (
+                    {localClients.map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
@@ -656,14 +718,97 @@ export default function InvoicesManager({
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-                >
-                  {editingId ? "Save Changes" : "Create Invoice"}
-                </button>
+                {editingId ? (
+                  <button
+                    type="submit"
+                    onClick={() => { sendIntentRef.current = false; }}
+                    className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                  >
+                    Save Changes
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="submit"
+                      onClick={() => { sendIntentRef.current = false; }}
+                      className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                    >
+                      Save as Draft
+                    </button>
+                    <button
+                      type="submit"
+                      onClick={() => { sendIntentRef.current = true; }}
+                      className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                    >
+                      Create &amp; Send
+                    </button>
+                  </>
+                )}
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Quick-create client modal */}
+      {newClientOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Client</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  value={newClientName}
+                  onChange={(e) => setNewClientName(e.target.value)}
+                  placeholder="Full name or company"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newClientEmail}
+                  onChange={(e) => setNewClientEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={newClientPhone}
+                  onChange={(e) => setNewClientPhone(e.target.value)}
+                  placeholder="04xx xxx xxx"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setNewClientOpen(false); setNewClientName(""); setNewClientEmail(""); setNewClientPhone(""); }}
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!newClientName.trim() || savingNewClient}
+                onClick={handleQuickCreateClient}
+                className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              >
+                {savingNewClient ? "Saving…" : "Add Client"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

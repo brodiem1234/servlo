@@ -89,6 +89,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
       : null;
     const clientId = ownedClient?.id ?? null;
     const notes = String(formData.get("notes") ?? "") || null;
+    const sendImmediately = String(formData.get("send_immediately") ?? "false") === "true";
     const { data: created } = await sb
       .from("quotes")
       .insert({
@@ -98,7 +99,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
         subtotal: subTotal,
         gst,
         total,
-        status: "draft",
+        status: sendImmediately ? "sent" : "draft",
         notes
       })
       .select("id")
@@ -115,6 +116,31 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
           line_total: i.quantity * i.unit_price
         }))
       );
+    }
+    // Send email immediately if requested
+    if (sendImmediately && clientId) {
+      const [clientRes, bizRes] = await Promise.all([
+        sb.from("clients").select("email, full_name, is_demo").eq("id", clientId).maybeSingle(),
+        sb.from("businesses").select("business_name, accent_colour").eq("owner_id", owner.id).maybeSingle()
+      ]);
+      const client = clientRes.data;
+      if (client?.email && !client.is_demo) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+        await sendEmail(
+          client.email,
+          `Quote ${quoteNumber} from ${bizRes.data?.business_name ?? "SERVLO"}`,
+          quoteSentEmailTemplate({
+            clientName: client.full_name ?? "there",
+            businessName: bizRes.data?.business_name ?? "SERVLO",
+            quoteNumber,
+            subtotal: `$${subTotal.toFixed(2)}`,
+            gst: `$${gst.toFixed(2)}`,
+            total: `$${total.toFixed(2)}`,
+            accentHex: bizRes.data?.accent_colour ?? undefined,
+            appUrl
+          })
+        );
+      }
     }
     revalidatePath("/dashboard/owner/quotes");
     revalidatePath("/dashboard/owner");
@@ -339,6 +365,52 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     revalidatePath("/dashboard/owner/quotes");
   }
 
+  type QuickCreateResult = { ok: boolean; id?: string; label?: string; message?: string };
+
+  async function quickCreateClientForQuoteAction(formData: FormData): Promise<QuickCreateResult> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const full_name = String(formData.get("full_name") ?? "").trim();
+    if (!full_name) return { ok: false, message: "Name is required" };
+    const phone = String(formData.get("phone") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const { data, error } = await sb
+      .from("clients")
+      .insert({
+        owner_id: owner.id,
+        is_demo: false,
+        full_name,
+        phone: phone || null,
+        email: email || null,
+        status: "active",
+        source: "other",
+        portal_token: crypto.randomUUID(),
+        company_name: "",
+        abn: "",
+        address: "",
+        suburb: "",
+        state: "",
+        postcode: "",
+        notes: ""
+      })
+      .select("id, full_name")
+      .maybeSingle();
+    if (error) {
+      const fb = await sb
+        .from("clients")
+        .insert({ owner_id: owner.id, is_demo: false, full_name, phone: phone || null, email: email || null, notes: "" })
+        .select("id, full_name")
+        .maybeSingle();
+      if (fb.error) return { ok: false, message: fb.error.message };
+      revalidatePath("/dashboard/owner/clients");
+      return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
+    }
+    revalidatePath("/dashboard/owner/clients");
+    return { ok: true, id: data?.id, label: data?.full_name ?? full_name };
+  }
+
   async function loadQuoteItemsAction(quoteId: string): Promise<Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }>> {
     "use server";
     const sb = await createClient();
@@ -368,6 +440,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
         convertToInvoiceAction={convertToInvoiceAction}
         sendQuoteEmailAction={sendQuoteEmailAction}
         loadQuoteItemsAction={loadQuoteItemsAction}
+        quickCreateClientForQuoteAction={quickCreateClientForQuoteAction}
         initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
         businessProfile={businessProfile ? { businessName: businessProfile.business_name ?? null, abn: businessProfile.abn ?? null } : null}
       />

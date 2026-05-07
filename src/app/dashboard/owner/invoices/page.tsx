@@ -93,6 +93,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     const invoiceNumber = getNextInvoiceNumber(existingNumbers ?? []);
 
     const notes = String(formData.get("notes") ?? "") || null;
+    const sendImmediately = String(formData.get("send_immediately") ?? "false") === "true";
 
     const requestedClientId = String(formData.get("client_id") ?? "") || null;
     const ownedClient = requestedClientId
@@ -107,7 +108,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       issue_date: String(formData.get("issue_date") ?? "") || null,
       due_date: String(formData.get("due_date") ?? "") || null,
       subtotal: subTotal,
-      status: "unpaid",
+      status: sendImmediately ? "unpaid" : "draft",
       notes
     };
 
@@ -160,7 +161,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       }
     }
 
-    if (clientId) {
+    if (sendImmediately && clientId) {
       const [clientRes, bizRes] = await Promise.all([
         sb.from("clients").select("email, full_name, is_demo").eq("id", clientId).maybeSingle(),
         sb.from("businesses").select("business_name, accent_colour").eq("owner_id", owner.id).maybeSingle()
@@ -319,6 +320,52 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     return (data ?? []) as Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }>;
   }
 
+  type QuickCreateResult = { ok: boolean; id?: string; label?: string; message?: string };
+
+  async function quickCreateClientForInvoiceAction(formData: FormData): Promise<QuickCreateResult> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const full_name = String(formData.get("full_name") ?? "").trim();
+    if (!full_name) return { ok: false, message: "Name is required" };
+    const phone = String(formData.get("phone") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const { data, error } = await sb
+      .from("clients")
+      .insert({
+        owner_id: owner.id,
+        is_demo: false,
+        full_name,
+        phone: phone || null,
+        email: email || null,
+        status: "active",
+        source: "other",
+        portal_token: crypto.randomUUID(),
+        company_name: "",
+        abn: "",
+        address: "",
+        suburb: "",
+        state: "",
+        postcode: "",
+        notes: ""
+      })
+      .select("id, full_name")
+      .maybeSingle();
+    if (error) {
+      const fb = await sb
+        .from("clients")
+        .insert({ owner_id: owner.id, is_demo: false, full_name, phone: phone || null, email: email || null, notes: "" })
+        .select("id, full_name")
+        .maybeSingle();
+      if (fb.error) return { ok: false, message: fb.error.message };
+      revalidatePath("/dashboard/owner/clients");
+      return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
+    }
+    revalidatePath("/dashboard/owner/clients");
+    return { ok: true, id: data?.id, label: data?.full_name ?? full_name };
+  }
+
   const visibleInvoices = filterDemoEntities(invoices ?? []);
 
   return (
@@ -332,6 +379,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
         markPaidAction={markPaidAction}
         sendInvoiceEmailAction={sendInvoiceEmailAction}
         loadLineItemsAction={loadLineItemsAction}
+        quickCreateClientForInvoiceAction={quickCreateClientForInvoiceAction}
         prefill={sp}
         initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
         businessProfile={businessRow ? { businessName: businessRow.business_name ?? null, abn: businessRow.abn ?? null, phone: businessRow.phone ?? null, address: businessRow.address ?? null } : null}

@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import { DemoBadge } from "@/components/demo-badge";
 
@@ -20,6 +20,7 @@ type Quote = {
 
 type ClientRef = { id: string; label: string; email?: string | null };
 type LineItem = { description: string; quantity: number; unit_price: number; gst_applicable: boolean };
+type QuickCreateResult = { ok: boolean; id?: string; label?: string; message?: string };
 
 type Props = {
   quotes: Quote[];
@@ -31,6 +32,7 @@ type Props = {
   convertToInvoiceAction: (formData: FormData) => Promise<void>;
   sendQuoteEmailAction: (formData: FormData) => Promise<void>;
   loadQuoteItemsAction: (quoteId: string) => Promise<LineItem[]>;
+  quickCreateClientForQuoteAction: (formData: FormData) => Promise<QuickCreateResult>;
   initialBucket?: string | null;
   businessProfile?: { businessName: string | null; abn: string | null } | null;
 };
@@ -72,6 +74,7 @@ export default function QuotesManager({
   convertToInvoiceAction,
   sendQuoteEmailAction,
   loadQuoteItemsAction,
+  quickCreateClientForQuoteAction,
   initialBucket,
   businessProfile
 }: Props) {
@@ -83,6 +86,20 @@ export default function QuotesManager({
   const [lineItems, setLineItems] = useState<LineItem[]>([{ ...emptyLine }]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+
+  // Local client list — appends newly quick-created clients without page reload
+  const [localClients, setLocalClients] = useState<ClientRef[]>(clients);
+  useEffect(() => setLocalClients(clients), [clients]);
+
+  const sendIntentRef = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Quick-create client modal
+  const [newClientOpen, setNewClientOpen] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [savingNewClient, setSavingNewClient] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -128,10 +145,16 @@ export default function QuotesManager({
   }
 
   const onSubmit = async (fd: FormData) => {
+    fd.set("send_immediately", sendIntentRef.current ? "true" : "false");
     try {
       if (editingId) await updateQuoteAction(fd);
       else await createQuoteAction(fd);
-      setToast({ type: "success", message: editingId ? "Quote updated" : "Quote created" });
+      const msg = editingId
+        ? "Quote updated"
+        : sendIntentRef.current
+        ? "Quote created and sent"
+        : "Quote saved as draft";
+      setToast({ type: "success", message: msg });
       setOpen(false);
     } catch (error) {
       setToast({ type: "error", message: "Unable to save quote" });
@@ -154,12 +177,41 @@ export default function QuotesManager({
     }
   };
 
+  const handleQuickCreateClient = async () => {
+    const name = newClientName.trim();
+    if (!name) return;
+    setSavingNewClient(true);
+    const fd = new FormData();
+    fd.set("full_name", name);
+    fd.set("email", newClientEmail.trim());
+    fd.set("phone", newClientPhone.trim());
+    try {
+      const result = await quickCreateClientForQuoteAction(fd);
+      if (result.ok && result.id) {
+        const newEntry: ClientRef = { id: result.id, label: result.label ?? name };
+        setLocalClients((prev) => [...prev, newEntry]);
+        setClientId(result.id);
+        setNewClientOpen(false);
+        setNewClientName("");
+        setNewClientEmail("");
+        setNewClientPhone("");
+        setToast({ type: "success", message: `Client "${result.label ?? name}" added` });
+      } else {
+        setToast({ type: "error", message: result.message ?? "Could not create client" });
+      }
+    } catch {
+      setToast({ type: "error", message: "Could not create client" });
+    } finally {
+      setSavingNewClient(false);
+    }
+  };
+
   const downloadPdf = (quote: Quote) => {
     if (quote.is_demo) return;
     const doc = new jsPDF();
     const bizName = businessProfile?.businessName ?? "My Business";
     const abn = businessProfile?.abn;
-    const clientLabel = clients.find((c) => c.id === quote.client_id)?.label ?? quote.client_name ?? "—";
+    const clientLabel = localClients.find((c) => c.id === quote.client_id)?.label ?? quote.client_name ?? "—";
 
     let y = 18;
     doc.setFontSize(20);
@@ -295,8 +347,8 @@ export default function QuotesManager({
             ) : (
               filteredQuotes.map((quote) => {
                 const demo = Boolean(quote.is_demo);
-                const clientLabel = clients.find((c) => c.id === quote.client_id)?.label ?? quote.client_name ?? "—";
-                const clientEmail = clients.find((c) => c.id === quote.client_id)?.email;
+                const clientLabel = localClients.find((c) => c.id === quote.client_id)?.label ?? quote.client_name ?? "—";
+                const clientEmail = localClients.find((c) => c.id === quote.client_id)?.email;
                 return (
                   <tr
                     key={quote.id}
@@ -417,14 +469,23 @@ export default function QuotesManager({
               </button>
             </div>
 
-            <form action={onSubmit} className="space-y-5">
+            <form ref={formRef} action={onSubmit} className="space-y-5">
               <input type="hidden" name="id" value={editingId} />
               <input type="hidden" name="line_items" value={JSON.stringify(lineItems)} />
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                  Client
-                </label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    Client
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setNewClientOpen(true)}
+                    className="text-xs font-medium text-[var(--accent-color)] hover:underline"
+                  >
+                    + New Client
+                  </button>
+                </div>
                 <select
                   name="client_id"
                   value={clientId}
@@ -433,7 +494,7 @@ export default function QuotesManager({
                   required
                 >
                   <option value="">Select client…</option>
-                  {clients.map((c) => (
+                  {localClients.map((c) => (
                     <option key={c.id} value={c.id}>{c.label}</option>
                   ))}
                 </select>
@@ -581,14 +642,97 @@ export default function QuotesManager({
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-                >
-                  {editingId ? "Save Changes" : "Create Quote"}
-                </button>
+                {editingId ? (
+                  <button
+                    type="submit"
+                    onClick={() => { sendIntentRef.current = false; }}
+                    className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                  >
+                    Save Changes
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="submit"
+                      onClick={() => { sendIntentRef.current = false; }}
+                      className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                    >
+                      Save as Draft
+                    </button>
+                    <button
+                      type="submit"
+                      onClick={() => { sendIntentRef.current = true; }}
+                      className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                    >
+                      Create &amp; Send
+                    </button>
+                  </>
+                )}
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Quick-create client modal */}
+      {newClientOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Client</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  value={newClientName}
+                  onChange={(e) => setNewClientName(e.target.value)}
+                  placeholder="Full name or company"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newClientEmail}
+                  onChange={(e) => setNewClientEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={newClientPhone}
+                  onChange={(e) => setNewClientPhone(e.target.value)}
+                  placeholder="04xx xxx xxx"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setNewClientOpen(false); setNewClientName(""); setNewClientEmail(""); setNewClientPhone(""); }}
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!newClientName.trim() || savingNewClient}
+                onClick={handleQuickCreateClient}
+                className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              >
+                {savingNewClient ? "Saving…" : "Add Client"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

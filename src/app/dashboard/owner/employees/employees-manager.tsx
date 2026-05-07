@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DemoBadge } from "@/components/demo-badge";
 
 type Employee = {
@@ -21,7 +21,199 @@ type Props = {
   updateEmployeeAction: (formData: FormData) => Promise<void>;
 };
 
-const licencesOptions = ["Electrical", "Plumbing", "Gas", "White Card", "Working at Heights"];
+const LICENCE_CATEGORIES: Array<{ label: string; items: string[] }> = [
+  {
+    label: "Safety & General",
+    items: [
+      "White Card (CPCCOHS1001A)",
+      "Working at Heights",
+      "First Aid Certificate",
+      "Traffic Controller (Basic)",
+      "Traffic Controller (Advanced)",
+      "Manual Handling",
+      "Confined Space Entry",
+    ]
+  },
+  {
+    label: "Electrical",
+    items: [
+      "Electrical Licence (A-Grade)",
+      "Electrical Licence (Restricted)",
+      "Electrical Contractor",
+      "Solar PV (Grid Connect)",
+      "Solar PV (Off Grid)",
+      "Air Conditioning & Refrigeration",
+      "Communications Cabling (Cabler Registration)",
+      "Data & Telecommunications",
+    ]
+  },
+  {
+    label: "Plumbing",
+    items: [
+      "Plumbing & Drainage Licence",
+      "Plumbing Contractor",
+      "Gas Fitting Licence",
+      "Gas Fitting (Restricted)",
+      "Irrigation & Water",
+      "Roofing & Drainage (Plumbing)",
+    ]
+  },
+  {
+    label: "Building & Construction",
+    items: [
+      "Builder's Licence (Unlimited)",
+      "Builder's Licence (Low Rise)",
+      "Owner Builder Permit",
+      "Bricklaying & Blocklaying",
+      "Carpentry & Joinery",
+      "Concreting",
+      "Demolition (Unrestricted)",
+      "Demolition (Restricted)",
+      "Flooring & Floor Covering",
+      "Glazing",
+      "Insulation",
+      "Painting (Cert III)",
+      "Plastering",
+      "Rendering & Texture Coating",
+      "Tiling (Wall & Floor)",
+      "Waterproofing",
+    ]
+  },
+  {
+    label: "HVAC & Refrigeration",
+    items: [
+      "Refrigerant Handling (ARC)",
+      "HVAC Installation",
+      "Mechanical Services",
+      "Ventilation & Air Movement",
+    ]
+  },
+  {
+    label: "High Risk Work",
+    items: [
+      "Scaffolding (Basic)",
+      "Scaffolding (Intermediate)",
+      "Scaffolding (Advanced)",
+      "Rigging (Basic)",
+      "Rigging (Intermediate)",
+      "Rigging (Advanced)",
+      "Dogging Licence",
+      "Crane Operation (Non-slewing)",
+      "Crane Operation (Slewing)",
+      "Forklift Licence",
+      "Elevated Work Platform — Boom",
+      "Elevated Work Platform — Scissor",
+      "Explosive Power Tool",
+    ]
+  },
+  {
+    label: "Specialist",
+    items: [
+      "Asbestos Removal (Class A)",
+      "Asbestos Removal (Class B)",
+      "Pest Management Licence",
+      "Fire Protection — Installation",
+      "Fire System Maintenance",
+      "Security Installation Licence",
+      "Pool & Spa Inspection",
+      "Arborist (Cert III)",
+      "Welder (AS/NZS 2980)",
+    ]
+  }
+];
+
+function LicenceSelect({
+  selected,
+  onChange
+}: {
+  selected: string[];
+  onChange: (updated: string[]) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filteredCats = LICENCE_CATEGORIES.map((cat) => ({
+    ...cat,
+    items: cat.items.filter(
+      (item) =>
+        !selected.includes(item) &&
+        item.toLowerCase().includes(search.toLowerCase())
+    )
+  })).filter((cat) => cat.items.length > 0);
+
+  return (
+    <div className="sm:col-span-2">
+      <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        Licences &amp; Certifications
+      </label>
+
+      {/* Selected badges */}
+      {selected.length > 0 ? (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {selected.map((lic) => (
+            <span
+              key={lic}
+              className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-0.5 text-xs text-[var(--text-primary)]"
+            >
+              {lic}
+              <button
+                type="button"
+                onClick={() => onChange(selected.filter((x) => x !== lic))}
+                className="ml-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Searchable dropdown trigger */}
+      <div className="relative">
+        <input
+          ref={inputRef}
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setDropdownOpen(true); }}
+          onFocus={() => setDropdownOpen(true)}
+          onBlur={() => window.setTimeout(() => setDropdownOpen(false), 150)}
+          placeholder="Search licences to add…"
+          className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+        />
+        {dropdownOpen && filteredCats.length > 0 ? (
+          <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-auto rounded-lg border border-[var(--border)] bg-[var(--bg-card)] shadow-xl">
+            {filteredCats.map((cat) => (
+              <div key={cat.label}>
+                <p className="border-b border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                  {cat.label}
+                </p>
+                {cat.items.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      onChange([...selected, item]);
+                      setSearch("");
+                      inputRef.current?.focus();
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : dropdownOpen && search && filteredCats.length === 0 ? (
+          <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-3 text-sm text-[var(--text-muted)] shadow-xl">
+            No matching licences found.
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 export default function EmployeesManager({
   employees,
@@ -79,87 +271,187 @@ export default function EmployeesManager({
     <div className="space-y-4">
       {toast ? (
         <div
-          className={`rounded-md px-3 py-2 text-sm ${
-            toast.type === "success" ? "bg-green-50 text-[#22c55e]" : "bg-red-50 text-[#ef4444]"
+          className={`rounded-md px-4 py-3 text-sm font-medium ${
+            toast.type === "success"
+              ? "border border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100"
+              : "border border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100"
           }`}
         >
           {toast.message}
         </div>
       ) : null}
-      <button onClick={startAdd} className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
+
+      <button
+        onClick={startAdd}
+        className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+      >
         Add Employee
       </button>
-      <article className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
+
+      <article className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
         <table className="w-full min-w-[760px] text-sm">
           <thead>
-            <tr className="border-b text-left text-[var(--text-primary)]">
-              <th className="px-2 py-2">Name</th><th className="px-2 py-2">Email</th><th className="px-2 py-2">Phone</th><th className="px-2 py-2">Trade</th><th className="px-2 py-2">Rate</th><th className="px-2 py-2">Actions</th>
+            <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              <th className="px-2 py-2">Name</th>
+              <th className="px-2 py-2">Email</th>
+              <th className="px-2 py-2">Phone</th>
+              <th className="px-2 py-2">Trade</th>
+              <th className="px-2 py-2">Rate</th>
+              <th className="px-2 py-2">Licences</th>
+              <th className="px-2 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {employees.map((employee) => {
-              const demo = Boolean(employee.is_demo);
-              return (
-              <tr key={employee.id} className="border-b hover:bg-[var(--bg-primary)]">
-                <td className="px-2 py-2 font-medium">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span>{employee.full_name ?? "-"}</span>
-                    {demo ? <DemoBadge /> : null}
-                  </div>
-                </td>
-                <td className="px-2 py-2">{employee.email ?? "-"}</td>
-                <td className="px-2 py-2">{employee.phone ?? "-"}</td>
-                <td className="px-2 py-2">{employee.trade_type ?? employee.role ?? "-"}</td>
-                <td className="px-2 py-2">{employee.hourly_rate != null ? `$${employee.hourly_rate}` : "-"}</td>
-                <td className="px-2 py-2">
-                  {!demo ? (
-                    <button type="button" onClick={() => startEdit(employee)} className="rounded border px-2 py-1 text-xs">
-                      Edit
-                    </button>
-                  ) : (
-                    <span className="text-xs text-slate-400">Demo — preview only</span>
-                  )}
+            {employees.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-2 py-10 text-center text-sm text-[var(--text-muted)]">
+                  No employees yet. Add your first team member above.
                 </td>
               </tr>
-            );
-          })}
+            ) : (
+              employees.map((employee) => {
+                const demo = Boolean(employee.is_demo);
+                const licences = employee.licences ?? [];
+                return (
+                  <tr key={employee.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-primary)]">
+                    <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>{employee.full_name ?? "-"}</span>
+                        {demo ? <DemoBadge /> : null}
+                      </div>
+                    </td>
+                    <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.email ?? "-"}</td>
+                    <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.phone ?? "-"}</td>
+                    <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.trade_type ?? employee.role ?? "-"}</td>
+                    <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.hourly_rate != null ? `$${employee.hourly_rate}/hr` : "-"}</td>
+                    <td className="px-2 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {licences.slice(0, 3).map((lic) => (
+                          <span
+                            key={lic}
+                            className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]"
+                          >
+                            {lic}
+                          </span>
+                        ))}
+                        {licences.length > 3 ? (
+                          <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]">
+                            +{licences.length - 3} more
+                          </span>
+                        ) : null}
+                        {licences.length === 0 ? <span className="text-xs text-[var(--text-muted)]">—</span> : null}
+                      </div>
+                    </td>
+                    <td className="px-2 py-2">
+                      {!demo ? (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(employee)}
+                          className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                        >
+                          Edit
+                        </button>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)]">Demo — preview only</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </article>
 
       {open ? (
-        <div className="fixed inset-0 z-50 bg-black/40">
-          <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Employee" : "Add Employee"}</h2>
-            <form action={action} className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="fixed inset-0 z-50 flex flex-col bg-black/50 md:flex-row md:justify-end">
+          <div className="relative ml-auto h-full w-full max-w-2xl overflow-y-auto border-l border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                {editing ? "Edit Employee" : "Add Employee"}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"
+              >
+                Cancel
+              </button>
+            </div>
+            <form action={action} className="grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
-              <input name="full_name" value={values.full_name} onChange={(e) => setValues((p) => ({ ...p, full_name: e.target.value }))} placeholder="Full name" className="h-10 rounded border px-3" />
-              <input name="email" value={values.email} onChange={(e) => setValues((p) => ({ ...p, email: e.target.value }))} placeholder="Email" className="h-10 rounded border px-3" />
-              <input name="phone" value={values.phone} onChange={(e) => setValues((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" className="h-10 rounded border px-3" />
-              <input name="trade_type" value={values.trade_type} onChange={(e) => setValues((p) => ({ ...p, trade_type: e.target.value }))} placeholder="Trade type" className="h-10 rounded border px-3" />
-              <input name="hourly_rate" value={values.hourly_rate} onChange={(e) => setValues((p) => ({ ...p, hourly_rate: e.target.value }))} placeholder="Hourly rate" className="h-10 rounded border px-3" />
-              <div className="sm:col-span-2 rounded border p-3">
-                <p className="mb-2 text-sm font-medium text-slate-300">Licences</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {licencesOptions.map((lic) => (
-                    <label key={lic} className="inline-flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={selectedLicences.includes(lic)}
-                        onChange={(e) =>
-                          setSelectedLicences((prev) =>
-                            e.target.checked ? [...prev, lic] : prev.filter((x) => x !== lic)
-                          )
-                        }
-                      />
-                      {lic}
-                    </label>
-                  ))}
-                </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
+                <input
+                  name="full_name"
+                  value={values.full_name}
+                  onChange={(e) => setValues((p) => ({ ...p, full_name: e.target.value }))}
+                  placeholder="Full name"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
               </div>
-              <div className="sm:col-span-2 flex justify-end gap-2">
-                <button type="button" onClick={() => setOpen(false)} className="rounded border px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Employee"}</button>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={values.email}
+                  onChange={(e) => setValues((p) => ({ ...p, email: e.target.value }))}
+                  placeholder="Email"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Phone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={values.phone}
+                  onChange={(e) => setValues((p) => ({ ...p, phone: e.target.value }))}
+                  placeholder="04xx xxx xxx"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Trade / Role</label>
+                <input
+                  name="trade_type"
+                  value={values.trade_type}
+                  onChange={(e) => setValues((p) => ({ ...p, trade_type: e.target.value }))}
+                  placeholder="e.g. Electrician"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Hourly Rate ($)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  name="hourly_rate"
+                  value={values.hourly_rate}
+                  onChange={(e) => setValues((p) => ({ ...p, hourly_rate: e.target.value }))}
+                  placeholder="e.g. 45"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                />
+              </div>
+
+              <LicenceSelect selected={selectedLicences} onChange={setSelectedLicences} />
+
+              <div className="sm:col-span-2 flex justify-end gap-2 border-t border-[var(--border)] pt-4">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                >
+                  {editing ? "Save Changes" : "Create Employee"}
+                </button>
               </div>
             </form>
           </div>
@@ -168,5 +460,3 @@ export default function EmployeesManager({
     </div>
   );
 }
-
-
