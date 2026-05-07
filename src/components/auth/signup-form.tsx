@@ -20,15 +20,7 @@ import {
 import {
   AlertTriangle,
   Check,
-  ClipboardList,
-  HardHat,
-  HeartPulse,
   Loader2,
-  LucideIcon,
-  Megaphone,
-  PartyPopper,
-  Sparkles,
-  Tags
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
@@ -78,33 +70,154 @@ function isPhoneValid(value: string): boolean {
   return phoneLocalDigits(value).length >= 9;
 }
 
-// ── Industry options ────────────────────────────────────────────────────────
+// ── Industry chips ───────────────────────────────────────────────────────────
 
-const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
-  { slug: "trades",         label: "Trades",               sub: "Electricians, plumbers, builders, landscapers, concreters, painters", Icon: HardHat },
-  { slug: "cleaning",       label: "Cleaning",             sub: "Residential, commercial, NDIS",                                       Icon: Sparkles },
-  { slug: "events",         label: "Events & hire",        sub: "Coordinators, AV, equipment hire",                                   Icon: PartyPopper },
-  { slug: "marketing",      label: "Marketing & agencies", sub: "Studios, freelancers, digital shops",                                 Icon: Megaphone },
-  { slug: "health",         label: "Health & wellness",    sub: "Clinics, mobile practitioners, studios",                             Icon: HeartPulse },
-  { slug: "field_services", label: "Field services",       sub: "Pest control, inspections, maintenance",                             Icon: ClipboardList },
-  { slug: "other",          label: "Other",                sub: "We'll learn how you work",                                           Icon: Tags },
+type IndustryChip = {
+  id: string;
+  label: string;
+  category: string;
+  slug: IndustrySlug;
+};
+
+const INDUSTRY_CHIPS: IndustryChip[] = [
+  // Trades
+  { id: "electrician",  label: "Electrician",       category: "Trades",                slug: "trades"         },
+  { id: "plumber",      label: "Plumber",            category: "Trades",                slug: "trades"         },
+  { id: "builder",      label: "Builder",            category: "Trades",                slug: "trades"         },
+  { id: "carpenter",    label: "Carpenter",          category: "Trades",                slug: "trades"         },
+  { id: "concreter",    label: "Concreter",          category: "Trades",                slug: "trades"         },
+  { id: "painter",      label: "Painter",            category: "Trades",                slug: "trades"         },
+  { id: "tiler",        label: "Tiler",              category: "Trades",                slug: "trades"         },
+  { id: "roofer",       label: "Roofer",             category: "Trades",                slug: "trades"         },
+  { id: "hvac",         label: "HVAC",               category: "Trades",                slug: "trades"         },
+  { id: "gas-fitter",   label: "Gas Fitter",         category: "Trades",                slug: "trades"         },
+  { id: "welder",       label: "Welder",             category: "Trades",                slug: "trades"         },
+  { id: "fabricator",   label: "Fabricator",         category: "Trades",                slug: "trades"         },
+  // Cleaning
+  { id: "residential-cleaning",  label: "Residential Cleaning",  category: "Cleaning",        slug: "cleaning"       },
+  { id: "commercial-cleaning",   label: "Commercial Cleaning",   category: "Cleaning",        slug: "cleaning"       },
+  { id: "ndis-cleaning",         label: "NDIS Cleaning",         category: "Cleaning",        slug: "cleaning"       },
+  { id: "end-of-lease",          label: "End of Lease",          category: "Cleaning",        slug: "cleaning"       },
+  { id: "industrial-cleaning",   label: "Industrial Cleaning",   category: "Cleaning",        slug: "cleaning"       },
+  // Field Services
+  { id: "pest-control",  label: "Pest Control",  category: "Field Services", slug: "field_services" },
+  { id: "security",      label: "Security",      category: "Field Services", slug: "field_services" },
+  { id: "inspections",   label: "Inspections",   category: "Field Services", slug: "field_services" },
+  { id: "maintenance",   label: "Maintenance",   category: "Field Services", slug: "field_services" },
+  { id: "locksmith",     label: "Locksmith",     category: "Field Services", slug: "field_services" },
+  // Landscaping
+  { id: "garden",        label: "Garden",        category: "Landscaping", slug: "trades" },
+  { id: "irrigation",    label: "Irrigation",    category: "Landscaping", slug: "trades" },
+  { id: "tree-services", label: "Tree Services", category: "Landscaping", slug: "trades" },
+  { id: "pool-spa",      label: "Pool & Spa",    category: "Landscaping", slug: "trades" },
+  // Health & Wellness
+  { id: "physio",           label: "Physio",           category: "Health & Wellness", slug: "health" },
+  { id: "chiropractic",     label: "Chiropractic",     category: "Health & Wellness", slug: "health" },
+  { id: "massage",          label: "Massage",          category: "Health & Wellness", slug: "health" },
+  { id: "nutrition",        label: "Nutrition",        category: "Health & Wellness", slug: "health" },
+  { id: "personal-training",label: "Personal Training",category: "Health & Wellness", slug: "health" },
+  // Events & Hire
+  { id: "av",                label: "AV",                category: "Events & Hire", slug: "events" },
+  { id: "equipment-hire",    label: "Equipment Hire",    category: "Events & Hire", slug: "events" },
+  { id: "catering",          label: "Catering",          category: "Events & Hire", slug: "events" },
+  { id: "photography",       label: "Photography",       category: "Events & Hire", slug: "events" },
+  { id: "event-coordination",label: "Event Coordination",category: "Events & Hire", slug: "events" },
+  // Transport & Logistics
+  { id: "courier",   label: "Courier",   category: "Transport & Logistics", slug: "field_services" },
+  { id: "removals",  label: "Removals",  category: "Transport & Logistics", slug: "field_services" },
+  { id: "freight",   label: "Freight",   category: "Transport & Logistics", slug: "field_services" },
+  // Beauty & Personal Care
+  { id: "hair",   label: "Hair",   category: "Beauty & Personal Care", slug: "other" },
+  { id: "skin",   label: "Skin",   category: "Beauty & Personal Care", slug: "other" },
+  { id: "nails",  label: "Nails",  category: "Beauty & Personal Care", slug: "other" },
+  { id: "barber", label: "Barber", category: "Beauty & Personal Care", slug: "other" },
+  // Professional Services
+  { id: "consulting",        label: "Consulting",        category: "Professional Services", slug: "marketing" },
+  { id: "it-support",        label: "IT Support",        category: "Professional Services", slug: "marketing" },
+  { id: "marketing-agency",  label: "Marketing Agency",  category: "Professional Services", slug: "marketing" },
+  { id: "accounting",        label: "Accounting",        category: "Professional Services", slug: "marketing" },
+  // Home Services
+  { id: "home-cleaning",     label: "Home Cleaning",     category: "Home Services", slug: "cleaning" },
+  { id: "gardening",         label: "Gardening",         category: "Home Services", slug: "trades"   },
+  { id: "handyman",          label: "Handyman",          category: "Home Services", slug: "trades"   },
+  { id: "appliance-repair",  label: "Appliance Repair",  category: "Home Services", slug: "field_services" },
+  // Education
+  { id: "tutoring",       label: "Tutoring",        category: "Education", slug: "other" },
+  { id: "music-lessons",  label: "Music Lessons",   category: "Education", slug: "other" },
+  { id: "coaching",       label: "Coaching",        category: "Education", slug: "other" },
+  // Other — special: triggers custom text input
+  { id: "other", label: "Other", category: "Other", slug: "other" },
 ];
 
 // ── Product selection data ───────────────────────────────────────────────────
 
-type IndividualProduct = { id: string; name: string; color: string; desc: string; price: string; badge: string; available: boolean };
-type BundlePair       = { id: string; name: string; colors: [string, string]; subtitle: string; price: string; savings: string; comingSoon: boolean };
+type IndividualProduct = {
+  id: string;
+  name: string;
+  color: string;
+  nameColor: string;
+  gradient: string;
+  glow: string;
+  desc: string;
+  price: string;
+  badge: string;
+  available: boolean;
+};
+
+type BundlePair = {
+  id: string;
+  name: string;
+  colors: [string, string];
+  gradient: string;
+  subtitle: string;
+  price: string;
+  savings: string;
+  comingSoon: boolean;
+};
 
 const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
-  { id: "core",  name: "SERVLO Core",  color: "#3B82F6", desc: "Job management, invoicing, scheduling", price: "From $49/mo",   badge: "Available now",   available: true  },
-  { id: "grow",  name: "SERVLO Grow",  color: "#8B5CF6", desc: "AI ads, reviews and social content",   price: "From $59/mo",   badge: "Coming Q3 2026", available: false },
-  { id: "leads", name: "SERVLO Leads", color: "#F59E0B", desc: "Verified job leads marketplace",       price: "From $12/lead", badge: "Coming Q4 2026", available: false },
+  {
+    id: "core", name: "SERVLO Core", color: "#3B82F6",
+    nameColor: "#93C5FD",
+    gradient: "linear-gradient(135deg, #0d1b36 0%, #1a3a6b 100%)",
+    glow: "rgba(59,130,246,0.2)",
+    desc: "Job management, invoicing, scheduling",
+    price: "From $49/mo", badge: "Available now", available: true,
+  },
+  {
+    id: "grow", name: "SERVLO Grow", color: "#8B5CF6",
+    nameColor: "#C4B5FD",
+    gradient: "linear-gradient(135deg, #120a2e 0%, #2d1b69 100%)",
+    glow: "rgba(139,92,246,0.2)",
+    desc: "AI ads, reviews and social content",
+    price: "From $59/mo", badge: "Coming Q3 2026", available: false,
+  },
+  {
+    id: "leads", name: "SERVLO Leads", color: "#F59E0B",
+    nameColor: "#FCD34D",
+    gradient: "linear-gradient(135deg, #1f1200 0%, #3d2000 100%)",
+    glow: "rgba(245,158,11,0.2)",
+    desc: "Verified job leads marketplace",
+    price: "From $12/lead", badge: "Coming Q4 2026", available: false,
+  },
 ];
 
 const BUNDLE_PAIRS: BundlePair[] = [
-  { id: "core+grow",   name: "Core + Grow",   colors: ["#3B82F6", "#8B5CF6"], subtitle: "Essential Bundle", price: "$149/mo", savings: "Save $29/mo", comingSoon: false },
-  { id: "core+leads",  name: "Core + Leads",  colors: ["#3B82F6", "#F59E0B"], subtitle: "Starter Bundle",   price: "$99/mo",  savings: "Save $12/mo", comingSoon: false },
-  { id: "grow+leads",  name: "Grow + Leads",  colors: ["#8B5CF6", "#F59E0B"], subtitle: "Growth Bundle",    price: "$199/mo", savings: "Coming 2026", comingSoon: true  },
+  {
+    id: "core+grow", name: "Core + Grow", colors: ["#3B82F6", "#8B5CF6"],
+    gradient: "linear-gradient(135deg, #0d1b36 0%, #2d1b69 100%)",
+    subtitle: "Essential Bundle", price: "$149/mo", savings: "Save $29/mo", comingSoon: false,
+  },
+  {
+    id: "core+leads", name: "Core + Leads", colors: ["#3B82F6", "#F59E0B"],
+    gradient: "linear-gradient(135deg, #0d1b36 0%, #3d2000 100%)",
+    subtitle: "Starter Bundle", price: "$99/mo", savings: "Save $12/mo", comingSoon: false,
+  },
+  {
+    id: "grow+leads", name: "Grow + Leads", colors: ["#8B5CF6", "#F59E0B"],
+    gradient: "linear-gradient(135deg, #120a2e 0%, #3d2000 100%)",
+    subtitle: "Growth Bundle", price: "$199/mo", savings: "Coming 2026", comingSoon: true,
+  },
 ];
 
 const FULL_PLATFORM = {
@@ -134,38 +247,6 @@ type PlanTier = {
   recommended?: boolean;
 };
 
-const CORE_TIERS: PlanTier[] = [
-  {
-    id: "solo",
-    name: "Solo",
-    price: "$49",
-    description: "Perfect for soloists",
-    features: ["1 user", "All Core features", "Unlimited clients & invoices"],
-  },
-  {
-    id: "team",
-    name: "Team",
-    price: "$119",
-    description: "For growing businesses",
-    features: ["Up to 10 users", "Team timesheets & scheduling", "Priority support"],
-    recommended: true,
-  },
-  {
-    id: "business",
-    name: "Business",
-    price: "$249",
-    description: "Scaling operations",
-    features: ["Unlimited users", "Advanced reporting", "Dedicated account manager"],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "$499",
-    description: "Custom solutions",
-    features: ["Custom integrations", "White-glove onboarding", "SLA guarantee"],
-  },
-];
-
 const GROW_TIERS: PlanTier[] = [
   {
     id: "starter",
@@ -191,9 +272,87 @@ const GROW_TIERS: PlanTier[] = [
   },
 ];
 
-function tiersForProduct(productCombo: string): PlanTier[] {
-  const hasCore = productCombo === "core" || productCombo.startsWith("core+");
-  return hasCore ? CORE_TIERS : GROW_TIERS;
+const LEADS_TIERS: PlanTier[] = [
+  {
+    id: "payg",
+    name: "Pay-as-you-go",
+    price: "$12/lead",
+    description: "Pay only for leads you accept",
+    features: ["No subscription required", "Verified trade leads", "Accept or decline each lead"],
+  },
+  {
+    id: "verified",
+    name: "Verified",
+    price: "$39/mo",
+    description: "Regular verified leads included",
+    features: ["5 leads/month included", "Lead alerts via SMS & email", "Priority placement"],
+    recommended: true,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: "$89/mo",
+    description: "Maximum lead volume",
+    features: ["15 leads/month included", "Exclusive territory options", "Dedicated account support"],
+  },
+];
+
+function tiersForCombo(combo: string): PlanTier[] {
+  if (combo === "leads") return LEADS_TIERS;
+  if (combo === "grow") return GROW_TIERS;
+
+  const priceMap: Record<string, [number, number, number, number]> = {
+    "core":             [49,  119, 249, 499],
+    "core+grow":        [149, 199, 299, 499],
+    "core+leads":       [99,  179, 279, 499],
+    "grow+leads":       [199, 279, 379, 499],
+    "core+grow+leads":  [249, 329, 429, 499],
+  };
+  const [p0, p1, p2, p3] = priceMap[combo] ?? [49, 119, 249, 499];
+  return [
+    {
+      id: "solo",
+      name: "Solo",
+      price: `$${p0}`,
+      description: "Perfect for soloists",
+      features: ["1 user", "All Core features", "Unlimited clients & invoices"],
+    },
+    {
+      id: "team",
+      name: "Team",
+      price: `$${p1}`,
+      description: "For growing businesses",
+      features: ["Up to 10 users", "Team timesheets & scheduling", "Priority support"],
+      recommended: true,
+    },
+    {
+      id: "business",
+      name: "Business",
+      price: `$${p2}`,
+      description: "Scaling operations",
+      features: ["Unlimited users", "Advanced reporting", "Dedicated account manager"],
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise",
+      price: `$${p3}`,
+      description: "Custom solutions",
+      features: ["Custom integrations", "White-glove onboarding", "SLA guarantee"],
+    },
+  ];
+}
+
+function comboLabel(combo: string): string {
+  const names: Record<string, string> = {
+    "core":            "SERVLO Core",
+    "grow":            "SERVLO Grow",
+    "leads":           "SERVLO Leads",
+    "core+grow":       "Core + Grow — Essential Bundle",
+    "core+leads":      "Core + Leads — Starter Bundle",
+    "grow+leads":      "Grow + Leads — Growth Bundle",
+    "core+grow+leads": "SERVLO Full Platform",
+  };
+  return names[combo] ?? combo;
 }
 
 // ── SVG icons ───────────────────────────────────────────────────────────────
@@ -275,9 +434,20 @@ export function SignupForm() {
   // Phone (AU-only)
   const [phoneInput, setPhoneInput] = useState("");
 
-  // Industry selection
-  const [selected, setSelected] = useState<IndustrySlug[]>([]);
+  // Industry selection — chip-based
+  const [selectedChipIds, setSelectedChipIds] = useState<Set<string>>(new Set());
+  const [industrySearch, setIndustrySearch] = useState("");
   const [otherNote, setOtherNote] = useState("");
+
+  // Derived: slugs from selected chips
+  const selected = useMemo((): IndustrySlug[] => {
+    const slugSet = new Set<IndustrySlug>();
+    for (const chipId of selectedChipIds) {
+      const chip = INDUSTRY_CHIPS.find((c) => c.id === chipId);
+      if (chip) slugSet.add(chip.slug);
+    }
+    return [...slugSet];
+  }, [selectedChipIds]);
 
   // Product + plan
   const [selectedProductCombo, setSelectedProductCombo] = useState("core");
@@ -333,7 +503,7 @@ export function SignupForm() {
   const abnHas11  = abnDigits.length === 11;
   const abnValid  = abnHas11 && validateAbnChecksum(abnInput);
 
-  const needsOtherNote = selected.includes("other");
+  const needsOtherNote = selectedChipIds.has("other");
   const industriesJson = useMemo(() => JSON.stringify(selected), [selected]);
   const signupPrimaryIndustry = useMemo(
     () => primaryIndustrySlug(selected.length ? selected : ["other"]),
@@ -343,9 +513,26 @@ export function SignupForm() {
   const signupOptionalIds    = useMemo(() => optionalFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
   const signupIndustryHeadline = formatIndustryLabels([signupPrimaryIndustry]) || "SERVLO";
 
+  const filteredChips = useMemo(() => {
+    const q = industrySearch.trim().toLowerCase();
+    if (!q) return INDUSTRY_CHIPS;
+    return INDUSTRY_CHIPS.filter(
+      (c) => c.label.toLowerCase().includes(q) || c.category.toLowerCase().includes(q)
+    );
+  }, [industrySearch]);
+
+  function toggleChip(id: string) {
+    setSelectedChipIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   useEffect(() => {
-    if (!selected.includes("other")) setOtherNote("");
-  }, [selected]);
+    if (!selectedChipIds.has("other")) setOtherNote("");
+  }, [selectedChipIds]);
 
   useEffect(() => {
     setAbnConfirmed(false);
@@ -459,7 +646,7 @@ export function SignupForm() {
   function handleContinueFromProducts(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     // Reset plan tier to sensible default for the selected product
-    const tiers = tiersForProduct(selectedProductCombo);
+    const tiers = tiersForCombo(selectedProductCombo);
     setSelectedPlanTier(tiers[0].id);
     setStep(4);
   }
@@ -480,10 +667,6 @@ export function SignupForm() {
     e.preventDefault();
     setError(null);
     setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
-  }
-
-  function toggleIndustry(slug: IndustrySlug) {
-    setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   }
 
   // ── Core signup logic ────────────────────────────────────────────────────
@@ -679,7 +862,15 @@ export function SignupForm() {
   const priceId  = getPriceId(selectedPlanTier);
   const needsCard = hasCore && !!priceId;
 
-  const currentTiers = tiersForProduct(selectedProductCombo);
+  const currentTiers = tiersForCombo(selectedProductCombo);
+
+  // ABN confirm checkbox visibility
+  const showConfirmCheckbox = abnValid && !abnLookupLoading && (
+    abnLookup?.status === "active" ||
+    abnLookup?.status === "skipped" ||
+    abnLookup?.status === "error" ||
+    abnLookup === null
+  );
 
   // ── Render ───────────────────────────────────────────────────────────────
 
@@ -850,50 +1041,54 @@ export function SignupForm() {
                 ) : abnHas11 && !abnValid ? (
                   <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please re-enter</p>
                 ) : null}
-                {/* ABN lookup result */}
-                {abnLookupLoading ? (
-                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
-                    <Loader2 size={12} className="animate-spin" />
-                    Looking up ABN in the Australian Business Register…
-                  </p>
-                ) : abnLookup?.status === "active" ? (
-                  <>
-                    <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-                      <Check size={12} strokeWidth={3} aria-hidden />
-                      {abnLookup.entityName} — is this your business?
-                    </p>
-                    <label className="mt-2 flex cursor-pointer items-start gap-2">
-                      <input
-                        type="checkbox"
-                        checked={abnConfirmed}
-                        onChange={(e) => setAbnConfirmed(e.target.checked)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
-                      />
-                      <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
-                    </label>
-                  </>
-                ) : abnLookup?.status === "inactive" ? (
-                  <p className="mt-1.5 text-xs font-medium text-amber-400">
-                    ⚠ {abnLookup.entityName} — this ABN is not currently active. Please check and try again.
-                  </p>
-                ) : abnLookup?.status === "not_found" ? (
-                  <p className="mt-1.5 text-xs font-medium text-amber-400">
-                    ABN not found in the Australian Business Register — please check and try again.
-                  </p>
-                ) : (
-                  /* skipped (no GUID) or error — fall back to algorithm-only confirm checkbox */
-                  abnValid ? (
-                    <label className="mt-2 flex cursor-pointer items-start gap-2">
-                      <input
-                        type="checkbox"
-                        checked={abnConfirmed}
-                        onChange={(e) => setAbnConfirmed(e.target.checked)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
-                      />
-                      <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
-                    </label>
-                  ) : null
-                )}
+
+                {/* ABN lookup result box */}
+                {abnValid ? (
+                  <div
+                    className={`mt-2 rounded-md border p-3 text-sm ${
+                      !abnLookupLoading && (abnLookup?.status === "inactive" || abnLookup?.status === "not_found")
+                        ? "border-amber-600/40 bg-amber-950/30"
+                        : "border-emerald-500/40 bg-emerald-950/30"
+                    }`}
+                  >
+                    {abnLookupLoading ? (
+                      <span className="flex items-center gap-2 text-slate-400">
+                        <Loader2 size={14} className="animate-spin shrink-0" aria-hidden />
+                        Looking up ABN in the Australian Business Register…
+                      </span>
+                    ) : abnLookup?.status === "active" ? (
+                      <span className="font-semibold text-emerald-400">
+                        ✓ {abnLookup.entityName} — ABN active
+                      </span>
+                    ) : abnLookup?.status === "inactive" ? (
+                      <span className="text-amber-400">
+                        ⚠ {abnLookup.entityName} — this ABN is not currently active.
+                      </span>
+                    ) : abnLookup?.status === "not_found" ? (
+                      <span className="text-amber-400">
+                        ⚠ ABN not found in the Australian Business Register.
+                      </span>
+                    ) : (
+                      /* skipped, error, or null — fallback */
+                      <span className="font-semibold text-emerald-400">
+                        ✓ Valid ABN format — please confirm this matches your registered business name
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+
+                {/* Confirm checkbox — only when box shows active or fallback text */}
+                {showConfirmCheckbox ? (
+                  <label className="mt-2 flex cursor-pointer items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={abnConfirmed}
+                      onChange={(e) => setAbnConfirmed(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
+                    />
+                    <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
+                  </label>
+                ) : null}
               </div>
 
               {/* Phone — AU only with static prefix */}
@@ -933,48 +1128,62 @@ export function SignupForm() {
               </div>
             </div>
 
-            {/* ── Step 2: Industries ───────────────────────────────────── */}
+            {/* ── Step 2: Industries ────────────────────────────────────── */}
             <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
               <div>
                 <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
                   What industries do you serve?
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Select all that apply — we&apos;ll tailor your dashboard. Optional: skip if you&apos;d rather set this up later.
+                  Select all that apply — we&apos;ll tailor your workspace. You can change this later.
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {OPTIONS.map(({ slug, label, sub, Icon }) => {
-                  const on = selected.includes(slug);
-                  return (
-                    <button
-                      key={slug} type="button"
-                      onClick={() => toggleIndustry(slug)}
-                      className={`flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition ${
-                        on
-                          ? "border-[#3B82F6] bg-[#3B82F6]/10 ring-2 ring-[#3B82F6]/40"
-                          : "border-slate-600 hover:border-slate-500"
-                      }`}
-                    >
-                      <div className="flex w-full items-start gap-2">
-                        <span
-                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
-                            on ? "border-[#3B82F6] bg-[#3B82F6] text-white" : "border-slate-500 text-transparent"
+              {/* Search */}
+              <input
+                type="text"
+                placeholder="Search your industry..."
+                value={industrySearch}
+                onChange={(e) => setIndustrySearch(e.target.value)}
+                className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-[#3B82F6] focus:outline-none"
+              />
+
+              {/* Selected counter */}
+              {selectedChipIds.size > 0 ? (
+                <p className="text-xs font-semibold text-slate-400">
+                  Selected: {selectedChipIds.size} {selectedChipIds.size === 1 ? "industry" : "industries"}
+                </p>
+              ) : null}
+
+              {/* Chip grid — scrollable, max height */}
+              <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-700 p-3">
+                {filteredChips.length === 0 ? (
+                  <p className="text-sm text-slate-500">No industries match your search.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {filteredChips.map((chip) => {
+                      const on = selectedChipIds.has(chip.id);
+                      return (
+                        <button
+                          key={chip.id}
+                          type="button"
+                          onClick={() => toggleChip(chip.id)}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                            on
+                              ? "border-[#3B82F6] bg-[#3B82F6]/15 text-[#93C5FD]"
+                              : "border-slate-600 bg-slate-800/60 text-slate-300 hover:border-slate-400"
                           }`}
-                          aria-hidden
                         >
-                          ✓
-                        </span>
-                        <Icon className="h-5 w-5 shrink-0 text-[#3B82F6]" aria-hidden />
-                        <span className="text-sm font-semibold text-slate-100">{label}</span>
-                      </div>
-                      <p className="pl-9 text-xs text-slate-400">{sub}</p>
-                    </button>
-                  );
-                })}
+                          {on ? <Check size={10} strokeWidth={3} aria-hidden /> : null}
+                          {chip.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
+              {/* Custom note for "Other" */}
               {needsOtherNote ? (
                 <div>
                   <label htmlFor="industry_other_field" className="mb-1 block text-sm font-medium text-slate-300">
@@ -993,7 +1202,12 @@ export function SignupForm() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
-                <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>Continue</Button>
+                <div className="flex gap-2">
+                  <Button type="button" variant="dark-ghost" onClick={handleContinueFromIndustries} className="text-slate-400 text-sm">
+                    Skip
+                  </Button>
+                  <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>Continue</Button>
+                </div>
               </div>
             </div>
 
@@ -1042,13 +1256,20 @@ export function SignupForm() {
                           else         setSelectedProductCombo(hasGrow ? "core+grow+leads" : "core+leads");
                         }
                       }}
-                      className="relative flex flex-col rounded-xl border p-4 text-left transition"
-                      style={
-                        isSelected
-                          ? { borderColor: prod.color, boxShadow: `0 0 0 2px ${prod.color}44`, background: `${prod.color}12` }
-                          : { borderColor: "#334155" }
-                      }
+                      className="relative flex flex-col overflow-hidden rounded-xl p-4 text-left transition"
+                      style={{
+                        background: prod.gradient,
+                        border: isSelected
+                          ? `1px solid ${prod.color}`
+                          : `1px solid rgba(255,255,255,0.08)`,
+                        borderLeft: `4px solid ${prod.color}`,
+                        boxShadow: isSelected
+                          ? `0 0 24px ${prod.glow}, 0 0 0 2px ${prod.color}44`
+                          : `0 0 20px ${prod.glow}`,
+                        transform: isSelected ? "scale(1.02)" : undefined,
+                      }}
                     >
+                      <div className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl" style={{ background: prod.color }} />
                       {isSelected ? (
                         <span
                           className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
@@ -1057,22 +1278,20 @@ export function SignupForm() {
                           <Check size={11} strokeWidth={3} className="text-white" />
                         </span>
                       ) : null}
-                      <div
-                        className="mb-2 h-1 w-8 rounded-full"
-                        style={{ backgroundColor: prod.color }}
-                      />
-                      <p className="text-sm font-bold text-slate-100">{prod.name}</p>
-                      <p className="mt-1 text-xs text-slate-400">{prod.desc}</p>
-                      <p className="mt-3 text-xs font-semibold text-slate-300">{prod.price}</p>
-                      <span
-                        className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          prod.available
-                            ? "bg-emerald-500/15 text-emerald-300"
-                            : "bg-slate-700 text-slate-400"
-                        }`}
-                      >
-                        {prod.badge}
-                      </span>
+                      <div className="pt-1">
+                        <p className="text-sm font-bold" style={{ color: prod.nameColor }}>{prod.name}</p>
+                        <p className="mt-1 text-xs text-slate-300">{prod.desc}</p>
+                        <p className="mt-3 text-xs font-semibold text-slate-200">{prod.price}</p>
+                        <span
+                          className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            prod.available
+                              ? "bg-emerald-500/15 text-emerald-300"
+                              : "bg-slate-700 text-slate-400"
+                          }`}
+                        >
+                          {prod.badge}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -1081,9 +1300,6 @@ export function SignupForm() {
               {/* Row 2 — bundle pairs */}
               <div className="grid gap-3 sm:grid-cols-3">
                 {BUNDLE_PAIRS.map((bundle) => {
-                  const isSelected = selectedProductCombo === bundle.id ||
-                    (bundle.id === "core+grow"  && selectedProductCombo === "core+grow+leads") ||
-                    (bundle.id === "core+leads" && selectedProductCombo === "core+grow+leads");
                   const isActive = selectedProductCombo === bundle.id;
                   return (
                     <button
@@ -1095,13 +1311,22 @@ export function SignupForm() {
                         setProductTooltip(null);
                       }}
                       disabled={bundle.comingSoon}
-                      className="relative flex flex-col rounded-xl border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-50"
-                      style={
-                        isActive
-                          ? { borderColor: bundle.colors[0], boxShadow: `0 0 0 2px ${bundle.colors[0]}44`, background: `${bundle.colors[0]}12` }
-                          : { borderColor: "#334155" }
-                      }
+                      className="relative flex flex-col overflow-hidden rounded-xl p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        background: bundle.gradient,
+                        border: isActive
+                          ? `1px solid ${bundle.colors[0]}`
+                          : `1px solid rgba(255,255,255,0.08)`,
+                        boxShadow: isActive
+                          ? `0 0 20px color-mix(in srgb, ${bundle.colors[0]} 30%, ${bundle.colors[1]} 30%)`
+                          : undefined,
+                        transform: isActive ? "scale(1.02)" : undefined,
+                      }}
                     >
+                      <div
+                        className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl"
+                        style={{ background: `linear-gradient(90deg, ${bundle.colors[0]}, ${bundle.colors[1]})` }}
+                      />
                       {isActive ? (
                         <span
                           className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
@@ -1110,23 +1335,20 @@ export function SignupForm() {
                           <Check size={11} strokeWidth={3} className="text-white" />
                         </span>
                       ) : null}
-                      {/* Diagonal split accent bar */}
-                      <div
-                        className="mb-2 h-1 w-full rounded-full"
-                        style={{ background: `linear-gradient(90deg, ${bundle.colors[0]} 50%, ${bundle.colors[1]} 50%)` }}
-                      />
-                      <p className="text-sm font-bold text-slate-100">{bundle.name}</p>
-                      <p className="text-xs text-slate-400">{bundle.subtitle}</p>
-                      <p className="mt-3 text-xs font-semibold text-slate-300">{bundle.price}</p>
-                      <span
-                        className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          bundle.comingSoon
-                            ? "bg-slate-700 text-slate-400"
-                            : "bg-emerald-500/15 text-emerald-300"
-                        }`}
-                      >
-                        {bundle.savings}
-                      </span>
+                      <div className="pt-1">
+                        <p className="text-sm font-bold text-slate-100">{bundle.name}</p>
+                        <p className="text-xs text-slate-400">{bundle.subtitle}</p>
+                        <p className="mt-3 text-xs font-semibold text-slate-300">{bundle.price}</p>
+                        <span
+                          className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            bundle.comingSoon
+                              ? "bg-slate-700 text-slate-400"
+                              : "bg-emerald-500/15 text-emerald-300"
+                          }`}
+                        >
+                          {bundle.savings}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -1212,6 +1434,12 @@ export function SignupForm() {
                 </p>
               </div>
 
+              {/* Product summary banner */}
+              <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-4 py-2.5">
+                <p className="text-xs text-slate-400">Selected product</p>
+                <p className="text-sm font-semibold text-slate-100">{comboLabel(selectedProductCombo)}</p>
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-2">
                 {currentTiers.map((tier) => {
                   const on = selectedPlanTier === tier.id;
@@ -1292,9 +1520,17 @@ export function SignupForm() {
                     <p className="text-xs text-slate-400 capitalize">{selectedPlanTier} plan</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-slate-100">
-                      {currentTiers.find((t) => t.id === selectedPlanTier)?.price ?? "—"}<span className="text-xs font-normal text-slate-400">/mo</span>
-                    </p>
+                    {(() => {
+                      const tier = currentTiers.find((t) => t.id === selectedPlanTier);
+                      const tierPrice = tier?.price ?? "—";
+                      // Leads tiers already include unit in price string
+                      const hasUnit = tierPrice.includes("/") || selectedProductCombo === "leads";
+                      return (
+                        <p className="text-sm font-bold text-slate-100">
+                          {tierPrice}{!hasUnit ? <span className="text-xs font-normal text-slate-400">/mo</span> : null}
+                        </p>
+                      );
+                    })()}
                     {needsCard ? (
                       <p className="text-xs text-emerald-400">30-day trial free</p>
                     ) : (

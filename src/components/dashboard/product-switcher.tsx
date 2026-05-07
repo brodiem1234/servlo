@@ -155,7 +155,7 @@ export function ProductSwitcher({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition-colors"
+        className="product-switcher-trigger flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition-colors"
         style={{
           background: open
             ? "color-mix(in srgb, var(--sidebar-divider) 80%, transparent)"
@@ -176,11 +176,11 @@ export function ProductSwitcher({
       {/* Dropdown panel */}
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-1 min-w-[300px] rounded-xl shadow-2xl"
+          className="absolute left-0 top-full z-[60] mt-1 min-w-[300px] rounded-xl"
           style={{
-            background: "#0d1117",
-            border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "0 8px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06)",
+            background: "var(--panel-bg, #0d1117)",
+            border: "1px solid var(--panel-border, rgba(255,255,255,0.12))",
+            boxShadow: "var(--panel-shadow, 0 8px 40px rgba(0,0,0,0.75))",
           }}
         >
           {/* Active products */}
@@ -305,8 +305,8 @@ export function ProductSwitcher({
           <div
             className="rounded-b-xl px-4 py-2 text-center text-[10px]"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              borderTop: "1px solid var(--border, rgba(255,255,255,0.08))",
+              background: "rgba(0,0,0,0.04)",
+              borderTop: "1px solid var(--panel-border, rgba(255,255,255,0.08))",
               color: "var(--text-muted, #6b7280)",
             }}
           >

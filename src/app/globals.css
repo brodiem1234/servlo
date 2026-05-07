@@ -83,7 +83,7 @@
 :root {
   --accent-color: #0891b2;
   --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
-  --bg-primary: color-mix(in srgb, var(--accent-color) 2.5%, #f8fafc);
+  --bg-primary: #F4F7FB;
   --bg-secondary: color-mix(in srgb, var(--accent-color) 6%, #ffffff);
   --bg-card: #ffffff;
   --text-primary: #0f172a;
@@ -441,6 +441,9 @@
   --input-bg: rgba(255, 255, 255, 0.05);
   --sidebar-hover-bg: rgba(255, 255, 255, 0.07);
   --sidebar-divider: rgba(255, 255, 255, 0.08);
+  --panel-bg: #0d1117;
+  --panel-border: rgba(255,255,255,0.12);
+  --panel-shadow: 0 8px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
 }
 [data-product] .owner-sidebar {
   --sidebar-text: rgba(255, 255, 255, 0.85);
@@ -503,28 +506,31 @@ html.light-mode [data-product] {
   --input-bg: #ffffff;
   --sidebar-hover-bg: rgba(var(--product-rgb), 0.06);
   --sidebar-divider: #e2e8f0;
+  --panel-bg: #ffffff;
+  --panel-border: #e2e8f0;
+  --panel-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
 html.light-mode [data-product="core"] {
-  background-color: #f8fbff !important;
+  background-color: #EEF4FF !important;
   --product-sidebar: #ffffff;
-  --product-main: #f8fbff;
+  --product-main: #EEF4FF;
   --sidebar-active-bg: rgba(59, 130, 246, 0.08);
   --sidebar-active-text: #3B82F6;
 }
 
 html.light-mode [data-product="grow"] {
-  background-color: #faf8ff !important;
+  background-color: #F0EEFF !important;
   --product-sidebar: #ffffff;
-  --product-main: #faf8ff;
+  --product-main: #F0EEFF;
   --sidebar-active-bg: rgba(139, 92, 246, 0.08);
   --sidebar-active-text: #8B5CF6;
 }
 
 html.light-mode [data-product="leads"] {
-  background-color: #fffbf0 !important;
+  background-color: #FFF4E0 !important;
   --product-sidebar: #ffffff;
-  --product-main: #fffbf0;
+  --product-main: #FFF4E0;
   --sidebar-active-bg: rgba(245, 158, 11, 0.08);
   --sidebar-active-text: #F59E0B;
 }
@@ -543,8 +549,15 @@ html.light-mode [data-product] .owner-sidebar nav a:hover {
 
 /* Light mode sidebar border */
 html.light-mode [data-product] .owner-sidebar {
+  background: #ffffff !important;
   border-right: 1px solid #e2e8f0 !important;
   box-shadow: none !important;
+}
+
+html.light-mode [data-product] .product-switcher-trigger {
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
 }
 
 /* Light mode cards */
@@ -573,7 +586,7 @@ html.light-mode [data-product] input,
 html.light-mode [data-product] select,
 html.light-mode [data-product] textarea {
   background: #ffffff !important;
-  border-color: #d1d5db !important;
+  border-color: #e2e8f0 !important;
   color: #0F172A !important;
 }
 
@@ -610,9 +623,11 @@ html.light-mode [data-product] .dashboard-stat-value {
 
 /* Public page light mode restore (in case product shell light-mode class persists) */
 html.light-mode:not(:has([data-product])) {
-  --bg-primary: color-mix(in srgb, var(--accent-color) 2.5%, #f8fafc);
+  --bg-primary: #F4F7FB;
   --bg-card: #ffffff;
   --text-primary: #0f172a;
+  --input-bg: #ffffff;
+  --border: #e2e8f0;
 }
 
 /* ── Mobile card list — tables become stacked cards on small screens ─────── */
