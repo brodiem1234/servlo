@@ -2,12 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ComponentProps, FormEvent, KeyboardEvent, MouseEvent } from "react";
+import type { FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
-import type { SignupFormState } from "@/app/auth/signup/signup-form-state";
-import { signUpAction } from "@/app/auth/signup/signup-actions";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { authUrl } from "@/lib/auth/site-origin";
 import {
@@ -15,8 +12,8 @@ import {
   normalizePasswordStrength,
   abnDigitsFromInput,
   formatAbnDigits,
-  formatPhoneInput,
-  validatePhoneMinimum,
+  validateAbnChecksum,
+  toPhoneE164,
   type PasswordRequirementState,
   type PasswordRuleKey
 } from "@/lib/auth/signup-field-validation";
@@ -35,8 +32,7 @@ import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
 import { formatIndustryLabels } from "@/lib/industries";
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
-import { BrandAccentSwatches } from "@/components/brand-accent-swatches";
-import { DEFAULT_ACCENT_HEX, normalizeAccentColour, type AccentPresetHex } from "@/lib/brand-accent";
+import { DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
 import { WorkspaceSetupPreview } from "@/components/auth/workspace-setup-preview";
 import {
   buildInitialEnabledFeatures,
@@ -45,54 +41,58 @@ import {
   recommendedFeaturesForIndustry
 } from "@/lib/workspace-features";
 
-const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
-  {
-    slug: "trades",
-    label: "Trades",
-    sub: "Electricians, plumbers, builders, landscapers, concreters, painters",
-    Icon: HardHat
-  },
-  {
-    slug: "cleaning",
-    label: "Cleaning",
-    sub: "Residential, commercial, NDIS",
-    Icon: Sparkles
-  },
-  {
-    slug: "events",
-    label: "Events & hire",
-    sub: "Coordinators, AV, equipment hire",
-    Icon: PartyPopper
-  },
-  {
-    slug: "marketing",
-    label: "Marketing & agencies",
-    sub: "Studios, freelancers, digital shops",
-    Icon: Megaphone
-  },
-  {
-    slug: "health",
-    label: "Health & wellness",
-    sub: "Clinics, mobile practitioners, studios",
-    Icon: HeartPulse
-  },
-  {
-    slug: "field_services",
-    label: "Field services",
-    sub: "Pest control, inspections, maintenance",
-    Icon: ClipboardList
-  },
-  {
-    slug: "other",
-    label: "Other",
-    sub: "We'll learn how you work",
-    Icon: Tags
+// ── Phone country selector ──────────────────────────────────────────────────
+
+const PHONE_COUNTRIES = [
+  { code: "AU", flag: "🇦🇺", dialCode: "61", label: "+61" },
+  { code: "NZ", flag: "🇳🇿", dialCode: "64", label: "+64" },
+  { code: "GB", flag: "🇬🇧", dialCode: "44", label: "+44" },
+  { code: "US", flag: "🇺🇸", dialCode: "1",  label: "+1" },
+  { code: "CA", flag: "🇨🇦", dialCode: "1",  label: "+1 CA" },
+] as const;
+type PhoneCountryCode = typeof PHONE_COUNTRIES[number]["code"];
+
+function formatLocalPhone(value: string, countryCode: PhoneCountryCode): string {
+  const digits = value.replace(/\D/g, "");
+  if (countryCode === "AU" || countryCode === "NZ") {
+    const d = digits.slice(0, 10);
+    if (d.length <= 4) return d;
+    if (d.length <= 7) return `${d.slice(0, 4)} ${d.slice(4)}`;
+    return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`;
   }
+  if (countryCode === "GB") {
+    const d = digits.slice(0, 11);
+    if (d.length <= 5) return d;
+    return `${d.slice(0, 5)} ${d.slice(5)}`;
+  }
+  // US / CA
+  const d = digits.slice(0, 10);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
+}
+
+function phoneLocalDigits(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+function isPhoneValid(value: string): boolean {
+  return phoneLocalDigits(value).length >= 8;
+}
+
+// ── Industry options ────────────────────────────────────────────────────────
+
+const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: LucideIcon }> = [
+  { slug: "trades",        label: "Trades",               sub: "Electricians, plumbers, builders, landscapers, concreters, painters", Icon: HardHat },
+  { slug: "cleaning",      label: "Cleaning",             sub: "Residential, commercial, NDIS",                                       Icon: Sparkles },
+  { slug: "events",        label: "Events & hire",        sub: "Coordinators, AV, equipment hire",                                   Icon: PartyPopper },
+  { slug: "marketing",     label: "Marketing & agencies", sub: "Studios, freelancers, digital shops",                                 Icon: Megaphone },
+  { slug: "health",        label: "Health & wellness",    sub: "Clinics, mobile practitioners, studios",                             Icon: HeartPulse },
+  { slug: "field_services",label: "Field services",       sub: "Pest control, inspections, maintenance",                             Icon: ClipboardList },
+  { slug: "other",         label: "Other",                sub: "We'll learn how you work",                                           Icon: Tags },
 ];
 
-const initialSignupState: SignupFormState = { error: null };
-
-export type SignupRoleOption = "owner" | "manager" | "employee" | "contractor" | "client";
+// ── SVG icons ───────────────────────────────────────────────────────────────
 
 function GoogleLogoSmall() {
   return (
@@ -108,26 +108,23 @@ function GoogleLogoSmall() {
 function MicrosoftLogoSmall() {
   return (
     <svg className="h-5 w-5 shrink-0" viewBox="0 0 21 21" aria-hidden>
-      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+      <rect x="1"  y="1"  width="9" height="9" fill="#F25022" />
+      <rect x="11" y="1"  width="9" height="9" fill="#7FBA00" />
+      <rect x="1"  y="11" width="9" height="9" fill="#00A4EF" />
       <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
     </svg>
   );
 }
 
+// ── Password hint display ───────────────────────────────────────────────────
+
 function passwordHintLabel(rule: PasswordRuleKey): string {
   switch (rule) {
-    case "length":
-      return "Minimum 8 characters";
-    case "upper":
-      return "At least one uppercase letter";
-    case "number":
-      return "At least one number";
-    case "noPersonal":
-      return "Cannot contain your first name, last name, or email address";
-    default:
-      return "";
+    case "length":    return "Minimum 8 characters";
+    case "upper":     return "At least one uppercase letter";
+    case "number":    return "At least one number";
+    case "noPersonal":return "Cannot contain your first name, last name, or email address";
+    default:          return "";
   }
 }
 
@@ -138,10 +135,7 @@ function PasswordStrengthHints({ rules }: { rules: PasswordRequirementState }) {
       {order.map((key) => {
         const ok = rules[key];
         return (
-          <li
-            key={key}
-            className={`flex items-center gap-2 ${ok ? "text-emerald-600 dark:text-emerald-400" : "text-[#94a3b8]"}`}
-          >
+          <li key={key} className={`flex items-center gap-2 ${ok ? "text-emerald-600 dark:text-emerald-400" : "text-[#94a3b8]"}`}>
             <span className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${ok ? "bg-emerald-600/15" : "bg-slate-700/40"}`}>
               {ok ? <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} aria-hidden /> : null}
             </span>
@@ -153,41 +147,38 @@ function PasswordStrengthHints({ rules }: { rules: PasswordRequirementState }) {
   );
 }
 
-function SubmitPrimary({
-  children,
-  className,
-  variant,
-  disabled,
-  externalPending,
-  ...props
-}: ComponentProps<typeof Button> & { externalPending?: boolean }) {
-  const { pending } = useFormStatus();
-  const busy = pending || Boolean(externalPending);
-  const mergedDisabled = busy || disabled;
-  return (
-    <Button type="submit" {...props} className={className} variant={variant} disabled={mergedDisabled}>
-      {busy ? "Working…" : children}
-    </Button>
-  );
-}
+// ── Main form component ─────────────────────────────────────────────────────
 
 export function SignupForm() {
   const router = useRouter();
-  const [state, formAction] = useFormState(signUpAction, initialSignupState);
   const formRef = useRef<HTMLFormElement>(null);
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [role, setRole] = useState<SignupRoleOption>("owner");
+
+  // Step state (1 = credentials, 2 = industries, 3 = workspace preview)
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  // Credential fields
   const [nameInput, setNameInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
+  const [businessNameInput, setBusinessNameInput] = useState("");
+
+  // ABN
   const [abnInput, setAbnInput] = useState("");
+  const [abnConfirmed, setAbnConfirmed] = useState(false);
+
+  // Phone
   const [phoneInput, setPhoneInput] = useState("");
-  const [inviteCodeInput, setInviteCodeInput] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState<PhoneCountryCode>("AU");
+
+  // Industry selection
   const [selected, setSelected] = useState<IndustrySlug[]>([]);
   const [otherNote, setOtherNote] = useState("");
-  const [accentColour, setAccentColour] = useState<AccentPresetHex>(DEFAULT_ACCENT_HEX);
+
+  // Feature toggles
   const [optionalFeatureOn, setOptionalFeatureOn] = useState<Record<string, boolean>>({});
-  const [localError, setLocalError] = useState<string | null>(null);
+
+  // UI state
+  const [error, setError] = useState<string | null>(null);
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthWorking, setOauthWorking] = useState(false);
 
@@ -197,8 +188,8 @@ export function SignupForm() {
     setOauthWorking(true);
     try {
       const supabase = createSupabaseBrowser();
-      const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: oauthRedirect } });
-      if (error) { window.alert(error.message || "Unable to connect to Google."); setOauthWorking(false); }
+      const { error: e } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: oauthRedirect } });
+      if (e) { window.alert(e.message || "Unable to connect to Google."); setOauthWorking(false); }
     } catch (e) { window.alert(e instanceof Error ? e.message : "Google sign-up failed."); setOauthWorking(false); }
   }, [oauthRedirect]);
 
@@ -206,17 +197,19 @@ export function SignupForm() {
     setOauthWorking(true);
     try {
       const supabase = createSupabaseBrowser();
-      const { error } = await supabase.auth.signInWithOAuth({ provider: "azure", options: { scopes: "email", redirectTo: oauthRedirect } });
-      if (error) { window.alert(error.message || "Unable to connect to Microsoft."); setOauthWorking(false); }
+      const { error: e } = await supabase.auth.signInWithOAuth({ provider: "azure", options: { scopes: "email", redirectTo: oauthRedirect } });
+      if (e) { window.alert(e.message || "Unable to connect to Microsoft."); setOauthWorking(false); }
     } catch (e) { window.alert(e instanceof Error ? e.message : "Microsoft sign-up failed."); setOauthWorking(false); }
   }, [oauthRedirect]);
 
-  const needsWizard = role === "owner" || role === "manager";
-  const needsInvite = role === "employee" || role === "contractor" || role === "client";
   const passwordRules = useMemo(
     () => normalizePasswordStrength(passwordInput, nameInput, emailInput),
     [passwordInput, nameInput, emailInput]
   );
+
+  const abnDigits = abnDigitsFromInput(abnInput);
+  const abnHas11  = abnDigits.length === 11;
+  const abnValid  = abnHas11 && validateAbnChecksum(abnInput);
 
   const needsOtherNote = selected.includes("other");
   const industriesJson = useMemo(() => JSON.stringify(selected), [selected]);
@@ -225,21 +218,17 @@ export function SignupForm() {
     [selected]
   );
   const signupRecommendedIds = useMemo(() => recommendedFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
-  const signupOptionalIds = useMemo(() => optionalFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
+  const signupOptionalIds    = useMemo(() => optionalFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
   const signupIndustryHeadline = formatIndustryLabels([signupPrimaryIndustry]) || "SERVLO";
-  const displayedError = localError ?? state.error;
 
   useEffect(() => {
     if (!selected.includes("other")) setOtherNote("");
   }, [selected]);
 
+  // Reset ABN confirmation when ABN changes
   useEffect(() => {
-    setLocalError(null);
-  }, [role]);
-
-  useEffect(() => {
-    setStep(1);
-  }, [role]);
+    setAbnConfirmed(false);
+  }, [abnInput]);
 
   function blockAbnKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" || e.key.startsWith("Arrow")) return;
@@ -249,26 +238,21 @@ export function SignupForm() {
   }
 
   function blockPhoneKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    const el = e.currentTarget;
     if (e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" || e.key.startsWith("Arrow")) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (/^\d$/.test(e.key)) return;
-    if (e.key === "+" && el.selectionStart === 0 && !el.value.includes("+")) return;
     e.preventDefault();
   }
 
-  function validateOwnerStepOne(): string | null {
-    if (!allPasswordRequirementsMet(passwordRules)) {
-      return "Please meet every password requirement before continuing.";
-    }
-    if (!validatePhoneMinimum(phoneInput)) {
-      return "Phone number must contain at least 10 digits.";
-    }
-    if (needsWizard) {
-      if (abnDigitsFromInput(abnInput).length !== 11) {
-        return "ABN must be 11 digits";
-      }
-    }
+  function validateStep1(): string | null {
+    if (!nameInput.trim()) return "Full name is required.";
+    if (!emailInput.trim()) return "Email is required.";
+    if (!businessNameInput.trim()) return "Business name is required.";
+    if (!allPasswordRequirementsMet(passwordRules)) return "Please meet every password requirement before continuing.";
+    if (!isPhoneValid(phoneInput)) return "Enter a valid phone number.";
+    if (!abnHas11) return "ABN must be 11 digits.";
+    if (!abnValid) return "Invalid ABN — please re-enter your 11-digit ABN.";
+    if (!abnConfirmed) return "Please confirm your ABN before continuing.";
     return null;
   }
 
@@ -278,16 +262,9 @@ export function SignupForm() {
 
   function handleContinue(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    const form = formRef.current;
-    if (!form?.checkValidity()) {
-      form?.reportValidity();
-      return;
-    }
-    const gate = validateOwnerStepOne();
-    if (gate) {
-      setLocalError(gate);
-      return;
-    }
+    const gate = validateStep1();
+    if (gate) { setError(gate); return; }
+    setError(null);
     setStep(2);
   }
 
@@ -300,90 +277,58 @@ export function SignupForm() {
 
   function handleContinueFromWorkspacePreview(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    setStep(4);
+    formRef.current?.requestSubmit();
   }
 
   function handleBack(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    setStep((s) => (s === 4 ? 3 : s === 3 ? 2 : 1));
+    setError(null);
+    setStep((s) => (s === 3 ? 2 : s === 2 ? 1 : 1) as 1 | 2 | 3);
   }
 
   async function handleOwnerSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!needsWizard || step !== 4) return;
+    if (step !== 3) return;
 
-    const form = formRef.current;
-    if (!form?.checkValidity()) {
-      form?.reportValidity();
-      return;
-    }
+    setError(null);
 
-    setLocalError(null);
-    const gate = validateOwnerStepOne();
-    if (gate) {
-      setLocalError(gate);
-      return;
-    }
+    const gate = validateStep1();
+    if (gate) { setError(gate); return; }
 
     setOwnerSubmitting(true);
 
     try {
-      const fd = new FormData(form);
-      const fullName = String(fd.get("name") ?? "").trim();
-      const email = String(fd.get("email") ?? "").trim();
-      const password = String(fd.get("password") ?? "");
-      const businessName = String(fd.get("business_name") ?? "").trim();
-      const abnRaw = String(fd.get("abn") ?? "").trim();
-      const phoneNumber = String(fd.get("phone_number") ?? "").trim();
-
-      if (!email || !password) {
-        setLocalError("Email and password are required.");
-        return;
-      }
-
-      if (!allPasswordRequirementsMet(normalizePasswordStrength(password, fullName, email))) {
-        setLocalError("Please meet every password requirement before continuing.");
-        return;
-      }
-
-      if (!validatePhoneMinimum(phoneNumber)) {
-        setLocalError("Phone number must contain at least 10 digits.");
-        return;
-      }
-
-      if (abnDigitsFromInput(abnRaw).length !== 11) {
-        setLocalError("ABN must be 11 digits");
-        return;
-      }
+      const selectedCountry = PHONE_COUNTRIES.find((c) => c.code === phoneCountry) ?? PHONE_COUNTRIES[0];
+      const phoneE164 = toPhoneE164(phoneInput, selectedCountry.dialCode);
+      const abnRaw = abnDigitsFromInput(abnInput); // digits only
 
       const supabase = createSupabaseBrowser();
-      const signupIntentRole = role === "manager" ? "manager" : "owner";
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: emailInput.trim(),
+        password: passwordInput,
         options: {
           data: {
-            name: fullName,
-            business_name: businessName,
-            abn: abnRaw.replace(/\s/g, ""),
-            phone_number: phoneNumber,
-            role: signupIntentRole,
+            name: nameInput.trim(),
+            business_name: businessNameInput.trim(),
+            abn: abnRaw,
+            phone_number: phoneE164,
+            role: "owner",
             industry_tags: selected.join(","),
             industry_other_note: otherNote || "",
-            accent_colour: normalizeAccentColour(accentColour)
+            accent_colour: DEFAULT_ACCENT_HEX
           }
         }
       });
 
       if (authError) {
         console.error("[signup/owner] signUp failed", authError);
-        setLocalError(authError.message);
+        setError(authError.message);
         return;
       }
 
       const userId = authData.user?.id;
       if (!userId) {
-        setLocalError(
+        setError(
           "Account signup did not return a user id. If email confirmation is required, check your inbox — otherwise contact support."
         );
         return;
@@ -391,8 +336,8 @@ export function SignupForm() {
 
       const accessToken = authData.session?.access_token;
       if (!accessToken) {
-        setLocalError(
-          "Account created. Confirm your email if your project requires it, then sign in to finish setup."
+        setError(
+          "Account created. Confirm your email if required, then sign in to finish setup."
         );
         return;
       }
@@ -402,27 +347,21 @@ export function SignupForm() {
       );
       const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, optionalChosen);
 
-      const baseSetupBody = {
+      const setupBody = {
         userId,
-        businessName,
-        abn: abnRaw.replace(/\s/g, ""),
-        phone: phoneNumber,
+        businessName: businessNameInput.trim(),
+        abn: abnRaw,
+        phone: phoneE164,
         industries: selected,
-        workspaceFeaturesEnabled
+        workspaceFeaturesEnabled,
+        accentColour: DEFAULT_ACCENT_HEX
       };
 
-      const postSetup = async (accentForInsert: string) => {
-        return fetch("/api/setup-business", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({ ...baseSetupBody, accentColour: accentForInsert })
-        });
-      };
-
-      let res = await postSetup(normalizeAccentColour(accentColour));
+      let res = await fetch("/api/setup-business", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify(setupBody)
+      });
       let raw = await res.text();
       let parsed: { success?: boolean; businessId?: string; demoSeeded?: boolean; demoSeedError?: string; error?: string };
       try {
@@ -432,8 +371,12 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
-        console.warn("[signup/owner] setup-business failed — retrying with default teal", res.status, parsed);
-        res = await postSetup(DEFAULT_ACCENT_HEX);
+        console.warn("[signup/owner] setup-business failed — retrying with default accent", res.status, parsed);
+        res = await fetch("/api/setup-business", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify(setupBody)
+        });
         raw = await res.text();
         try {
           parsed = JSON.parse(raw) as typeof parsed;
@@ -443,8 +386,8 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
-        console.error("[signup/owner] setup-business failed after teal retry — continuing to dashboard", parsed);
-        router.push("/dashboard/owner");
+        console.error("[signup/owner] setup-business failed after retry — continuing to dashboard", parsed);
+        router.push("/dashboard");
         router.refresh();
         return;
       }
@@ -453,10 +396,7 @@ export function SignupForm() {
         try {
           const demoRes = await fetch("/api/setup-business", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`
-            },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
             body: JSON.stringify({ userId, demoOnly: true })
           });
           if (!demoRes.ok) {
@@ -467,11 +407,11 @@ export function SignupForm() {
         }
       }
 
-      router.push("/dashboard/owner");
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
       console.error("[signup/owner] unexpected error", err);
-      setLocalError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setOwnerSubmitting(false);
     }
@@ -480,6 +420,12 @@ export function SignupForm() {
   const accentBtn = "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]";
   const industrySelectedRing =
     "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_14%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--accent-color)_45%,transparent)]";
+
+  const step1Disabled =
+    !allPasswordRequirementsMet(passwordRules) ||
+    !isPhoneValid(phoneInput) ||
+    !abnValid ||
+    !abnConfirmed;
 
   return (
     <>
@@ -494,7 +440,8 @@ export function SignupForm() {
           Start your 30 day free trial and set up your business in minutes.
         </p>
 
-        {needsWizard ? (
+        {/* OAuth — only on step 1 */}
+        {step === 1 ? (
           <div className="mt-5 flex flex-col gap-2">
             <Button
               type="button"
@@ -524,46 +471,23 @@ export function SignupForm() {
           </div>
         ) : null}
 
-        {displayedError ? (
+        {error ? (
           <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200 whitespace-pre-wrap break-words">
-            {displayedError}
+            {error}
           </p>
         ) : null}
 
         <form
           ref={formRef}
-          action={needsInvite ? formAction : undefined}
-          onSubmit={needsWizard ? handleOwnerSignup : undefined}
+          onSubmit={handleOwnerSignup}
           className="mt-6 space-y-6"
         >
-          <input type="hidden" name="industry_tags_json" value={needsWizard ? industriesJson : "[]"} />
-          <input type="hidden" name="industry_other_note" value={needsWizard ? otherNote : ""} />
-          {needsInvite ? (
-            <input type="hidden" name="accent_colour" value={DEFAULT_ACCENT_HEX} readOnly />
-          ) : null}
+          <input type="hidden" name="industry_tags_json" value={industriesJson} />
+          <input type="hidden" name="industry_other_note" value={otherNote} />
+          <input type="hidden" name="accent_colour" value={DEFAULT_ACCENT_HEX} readOnly />
 
+          {/* ── Step 1: Credentials ── */}
           <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
-            <div className="sm:col-span-2">
-              <label htmlFor="role" className="mb-1 block text-sm font-medium text-slate-300">
-                Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={role}
-                onChange={(e) => {
-                  setRole(e.target.value as SignupRoleOption);
-                  setStep(1);
-                }}
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-              >
-                <option value="owner">Business Owner</option>
-                <option value="manager">Manager</option>
-                <option value="employee">Employee</option>
-                <option value="contractor">Contractor</option>
-                <option value="client">Client</option>
-              </select>
-            </div>
             <div>
               <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-300">
                 Full name
@@ -609,114 +533,125 @@ export function SignupForm() {
               <PasswordStrengthHints rules={passwordRules} />
             </div>
 
-            {needsWizard ? (
-              <>
-                <div>
-                  <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
-                    Business name
-                  </label>
-                  <input
-                    id="business_name"
-                    name="business_name"
-                    required
-                    className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
-                    ABN
-                  </label>
-                  <input
-                    id="abn"
-                    name="abn"
-                    value={abnInput}
-                    inputMode="numeric"
-                    autoComplete="off"
-                    onKeyDown={blockAbnKeyDown}
-                    onChange={(e) => setAbnInput(formatAbnDigits(e.target.value.replace(/\D/g, "")))}
-                    className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-                    required={needsWizard}
-                  />
-                  {needsWizard && abnInput.trim() && abnDigitsFromInput(abnInput).length !== 11 ? (
-                    <p className="mt-1 text-xs font-medium text-amber-500">ABN must be 11 digits</p>
-                  ) : null}
-                </div>
-              </>
-            ) : (
-              <>
-                <input type="hidden" name="business_name" value="" readOnly />
-                <input type="hidden" name="abn" value="" readOnly />
-                <div className="sm:col-span-2">
-                  <label htmlFor="invite_code" className="mb-1 block text-sm font-medium text-slate-300">
-                    Invite code
-                  </label>
-                  <input
-                    id="invite_code"
-                    name="invite_code"
-                    value={inviteCodeInput}
-                    onChange={(e) => setInviteCodeInput(e.target.value)}
-                    autoComplete="off"
-                    required
-                    className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-                  />
-                </div>
-              </>
-            )}
+            <div>
+              <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
+                Business name
+              </label>
+              <input
+                id="business_name"
+                name="business_name"
+                value={businessNameInput}
+                onChange={(e) => setBusinessNameInput(e.target.value)}
+                required
+                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+              />
+            </div>
 
+            {/* ABN */}
+            <div>
+              <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
+                ABN
+              </label>
+              <div className="relative">
+                <input
+                  id="abn"
+                  name="abn"
+                  value={abnInput}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="51 824 753 556"
+                  onKeyDown={blockAbnKeyDown}
+                  onChange={(e) => setAbnInput(formatAbnDigits(e.target.value.replace(/\D/g, "")))}
+                  className={[
+                    "h-10 w-full rounded-md border px-3 pr-9 text-sm text-slate-200 transition-colors",
+                    abnHas11
+                      ? abnValid
+                        ? "border-emerald-500"
+                        : "border-red-500"
+                      : "border-slate-300"
+                  ].join(" ")}
+                  required
+                />
+                {abnValid ? (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500" aria-label="Valid ABN">
+                    <Check size={15} strokeWidth={3} />
+                  </span>
+                ) : null}
+              </div>
+              {abnInput.trim() && !abnHas11 ? (
+                <p className="mt-1 text-xs font-medium text-amber-500">ABN must be 11 digits</p>
+              ) : abnHas11 && !abnValid ? (
+                <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please re-enter</p>
+              ) : null}
+              {/* Confirmation checkbox — only shown when checksum passes */}
+              {abnValid ? (
+                <label className="mt-2 flex cursor-pointer items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={abnConfirmed}
+                    onChange={(e) => setAbnConfirmed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent-color)]"
+                  />
+                  <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
+                </label>
+              ) : null}
+            </div>
+
+            {/* Phone number with country selector */}
             <div className="sm:col-span-2">
               <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
                 Phone number
               </label>
-              <input
-                id="phone_number"
-                name="phone_number"
-                value={phoneInput}
-                autoComplete="tel"
-                inputMode="tel"
-                onKeyDown={blockPhoneKeyDown}
-                onChange={(e) => setPhoneInput(formatPhoneInput(e.target.value))}
-                required
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-              />
-              {needsWizard || needsInvite ? (
-                <>
-                  {!validatePhoneMinimum(phoneInput) && phoneInput.trim() !== "" ? (
-                    <p className="mt-1 text-xs font-medium text-amber-500">Enter at least 10 digits.</p>
-                  ) : null}
-                </>
+              <div className="flex gap-2">
+                <select
+                  value={phoneCountry}
+                  onChange={(e) => {
+                    setPhoneCountry(e.target.value as PhoneCountryCode);
+                    setPhoneInput("");
+                  }}
+                  aria-label="Country code"
+                  className="h-10 shrink-0 rounded-md border border-slate-300 px-2 text-sm text-slate-200"
+                  style={{ minWidth: "92px" }}
+                >
+                  {PHONE_COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  id="phone_number"
+                  name="phone_number"
+                  type="tel"
+                  value={phoneInput}
+                  autoComplete="tel-national"
+                  inputMode="tel"
+                  placeholder="0412 345 678"
+                  onKeyDown={blockPhoneKeyDown}
+                  onChange={(e) => setPhoneInput(formatLocalPhone(e.target.value, phoneCountry))}
+                  required
+                  className="h-10 flex-1 rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+                />
+              </div>
+              {phoneInput.trim() && !isPhoneValid(phoneInput) ? (
+                <p className="mt-1 text-xs font-medium text-amber-500">Enter a valid phone number.</p>
               ) : null}
             </div>
 
             <div className="sm:col-span-2 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              {needsWizard ? (
-                <Button
-                  type="button"
-                  onClick={handleContinue}
-                  disabled={
-                    !allPasswordRequirementsMet(passwordRules) ||
-                    !validatePhoneMinimum(phoneInput) ||
-                    abnDigitsFromInput(abnInput).length !== 11
-                  }
-                  className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
-                >
-                  Continue
-                </Button>
-              ) : (
-                <SubmitPrimary
-                  disabled={
-                    !allPasswordRequirementsMet(passwordRules) ||
-                    !validatePhoneMinimum(phoneInput) ||
-                    !inviteCodeInput.trim()
-                  }
-                  className={`w-full sm:ml-auto sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
-                >
-                  Create account
-                </SubmitPrimary>
-              )}
+              <Button
+                type="button"
+                onClick={handleContinue}
+                disabled={step1Disabled}
+                className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+              >
+                Continue
+              </Button>
             </div>
           </div>
 
-          <div className={step === 2 && needsWizard ? "space-y-4" : "hidden"} aria-hidden={step !== 2 || !needsWizard}>
+          {/* ── Step 2: Industries ── */}
+          <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
             <div>
               <h2 className="text-lg font-semibold text-white">What industries do you serve?</h2>
               <p className="mt-1 text-sm text-slate-400">
@@ -783,7 +718,8 @@ export function SignupForm() {
             </div>
           </div>
 
-          <div className={step === 3 && needsWizard ? "space-y-4" : "hidden"} aria-hidden={step !== 3 || !needsWizard}>
+          {/* ── Step 3: Workspace preview / create account ── */}
+          <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
             <WorkspaceSetupPreview
               primaryIndustryLabel={signupIndustryHeadline}
               recommendedIds={signupRecommendedIds}
@@ -792,36 +728,8 @@ export function SignupForm() {
               setOptionalOn={(id, on) => setOptionalFeatureOn((prev) => ({ ...prev, [id]: on }))}
               onBack={handleBack}
               onContinue={handleContinueFromWorkspacePreview}
+              submitting={ownerSubmitting}
             />
-          </div>
-
-          <div className={step === 4 && needsWizard ? "space-y-4" : "hidden"} aria-hidden={step !== 4 || !needsWizard}>
-            <div>
-              <h2 className="text-lg font-semibold text-white">Choose your brand colour</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Choose your brand colour — you can change this anytime in settings. Default teal is fine if you want to
-                move on quickly.
-              </p>
-            </div>
-
-            <BrandAccentSwatches value={accentColour} onChange={setAccentColour} />
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <Button type="button" variant="dark-ghost" onClick={handleBack}>
-                Back
-              </Button>
-              <SubmitPrimary
-                externalPending={ownerSubmitting}
-                disabled={
-                  !allPasswordRequirementsMet(passwordRules) ||
-                  !validatePhoneMinimum(phoneInput) ||
-                  abnDigitsFromInput(abnInput).length !== 11
-                }
-                className={accentBtn}
-              >
-                Create account
-              </SubmitPrimary>
-            </div>
           </div>
         </form>
 

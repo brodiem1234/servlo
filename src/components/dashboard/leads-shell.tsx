@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import React from "react";
+import React, { useCallback } from "react";
 import { LayoutDashboard, ShoppingBag, ClipboardList, GitBranch } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 const LEADS_COLOR = "#F59E0B";
 const LEADS_BG = "#1a1005";
@@ -29,11 +30,17 @@ function isActive(pathname: string, href: string) {
 
 export default function LeadsShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const handleSignOut = useCallback(async () => {
+    const supabase = createSupabaseBrowser();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+  }, [router]);
 
   return (
     <div
       data-product="leads"
-      className="dashboard-theme min-h-screen"
+      className="dark dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": LEADS_COLOR,
@@ -117,7 +124,17 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
               Coming soon
             </span>
           </p>
-          <ThemeToggleButton />
+          <div className="flex items-center gap-2">
+            <ThemeToggleButton />
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-md px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: "var(--product-accent)" }}
+            >
+              Sign Out
+            </button>
+          </div>
         </header>
         <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>

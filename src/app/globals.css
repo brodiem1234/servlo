@@ -434,3 +434,23 @@
 [data-product] .owner-sidebar nav a[data-active="false"]:hover {
   background-color: color-mix(in srgb, var(--product-muted) 50%, transparent) !important;
 }
+
+/* ── Custom scrollbars (product-scoped) ─────────────────────────────────── */
+[data-product] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+[data-product] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-product] ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--product-accent) 35%, transparent);
+  border-radius: 9999px;
+}
+[data-product] ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--product-accent) 60%, transparent);
+}
+[data-product] * {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--product-accent) 35%, transparent) transparent;
+}

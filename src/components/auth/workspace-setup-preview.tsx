@@ -15,22 +15,24 @@ type Props = {
   setOptionalOn: (id: WorkspaceFeatureId, on: boolean) => void;
   onBack: MouseEventHandler<HTMLButtonElement>;
   onContinue: MouseEventHandler<HTMLButtonElement>;
+  submitting?: boolean;
 };
 
 export function WorkspaceSetupPreview({
-  primaryIndustryLabel,
+  primaryIndustryLabel: _primaryIndustryLabel,
   recommendedIds,
   optionalIds,
   optionalOn,
   setOptionalOn,
   onBack,
-  onContinue
+  onContinue,
+  submitting = false
 }: Props) {
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-white">
-          Your {primaryIndustryLabel} workspace is ready
+          Your SERVLO Core workspace is ready
         </h2>
         <p className="mt-2 text-sm text-slate-400">
           Recommended modules stay on by default; optionally tune extras below. You can change this anytime in Settings.
@@ -75,10 +77,15 @@ export function WorkspaceSetupPreview({
         <Button
           type="button"
           onClick={onContinue}
-          className="inline-flex items-center gap-2 bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]"
+          disabled={submitting}
+          className="inline-flex items-center gap-2 bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] disabled:pointer-events-none disabled:opacity-60"
         >
-          Looks good, let&apos;s go
-          <ChevronRight className="size-4" aria-hidden />
+          {submitting ? "Working…" : (
+            <>
+              Create account
+              <ChevronRight className="size-4" aria-hidden />
+            </>
+          )}
         </Button>
       </div>
     </div>

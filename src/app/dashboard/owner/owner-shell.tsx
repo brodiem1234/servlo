@@ -1,11 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
   Bell,
   Briefcase,
+  ChevronDown,
   FileText,
   Home,
   LayoutGrid,
@@ -16,12 +17,11 @@ import type { LucideIcon } from "lucide-react";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import OwnerKeyboardShortcuts from "@/components/dashboard/owner-keyboard-shortcuts";
 import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/owner-sidebar-todos";
-import type { OwnerNavItem } from "@/app/dashboard/owner/nav-config";
+import type { OwnerNavItem, OwnerNavSection } from "@/app/dashboard/owner/nav-config";
 import { ToastProvider } from "@/components/ui/toast";
 import { ProductSwitcher } from "@/components/dashboard/product-switcher";
 
 const CORE_COLOR = "#3B82F6";
-const CORE_BG = "#0d1b36";
 const CORE_LOGO_FILTER =
   "brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(195deg)";
 
@@ -54,7 +54,7 @@ type Props = {
   signOutAction: (formData: FormData) => Promise<void>;
   alerts: Array<{ id: string; text: string }>;
   initialTasks: OwnerTaskRow[];
-  navSections: OwnerNavItem[][];
+  navSections: OwnerNavSection[];
   shortcutTargets?: ShortcutTargets;
   children: React.ReactNode;
 };
@@ -71,8 +71,28 @@ export default function OwnerShell({
   const pathname = usePathname();
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
-  const flatNav = useMemo(() => navSections.flat(), [navSections]);
+  // Auto-expand groups that contain the active route
+  useEffect(() => {
+    const initial: Record<string, boolean> = {};
+    for (const section of navSections) {
+      if (section.groupLabel) {
+        const hasActive = section.items.some((item) => isNavItemActive(pathname, item.href));
+        if (hasActive) initial[section.groupLabel] = true;
+      }
+    }
+    setOpenGroups(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function toggleGroup(label: string) {
+    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+  }
+
+  const mainSections = useMemo(() => navSections.filter((s) => !s.pinnedBottom), [navSections]);
+  const bottomSections = useMemo(() => navSections.filter((s) => s.pinnedBottom), [navSections]);
+  const flatNav = useMemo(() => navSections.flatMap((s) => s.items), [navSections]);
 
   const mobileTabs = useMemo(() => {
     const preferred = [
@@ -105,16 +125,67 @@ export default function OwnerShell({
     [flatNav, mobileTabs]
   );
 
+  function renderNavItem(item: OwnerNavItem) {
+    const active = isNavItemActive(pathname, item.href);
+    return (
+      <a
+        key={item.href}
+        href={item.href}
+        data-active={active ? "true" : "false"}
+        className="rounded-md px-3 py-2 text-sm text-[var(--sidebar-text)] transition-colors"
+      >
+        {item.label}
+      </a>
+    );
+  }
+
+  function renderSection(section: OwnerNavSection, index: number, isLast: boolean) {
+    if (section.groupLabel) {
+      const isOpen = Boolean(openGroups[section.groupLabel]);
+      const hasActive = section.items.some((item) => isNavItemActive(pathname, item.href));
+      return (
+        <div key={`section-${index}`}>
+          <button
+            type="button"
+            onClick={() => toggleGroup(section.groupLabel!)}
+            className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--sidebar-text-muted)] transition-colors hover:bg-[var(--sidebar-hover-bg)]"
+            aria-expanded={isOpen}
+          >
+            <span className={hasActive && !isOpen ? "text-[var(--product-accent-light)]" : ""}>
+              {section.groupLabel}
+            </span>
+            <ChevronDown
+              size={12}
+              className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+              aria-hidden
+            />
+          </button>
+          {isOpen ? (
+            <div className="mt-1 flex flex-col gap-1 pl-2">
+              {section.items.map((item) => renderNavItem(item))}
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <div key={`section-${index}`} className="flex flex-col gap-1">
+        {section.items.map((item) => renderNavItem(item))}
+      </div>
+    );
+  }
+
   return (
     <ToastProvider>
     <div
         data-product="core"
-        className="dashboard-theme min-h-screen bg-[var(--product-main)] text-[var(--text-primary)]"
+        className="dark dashboard-theme min-h-screen bg-[var(--product-main)] text-[var(--text-primary)]"
         style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
       >
         <aside
-          className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-          style={{ background: "var(--product-sidebar)" }}
+          className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
+          style={{ background: "var(--product-sidebar)", overflow: "hidden" }}
         >
           <div className="mb-6 flex flex-col items-center">
             <Image
@@ -129,31 +200,32 @@ export default function OwnerShell({
           <div className="mb-4">
             <ProductSwitcher activeProduct="core" />
           </div>
-          <nav className="flex flex-col gap-0">
-            {navSections.map((section, sectionIndex) => (
-              <Fragment key={`nav-section-${sectionIndex}`}>
-                {sectionIndex > 0 ? (
-                  <hr className="my-3 border-0 border-t border-[var(--sidebar-divider)]" aria-hidden />
-                ) : null}
-                <div className="flex flex-col gap-2">
-                  {section.map((item) => {
-                    const active = isNavItemActive(pathname, item.href);
-                    return (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        data-active={active ? "true" : "false"}
-                        className="rounded-md px-3 py-2 text-sm text-[var(--sidebar-text)] transition-colors"
-                      >
-                        {item.label}
-                      </a>
-                    );
-                  })}
+
+          {/* Scrollable nav area */}
+          <div className="flex-1 overflow-y-auto">
+            <nav className="flex flex-col gap-2">
+              {mainSections.map((section, i) => (
+                <Fragment key={`main-${i}`}>
+                  {i > 0 ? (
+                    <hr className="border-0 border-t border-[var(--sidebar-divider)]" aria-hidden />
+                  ) : null}
+                  {renderSection(section, i, i === mainSections.length - 1)}
+                </Fragment>
+              ))}
+            </nav>
+            <OwnerSidebarTodos initialTasks={initialTasks} />
+          </div>
+
+          {/* Pinned bottom — Settings */}
+          {bottomSections.length > 0 ? (
+            <div className="mt-2 border-t border-[var(--sidebar-divider)] pt-2">
+              {bottomSections.map((section, i) => (
+                <div key={`bottom-${i}`} className="flex flex-col gap-1">
+                  {section.items.map((item) => renderNavItem(item))}
                 </div>
-              </Fragment>
-            ))}
-          </nav>
-          <OwnerSidebarTodos initialTasks={initialTasks} />
+              ))}
+            </div>
+          ) : null}
         </aside>
 
         <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>

@@ -51,6 +51,31 @@ export function abnDigitsFromInput(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/**
+ * Validates an ABN using the official Australian checksum algorithm.
+ * Subtract 1 from the first digit, multiply each digit by its weight
+ * [10,1,3,5,7,9,11,13,15,17,19], sum must be divisible by 89.
+ */
+export function validateAbnChecksum(abn: string): boolean {
+  const digits = abn.replace(/\D/g, "");
+  if (digits.length !== 11) return false;
+  const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+  const d = digits.split("").map(Number);
+  d[0] -= 1;
+  const sum = d.reduce((acc, digit, i) => acc + digit * weights[i], 0);
+  return sum % 89 === 0;
+}
+
+/**
+ * Converts a local phone number + dial code to E.164 format.
+ * Strips leading zero (AU/NZ/GB convention) before prepending the country code.
+ */
+export function toPhoneE164(localInput: string, dialCode: string): string {
+  const digits = localInput.replace(/\D/g, "");
+  const stripped = digits.startsWith("0") ? digits.slice(1) : digits;
+  return `+${dialCode}${stripped}`;
+}
+
 /** Count digits for validation; skips the single leading '+' for international entries. */
 export function phoneDigitsCount(value: string): number {
   const trimmed = value.trim();

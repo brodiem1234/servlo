@@ -228,7 +228,7 @@ export function welcomeOwnerEmailTemplate(args: {
       </ul>`;
 
   return wrapEmail(`
-    <h2 style="margin:0 0 12px; color:#0f172a;">Welcome to SERVLO</h2>
+    <h2 style="margin:0 0 12px; color:#0f172a;">Welcome to SERVLO Core</h2>
     <p>Hi ${args.ownerName},</p>
     ${industryLine}
     <p style="color:#334155;">Your workspace is ready — here are three highlights we&apos;ve switched on for you:</p>

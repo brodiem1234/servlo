@@ -74,26 +74,6 @@ const features: Array<{ Icon: LucideIcon; title: string; description: string }> 
   }
 ];
 
-const testimonials = [
-  {
-    name: "Jake T.",
-    role: "Electrician, Adelaide SA",
-    trade: "Trades",
-    quote: "Finally an app that doesn't need a manual. My crew was using it same day."
-  },
-  {
-    name: "Lisa M.",
-    role: "Cleaning services, Adelaide SA",
-    trade: "Cleaning",
-    quote: "NDIS cleans and commercial sites live in one calendar — invoicing actually matches what we did."
-  },
-  {
-    name: "Sam K.",
-    role: "Event coordinator, Adelaide SA",
-    trade: "Events",
-    quote: "Bump-in to bump-out lives in SERVLO now. Crew and hire gear finally match the run sheet."
-  }
-];
 
 const pricingPlans = [
   {
@@ -374,48 +354,12 @@ export default function HomePage() {
 
       <section
         className="border-y border-slate-200 bg-white py-4 dark:border-slate-700 dark:bg-[#152238]/80"
-        aria-label="Social proof"
+        aria-label="About"
       >
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6">
-          <ul className="flex flex-wrap items-baseline justify-center gap-x-4 gap-y-3 sm:gap-x-8 md:gap-x-10">
-            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
-              <span className="text-base font-bold tabular-nums text-[#1e3a5f] dark:text-white sm:text-lg">
-                500+
-              </span>
-              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
-                jobs managed
-              </span>
-            </li>
-            <li className="hidden text-slate-300 sm:block dark:text-slate-600" aria-hidden>
-              ·
-            </li>
-            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
-              <span className="text-base font-bold tabular-nums text-[#1e3a5f] dark:text-white sm:text-lg">
-                $2M+
-              </span>
-              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
-                invoiced
-              </span>
-            </li>
-            <li className="hidden text-slate-300 sm:block dark:text-slate-600" aria-hidden>
-              ·
-            </li>
-            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
-              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
-                Built in
-              </span>
-              <span className="text-base font-bold text-[#1e3a5f] dark:text-white sm:text-lg">Adelaide SA</span>
-            </li>
-            <li className="hidden text-slate-300 sm:block dark:text-slate-600" aria-hidden>
-              ·
-            </li>
-            <li className="flex flex-col items-center gap-0.5 sm:items-baseline">
-              <span className="text-base font-bold tabular-nums text-[#1e3a5f] dark:text-white sm:text-lg">30</span>
-              <span className="text-[11px] font-medium leading-tight text-[#64748b] dark:text-slate-400 sm:text-xs">
-                day free trial
-              </span>
-            </li>
-          </ul>
+          <p className="text-sm font-medium text-[#64748b] dark:text-slate-400">
+            Built in Adelaide SA · ABN 88 688 301 684 · By a tradie, for tradies.
+          </p>
         </div>
       </section>
 
@@ -606,22 +550,6 @@ export default function HomePage() {
           agencies and clinics reach for daily. Every workflow stays fast on mobile, sharp on desktop and honest about cash
           flow.
         </p>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <article
-              key={t.name}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--accent-color)] dark:text-cyan-400">{t.trade}</p>
-              <p className="mt-2 text-amber-500 dark:text-amber-300">★★★★★</p>
-              <p className="mt-3 text-sm leading-relaxed text-[#334155] dark:text-slate-200">{t.quote}</p>
-              <p className="mt-3 text-xs font-semibold text-[#1e3a5f] dark:text-white">
-                {t.name}
-                <span className="mt-0.5 block font-normal text-[#64748b] dark:text-slate-400">{t.role}</span>
-              </p>
-            </article>
-          ))}
-        </div>
       </section>
 
       <section className="bg-[#1e3a5f] px-4 py-16 dark:bg-[#0b1628]" aria-labelledby="cta-heading">
@@ -630,7 +558,7 @@ export default function HomePage() {
             Ready to run your business smarter?
           </h2>
           <p className="mt-4 text-lg text-cyan-100/95 md:text-xl">
-            Join Australian service businesses already using SERVLO.
+            Start your 30-day free trial today.
           </p>
           <Link
             href="/auth/signup"
