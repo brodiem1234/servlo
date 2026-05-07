@@ -20,6 +20,7 @@ import { LandingHeader } from "@/components/landing-header";
 import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
 import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
 import { LandingScrollReveal } from "@/components/landing-scroll-reveal";
+import { LandingPricing } from "@/components/landing-pricing";
 
 const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
 
@@ -75,47 +76,6 @@ const features: Array<{ Icon: LucideIcon; title: string; description: string }> 
 ];
 
 
-const pricingPlans = [
-  {
-    name: "Solo",
-    price: "$29/mo",
-    popular: false,
-    list: [
-      "1 user",
-      "Jobs & scheduling",
-      "Clients",
-      "Invoices & quotes",
-      "PDF generation",
-      "Email notifications"
-    ]
-  },
-  {
-    name: "Team",
-    price: "$79/mo",
-    popular: true,
-    list: [
-      "Up to 5 users",
-      "All Solo features",
-      "Employee management",
-      "GPS clock in/out",
-      "Job photos",
-      "Priority support"
-    ]
-  },
-  {
-    name: "Business",
-    price: "$179/mo",
-    popular: false,
-    list: [
-      "Up to 20 users",
-      "All Team features",
-      "Contractor management",
-      "Advanced reporting",
-      "API access",
-      "Dedicated support"
-    ]
-  }
-];
 
 function HeroAppMock() {
   return (
@@ -400,147 +360,7 @@ export default function HomePage() {
       </section>
 
       <section id="pricing" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Simple pricing, no surprises</h2>
-
-        {/* Core pricing */}
-        <p className="mt-6 mb-4 text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
-          SERVLO Core — Manage
-        </p>
-        <div className="grid gap-4 md:grid-cols-3">
-          {pricingPlans.map((plan) => (
-            <article
-              key={plan.name}
-              className={`flex flex-col rounded-xl border p-6 ${
-                plan.popular
-                  ? "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_10%,#ffffff)] shadow-md shadow-[color-mix(in_srgb,var(--accent-color)_18%,transparent)] dark:border-cyan-400 dark:bg-[#10283a]"
-                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-2xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
-                {plan.popular ? (
-                  <span className="shrink-0 rounded-full bg-[var(--accent-color)] px-2 py-1 text-xs font-semibold text-white dark:bg-cyan-400 dark:text-[#0f172a]">
-                    Most Popular
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-2 text-3xl font-extrabold text-[#1e3a5f] dark:text-white">{plan.price}</p>
-              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
-                {plan.list.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="mt-0.5 shrink-0 text-[var(--accent-color)] dark:text-cyan-400" aria-hidden>
-                      ✓
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/auth/signup"
-                className="mt-6 inline-block rounded-md bg-[var(--accent-color)] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
-              >
-                Start Free Trial
-              </Link>
-            </article>
-          ))}
-        </div>
-        <p className="mt-4 text-sm text-[#64748b] dark:text-slate-300">
-          All Core plans include a 30-day free trial. No credit card required.
-        </p>
-
-        {/* Grow pricing */}
-        <p className="mt-10 mb-4 text-xs font-semibold uppercase tracking-widest text-purple-600 dark:text-purple-400">
-          SERVLO Grow — Market
-        </p>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            { name: "Grow Starter", price: "$59/mo", list: ["1 user", "10 ads/mo", "20 social posts/mo", "Review automation", "Basic analytics"] },
-            { name: "Grow Pro", price: "$99/mo", popular: true, list: ["Up to 3 users", "Unlimited ads", "Unlimited social posts", "Review automation", "Referral program", "Full analytics"] },
-            { name: "Grow Agency", price: "$199/mo", list: ["Up to 10 users", "All Pro features", "Multi-location", "White-label reports", "Priority support"] },
-          ].map((plan) => (
-            <article
-              key={plan.name}
-              className={`relative flex flex-col rounded-xl border p-6 ${
-                (plan as { popular?: boolean }).popular
-                  ? "border-purple-400 bg-purple-50 shadow-md dark:border-purple-500/60 dark:bg-[#1a1030]"
-                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
-              }`}
-            >
-              {(plan as { popular?: boolean }).popular && (
-                <span className="absolute right-4 top-4 shrink-0 rounded-full bg-purple-600 px-2 py-1 text-xs font-semibold text-white">
-                  Most Popular
-                </span>
-              )}
-              <div className="mb-1 flex items-center gap-1.5">
-                <Lock size={11} className="text-slate-400" />
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Launching soon</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
-              <p className="mt-1 text-3xl font-extrabold text-[#1e3a5f] dark:text-white">{plan.price}</p>
-              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
-                {plan.list.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="mt-0.5 shrink-0 text-purple-500" aria-hidden>✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <button
-                disabled
-                className="mt-6 w-full cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
-              >
-                Launching soon
-              </button>
-            </article>
-          ))}
-        </div>
-
-        {/* Leads pricing */}
-        <p className="mt-10 mb-4 text-xs font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-          SERVLO Leads — Fill your pipeline
-        </p>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            { name: "Pay-as-you-go", price: "$12/lead", list: ["No monthly fee", "Buy only what you need", "Industry-filtered leads", "Quality guarantee", "Instant delivery"] },
-            { name: "Lead Bundle", price: "$99/mo", popular: true, list: ["10 leads/mo included", "Save 17% vs PAYG", "Priority lead access", "Pipeline tracking", "CRM integration"] },
-            { name: "Lead Pro", price: "$249/mo", list: ["30 leads/mo included", "Save 30% vs PAYG", "Exclusive leads", "Dedicated account manager", "Full analytics"] },
-          ].map((plan) => (
-            <article
-              key={plan.name}
-              className={`relative flex flex-col rounded-xl border p-6 ${
-                (plan as { popular?: boolean }).popular
-                  ? "border-amber-400 bg-amber-50 shadow-md dark:border-amber-500/60 dark:bg-[#1c1508]"
-                  : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"
-              }`}
-            >
-              {(plan as { popular?: boolean }).popular && (
-                <span className="absolute right-4 top-4 shrink-0 rounded-full bg-amber-500 px-2 py-1 text-xs font-semibold text-white">
-                  Best Value
-                </span>
-              )}
-              <div className="mb-1 flex items-center gap-1.5">
-                <Lock size={11} className="text-slate-400" />
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Launching soon</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
-              <p className="mt-1 text-3xl font-extrabold text-[#1e3a5f] dark:text-white">{plan.price}</p>
-              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-[#334155] dark:text-slate-200">
-                {plan.list.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="mt-0.5 shrink-0 text-amber-500" aria-hidden>✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <button
-                disabled
-                className="mt-6 w-full cursor-not-allowed rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
-              >
-                Launching soon
-              </button>
-            </article>
-          ))}
-        </div>
+        <LandingPricing />
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
