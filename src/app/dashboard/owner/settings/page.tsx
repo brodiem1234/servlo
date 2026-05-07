@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { normalizeAccentColour } from "@/lib/brand-accent";
-import SubscriptionCards from "./subscription-cards";
+// SubscriptionCards replaced by BillingTab client component
 import { BUSINESSES_UPSERT_ON_CONFLICT, businessesRowForOwner } from "@/lib/businesses";
 import { BrandAccentForm } from "./brand-accent-form";
 import { ReseedDemoApiButton } from "./reseed-demo-api-button";
@@ -15,7 +15,7 @@ import {
   CORE_FEATURE_IDS,
   FEATURE_DESCRIPTIONS,
   FEATURE_LABELS,
-  OPTIONAL_FEATURE_IDS,
+  WORKSPACE_FEATURE_IDS,
   isOptionalFeatureId,
   isRecommendedFeatureForIndustry,
   primaryIndustrySlug,
@@ -24,12 +24,15 @@ import {
 } from "@/lib/workspace-features";
 import { WorkspaceFeatureSwitch } from "@/components/workspace-feature-switch";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
-import { XeroImportExport } from "./xero-import-export";
+// XeroImportExport moved into ImportExportTab client component
 import {
   NotificationsForm,
-  ExportButtons,
-  DeleteAccountSection,
-  DemoDataButtons
+  DemoDataButtons,
+  BillingTab,
+  IntegrationsTab,
+  ImportExportTab,
+  DangerZoneTab,
+  WelcomeOverlay
 } from "./settings-client";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -105,7 +108,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       .maybeSingle(),
     supabase
       .from("businesses")
-      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries")
+      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name")
       .eq("owner_id", user.id)
       .maybeSingle()
   ]);
@@ -140,6 +143,21 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     }
   } catch {
     // Column may not exist — use defaults
+  }
+
+  // Fetch onboarding_completed separately — column may not exist on all DB versions
+  let onboardingCompleted = false;
+  try {
+    const onbResult = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!onbResult.error) {
+      onboardingCompleted = (onbResult.data as { onboarding_completed?: boolean | null } | null)?.onboarding_completed ?? false;
+    }
+  } catch {
+    // Column may not exist — default false
   }
 
   // Industry resolution
@@ -324,37 +342,24 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     redirect("/dashboard/owner/settings?tab=demo-data&demo=removed_ok");
   }
 
-  async function deleteAccountAction() {
+  async function completeOnboardingAction() {
     "use server";
     const sb = await createClient();
-    const admin = createAdminClient();
     const {
       data: { user: owner }
     } = await sb.auth.getUser();
-    if (!owner) redirect("/auth/login");
-
-    const tables = [
-      "invoices",
-      "quotes",
-      "jobs",
-      "clients",
-      "employees",
-      "timesheets",
-      "purchase_orders",
-      "contractors",
-      "businesses"
-    ];
-    for (const table of tables) {
-      await admin.from(table).delete().eq("owner_id", owner.id);
-    }
-    await admin.auth.admin.deleteUser(owner.id);
-    redirect("/");
+    if (!owner) return;
+    await sb.from("profiles").update({ onboarding_completed: true } as Record<string, unknown>).eq("id", owner.id);
+    revalidatePath("/dashboard/owner/settings");
   }
+
+  // deleteAccountAction removed — account deletion now via email (DangerZoneTab)
 
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
     <section className="space-y-6">
+      <WelcomeOverlay onboardingCompleted={onboardingCompleted} completeAction={completeOnboardingAction} />
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
 
       {/* Tab navigation */}
@@ -394,13 +399,20 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           <p className="mt-1 text-sm text-[var(--text-secondary)]">Your business details — shown on invoices, quotes and client communications.</p>
           <form action={updateProfileAction} className="mt-5 grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Business name</label>
+              <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Trading name</label>
               <input
                 name="business_name"
                 defaultValue={businessRow?.business_name ?? ""}
                 className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
                 placeholder="ACME Plumbing"
               />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Registered entity name</label>
+              <div className="bg-gray-100 dark:bg-[#161d2e] rounded-md px-3 py-2 text-sm text-[var(--text-primary)] cursor-not-allowed opacity-70">
+                {(businessRow as { entity_name?: string | null } | null)?.entity_name ?? "Not set"}
+              </div>
+              <p className="text-xs text-[var(--text-muted)]">Sourced from the Australian Business Register. Contact support to update.</p>
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">ABN</label>
@@ -481,6 +493,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                 </a>{" "}
                 to update your logo.
               </div>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Shown on client-facing documents. The SERVLO logo always appears in the dashboard sidebar.</p>
             </div>
             <div className="sm:col-span-2">
               <button
@@ -520,44 +533,17 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             </Card>
           ) : null}
 
-          {!isOnTrial ? (
-            <Card>
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Current plan</h2>
-              <div className="mt-3 flex flex-wrap items-center gap-4">
-                <div>
-                  <p className="text-2xl font-bold capitalize text-[var(--text-primary)]">{currentPlan}</p>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {currentPlan === "solo"
-                      ? "$29/mo · 1 user"
-                      : currentPlan === "team"
-                        ? "$79/mo · up to 5 employees"
-                        : currentPlan === "business"
-                          ? "$179/mo · up to 20 employees"
-                          : "Active subscription"}
-                  </p>
-                </div>
-                <a
-                  href="/api/stripe/portal"
-                  className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                >
-                  Manage subscription
-                </a>
-              </div>
-            </Card>
-          ) : null}
-
-          <div id="plans">
-            <SubscriptionCards
-              email={user.email ?? ""}
-              currentPlan={currentPlan}
-              success={resolvedParams?.success === "true"}
-              priceIds={{
-                solo: process.env.STRIPE_SOLO_PRICE_ID ?? "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-                team: process.env.STRIPE_TEAM_PRICE_ID ?? "price_1TTiLaK1tzStyRcJNOgCeg0X",
-                business: process.env.STRIPE_BUSINESS_PRICE_ID ?? "price_1TTiLyK1tzStyRcJ4BVJz0o8"
-              }}
-            />
-          </div>
+          <BillingTab
+            currentPlan={currentPlan}
+            isOnTrial={isOnTrial}
+            email={user.email ?? ""}
+            priceIds={{
+              solo: process.env.STRIPE_SOLO_PRICE_ID ?? "price_1TTiL8K1tzStyRcJQAfbuJ5n",
+              team: process.env.STRIPE_TEAM_PRICE_ID ?? "price_1TTiLaK1tzStyRcJNOgCeg0X",
+              business: process.env.STRIPE_BUSINESS_PRICE_ID ?? "price_1TTiLyK1tzStyRcJ4BVJz0o8"
+            }}
+            success={resolvedParams?.success === "true"}
+          />
         </div>
       ) : null}
 
@@ -570,6 +556,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               Choose a preset accent colour applied to buttons, links and invoice accents across your dashboard.
             </p>
             <BrandAccentForm savedAccent={savedAccent} />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Applied to client-facing documents (invoices, quotes). Does not affect dashboard appearance.</p>
           </Card>
 
           <Card>
@@ -581,60 +568,150 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </span>{" "}
               match your industry defaults.
             </p>
-            <form action={updateWorkspaceFeaturesAction} className="mt-4 space-y-5">
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Core features — always on</p>
+            <form action={updateWorkspaceFeaturesAction} className="mt-4">
+              {/* Group 1: Client & Job Management */}
+              <div className="mb-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Client &amp; Job Management</h3>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {CORE_FEATURE_IDS.map((id) => (
-                    <WorkspaceFeatureSwitch
-                      key={id}
-                      disabled
-                      checked
-                      label={
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span>{FEATURE_LABELS[id]}</span>
-                          {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                            <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">
-                              Recommended
-                            </span>
-                          ) : null}
-                        </span>
-                      }
-                      description={FEATURE_DESCRIPTIONS[id]}
-                    />
+                  {(["jobs_scheduling", "appointments_scheduling", "client_management", "quotes", "recurring_jobs", "client_portal"] as const).map((id) => (
+                    WORKSPACE_FEATURE_IDS.includes(id) ? (
+                      <WorkspaceFeatureSwitch
+                        key={id}
+                        featureId={isOptionalFeatureId(id) ? id : undefined}
+                        formName={isOptionalFeatureId(id) ? "feature" : undefined}
+                        disabled={!isOptionalFeatureId(id)}
+                        checked={!isOptionalFeatureId(id) ? true : undefined}
+                        defaultChecked={isOptionalFeatureId(id) ? workspaceFeatures.has(id) : undefined}
+                        label={
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span>{FEATURE_LABELS[id]}</span>
+                            {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                            ) : null}
+                          </span>
+                        }
+                        description={FEATURE_DESCRIPTIONS[id]}
+                      />
+                    ) : null
                   ))}
                 </div>
               </div>
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Optional features — toggle on or off</p>
+              {/* Group 2: Finance */}
+              <div className="mb-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Finance</h3>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {OPTIONAL_FEATURE_IDS.map((id) => (
-                    <WorkspaceFeatureSwitch
-                      key={id}
-                      featureId={id}
-                      formName="feature"
-                      defaultChecked={workspaceFeatures.has(id)}
-                      label={
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span>{FEATURE_LABELS[id]}</span>
-                          {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                            <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">
-                              Recommended
-                            </span>
-                          ) : null}
-                        </span>
-                      }
-                      description={FEATURE_DESCRIPTIONS[id]}
-                    />
+                  {(["invoices", "purchase_orders"] as const).map((id) => (
+                    WORKSPACE_FEATURE_IDS.includes(id) ? (
+                      <WorkspaceFeatureSwitch
+                        key={id}
+                        featureId={isOptionalFeatureId(id) ? id : undefined}
+                        formName={isOptionalFeatureId(id) ? "feature" : undefined}
+                        disabled={!isOptionalFeatureId(id)}
+                        checked={!isOptionalFeatureId(id) ? true : undefined}
+                        defaultChecked={isOptionalFeatureId(id) ? workspaceFeatures.has(id) : undefined}
+                        label={
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span>{FEATURE_LABELS[id]}</span>
+                            {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                            ) : null}
+                          </span>
+                        }
+                        description={FEATURE_DESCRIPTIONS[id]}
+                      />
+                    ) : null
                   ))}
                 </div>
               </div>
-              <button
-                type="submit"
-                className="rounded-md bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-              >
-                Save features
-              </button>
+              {/* Group 3: Team */}
+              <div className="mb-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Team</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["employee_management", "timesheets", "contractors"] as const).map((id) => (
+                    WORKSPACE_FEATURE_IDS.includes(id) ? (
+                      <WorkspaceFeatureSwitch
+                        key={id}
+                        featureId={isOptionalFeatureId(id) ? id : undefined}
+                        formName={isOptionalFeatureId(id) ? "feature" : undefined}
+                        disabled={!isOptionalFeatureId(id)}
+                        checked={!isOptionalFeatureId(id) ? true : undefined}
+                        defaultChecked={isOptionalFeatureId(id) ? workspaceFeatures.has(id) : undefined}
+                        label={
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span>{FEATURE_LABELS[id]}</span>
+                            {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                            ) : null}
+                          </span>
+                        }
+                        description={FEATURE_DESCRIPTIONS[id]}
+                      />
+                    ) : null
+                  ))}
+                </div>
+              </div>
+              {/* Group 4: Field Tools */}
+              <div className="mb-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Field Tools</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["gps_clock", "job_photos", "equipment_hire"] as const).map((id) => (
+                    WORKSPACE_FEATURE_IDS.includes(id) ? (
+                      <WorkspaceFeatureSwitch
+                        key={id}
+                        featureId={isOptionalFeatureId(id) ? id : undefined}
+                        formName={isOptionalFeatureId(id) ? "feature" : undefined}
+                        disabled={!isOptionalFeatureId(id)}
+                        checked={!isOptionalFeatureId(id) ? true : undefined}
+                        defaultChecked={isOptionalFeatureId(id) ? workspaceFeatures.has(id) : undefined}
+                        label={
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span>{FEATURE_LABELS[id]}</span>
+                            {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                            ) : null}
+                          </span>
+                        }
+                        description={FEATURE_DESCRIPTIONS[id]}
+                      />
+                    ) : null
+                  ))}
+                </div>
+              </div>
+              {/* Group 5: Growth & Marketing */}
+              <div className="mb-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Growth &amp; Marketing</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["crm_pipeline", "email_marketing", "project_tracking"] as const).map((id) => (
+                    WORKSPACE_FEATURE_IDS.includes(id) ? (
+                      <WorkspaceFeatureSwitch
+                        key={id}
+                        featureId={isOptionalFeatureId(id) ? id : undefined}
+                        formName={isOptionalFeatureId(id) ? "feature" : undefined}
+                        disabled={!isOptionalFeatureId(id)}
+                        checked={!isOptionalFeatureId(id) ? true : undefined}
+                        defaultChecked={isOptionalFeatureId(id) ? workspaceFeatures.has(id) : undefined}
+                        label={
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span>{FEATURE_LABELS[id]}</span>
+                            {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
+                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                            ) : null}
+                          </span>
+                        }
+                        description={FEATURE_DESCRIPTIONS[id]}
+                      />
+                    ) : null
+                  ))}
+                </div>
+              </div>
+              <div className="sticky bottom-0 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2235] p-4 -mx-6 -mb-6">
+                <button
+                  type="submit"
+                  className="rounded-md bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                >
+                  Save features
+                </button>
+              </div>
             </form>
           </Card>
         </div>
@@ -656,139 +733,12 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
 
       {/* ── Import / Export tab ──────────────────────────────────────────── */}
       {activeTab === "import-export" ? (
-        <div className="space-y-6">
-          <XeroImportExport ownerId={user.id} />
-
-          <Card>
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Export data</h2>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              Download your SERVLO data as CSV files. Demo records are excluded.
-            </p>
-            <div className="mt-4">
-              <ExportButtons />
-            </div>
-          </Card>
-        </div>
+        <ImportExportTab />
       ) : null}
 
       {/* ── Integrations tab ─────────────────────────────────────────────── */}
       {activeTab === "integrations" ? (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Integrations</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-
-            {/* Stripe */}
-            <Card>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-[var(--text-primary)]">Stripe</p>
-                  <p className="mt-0.5 text-sm text-[var(--text-secondary)]">Payment processing for subscriptions.</p>
-                </div>
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    stripeConnected
-                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                  }`}
-                >
-                  {stripeConnected ? "Connected" : "Not connected"}
-                </span>
-              </div>
-            </Card>
-
-            {/* Google Business Profile */}
-            <Card>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-[var(--text-primary)]">Google Business Profile</p>
-                  <p className="mt-0.5 text-sm text-[var(--text-secondary)]">Sync reviews and location data.</p>
-                </div>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                  Not connected
-                </span>
-              </div>
-              <div className="mt-3 group relative inline-block">
-                <button
-                  type="button"
-                  className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-muted)] cursor-not-allowed opacity-60"
-                  disabled
-                >
-                  Connect
-                </button>
-                <span className="pointer-events-none absolute bottom-full left-0 mb-1.5 hidden rounded-md bg-slate-800 px-2 py-1 text-xs text-white group-hover:block whitespace-nowrap">
-                  Coming with SERVLO Grow
-                </span>
-              </div>
-            </Card>
-
-            {/* Meta / Facebook */}
-            <Card>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-[var(--text-primary)]">Meta / Facebook</p>
-                  <p className="mt-0.5 text-sm text-[var(--text-secondary)]">Connect your Facebook Business page.</p>
-                </div>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                  Not connected
-                </span>
-              </div>
-              <div className="mt-3 group relative inline-block">
-                <button
-                  type="button"
-                  className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-muted)] cursor-not-allowed opacity-60"
-                  disabled
-                >
-                  Connect
-                </button>
-                <span className="pointer-events-none absolute bottom-full left-0 mb-1.5 hidden rounded-md bg-slate-800 px-2 py-1 text-xs text-white group-hover:block whitespace-nowrap">
-                  Coming with SERVLO Grow
-                </span>
-              </div>
-            </Card>
-
-            {/* Xero */}
-            <Card>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-[var(--text-primary)]">Xero</p>
-                  <p className="mt-0.5 text-sm text-[var(--text-secondary)]">Import contacts and invoices from Xero.</p>
-                </div>
-                <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                  CSV import available
-                </span>
-              </div>
-              <div className="mt-3">
-                <a
-                  href="/dashboard/owner/settings?tab=import-export"
-                  className="text-sm text-[var(--accent-color)] hover:underline"
-                >
-                  Go to Import / Export
-                </a>
-              </div>
-            </Card>
-
-            {/* Twilio */}
-            <Card>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-[var(--text-primary)]">Twilio (SMS)</p>
-                  <p className="mt-0.5 text-sm text-[var(--text-secondary)]">Send SMS reminders and job notifications.</p>
-                </div>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                  Not configured
-                </span>
-              </div>
-              <p className="mt-3 text-sm text-[var(--text-muted)]">
-                Contact{" "}
-                <a href="mailto:support@servlo.com.au" className="text-[var(--accent-color)] hover:underline">
-                  support@servlo.com.au
-                </a>{" "}
-                to configure SMS.
-              </p>
-            </Card>
-
-          </div>
-        </div>
+        <IntegrationsTab stripeConnected={stripeConnected} />
       ) : null}
 
       {/* ── Demo Data tab ────────────────────────────────────────────────── */}
@@ -799,6 +749,19 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             On signup we add sample clients, jobs, quotes and invoices so the dashboard is not empty. These rows are tagged as demo,
             stay out of financial totals, and do not support billing emails or similar actions.
           </p>
+          <details className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
+            <summary className="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">What&apos;s included in demo data?</summary>
+            <ul className="mt-3 space-y-1 text-sm text-[var(--text-secondary)] list-disc list-inside">
+              <li>5 sample clients with contact details</li>
+              <li>10 sample jobs with notes and photos</li>
+              <li>3 invoices in various states</li>
+              <li>2 quotes ready to send</li>
+              <li>3 employees with associated timesheets</li>
+            </ul>
+          </details>
+          <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+            Demo records are clearly labelled with a badge and excluded from all financial totals and reports.
+          </div>
           <div className="mt-5 space-y-4">
             <DemoDataButtons
               resetAction={resetDemoDataAction}
@@ -808,7 +771,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <ReseedDemoApiButton userId={user.id} />
             </div>
             <p className="text-xs text-[var(--text-muted)]">
-              <strong>Reset</strong> removes existing demo rows and inserts a fresh template set.{" "}
+              <strong>Seed demo data</strong> removes existing demo rows and inserts a fresh template set.{" "}
               <strong>Clear all</strong> deletes demo rows only and leaves your real data untouched.{" "}
               <strong>Reseed</strong> calls{" "}
               <code className="rounded bg-[var(--bg-secondary)] px-1 py-0.5 text-[11px]">POST /api/setup-business</code> with{" "}
@@ -825,17 +788,11 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             These actions are irreversible. Please proceed with caution.
           </p>
-
-          <div className="mt-5 space-y-5">
-            <div className="border-t border-[var(--border)] pt-5">
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Delete account</h3>
-              <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                Permanently delete your account and all associated data. This cannot be undone.
-              </p>
-              <div className="mt-4">
-                <DeleteAccountSection deleteAction={deleteAccountAction} />
-              </div>
-            </div>
+          <div className="mt-5">
+            <DangerZoneTab
+              businessName={businessRow?.business_name ?? ""}
+              userEmail={user.email ?? ""}
+            />
           </div>
         </div>
       ) : null}

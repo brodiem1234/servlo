@@ -16,8 +16,6 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
 const ANSWER_COLOR = "#14B8A6";
-const ANSWER_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(150deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -81,7 +79,7 @@ export default function AnswerShell({
             alt="SERVLO"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: ANSWER_LOGO_FILTER }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div
             className="mt-3 h-[2px] w-full"

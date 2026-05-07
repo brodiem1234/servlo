@@ -16,8 +16,6 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
 const FINANCE_HUB_COLOR = "#6366F1";
-const FINANCE_HUB_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(220deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -82,11 +80,7 @@ export default function FinanceHubShell({
             alt="SERVLO"
             width={120}
             height={120}
-            style={{
-              height: "auto",
-              maxWidth: "120px",
-              filter: FINANCE_HUB_LOGO_FILTER,
-            }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div
             className="mt-3 h-[2px] w-full"

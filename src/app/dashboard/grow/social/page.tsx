@@ -522,8 +522,8 @@ export default function GrowSocialPage() {
         >
           <div
             ref={modalRef}
-            className="w-full max-w-lg rounded-2xl border p-6 shadow-2xl"
-            style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+            className="w-full max-w-lg rounded-2xl border bg-white p-6 shadow-2xl dark:bg-[#1a2235]"
+            style={{ borderColor: "var(--border)" }}
           >
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
@@ -567,8 +567,8 @@ export default function GrowSocialPage() {
                   onChange={(e) => setFCaption(e.target.value.slice(0, 2200))}
                   rows={4}
                   placeholder="Write your post caption…"
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)", resize: "vertical" }}
+                  className="w-full rounded-lg border bg-gray-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 dark:bg-[#161d2e]"
+                  style={{ borderColor: "var(--border)", color: "var(--text-primary)", resize: "vertical" }}
                 />
 
                 {/* AI caption generate dropdown */}
@@ -588,8 +588,8 @@ export default function GrowSocialPage() {
                   </button>
                   {showCaptionTypeMenu && (
                     <div
-                      className="absolute left-0 top-full z-10 mt-1 w-56 rounded-xl border shadow-xl"
-                      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+                      className="absolute left-0 top-full z-10 mt-1 w-56 rounded-xl border bg-white shadow-xl dark:bg-[#1a2235]"
+                      style={{ borderColor: "var(--border)" }}
                     >
                       {CAPTION_TYPES.map((ct) => (
                         <button
@@ -619,7 +619,7 @@ export default function GrowSocialPage() {
                         onClick={() => { setFCaption(cap); setShowCaptionVariations(false); }}
                         className="w-full rounded-lg border p-3 text-left text-xs transition-all hover:opacity-80"
                         style={{
-                          background: fCaption === cap ? "rgb(139 92 246 / 0.12)" : "var(--bg-secondary)",
+                          background: fCaption === cap ? "rgb(139 92 246 / 0.12)" : "rgb(249 250 251)",
                           borderColor: fCaption === cap ? "#8B5CF6" : "var(--border)",
                           color: "var(--text-secondary)",
                         }}
@@ -638,7 +638,7 @@ export default function GrowSocialPage() {
                 </p>
                 <div
                   className="flex items-center justify-center rounded-lg border-2 border-dashed py-5 text-center"
-                  style={{ borderColor: "var(--border)", background: "var(--bg-secondary)" }}
+                  style={{ borderColor: "var(--border)", background: "rgb(249 250 251)" }}
                 >
                   <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                     Photo upload coming with full Grow launch
@@ -655,8 +655,8 @@ export default function GrowSocialPage() {
                   type="datetime-local"
                   value={fScheduledAt}
                   onChange={(e) => setFScheduledAt(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                  className="w-full rounded-lg border bg-gray-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 dark:bg-[#161d2e]"
+                  style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
                 />
               </div>
 

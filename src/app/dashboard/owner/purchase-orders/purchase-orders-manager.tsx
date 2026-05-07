@@ -303,7 +303,7 @@ export default function PurchaseOrdersManager({
 
       {open ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-black/50 md:flex-row md:justify-end">
-          <div className="relative ml-auto h-full w-full max-w-2xl overflow-y-auto border-l border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+          <div className="relative ml-auto h-full w-full max-w-2xl overflow-y-auto border-l border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1a2235]">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {editingId ? `Edit PO ${editingPO?.po_number ?? ""}` : "New Purchase Order"}
@@ -340,7 +340,7 @@ export default function PurchaseOrdersManager({
                     value={supplierId}
                     onChange={(e) => setSupplierId(e.target.value)}
                     required
-                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                   >
                     <option value="">Select supplier…</option>
                     {localSuppliers.map((s) => (
@@ -356,7 +356,7 @@ export default function PurchaseOrdersManager({
                     name="job_id"
                     value={jobId}
                     onChange={(e) => setJobId(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                   >
                     <option value="">—</option>
                     {jobs.map((j) => (
@@ -372,7 +372,7 @@ export default function PurchaseOrdersManager({
                     name="status"
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                   >
                     {STATUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -397,7 +397,7 @@ export default function PurchaseOrdersManager({
                 <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
                   <table className="w-full min-w-[400px] text-xs">
                     <thead>
-                      <tr className="border-b border-[var(--border)] bg-[var(--bg-secondary)] text-left text-[var(--text-muted)]">
+                      <tr className="border-b border-[var(--border)] bg-gray-100 text-left text-[var(--text-muted)] dark:bg-[#161d2e]">
                         <th className="px-3 py-2 font-semibold">Description</th>
                         <th className="px-2 py-2 font-semibold">Qty</th>
                         <th className="px-2 py-2 font-semibold">Unit Price</th>
@@ -417,7 +417,7 @@ export default function PurchaseOrdersManager({
                                 )
                               }
                               placeholder="e.g. Timber stock"
-                              className="h-8 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--text-primary)]"
+                              className="h-8 w-full rounded border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-2 text-xs text-[var(--text-primary)]"
                             />
                           </td>
                           <td className="px-2 py-1.5">
@@ -431,7 +431,7 @@ export default function PurchaseOrdersManager({
                                   prev.map((x, i) => (i === idx ? { ...x, quantity: Number(e.target.value) } : x))
                                 )
                               }
-                              className="h-8 w-16 rounded border border-[var(--border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--text-primary)]"
+                              className="h-8 w-16 rounded border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-2 text-xs text-[var(--text-primary)]"
                             />
                           </td>
                           <td className="px-2 py-1.5">
@@ -445,7 +445,7 @@ export default function PurchaseOrdersManager({
                                   prev.map((x, i) => (i === idx ? { ...x, unit_price: Number(e.target.value) } : x))
                                 )
                               }
-                              className="h-8 w-24 rounded border border-[var(--border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--text-primary)]"
+                              className="h-8 w-24 rounded border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-2 text-xs text-[var(--text-primary)]"
                             />
                           </td>
                           <td className="px-2 py-1.5 font-semibold text-[var(--text-primary)]">
@@ -480,7 +480,7 @@ export default function PurchaseOrdersManager({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-primary)]"
+                  className="w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 py-2 text-sm text-[var(--text-primary)]"
                 />
               </div>
 
@@ -507,7 +507,7 @@ export default function PurchaseOrdersManager({
       {/* Quick-create supplier modal */}
       {newSupplierOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1a2235]">
             <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Supplier</h3>
             <div className="space-y-3">
               <div>
@@ -518,7 +518,7 @@ export default function PurchaseOrdersManager({
                   value={newSupplierName}
                   onChange={(e) => setNewSupplierName(e.target.value)}
                   placeholder="Supplier company name"
-                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                 />
               </div>
               <div>
@@ -530,7 +530,7 @@ export default function PurchaseOrdersManager({
                   value={newSupplierEmail}
                   onChange={(e) => setNewSupplierEmail(e.target.value)}
                   placeholder="orders@supplier.com.au"
-                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -543,7 +543,7 @@ export default function PurchaseOrdersManager({
                     value={newSupplierPhone}
                     onChange={(e) => setNewSupplierPhone(e.target.value)}
                     placeholder="07xx xxx xxx"
-                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                   />
                 </div>
                 <div>
@@ -554,7 +554,7 @@ export default function PurchaseOrdersManager({
                     value={newSupplierAbn}
                     onChange={(e) => setNewSupplierAbn(e.target.value)}
                     placeholder="12 345 678 901"
-                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-gray-50 dark:bg-[#161d2e] px-3 text-sm text-[var(--text-primary)]"
                   />
                 </div>
               </div>

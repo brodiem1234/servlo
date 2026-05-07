@@ -124,8 +124,8 @@ function ReferBusinessModal({
     >
       <div
         ref={modalRef}
-        className="w-full max-w-md rounded-2xl border p-6 shadow-2xl"
-        style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+        className="w-full max-w-md rounded-2xl border bg-white p-6 shadow-2xl dark:bg-[#1a2235]"
+        style={{ borderColor: "var(--border)" }}
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
@@ -167,8 +167,8 @@ function ReferBusinessModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Mike Johnson"
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                className="w-full rounded-lg border bg-gray-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 dark:bg-[#161d2e]"
+                style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
             </div>
 
@@ -181,8 +181,8 @@ function ReferBusinessModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. mike@tradesco.com.au"
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                className="w-full rounded-lg border bg-gray-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 dark:bg-[#161d2e]"
+                style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
             </div>
 

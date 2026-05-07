@@ -16,8 +16,6 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
 const FLEET_COLOR = "#0EA5E9";
-const FLEET_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(180deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -69,7 +67,7 @@ export default function FleetShell({
             alt="SERVLO"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: FLEET_LOGO_FILTER }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div
             className="mt-3 h-[2px] w-full"

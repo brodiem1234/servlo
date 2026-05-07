@@ -16,8 +16,6 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
 const HIRE_COLOR = "#F97316";
-const HIRE_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(5) hue-rotate(15deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -77,7 +75,7 @@ export default function HireShell({
             alt="SERVLO"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: HIRE_LOGO_FILTER }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div
             className="mt-3 h-[2px] w-full"

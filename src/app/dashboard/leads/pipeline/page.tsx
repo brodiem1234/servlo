@@ -530,9 +530,8 @@ export default function LeadsPipelinePage() {
           />
           {/* Panel */}
           <div
-            className="fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[320px] flex-col overflow-y-auto shadow-2xl"
+            className="fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-[320px] flex-col overflow-y-auto bg-white shadow-2xl dark:bg-[#1a2235]"
             style={{
-              background: "var(--bg-card)",
               borderLeft: "1px solid var(--border)",
             }}
           >
@@ -569,10 +568,9 @@ export default function LeadsPipelinePage() {
             <div className="flex flex-1 flex-col gap-5 p-5">
               {/* Details */}
               <div
-                className="space-y-2 rounded-xl border p-4"
+                className="space-y-2 rounded-xl border bg-gray-50 p-4 dark:bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
-                  background: "var(--bg-primary)",
                 }}
               >
                 <Row
@@ -676,9 +674,8 @@ export default function LeadsPipelinePage() {
                   }}
                   placeholder="Add notes about this lead…"
                   rows={4}
-                  className="w-full resize-none rounded-lg border p-3 text-sm"
+                  className="w-full resize-none rounded-lg border bg-gray-50 p-3 text-sm dark:bg-[#161d2e]"
                   style={{
-                    background: "var(--bg-primary)",
                     borderColor: "var(--border)",
                     color: "var(--text-primary)",
                   }}

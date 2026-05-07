@@ -426,6 +426,96 @@
   background-color: #120b00 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(10deg) drop-shadow(0 0 10px #F59E0B) drop-shadow(0 0 20px rgba(245,158,11,0.4));
 }
+[data-product="answer"] {
+  --product-rgb: 20, 184, 166;
+  --product-accent: #14B8A6;
+  --product-accent-light: #5EEAD4;
+  --product-muted: #003d36;
+  --product-sidebar: #001f1c;
+  --product-main: #001210;
+  background-color: #001210 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(155deg) drop-shadow(0 0 10px #14B8A6) drop-shadow(0 0 20px rgba(20,184,166,0.4));
+}
+[data-product="pay"] {
+  --product-rgb: 34, 197, 94;
+  --product-accent: #22C55E;
+  --product-accent-light: #86EFAC;
+  --product-muted: #003d1a;
+  --product-sidebar: #001f0d;
+  --product-main: #001207;
+  background-color: #001207 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(115deg) drop-shadow(0 0 10px #22C55E) drop-shadow(0 0 20px rgba(34,197,94,0.4));
+}
+[data-product="hire"] {
+  --product-rgb: 249, 115, 22;
+  --product-accent: #F97316;
+  --product-accent-light: #FDBA74;
+  --product-muted: #3d1500;
+  --product-sidebar: #1f0a00;
+  --product-main: #120600;
+  background-color: #120600 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(355deg) drop-shadow(0 0 10px #F97316) drop-shadow(0 0 20px rgba(249,115,22,0.4));
+}
+[data-product="fleet"] {
+  --product-rgb: 14, 165, 233;
+  --product-accent: #0EA5E9;
+  --product-accent-light: #7DD3FC;
+  --product-muted: #003d5c;
+  --product-sidebar: #001f2e;
+  --product-main: #00121c;
+  background-color: #00121c !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(175deg) drop-shadow(0 0 10px #0EA5E9) drop-shadow(0 0 20px rgba(14,165,233,0.4));
+}
+[data-product="finance-hub"] {
+  --product-rgb: 99, 102, 241;
+  --product-accent: #6366F1;
+  --product-accent-light: #A5B4FC;
+  --product-muted: #1a1a50;
+  --product-sidebar: #0d0d2e;
+  --product-main: #08081c;
+  background-color: #08081c !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(215deg) drop-shadow(0 0 10px #6366F1) drop-shadow(0 0 20px rgba(99,102,241,0.4));
+}
+[data-product="insurance"] {
+  --product-rgb: 244, 63, 94;
+  --product-accent: #F43F5E;
+  --product-accent-light: #FDA4AF;
+  --product-muted: #3d0015;
+  --product-sidebar: #1f000a;
+  --product-main: #120006;
+  background-color: #120006 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(325deg) drop-shadow(0 0 10px #F43F5E) drop-shadow(0 0 20px rgba(244,63,94,0.4));
+}
+[data-product="safe"] {
+  --product-rgb: 239, 68, 68;
+  --product-accent: #EF4444;
+  --product-accent-light: #FCA5A5;
+  --product-muted: #3d0000;
+  --product-sidebar: #1f0000;
+  --product-main: #120000;
+  background-color: #120000 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(0deg) drop-shadow(0 0 10px #EF4444) drop-shadow(0 0 20px rgba(239,68,68,0.4));
+}
+[data-product="books"] {
+  --product-rgb: 16, 185, 129;
+  --product-accent: #10B981;
+  --product-accent-light: #6EE7B7;
+  --product-muted: #003d2a;
+  --product-sidebar: #001f15;
+  --product-main: #00120c;
+  background-color: #00120c !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(135deg) drop-shadow(0 0 10px #10B981) drop-shadow(0 0 20px rgba(16,185,129,0.4));
+}
+[data-product="academy"] {
+  --product-rgb: 234, 179, 8;
+  --product-accent: #EAB308;
+  --product-accent-light: #FDE047;
+  --product-muted: #3d2d00;
+  --product-sidebar: #1f1700;
+  --product-main: #120e00;
+  background-color: #120e00 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(20deg) drop-shadow(0 0 10px #EAB308) drop-shadow(0 0 20px rgba(234,179,8,0.4));
+}
 
 /* Ensure sidebar text is always readable inside product shells (dark backgrounds).
    Product shells apply `class="dark"` to an inner div rather than <html>, so the
@@ -541,6 +631,87 @@ html.light-mode [data-product="leads"] {
   --sidebar-active-bg: rgba(245, 158, 11, 0.08);
   --sidebar-active-text: #F59E0B;
   --logo-filter: brightness(0) saturate(100%) invert(70%) sepia(90%) saturate(900%) hue-rotate(5deg) brightness(102%) drop-shadow(0 0 8px rgba(245,158,11,0.5));
+}
+
+html.light-mode [data-product="answer"] {
+  background-color: #E6FAF8 !important;
+  --product-sidebar: #ffffff;
+  --product-main: #E6FAF8;
+  --sidebar-active-bg: rgba(20, 184, 166, 0.08);
+  --sidebar-active-text: #14B8A6;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(155deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(20,184,166,0.5));
+}
+
+html.light-mode [data-product="pay"] {
+  background-color: #E8FAF0 !important;
+  --product-sidebar: #ffffff;
+  --product-main: #E8FAF0;
+  --sidebar-active-bg: rgba(34, 197, 94, 0.08);
+  --sidebar-active-text: #22C55E;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(115deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(34,197,94,0.5));
+}
+
+html.light-mode [data-product="hire"] {
+  background-color: #FEF3EB !important;
+  --product-sidebar: #ffffff;
+  --product-main: #FEF3EB;
+  --sidebar-active-bg: rgba(249, 115, 22, 0.08);
+  --sidebar-active-text: #F97316;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(355deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(249,115,22,0.5));
+}
+
+html.light-mode [data-product="fleet"] {
+  background-color: #E6F6FE !important;
+  --product-sidebar: #ffffff;
+  --product-main: #E6F6FE;
+  --sidebar-active-bg: rgba(14, 165, 233, 0.08);
+  --sidebar-active-text: #0EA5E9;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(175deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(14,165,233,0.5));
+}
+
+html.light-mode [data-product="finance-hub"] {
+  background-color: #EEEEFF !important;
+  --product-sidebar: #ffffff;
+  --product-main: #EEEEFF;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
+  --sidebar-active-text: #6366F1;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(215deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(99,102,241,0.5));
+}
+
+html.light-mode [data-product="insurance"] {
+  background-color: #FEE8EC !important;
+  --product-sidebar: #ffffff;
+  --product-main: #FEE8EC;
+  --sidebar-active-bg: rgba(244, 63, 94, 0.08);
+  --sidebar-active-text: #F43F5E;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(325deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(244,63,94,0.5));
+}
+
+html.light-mode [data-product="safe"] {
+  background-color: #FEE8E8 !important;
+  --product-sidebar: #ffffff;
+  --product-main: #FEE8E8;
+  --sidebar-active-bg: rgba(239, 68, 68, 0.08);
+  --sidebar-active-text: #EF4444;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(0deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(239,68,68,0.5));
+}
+
+html.light-mode [data-product="books"] {
+  background-color: #E6FAF4 !important;
+  --product-sidebar: #ffffff;
+  --product-main: #E6FAF4;
+  --sidebar-active-bg: rgba(16, 185, 129, 0.08);
+  --sidebar-active-text: #10B981;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(135deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(16,185,129,0.5));
+}
+
+html.light-mode [data-product="academy"] {
+  background-color: #FEFAE6 !important;
+  --product-sidebar: #ffffff;
+  --product-main: #FEFAE6;
+  --sidebar-active-bg: rgba(234, 179, 8, 0.08);
+  --sidebar-active-text: #EAB308;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(20deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(234,179,8,0.5));
 }
 
 /* Light mode sidebar nav active item */

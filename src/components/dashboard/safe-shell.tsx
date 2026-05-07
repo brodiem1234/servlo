@@ -16,8 +16,6 @@ import { HelpButton } from "./help-button";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
 const SAFE_COLOR = "#EF4444";
-const SAFE_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(5) hue-rotate(340deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -64,7 +62,7 @@ export default function SafeShell({ children }: { children: React.ReactNode }) {
             alt="SERVLO"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: SAFE_LOGO_FILTER }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div
             className="mt-3 h-[2px] w-full"

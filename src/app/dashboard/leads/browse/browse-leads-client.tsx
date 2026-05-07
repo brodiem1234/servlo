@@ -944,9 +944,8 @@ function LeadDetailPanel({
 
   return (
     <div
-      className="fixed right-0 top-0 z-50 flex h-full w-full flex-col overflow-y-auto shadow-2xl md:w-96"
+      className="fixed right-0 top-0 z-50 flex h-full w-full flex-col overflow-y-auto bg-white shadow-2xl dark:bg-[#1a2235] md:w-96"
       style={{
-        background: "var(--bg-card)",
         borderLeft: "1px solid var(--border)",
       }}
     >
@@ -1043,8 +1042,8 @@ function LeadDetailPanel({
 
         {/* Details grid */}
         <div
-          className="grid grid-cols-2 gap-3 rounded-xl border p-4"
-          style={{ borderColor: "var(--border)", background: "var(--bg-primary)" }}
+          className="grid grid-cols-2 gap-3 rounded-xl border bg-gray-50 p-4 dark:bg-[#161d2e]"
+          style={{ borderColor: "var(--border)" }}
         >
           <PanelDetail label="Property type" value="Residential" />
           <PanelDetail label="Urgency" value={urgencyLabel(lead.urgency)} />
@@ -1182,9 +1181,8 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+        className="relative w-full max-w-md rounded-2xl border bg-white p-6 shadow-2xl dark:bg-[#1a2235]"
         style={{
-          background: "var(--bg-card)",
           borderColor: "var(--border)",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -1263,9 +1261,8 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
                 value={suburb}
                 onChange={(e) => setSuburb(e.target.value)}
                 placeholder="e.g. Bondi, 2026"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="w-full rounded-lg border bg-gray-50 px-3 py-2 text-sm dark:bg-[#161d2e]"
                 style={{
-                  background: "var(--bg-primary)",
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",
                 }}
@@ -1291,7 +1288,7 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
                         : "var(--border)",
                       background: selectedServices.has(svc)
                         ? "color-mix(in srgb, var(--accent-color) 8%, transparent)"
-                        : "var(--bg-primary)",
+                        : "rgb(249 250 251)",
                       color: "var(--text-secondary)",
                     }}
                   >
