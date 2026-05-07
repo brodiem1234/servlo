@@ -9,6 +9,9 @@ import { ProductSwitcher } from "./product-switcher";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
 
 const GROW_COLOR = "#8B5CF6";
+const GROW_BG = "#110928";
+const GROW_LOGO_FILTER =
+  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(250deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -29,16 +32,18 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="dashboard-theme min-h-screen" style={{ background: "var(--bg-primary)" }}>
+    <div
+      className="dashboard-theme min-h-screen"
+      style={{
+        background: "var(--bg-primary)",
+        "--sidebar-active-bg": GROW_COLOR,
+        "--sidebar-ring": GROW_COLOR,
+      } as React.CSSProperties}
+    >
       {/* Sidebar */}
       <aside
         className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-        style={{
-          background: "var(--sidebar-bg)",
-          color: "var(--sidebar-text)",
-          "--sidebar-active-bg": GROW_COLOR,
-          "--sidebar-ring": GROW_COLOR,
-        } as React.CSSProperties}
+        style={{ background: GROW_BG, color: "var(--sidebar-text)" }}
       >
         {/* Brand */}
         <div className="mb-4">
@@ -47,8 +52,7 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
             alt="SERVLO"
             width={120}
             height={120}
-            className="dark:invert"
-            style={{ height: "auto", maxWidth: "120px" }}
+            style={{ height: "auto", maxWidth: "120px", filter: GROW_LOGO_FILTER }}
           />
           <div className="mt-3 h-[2px] w-full" style={{ background: "var(--sidebar-ring)" }} aria-hidden />
         </div>

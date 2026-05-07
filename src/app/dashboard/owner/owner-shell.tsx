@@ -21,6 +21,9 @@ import { ToastProvider } from "@/components/ui/toast";
 import { ProductSwitcher } from "@/components/dashboard/product-switcher";
 
 const CORE_COLOR = "#3B82F6";
+const CORE_BG = "#0d1b36";
+const CORE_LOGO_FILTER =
+  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(195deg)";
 
 /** Dashboard is only active on the exact path; other items match their section. */
 function isNavItemActive(pathname: string, href: string) {
@@ -104,10 +107,13 @@ export default function OwnerShell({
 
   return (
     <ToastProvider>
-    <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <div
+        className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
+        style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
+      >
         <aside
-          className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto bg-[var(--sidebar-bg)] px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-          style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
+          className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
+          style={{ background: CORE_BG }}
         >
           <div className="mb-6">
             <Image
@@ -115,8 +121,7 @@ export default function OwnerShell({
               alt="SERVLO"
               width={120}
               height={120}
-              className="dark:invert"
-              style={{ height: "auto", maxWidth: "120px" }}
+              style={{ height: "auto", maxWidth: "120px", filter: CORE_LOGO_FILTER }}
             />
             <div className="mt-3 h-[2px] w-full bg-[var(--sidebar-ring)]" aria-hidden />
           </div>
