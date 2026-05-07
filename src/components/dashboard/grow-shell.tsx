@@ -7,6 +7,7 @@ import React, { useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { HelpButton } from "./help-button";
 
 const GROW_COLOR = "#8B5CF6";
 const GROW_BG = "#110928";
@@ -137,6 +138,7 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
+      <HelpButton />
     </div>
   );
 }

@@ -18,6 +18,9 @@ import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/own
 import type { OwnerNavItem, OwnerNavSection } from "@/app/dashboard/owner/nav-config";
 import { ToastProvider } from "@/components/ui/toast";
 import { ProductSwitcher } from "@/components/dashboard/product-switcher";
+import { CommandPalette } from "@/components/dashboard/command-palette";
+import { HelpButton } from "@/components/dashboard/help-button";
+import { BackToTop } from "@/components/dashboard/back-to-top";
 
 const CORE_COLOR = "#3B82F6";
 const CORE_LOGO_FILTER =
@@ -299,6 +302,9 @@ export default function OwnerShell({
       ) : null}
 
       <OwnerKeyboardShortcuts targets={shortcutTargets} />
+      <CommandPalette />
+      <HelpButton />
+      <BackToTop />
     </div>
     </ToastProvider>
   );

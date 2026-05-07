@@ -7,6 +7,7 @@ import { LayoutDashboard, ShoppingBag, ClipboardList, GitBranch } from "lucide-r
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { HelpButton } from "./help-button";
 
 const LEADS_COLOR = "#F59E0B";
 const LEADS_BG = "#1a1005";
@@ -136,6 +137,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
         </header>
         <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
+      <HelpButton />
     </div>
   );
 }

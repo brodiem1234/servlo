@@ -1,5 +1,6 @@
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
+import { revalidatePath } from "next/cache";
 import ClientDetailTabs from "./client-detail-tabs";
 
 type Props = {
@@ -14,42 +15,114 @@ export default async function OwnerClientDetailPage({ params }: Props) {
 
   const clientId = params.id;
 
-  const [{ data: client }, { data: jobs }, { data: invoices }, { data: quotes }] = await Promise.all([
-    supabase
-      .from("clients")
-      .select("id, full_name, email, phone, company_name, address, suburb, state, postcode, notes, status, source, client_type")
-      .eq("id", clientId)
-      .eq("owner_id", user.id)
-      .maybeSingle(),
-    supabase
-      .from("jobs")
-      .select("id, title, status, scheduled_date")
-      .eq("owner_id", user.id)
-      .eq("client_id", clientId)
-      .order("scheduled_date", { ascending: false }),
-    supabase
-      .from("invoices")
-      .select("id, invoice_number, total, status, due_date")
-      .eq("owner_id", user.id)
-      .eq("client_id", clientId)
-      .order("due_date", { ascending: false }),
-    supabase
-      .from("quotes")
-      .select("id, quote_number, total, status, created_at")
-      .eq("owner_id", user.id)
-      .eq("client_id", clientId)
-      .order("created_at", { ascending: false })
-  ]);
+  let client = null;
+  let jobs: Array<{ id: string; title: string | null; status: string | null; scheduled_date: string | null; materials_cost: number | null; labour_hours: number | null; hourly_rate: number | null }> = [];
+  let invoices: Array<{ id: string; invoice_number: string | null; total: number | null; status: string | null; due_date: string | null; created_at: string | null }> = [];
+  let quotes: Array<{ id: string; quote_number: string | null; total: number | null; status: string | null; created_at: string | null }> = [];
+
+  try {
+    const [clientResult, jobsResult, invoicesResult, quotesResult] = await Promise.all([
+      supabase
+        .from("clients")
+        .select("id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, client_type")
+        .eq("id", clientId)
+        .eq("owner_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("jobs")
+        .select("id, title, status, scheduled_date, materials_cost, labour_hours, hourly_rate")
+        .eq("owner_id", user.id)
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("invoices")
+        .select("id, invoice_number, total, status, due_date, created_at")
+        .eq("owner_id", user.id)
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("quotes")
+        .select("id, quote_number, total, status, created_at")
+        .eq("owner_id", user.id)
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    client = clientResult.data ?? null;
+    jobs = jobsResult.data ?? [];
+    invoices = invoicesResult.data ?? [];
+    quotes = quotesResult.data ?? [];
+  } catch {
+    return (
+      <section className="space-y-3 p-4">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Unable to load client</h1>
+        <p className="text-sm text-[var(--text-secondary)]">There was a problem fetching client data. Please try refreshing.</p>
+        <a href="/dashboard/owner/clients" className="text-sm text-[var(--accent-color)] hover:underline">
+          Back to clients
+        </a>
+      </section>
+    );
+  }
 
   if (!client) {
     return (
       <section className="space-y-3">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Client not found</h1>
-        <a href="/dashboard/owner/clients" className="text-sm text-[#3b82f6] hover:underline">
+        <a href="/dashboard/owner/clients" className="text-sm text-[var(--accent-color)] hover:underline">
           Back to clients
         </a>
       </section>
     );
+  }
+
+  // Compute stats
+  const totalJobs = jobs.length;
+  const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total ?? 0), 0);
+  const totalPaid = invoices.filter((inv) => (inv.status ?? "").toLowerCase() === "paid").reduce((sum, inv) => sum + Number(inv.total ?? 0), 0);
+  const outstanding = totalInvoiced - totalPaid;
+
+  // Server actions
+  async function updateNotesAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const { supabase: sb, user: u } = await requireOwnerWorkspaceFeatures();
+    const cid = formData.get("client_id") as string;
+    const notes = formData.get("notes") as string;
+    const { error } = await sb
+      .from("clients")
+      .update({ notes })
+      .eq("id", cid)
+      .eq("owner_id", u.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath(`/dashboard/owner/clients/${cid}`);
+    return { ok: true, message: "Notes saved" };
+  }
+
+  async function acceptQuoteAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const { supabase: sb, user: u } = await requireOwnerWorkspaceFeatures();
+    const qid = formData.get("quote_id") as string;
+    const { error } = await sb
+      .from("quotes")
+      .update({ status: "accepted" })
+      .eq("id", qid)
+      .eq("owner_id", u.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath(`/dashboard/owner/clients/${clientId}`);
+    return { ok: true, message: "Quote accepted" };
+  }
+
+  async function declineQuoteAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const { supabase: sb, user: u } = await requireOwnerWorkspaceFeatures();
+    const qid = formData.get("quote_id") as string;
+    const { error } = await sb
+      .from("quotes")
+      .update({ status: "declined" })
+      .eq("id", qid)
+      .eq("owner_id", u.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath(`/dashboard/owner/clients/${clientId}`);
+    return { ok: true, message: "Quote declined" };
   }
 
   return (
@@ -57,14 +130,22 @@ export default async function OwnerClientDetailPage({ params }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{client.full_name ?? "Client Profile"}</h1>
-          <p className="text-sm text-slate-600">Client profile, jobs, invoices and quotes</p>
+          <p className="text-sm text-[var(--text-secondary)]">Client profile, jobs, invoices and quotes</p>
         </div>
-        <a href="/dashboard/owner/clients" className="rounded border px-3 py-2 text-sm">
+        <a href="/dashboard/owner/clients" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition">
           Back to clients
         </a>
       </div>
-      <ClientDetailTabs client={client} jobs={jobs ?? []} invoices={invoices ?? []} quotes={quotes ?? []} />
+      <ClientDetailTabs
+        client={client}
+        jobs={jobs}
+        invoices={invoices}
+        quotes={quotes}
+        stats={{ totalJobs, totalInvoiced, totalPaid, outstanding }}
+        updateNotesAction={updateNotesAction}
+        acceptQuoteAction={acceptQuoteAction}
+        declineQuoteAction={declineQuoteAction}
+      />
     </section>
   );
 }
-

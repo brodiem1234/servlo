@@ -1,5 +1,5 @@
-import OwnerRouteSkeleton from "@/components/dashboard/owner-route-skeleton";
+import { DashboardPageSkeleton } from "@/components/dashboard/page-skeleton";
 
 export default function OwnerLoading() {
-  return <OwnerRouteSkeleton />;
+  return <DashboardPageSkeleton cards={4} rows={5} showHeader />;
 }

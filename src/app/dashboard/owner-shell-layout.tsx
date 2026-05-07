@@ -22,7 +22,7 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   }
 
   const supabase = await createClient();
-  const [{ data: profileRow }, invRes, quoteRes, tasksRes] = await Promise.all([
+  const [{ data: profileRow }, invRes, quoteRes, tasksRes, notifRes] = await Promise.all([
     supabase.from("profiles").select("industry_tags").eq("id", user.id).maybeSingle(),
     supabase
       .from("invoices")
@@ -43,7 +43,14 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       .select("id, title, done")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: true })
-      .limit(80)
+      .limit(80),
+    supabase
+      .from("notifications")
+      .select("id, message, type, read_at")
+      .eq("owner_id", user.id)
+      .is("read_at", null)
+      .order("created_at", { ascending: false })
+      .limit(5)
   ]);
 
   const industryTags = Array.isArray((profileRow as { industry_tags?: unknown } | null)?.industry_tags)
@@ -67,6 +74,10 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   const followUpQuotes = followUpQuotesRaw ?? [];
 
   const alerts = [
+    ...(notifRes.data ?? []).map((n) => ({
+      id: `notif-${n.id}`,
+      text: n.message as string
+    })),
     ...(unpaidInvoices ?? []).map((invoice) => ({
       id: `invoice-${invoice.id}`,
       text: `Invoice ${invoice.invoice_number ?? "unpaid"} needs follow-up`

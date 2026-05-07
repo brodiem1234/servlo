@@ -5,6 +5,7 @@ import { ClipboardList } from "lucide-react";
 import { DemoBadge } from "@/components/demo-badge";
 import { useEffect, useMemo, useState, useRef, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import SignaturePad from "@/components/dashboard/signature-pad";
 
 type Job = {
   id: string;
@@ -28,6 +29,10 @@ type Job = {
   materials_cost?: number | null;
   labour_hours?: number | null;
   hourly_rate?: number | null;
+  recurrence_rule?: string | null;
+  digital_signoff_image?: string | null;
+  signoff_name?: string | null;
+  signoff_at?: string | null;
   created_at?: string | null;
   is_demo?: boolean | null;
 };
@@ -55,6 +60,9 @@ type Props = {
   jobPhotosByJob: Record<string, Array<{ url: string; label: "before" | "after" }>>;
   quickCreateClientForJobAction: (formData: FormData) => Promise<QuickCreateJobRefResult>;
   quickCreateEmployeeForJobAction: (formData: FormData) => Promise<QuickCreateJobRefResult>;
+  saveJobSignoffAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  clearJobSignoffAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  sendJobToClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
 };
 
 const ADD_NEW_CLIENT = "__add_new_client__";
@@ -78,7 +86,11 @@ const empty = {
   materials_cost: "0",
   labour_hours: "0",
   hourly_rate: "0",
-  revenue_amount: "0"
+  revenue_amount: "0",
+  recurrence_rule: "",
+  digital_signoff_image: "",
+  signoff_name: "",
+  signoff_at: ""
 };
 
 function toDateKey(input: Date) {
@@ -140,7 +152,10 @@ export default function JobsManager({
   uploadJobPhotoAction,
   jobPhotosByJob,
   quickCreateClientForJobAction,
-  quickCreateEmployeeForJobAction
+  quickCreateEmployeeForJobAction,
+  saveJobSignoffAction,
+  clearJobSignoffAction,
+  sendJobToClientAction
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -161,7 +176,7 @@ export default function JobsManager({
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
-  const [activeTab, setActiveTab] = useState<"details" | "photos">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "costing" | "recurring" | "signoff" | "photos">("details");
   const [photoLabel, setPhotoLabel] = useState<"before" | "after">("before");
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [quickAdd, setQuickAdd] = useState<null | "client" | "employee">(null);
@@ -169,6 +184,12 @@ export default function JobsManager({
   const [employeeOptions, setEmployeeOptions] = useState<RefOpt[]>(employees);
   const [quickClientSaving, setQuickClientSaving] = useState(false);
   const [quickEmployeeSaving, setQuickEmployeeSaving] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceFreq, setRecurrenceFreq] = useState("weekly");
+  const [createRecurringInstances, setCreateRecurringInstances] = useState(false);
+  const [signoffSaving, setSignoffSaving] = useState(false);
+  const [clearingSignoff, setClearingSignoff] = useState(false);
+  const [sendingToClient, setSendingToClient] = useState(false);
   const openJobDeepLinkDone = useRef(false);
 
   useEffect(() => {
@@ -208,6 +229,10 @@ export default function JobsManager({
     setOpen(false);
     setQuickAdd(null);
     setEditingDemo(false);
+    setActiveTab("details");
+    setIsRecurring(false);
+    setRecurrenceFreq("weekly");
+    setCreateRecurringInstances(false);
   };
 
   const statusPillClasses: Record<string, string> = {
@@ -487,6 +512,9 @@ export default function JobsManager({
     setValues(empty);
     setActiveTab("details");
     setQuickAdd(null);
+    setIsRecurring(false);
+    setRecurrenceFreq("weekly");
+    setCreateRecurringInstances(false);
     setOpen(true);
   }
 
@@ -496,12 +524,19 @@ export default function JobsManager({
     setValues({ ...empty, scheduled_date: dateKey });
     setActiveTab("details");
     setQuickAdd(null);
+    setIsRecurring(false);
+    setRecurrenceFreq("weekly");
+    setCreateRecurringInstances(false);
     setOpen(true);
   }
 
   function startEdit(job: Job) {
     setEditing(true);
     setEditingDemo(Boolean(job.is_demo));
+    const rule = job.recurrence_rule ?? "";
+    setIsRecurring(Boolean(rule));
+    setRecurrenceFreq(rule || "weekly");
+    setCreateRecurringInstances(false);
     setValues({
       id: job.id,
       title: job.title ?? "",
@@ -516,12 +551,15 @@ export default function JobsManager({
       suburb: job.suburb ?? "",
       state: job.state ?? "",
       priority: job.priority ?? "normal",
-      notes: job.notes ?? ""
-      ,
+      notes: job.notes ?? "",
       materials_cost: String(job.materials_cost ?? 0),
       labour_hours: String(job.labour_hours ?? 0),
       hourly_rate: String(job.hourly_rate ?? 0),
-      revenue_amount: "0"
+      revenue_amount: "0",
+      recurrence_rule: rule,
+      digital_signoff_image: job.digital_signoff_image ?? "",
+      signoff_name: job.signoff_name ?? "",
+      signoff_at: job.signoff_at ?? ""
     });
     setActiveTab("details");
     setQuickAdd(null);
@@ -1074,13 +1112,47 @@ export default function JobsManager({
               </aside>
             ) : null}
             <div className="flex h-full min-h-0 w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-xl md:shrink-0">
-            <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Job" : "Add Job"}</h2>
-            <div className="mt-3 rounded-md border bg-white p-1 text-sm w-fit">
-              <button onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[var(--accent-color)] text-white" : ""}`}>Details</button>
-              <button onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[var(--accent-color)] text-white" : ""}`}>Photos</button>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">{editing ? "Edit Job" : "Add Job"}</h2>
+              <button type="button" onClick={() => closeJobOverlay()} className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] p-1 text-sm w-fit">
+              <button type="button" onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Details</button>
+              <button type="button" onClick={() => setActiveTab("costing")} className={`rounded px-3 py-1 ${activeTab === "costing" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Costing</button>
+              <button type="button" onClick={() => setActiveTab("recurring")} className={`rounded px-3 py-1 ${activeTab === "recurring" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Recurring</button>
+              <button type="button" onClick={() => setActiveTab("signoff")} className={`rounded px-3 py-1 ${activeTab === "signoff" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Sign-off</button>
+              <button type="button" onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Photos</button>
             </div>
             <form action={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />
+              <input type="hidden" name="recurrence_rule" value={isRecurring ? recurrenceFreq : ""} />
+              <input type="hidden" name="create_recurring_instances" value={String(createRecurringInstances)} />
+              {/* Always carry costing values so they survive tab switches */}
+              {activeTab !== "costing" ? (
+                <>
+                  <input type="hidden" name="materials_cost" value={values.materials_cost} />
+                  <input type="hidden" name="labour_hours" value={values.labour_hours} />
+                  <input type="hidden" name="hourly_rate" value={values.hourly_rate} />
+                </>
+              ) : null}
+              {/* Always carry core fields so they survive costing-only saves */}
+              {activeTab !== "details" ? (
+                <>
+                  <input type="hidden" name="title" value={values.title} />
+                  <input type="hidden" name="job_type" value={values.job_type} />
+                  <input type="hidden" name="client_id" value={values.client_id} />
+                  <input type="hidden" name="employee_id" value={values.employee_id} />
+                  <input type="hidden" name="scheduled_date" value={values.scheduled_date} />
+                  <input type="hidden" name="scheduled_start" value={values.scheduled_start} />
+                  <input type="hidden" name="scheduled_end" value={values.scheduled_end} />
+                  <input type="hidden" name="priority" value={values.priority} />
+                  <input type="hidden" name="address" value={values.address} />
+                  <input type="hidden" name="suburb" value={values.suburb} />
+                  <input type="hidden" name="state" value={values.state} />
+                  <input type="hidden" name="description" value={values.description} />
+                  <input type="hidden" name="notes" value={values.notes} />
+                </>
+              ) : null}
               {activeTab === "details" ? (
                 <>
               <input name="title" value={values.title} onChange={(e) => setValues((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="h-10 rounded border px-3" />
@@ -1142,35 +1214,252 @@ export default function JobsManager({
               <input name="state" value={values.state} onChange={(e) => setValues((p) => ({ ...p, state: e.target.value }))} placeholder="State" className="h-10 rounded border px-3" />
               <textarea name="description" value={values.description} onChange={(e) => setValues((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="min-h-20 rounded border px-3 py-2 sm:col-span-2" />
               <textarea name="notes" value={values.notes} onChange={(e) => setValues((p) => ({ ...p, notes: e.target.value }))} placeholder="Notes" className="min-h-20 rounded border px-3 py-2 sm:col-span-2" />
-              <div className="sm:col-span-2 rounded border p-3">
-                <p className="mb-2 text-sm font-semibold text-slate-100">Costs</p>
-                <div className="grid gap-2 sm:grid-cols-4">
-                  <input type="number" step="0.01" name="materials_cost" value={values.materials_cost} onChange={(e) => setValues((p) => ({ ...p, materials_cost: e.target.value }))} placeholder="Materials cost" className="h-10 rounded border px-3" />
-                  <input type="number" step="0.1" name="labour_hours" value={values.labour_hours} onChange={(e) => setValues((p) => ({ ...p, labour_hours: e.target.value }))} placeholder="Labour hours" className="h-10 rounded border px-3" />
-                  <input type="number" step="0.01" name="hourly_rate" value={values.hourly_rate} onChange={(e) => setValues((p) => ({ ...p, hourly_rate: e.target.value }))} placeholder="Hourly rate" className="h-10 rounded border px-3" />
-                  <input type="number" step="0.01" value={values.revenue_amount} onChange={(e) => setValues((p) => ({ ...p, revenue_amount: e.target.value }))} placeholder="Revenue" className="h-10 rounded border px-3" />
-                </div>
-                {(() => {
-                  const revenue = Number(values.revenue_amount || 0);
-                  const costs = Number(values.materials_cost || 0) + Number(values.labour_hours || 0) * Number(values.hourly_rate || 0);
-                  const profit = revenue - costs;
-                  const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-                  return (
-                    <p className="mt-2 text-sm text-slate-400">
-                      Profit margin: ${profit.toFixed(2)} ({margin.toFixed(1)}%)
-                    </p>
-                  );
-                })()}
-              </div>
               <div className="sm:col-span-2 flex justify-end gap-2">
-                <button type="button" onClick={() => closeJobOverlay()} className="rounded border px-4 py-2 text-sm">Cancel</button>
+                <button type="button" onClick={() => closeJobOverlay()} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)]">Cancel</button>
                 <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Job"}</button>
               </div>
                 </>
               ) : null}
+              {activeTab === "costing" ? (
+                <div className="sm:col-span-2 space-y-4">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">Job Costing</p>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div>
+                      <label className="mb-1 block text-xs text-[var(--text-muted)]">Materials Cost ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="materials_cost"
+                        value={values.materials_cost}
+                        onChange={(e) => setValues((p) => ({ ...p, materials_cost: e.target.value }))}
+                        placeholder="0.00"
+                        className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs text-[var(--text-muted)]">Labour Hours</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        name="labour_hours"
+                        value={values.labour_hours}
+                        onChange={(e) => setValues((p) => ({ ...p, labour_hours: e.target.value }))}
+                        placeholder="0.0"
+                        className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs text-[var(--text-muted)]">Hourly Rate ($/hr)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="hourly_rate"
+                        value={values.hourly_rate}
+                        onChange={(e) => setValues((p) => ({ ...p, hourly_rate: e.target.value }))}
+                        placeholder="0.00"
+                        className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-[var(--text-muted)]">Revenue (from invoice, $)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={values.revenue_amount}
+                      onChange={(e) => setValues((p) => ({ ...p, revenue_amount: e.target.value }))}
+                      placeholder="0.00"
+                      className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                    />
+                  </div>
+                  {(() => {
+                    const materials = Number(values.materials_cost || 0);
+                    const hours = Number(values.labour_hours || 0);
+                    const rate = Number(values.hourly_rate || 0);
+                    const totalCost = materials + hours * rate;
+                    const revenue = Number(values.revenue_amount || 0);
+                    const profit = revenue - totalCost;
+                    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+                    return (
+                      <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3 space-y-1.5 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-[var(--text-muted)]">Total Cost</span>
+                          <span className="font-semibold text-[var(--text-primary)]">${totalCost.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--text-muted)]">Revenue</span>
+                          <span className="font-semibold text-[var(--text-primary)]">${revenue.toFixed(2)}</span>
+                        </div>
+                        <div className="border-t border-[var(--border)] pt-1.5 flex justify-between">
+                          <span className="text-[var(--text-muted)]">Profit</span>
+                          <span className={`font-bold ${profit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                            ${profit.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--text-muted)]">Profit Margin</span>
+                          <span className={`font-bold ${margin >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                            {margin.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => closeJobOverlay()} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)]">Cancel</button>
+                    <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Job"}</button>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeTab === "recurring" ? (
+                <div className="sm:col-span-2 space-y-4">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">Recurring Job Setup</p>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <div
+                      role="switch"
+                      aria-checked={isRecurring}
+                      tabIndex={0}
+                      onClick={() => setIsRecurring((v) => !v)}
+                      onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); setIsRecurring((v) => !v); } }}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-color)] ${isRecurring ? "bg-[var(--accent-color)]" : "bg-slate-300 dark:bg-slate-600"}`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${isRecurring ? "translate-x-5" : "translate-x-0"}`}
+                      />
+                    </div>
+                    <span className="text-sm text-[var(--text-primary)]">Make this recurring</span>
+                  </label>
+                  {isRecurring ? (
+                    <div className="space-y-3 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
+                      <div>
+                        <label className="mb-1 block text-xs text-[var(--text-muted)]">Frequency</label>
+                        <select
+                          value={recurrenceFreq}
+                          onChange={(e) => setRecurrenceFreq(e.target.value)}
+                          className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                        >
+                          <option value="weekly">Weekly</option>
+                          <option value="fortnightly">Fortnightly</option>
+                          <option value="monthly">Monthly</option>
+                          <option value="quarterly">Quarterly</option>
+                          <option value="annually">Annually</option>
+                        </select>
+                      </div>
+                      <label className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-primary)]">
+                        <input
+                          type="checkbox"
+                          checked={createRecurringInstances}
+                          onChange={(e) => setCreateRecurringInstances(e.target.checked)}
+                          className="rounded border border-[var(--border)]"
+                        />
+                        Create the next 3 job instances automatically when saving
+                      </label>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        Future job instances will be created automatically when you save.
+                      </p>
+                    </div>
+                  ) : null}
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => closeJobOverlay()} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)]">Cancel</button>
+                    <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Job"}</button>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeTab === "signoff" ? (
+                <div className="sm:col-span-2 space-y-4">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">Client Sign-off</p>
+                  {!editing ? (
+                    <p className="text-sm text-[var(--text-muted)]">Save the job first, then collect a signature.</p>
+                  ) : editingDemo ? (
+                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-100">
+                      This is a demo job — sign-off is disabled.
+                    </p>
+                  ) : values.digital_signoff_image ? (
+                    <div className="space-y-3">
+                      <div className="rounded-lg border border-green-300 bg-green-50 p-3 dark:border-green-700 dark:bg-green-950/40">
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-green-800 dark:text-green-300">Signed</p>
+                        <p className="text-sm text-[var(--text-primary)]">
+                          {values.signoff_name ? <>Signed by <strong>{values.signoff_name}</strong></> : "Signature collected"}
+                          {values.signoff_at ? <> on {new Date(values.signoff_at).toLocaleString("en-AU")}</> : null}
+                        </p>
+                      </div>
+                      <img
+                        src={values.digital_signoff_image}
+                        alt="Client signature"
+                        className="max-w-xs rounded border border-[var(--border)]"
+                      />
+                      <button
+                        type="button"
+                        disabled={clearingSignoff}
+                        onClick={async () => {
+                          setClearingSignoff(true);
+                          try {
+                            const fd = new FormData();
+                            fd.set("job_id", values.id);
+                            const result = await clearJobSignoffAction(fd);
+                            if (result.ok) {
+                              setValues((p) => ({ ...p, digital_signoff_image: "", signoff_name: "", signoff_at: "" }));
+                              setToast({ type: "success", message: "Signature cleared" });
+                              router.refresh();
+                            } else {
+                              setToast({ type: "error", message: result.message ?? "Could not clear signature" });
+                            }
+                          } finally {
+                            setClearingSignoff(false);
+                          }
+                        }}
+                        className="rounded border border-red-300 px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30 disabled:opacity-50"
+                      >
+                        {clearingSignoff ? "Clearing…" : "Clear signature"}
+                      </button>
+                    </div>
+                  ) : (
+                    <SignaturePad
+                      saving={signoffSaving}
+                      onSave={async (base64, signerName) => {
+                        setSignoffSaving(true);
+                        try {
+                          const fd = new FormData();
+                          fd.set("job_id", values.id);
+                          fd.set("signoff_image", base64);
+                          fd.set("signoff_name", signerName);
+                          const result = await saveJobSignoffAction(fd);
+                          if (result.ok) {
+                            setValues((p) => ({
+                              ...p,
+                              digital_signoff_image: base64,
+                              signoff_name: signerName,
+                              signoff_at: new Date().toISOString()
+                            }));
+                            setToast({ type: "success", message: "Signature saved" });
+                            router.refresh();
+                          } else {
+                            setToast({ type: "error", message: result.message ?? "Could not save signature" });
+                          }
+                        } finally {
+                          setSignoffSaving(false);
+                        }
+                      }}
+                    />
+                  )}
+                </div>
+              ) : null}
+
               {activeTab === "photos" ? (
                 <div className="sm:col-span-2 space-y-3">
-                  {!editing ? <p className="text-sm text-slate-400">Save the job first, then upload photos.</p> : null}
+                  {!editing ? (
+                    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-[var(--border)] p-8 text-center">
+                      <span className="text-3xl" aria-hidden>📸</span>
+                      <p className="text-sm font-medium text-[var(--text-primary)]">Job Photos</p>
+                      <p className="text-xs text-[var(--text-muted)]">Save the job first, then upload before/after photos.</p>
+                    </div>
+                  ) : null}
                   {editing && editingDemo ? (
                     <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-100">
                       This is a demo job — uploads are disabled. Create a real job to store photos.
@@ -1178,10 +1467,11 @@ export default function JobsManager({
                   ) : null}
                   {editing && !editingDemo ? (
                     <div className="space-y-2">
+                      <label className="text-xs text-[var(--text-muted)]">Photo label</label>
                       <select
                         value={photoLabel}
                         onChange={(e) => setPhotoLabel(e.target.value === "after" ? "after" : "before")}
-                        className="h-10 rounded border px-3 text-sm"
+                        className="h-10 rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
                       >
                         <option value="before">Before</option>
                         <option value="after">After</option>
@@ -1190,33 +1480,104 @@ export default function JobsManager({
                         type="file"
                         multiple
                         accept="image/*"
-                        className="block w-full text-sm"
+                        className="block w-full text-sm text-[var(--text-primary)]"
                         onChange={(e) => setSelectedPhotos(Array.from(e.target.files ?? []))}
                       />
                       <button type="button" onClick={uploadPhotos} className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Upload Photos</button>
                     </div>
                   ) : null}
-                  <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                    {(jobPhotosByJob[values.id] ?? []).map((photo, idx) => (
-                      <div key={`${photo.url}-${idx}`} className="rounded border p-2">
-                        <Image
-                          src={photo.url}
-                          alt={`Job photo ${idx + 1}`}
-                          width={320}
-                          height={96}
-                          className="h-24 w-full rounded object-cover"
-                          unoptimized
-                        />
-                        <p className="mt-1 text-xs font-medium capitalize text-slate-300">{photo.label}</p>
+                  {(() => {
+                    const allPhotos = jobPhotosByJob[values.id] ?? [];
+                    const beforePhotos = allPhotos.filter((p) => p.label === "before");
+                    const afterPhotos = allPhotos.filter((p) => p.label === "after");
+                    const hasBeforeAndAfter = beforePhotos.length > 0 && afterPhotos.length > 0;
+
+                    if (allPhotos.length === 0) {
+                      return <p className="text-sm text-[var(--text-muted)]">No photos uploaded yet.</p>;
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                        {hasBeforeAndAfter ? (
+                          <div>
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Before / After Comparison</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <p className="mb-1 text-xs font-medium text-[var(--text-muted)]">Before</p>
+                                <Image
+                                  src={beforePhotos[0].url}
+                                  alt="Before photo"
+                                  width={320}
+                                  height={200}
+                                  className="h-36 w-full rounded-lg border border-[var(--border)] object-cover"
+                                  unoptimized
+                                />
+                              </div>
+                              <div>
+                                <p className="mb-1 text-xs font-medium text-[var(--text-muted)]">After</p>
+                                <Image
+                                  src={afterPhotos[0].url}
+                                  alt="After photo"
+                                  width={320}
+                                  height={200}
+                                  className="h-36 w-full rounded-lg border border-[var(--border)] object-cover"
+                                  unoptimized
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">All Photos</p>
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                          {allPhotos.map((photo, idx) => (
+                            <div key={`${photo.url}-${idx}`} className="rounded-lg border border-[var(--border)] p-2">
+                              <Image
+                                src={photo.url}
+                                alt={`Job photo ${idx + 1}`}
+                                width={320}
+                                height={96}
+                                className="h-24 w-full rounded object-cover"
+                                unoptimized
+                              />
+                              <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${photo.label === "after" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"}`}>
+                                {photo.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                    {(jobPhotosByJob[values.id] ?? []).length === 0 ? (
-                      <p className="text-sm text-slate-400">No photos uploaded yet.</p>
-                    ) : null}
-                  </div>
+                    );
+                  })()}
                 </div>
               ) : null}
             </form>
+            {editing && !editingDemo && normalizeStatus(jobs.find((j) => j.id === values.id)?.status ?? null) === "completed" ? (
+              <div className="mt-4 border-t border-[var(--border)] pt-4">
+                <button
+                  type="button"
+                  disabled={sendingToClient}
+                  onClick={async () => {
+                    setSendingToClient(true);
+                    try {
+                      const fd = new FormData();
+                      fd.set("job_id", values.id);
+                      const result = await sendJobToClientAction(fd);
+                      if (result.ok) {
+                        setToast({ type: "success", message: "Job summary sent to client" });
+                      } else {
+                        setToast({ type: "error", message: result.message ?? "Could not send email" });
+                      }
+                    } finally {
+                      setSendingToClient(false);
+                    }
+                  }}
+                  className="rounded-lg bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                >
+                  {sendingToClient ? "Sending…" : "Send to Client"}
+                </button>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">Sends a job summary email to the linked client.</p>
+              </div>
+            ) : null}
             </div>
           </div>
         </div>

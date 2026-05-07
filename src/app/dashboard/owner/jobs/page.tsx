@@ -9,6 +9,38 @@ import { filterDemoEntities } from "@/lib/demo/visibility";
 
 export const dynamic = "force-dynamic";
 
+/** Given a base date and a recurrence rule, return the next `count` ISO date strings. */
+function generateRecurringDates(base: Date, rule: string, count: number): string[] {
+  const results: string[] = [];
+  let current = new Date(base);
+  for (let i = 0; i < count; i++) {
+    switch (rule) {
+      case "weekly":
+        current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 7);
+        break;
+      case "fortnightly":
+        current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 14);
+        break;
+      case "monthly":
+        current = new Date(current.getFullYear(), current.getMonth() + 1, current.getDate());
+        break;
+      case "quarterly":
+        current = new Date(current.getFullYear(), current.getMonth() + 3, current.getDate());
+        break;
+      case "annually":
+        current = new Date(current.getFullYear() + 1, current.getMonth(), current.getDate());
+        break;
+      default:
+        return results;
+    }
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, "0");
+    const d = String(current.getDate()).padStart(2, "0");
+    results.push(`${y}-${m}-${d}`);
+  }
+  return results;
+}
+
 type JobsPageProps = {
   searchParams?: Promise<{ client?: string | string[]; openJob?: string; today?: string }>;
 };
@@ -29,7 +61,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     sb
       .from("jobs")
       .select(
-        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo"
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, recurrence_rule, digital_signoff_image, signoff_name, signoff_at, created_at, is_demo"
       )
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
@@ -92,12 +124,46 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         notes: String(formData.get("notes") ?? ""),
         materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
         labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
-        hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0
+        hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+        recurrence_rule: String(formData.get("recurrence_rule") ?? "") || null
       })
       .select("id")
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!inserted?.id) throw new Error("Job was not saved.");
+
+    // Create next 3 recurring instances if a recurrence_rule is set.
+    const recurrenceRule = String(formData.get("recurrence_rule") ?? "").trim();
+    const scheduledDateRaw = String(formData.get("scheduled_date") ?? "").trim();
+    if (recurrenceRule && scheduledDateRaw && inserted.id) {
+      const baseDate = new Date(scheduledDateRaw + "T00:00:00");
+      const instances = generateRecurringDates(baseDate, recurrenceRule, 3);
+      if (instances.length > 0) {
+        const baseJobData = {
+          owner_id: owner.id,
+          is_demo: false,
+          status: "scheduled" as const,
+          title: String(formData.get("title") ?? ""),
+          description: String(formData.get("description") ?? ""),
+          client_id: String(formData.get("client_id") ?? "") || null,
+          employee_id: String(formData.get("employee_id") ?? "") || null,
+          job_type: String(formData.get("job_type") ?? ""),
+          scheduled_start: String(formData.get("scheduled_start") ?? "") || null,
+          scheduled_end: String(formData.get("scheduled_end") ?? "") || null,
+          address: String(formData.get("address") ?? ""),
+          suburb: String(formData.get("suburb") ?? ""),
+          state: String(formData.get("state") ?? ""),
+          priority: String(formData.get("priority") ?? "normal"),
+          notes: String(formData.get("notes") ?? ""),
+          materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
+          labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
+          hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+          recurrence_rule: recurrenceRule
+        };
+        await sb.from("jobs").insert(instances.map((d) => ({ ...baseJobData, scheduled_date: d })));
+      }
+    }
+
     revalidateOwnerWorkspaceRoutes();
   }
 
@@ -127,11 +193,46 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         notes: String(formData.get("notes") ?? ""),
         materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
         labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
-        hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0
+        hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+        recurrence_rule: String(formData.get("recurrence_rule") ?? "") || null
       })
       .eq("id", id)
       .eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
+
+    // Create next 3 recurring instances if a recurrence_rule is set on update.
+    const recurrenceRule = String(formData.get("recurrence_rule") ?? "").trim();
+    const scheduledDateRaw = String(formData.get("scheduled_date") ?? "").trim();
+    const createInstances = String(formData.get("create_recurring_instances") ?? "") === "true";
+    if (createInstances && recurrenceRule && scheduledDateRaw) {
+      const baseDate = new Date(scheduledDateRaw + "T00:00:00");
+      const instances = generateRecurringDates(baseDate, recurrenceRule, 3);
+      if (instances.length > 0) {
+        const baseJobData = {
+          owner_id: owner.id,
+          is_demo: false,
+          status: "scheduled" as const,
+          title: String(formData.get("title") ?? ""),
+          description: String(formData.get("description") ?? ""),
+          client_id: String(formData.get("client_id") ?? "") || null,
+          employee_id: String(formData.get("employee_id") ?? "") || null,
+          job_type: String(formData.get("job_type") ?? ""),
+          scheduled_start: String(formData.get("scheduled_start") ?? "") || null,
+          scheduled_end: String(formData.get("scheduled_end") ?? "") || null,
+          address: String(formData.get("address") ?? ""),
+          suburb: String(formData.get("suburb") ?? ""),
+          state: String(formData.get("state") ?? ""),
+          priority: String(formData.get("priority") ?? "normal"),
+          notes: String(formData.get("notes") ?? ""),
+          materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
+          labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
+          hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+          recurrence_rule: recurrenceRule
+        };
+        await sb.from("jobs").insert(instances.map((d) => ({ ...baseJobData, scheduled_date: d })));
+      }
+    }
+
     revalidateOwnerWorkspaceRoutes();
   }
 
@@ -459,6 +560,98 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     return { ok: true, id: fb.data?.id, label: fb.data?.full_name ?? full_name };
   }
 
+  async function saveJobSignoffAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const jobId = String(formData.get("job_id") ?? "");
+    const signoffImage = String(formData.get("signoff_image") ?? "");
+    const signoffName = String(formData.get("signoff_name") ?? "");
+    if (!jobId || !signoffImage) return { ok: false, message: "Missing data" };
+    const { error } = await sb
+      .from("jobs")
+      .update({
+        digital_signoff_image: signoffImage,
+        signoff_name: signoffName || null,
+        signoff_at: new Date().toISOString()
+      })
+      .eq("id", jobId)
+      .eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidateOwnerWorkspaceRoutes();
+    return { ok: true };
+  }
+
+  async function clearJobSignoffAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const jobId = String(formData.get("job_id") ?? "");
+    if (!jobId) return { ok: false, message: "Missing job id" };
+    const { error } = await sb
+      .from("jobs")
+      .update({ digital_signoff_image: null, signoff_name: null, signoff_at: null })
+      .eq("id", jobId)
+      .eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidateOwnerWorkspaceRoutes();
+    return { ok: true };
+  }
+
+  async function sendJobToClientAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const {
+      data: { user: owner }
+    } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not signed in" };
+    const jobId = String(formData.get("job_id") ?? "");
+    if (!jobId) return { ok: false, message: "Missing job id" };
+    const { data: job } = await sb
+      .from("jobs")
+      .select("title, notes, status, scheduled_date, client_id, signoff_name, signoff_at, is_demo")
+      .eq("id", jobId)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (!job) return { ok: false, message: "Job not found" };
+    if (job.is_demo) return { ok: false, message: "Cannot send demo job emails" };
+    if (!job.client_id) return { ok: false, message: "No client linked to this job" };
+    const { data: client } = await sb.from("clients").select("full_name, email").eq("id", job.client_id).maybeSingle();
+    if (!client?.email) return { ok: false, message: "Client has no email address" };
+
+    const completedDate = job.scheduled_date
+      ? new Date(job.scheduled_date).toLocaleDateString("en-AU")
+      : "—";
+    const signoffNote =
+      job.signoff_name && job.signoff_at
+        ? `<p style="margin:0 0 8px">Signed off by <strong>${job.signoff_name}</strong> on ${new Date(job.signoff_at).toLocaleString("en-AU")}.</p>`
+        : "";
+
+    const html = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1e293b">
+        <h2 style="margin:0 0 16px">Job Summary — ${job.title ?? "Job"}</h2>
+        <p style="margin:0 0 8px"><strong>Client:</strong> ${client.full_name ?? "—"}</p>
+        <p style="margin:0 0 8px"><strong>Date:</strong> ${completedDate}</p>
+        ${job.notes ? `<p style="margin:0 0 8px"><strong>Notes:</strong> ${job.notes}</p>` : ""}
+        ${signoffNote}
+        <p style="margin:16px 0 0;color:#64748b;font-size:13px">Thank you for your business.</p>
+      </div>
+    `;
+
+    try {
+      await sendEmail(client.email, `Job Summary — ${job.title ?? "Job"}`, html);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, message: "Failed to send email" };
+    }
+  }
+
   const jobsMapped = jobs.map((job) => ({
     ...job,
     client_name: job.client_id ? clientNameById.get(job.client_id) ?? null : null,
@@ -498,6 +691,9 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         jobPhotosByJob={photoUrlsByJob}
         quickCreateClientForJobAction={quickCreateClientForJobAction}
         quickCreateEmployeeForJobAction={quickCreateEmployeeForJobAction}
+        saveJobSignoffAction={saveJobSignoffAction}
+        clearJobSignoffAction={clearJobSignoffAction}
+        sendJobToClientAction={sendJobToClientAction}
       />
     </section>
   );
