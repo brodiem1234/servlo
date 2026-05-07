@@ -1,3 +1,21 @@
+## Project identity
+SERVLO — business management SaaS for Australian service businesses.
+Supabase project: isqnfuvgovzhyhkuynma
+Supabase URL: https://isqnfuvgovzhyhkuynma.supabase.co
+
+## Stripe price IDs
+Solo: price_1TTiL8K1tzStyRcJQAfbuJ5n
+Team: price_1TTiLaK1tzStyRcJNOgCeg0X
+Business: price_1TTiLyK1tzStyRcJ4BVJz0o8
+
+## Standing rules
+- Never add schema-fallback branches — fix the schema with a migration instead
+- All new tables need owner_id = auth.uid() RLS policies (4 policies: select/insert/update/delete)
+- timesheets uses clock_in/clock_out/total_hours — no timesheet_entries table
+- businesses is canonical for all business identity fields — never write business fields to profiles
+
+--- everything /init generated below this line ---
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
