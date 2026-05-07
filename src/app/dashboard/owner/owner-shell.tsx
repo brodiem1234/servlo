@@ -23,6 +23,7 @@ import { BackToTop } from "@/components/dashboard/back-to-top";
 import { InstallBanner } from "@/components/pwa/install-banner";
 import { QuickActionFab } from "@/components/dashboard/quick-action-fab";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
 const CORE_COLOR = "#3B82F6";
 const CORE_LOGO_FILTER =
@@ -200,6 +201,7 @@ export default function OwnerShell({
               <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">SERVLO Core</p>
             </div>
             <div className="flex items-center gap-2">
+              <DarkModeToggle />
               <NotificationBell />
               <form action={signOutAction}>
                 <button type="submit" className="dashboard-primary rounded-md px-4 py-2 text-sm font-semibold text-white">

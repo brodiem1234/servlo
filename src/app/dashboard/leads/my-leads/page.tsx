@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { Briefcase } from "lucide-react";
 import Link from "next/link";
 import MyLeadsClient, { type LeadRow } from "./my-leads-client";
 
@@ -126,7 +125,7 @@ export default async function LeadsMyLeadsPage() {
         </div>
       </div>
 
-      {/* Stats bar */}
+      {/* Stats bar — always shown */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {statItems.map(({ label, value }) => (
           <div
@@ -153,44 +152,76 @@ export default async function LeadsMyLeadsPage() {
         ))}
       </div>
 
-      {/* Table or empty state */}
-      {leads.length === 0 ? (
-        <div
-          className="flex flex-col items-center justify-center rounded-xl border py-20 text-center"
-          style={{
-            background: "var(--bg-card)",
-            borderColor: "var(--border)",
-          }}
-        >
-          <span
-            className="flex h-16 w-16 items-center justify-center rounded-full"
-            style={{
-              background:
-                "color-mix(in srgb, var(--accent-color) 12%, transparent)",
-            }}
-          >
-            <Briefcase size={32} style={{ color: "var(--accent-color)" }} />
-          </span>
-          <h2
-            className="mt-4 text-xl font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            No leads yet
-          </h2>
-          <p
-            className="mt-2 max-w-sm text-sm"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Browse the marketplace to find jobs near you.
-          </p>
-          <Link
-            href="/dashboard/leads/browse"
-            className="mt-5 inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-bold text-white"
-            style={{ background: "var(--accent-color)" }}
-          >
-            Browse the marketplace
-          </Link>
+      {/* How it works — always shown */}
+      <div className="rounded-xl border p-6" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+        <h3 className="mb-5 text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>How it works</h3>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {[
+            { step: "1", icon: "🔍", title: "Browse Leads", desc: "Find verified job requests matched to your trade and suburb." },
+            { step: "2", icon: "✅", title: "Accept a Lead", desc: "Pay a small fee to unlock the customer's contact details." },
+            { step: "3", icon: "👤", title: "Convert to Client", desc: "Win the job and convert the lead into a long-term client." },
+          ].map(({ step, icon, title, desc }) => (
+            <div key={step} className="flex items-start gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold" style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B", border: "1px solid rgba(245,158,11,0.3)" }}>
+                {icon}
+              </span>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{title}</p>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>{desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* Table or rich empty state */}
+      {leads.length === 0 ? (
+        <>
+          {/* Rich empty state */}
+          <div className="rounded-xl border p-10 text-center" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl" style={{ background: "rgba(245,158,11,0.15)", border: "2px solid rgba(245,158,11,0.3)" }}>
+              🎯
+            </div>
+            <h2 className="mt-5 text-xl font-bold" style={{ color: "var(--text-primary)" }}>Your leads pipeline starts here</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm" style={{ color: "var(--text-muted)" }}>
+              Accept a lead from the marketplace to see it here. Track status, take notes, and convert leads into long-term clients — all in one place.
+            </p>
+            <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <Link
+                href="/dashboard/leads/browse"
+                className="inline-flex items-center rounded-lg px-6 py-2.5 text-sm font-bold text-white"
+                style={{ background: "#F59E0B" }}
+              >
+                Browse Leads
+              </Link>
+              <Link
+                href="/dashboard/leads/browse"
+                className="inline-flex items-center rounded-lg border px-6 py-2.5 text-sm font-semibold transition-colors"
+                style={{ borderColor: "rgba(245,158,11,0.4)", color: "#FCD34D", background: "rgba(245,158,11,0.08)" }}
+              >
+                Set up lead alerts
+              </Link>
+            </div>
+          </div>
+
+          {/* Skeleton preview */}
+          <div className="space-y-2 opacity-40 select-none pointer-events-none">
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Preview — what your leads will look like</p>
+            {[
+              { service: "Plumbing repair", suburb: "Parramatta", days: "2d", status: "New", value: "$350" },
+              { service: "Electrical quote", suburb: "Chatswood", days: "5d", status: "Contacted", value: "$1,200" },
+              { service: "Roof inspection", suburb: "Penrith", days: "1d", status: "Quoted", value: "$800" },
+            ].map((r, i) => (
+              <div key={i} className="flex items-center justify-between rounded-lg border px-4 py-3" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+                <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{r.service}</span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.suburb}</span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.days}</span>
+                <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: "rgba(245,158,11,0.15)", color: "#FCD34D" }}>{r.status}</span>
+                <span className="text-sm font-bold" style={{ color: "#F59E0B" }}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <MyLeadsClient
           leads={leads}

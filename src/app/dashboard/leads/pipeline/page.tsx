@@ -292,6 +292,12 @@ export default function LeadsPipelinePage() {
     );
   }
 
+  const leadsThisMonth = leads.filter((l) => {
+    const d = new Date(l.created_at ?? "");
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
   return (
     <section className="space-y-5">
       <div className="flex items-start justify-between gap-4">
@@ -302,243 +308,216 @@ export default function LeadsPipelinePage() {
           >
             Lead Pipeline
           </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            Drag cards between columns to update lead status.
-          </p>
+          {leads.length > 0 && (
+            <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+              Drag cards between columns to update lead status.
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Empty state */}
-      {leads.length === 0 ? (
-        <div
-          className="flex flex-col items-center justify-center rounded-xl border py-20 text-center"
-          style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-        >
-          <p
-            className="font-semibold"
-            style={{ color: "var(--text-primary)" }}
+      {/* Stats bar — always shown */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          {
+            label: "Total pipeline value",
+            value: `$${activePipelineValue.toLocaleString("en-AU")}`,
+          },
+          {
+            label: "Win rate",
+            value: `${winRate}%`,
+          },
+          {
+            label: "Average deal size",
+            value:
+              avgDeal > 0
+                ? `$${avgDeal.toLocaleString("en-AU")}`
+                : "—",
+          },
+          {
+            label: "Leads this month",
+            value: leadsThisMonth.toString(),
+          },
+        ].map(({ label, value }) => (
+          <div
+            key={label}
+            className="rounded-xl border p-4"
+            style={{
+              background: "var(--bg-card)",
+              borderColor: "var(--border)",
+            }}
           >
-            No leads in your pipeline yet
-          </p>
-          <p
-            className="mt-2 text-sm"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Browse the marketplace to find jobs near you.
-          </p>
-          <Link
-            href="/dashboard/leads/browse"
-            className="mt-4 inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-bold text-white"
-            style={{ background: "var(--accent-color)" }}
-          >
-            Browse the marketplace
-          </Link>
-        </div>
-      ) : (
-        <>
-          {/* Kanban board */}
-          <div className="overflow-x-auto">
-            <div className="flex min-w-[900px] gap-3 pb-4">
-              {COLUMNS.map((col) => {
-                const colLeads = leads.filter((l) =>
-                  col.statuses.includes(l.status)
-                );
-                const colValue = colLeads.reduce(
-                  (sum, l) =>
-                    sum + (l.marketplace_lead?.estimated_budget ?? 0),
-                  0
-                );
-                const isOver = dragOverCol === col.id;
+            <p
+              className="text-xs font-semibold uppercase tracking-wide"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {label}
+            </p>
+            <p
+              className="mt-1 text-xl font-bold tabular-nums"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {value}
+            </p>
+          </div>
+        ))}
+      </div>
 
-                return (
-                  <div
-                    key={col.id}
-                    className="flex w-56 shrink-0 flex-col rounded-xl transition-all"
-                    style={{
-                      background: isOver ? col.bg : "var(--bg-card)",
-                      border: isOver
-                        ? `2px solid ${col.accent}`
-                        : `1px solid var(--border)`,
-                    }}
-                    onDragOver={(e) => handleDragOver(e, col.id)}
-                    onDrop={() => handleDrop(col.id)}
-                    onDragLeave={() =>
-                      setDragOverCol((prev) =>
-                        prev === col.id ? null : prev
-                      )
-                    }
-                  >
-                    {/* Column header */}
+      {/* Kanban board — always shown */}
+      <div className="overflow-x-auto">
+        <div className="flex min-w-[900px] gap-3 pb-4">
+          {COLUMNS.map((col) => {
+            const colLeads = leads.filter((l) =>
+              col.statuses.includes(l.status)
+            );
+            const colValue = colLeads.reduce(
+              (sum, l) =>
+                sum + (l.marketplace_lead?.estimated_budget ?? 0),
+              0
+            );
+            const isOver = dragOverCol === col.id;
+
+            return (
+              <div
+                key={col.id}
+                className="flex w-56 shrink-0 flex-col rounded-xl transition-all"
+                style={{
+                  background: isOver ? col.bg : "var(--bg-card)",
+                  border: isOver
+                    ? `2px solid ${col.accent}`
+                    : `1px solid var(--border)`,
+                }}
+                onDragOver={(e) => handleDragOver(e, col.id)}
+                onDrop={() => handleDrop(col.id)}
+                onDragLeave={() =>
+                  setDragOverCol((prev) =>
+                    prev === col.id ? null : prev
+                  )
+                }
+              >
+                {/* Column header */}
+                <div
+                  className="flex items-start justify-between rounded-t-xl px-3 py-2.5"
+                  style={{
+                    background: col.bg,
+                    borderBottom: "1px solid var(--border)",
+                  }}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ background: col.accent }}
+                      />
+                      <p
+                        className="text-xs font-bold"
+                        style={{ color: col.accent }}
+                      >
+                        {col.label}
+                      </p>
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                        style={{ background: col.bg, color: col.accent }}
+                      >
+                        {colLeads.length}
+                      </span>
+                    </div>
+                    {colValue > 0 && (
+                      <p
+                        className="mt-0.5 pl-4 text-[10px] font-semibold tabular-nums"
+                        style={{ color: col.accent }}
+                      >
+                        ${colValue.toLocaleString("en-AU")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cards */}
+                <div className="flex flex-col gap-2 p-2">
+                  {colLeads.length === 0 && (
                     <div
-                      className="flex items-start justify-between rounded-t-xl px-3 py-2.5"
+                      className="rounded-lg border border-dashed px-4 py-6 text-center text-xs"
                       style={{
-                        background: col.bg,
-                        borderBottom: "1px solid var(--border)",
+                        borderColor: col.accent + "40",
+                        color: "var(--text-muted)",
                       }}
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ background: col.accent }}
-                          />
+                      <div className="mx-auto mb-1 h-6 w-6 rounded-full opacity-50" style={{ background: col.bg }} />
+                      <p style={{ color: "var(--text-muted)" }}>No leads here yet</p>
+                    </div>
+                  )}
+                  {colLeads.map((lead) => {
+                    const ml = lead.marketplace_lead;
+                    const days = daysInStage(lead.created_at);
+                    const isDragging = draggedId === lead.id;
+                    return (
+                      <div
+                        key={lead.id}
+                        draggable
+                        onDragStart={() => handleDragStart(lead.id)}
+                        onDragEnd={() => {
+                          setDraggedId(null);
+                          setDragOverCol(null);
+                        }}
+                        onClick={() => openPanel(lead)}
+                        className="group cursor-grab rounded-lg border p-3 shadow-sm transition active:cursor-grabbing"
+                        style={{
+                          background: isDragging
+                            ? col.bg
+                            : "var(--bg-primary)",
+                          borderColor: isDragging
+                            ? col.accent
+                            : "var(--border)",
+                          opacity: isDragging ? 0.6 : 1,
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-1">
                           <p
+                            className="text-xs font-semibold leading-snug"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {ml?.contact_name ??
+                              ml?.service_type ??
+                              "Lead"}
+                          </p>
+                          <GripVertical
+                            size={12}
+                            className="mt-0.5 shrink-0 opacity-30 group-hover:opacity-60"
+                            style={{ color: "var(--text-muted)" }}
+                          />
+                        </div>
+                        <p
+                          className="mt-0.5 text-[10px]"
+                          style={{ color: "var(--text-muted)" }}
+                        >
+                          {ml?.suburb ?? "—"} · {ml?.service_type ?? "—"}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span
                             className="text-xs font-bold"
                             style={{ color: col.accent }}
                           >
-                            {col.label}
-                          </p>
+                            {formatBudget(
+                              ml?.estimated_budget ?? null
+                            )}
+                          </span>
                           <span
-                            className="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
-                            style={{ background: col.bg, color: col.accent }}
+                            className="text-[10px]"
+                            style={{ color: "var(--text-muted)" }}
                           >
-                            {colLeads.length}
+                            {days}d
                           </span>
                         </div>
-                        {colValue > 0 && (
-                          <p
-                            className="mt-0.5 pl-4 text-[10px] font-semibold tabular-nums"
-                            style={{ color: col.accent }}
-                          >
-                            ${colValue.toLocaleString("en-AU")}
-                          </p>
-                        )}
                       </div>
-                    </div>
-
-                    {/* Cards */}
-                    <div className="flex flex-col gap-2 p-2">
-                      {colLeads.length === 0 && (
-                        <div
-                          className="rounded-lg border border-dashed px-3 py-4 text-center text-xs"
-                          style={{
-                            borderColor: "var(--border)",
-                            color: "var(--text-muted)",
-                          }}
-                        >
-                          Drop here
-                        </div>
-                      )}
-                      {colLeads.map((lead) => {
-                        const ml = lead.marketplace_lead;
-                        const days = daysInStage(lead.created_at);
-                        const isDragging = draggedId === lead.id;
-                        return (
-                          <div
-                            key={lead.id}
-                            draggable
-                            onDragStart={() => handleDragStart(lead.id)}
-                            onDragEnd={() => {
-                              setDraggedId(null);
-                              setDragOverCol(null);
-                            }}
-                            onClick={() => openPanel(lead)}
-                            className="group cursor-grab rounded-lg border p-3 shadow-sm transition active:cursor-grabbing"
-                            style={{
-                              background: isDragging
-                                ? col.bg
-                                : "var(--bg-primary)",
-                              borderColor: isDragging
-                                ? col.accent
-                                : "var(--border)",
-                              opacity: isDragging ? 0.6 : 1,
-                            }}
-                          >
-                            <div className="flex items-start justify-between gap-1">
-                              <p
-                                className="text-xs font-semibold leading-snug"
-                                style={{ color: "var(--text-primary)" }}
-                              >
-                                {ml?.contact_name ??
-                                  ml?.service_type ??
-                                  "Lead"}
-                              </p>
-                              <GripVertical
-                                size={12}
-                                className="mt-0.5 shrink-0 opacity-30 group-hover:opacity-60"
-                                style={{ color: "var(--text-muted)" }}
-                              />
-                            </div>
-                            <p
-                              className="mt-0.5 text-[10px]"
-                              style={{ color: "var(--text-muted)" }}
-                            >
-                              {ml?.suburb ?? "—"} · {ml?.service_type ?? "—"}
-                            </p>
-                            <div className="mt-2 flex items-center justify-between">
-                              <span
-                                className="text-xs font-bold"
-                                style={{ color: col.accent }}
-                              >
-                                {formatBudget(
-                                  ml?.estimated_budget ?? null
-                                )}
-                              </span>
-                              <span
-                                className="text-[10px]"
-                                style={{ color: "var(--text-muted)" }}
-                              >
-                                {days}d
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Totals bar */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              {
-                label: "Pipeline value",
-                value: `$${activePipelineValue.toLocaleString("en-AU")}`,
-              },
-              {
-                label: "Average deal size",
-                value:
-                  avgDeal > 0
-                    ? `$${avgDeal.toLocaleString("en-AU")}`
-                    : "—",
-              },
-              { label: "Conversion rate", value: `${winRate}%` },
-              {
-                label: "Avg days to close",
-                value:
-                  avgDaysToClose !== null
-                    ? `${avgDaysToClose}d`
-                    : "—",
-              },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="rounded-xl border p-4"
-                style={{
-                  background: "var(--bg-card)",
-                  borderColor: "var(--border)",
-                }}
-              >
-                <p
-                  className="text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {label}
-                </p>
-                <p
-                  className="mt-1 text-xl font-bold tabular-nums"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {value}
-                </p>
+                    );
+                  })}
+                </div>
               </div>
-            ))}
-          </div>
-        </>
-      )}
+            );
+          })}
+        </div>
+      </div>
 
       {/* ── Side panel ──────────────────────────────────────────────────────── */}
       {selectedLead && (

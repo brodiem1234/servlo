@@ -8,9 +8,9 @@ import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
+import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
 const LEADS_COLOR = "#F59E0B";
-const LEADS_BG = "#1a1005";
 const LEADS_LOGO_FILTER =
   "brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(10deg)";
 
@@ -69,6 +69,9 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
           <ProductSwitcher activeProduct="leads" />
         </div>
 
+        {/* Divider after product switcher */}
+        <div className="mb-4 h-px" style={{ background: "rgba(245,158,11,0.2)" }} />
+
         {/* Nav */}
         <nav className="flex flex-col gap-0">
           <div className="flex flex-col gap-2">
@@ -79,7 +82,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
                   key={item.href}
                   href={item.href}
                   data-active={active ? "true" : "false"}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors border-l-4 border-transparent"
                   style={{ color: "var(--sidebar-text)" }}
                 >
                   <item.Icon size={15} aria-hidden />
@@ -90,16 +93,19 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
 
+        {/* Divider before coming-soon banner */}
+        <div className="mt-4 mb-4 h-px" style={{ background: "rgba(245,158,11,0.15)" }} />
+
         {/* Coming-soon notice */}
         <div className="mt-auto">
           <div
             className="rounded-lg px-3 py-2.5"
-            style={{ background: "rgb(245 158 11 / 0.12)", border: "1px solid rgb(245 158 11 / 0.3)" }}
+            style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)" }}
           >
             <p className="text-xs font-semibold" style={{ color: "#FCD34D" }}>
               Coming soon
             </p>
-            <p className="mt-0.5 text-xs" style={{ color: "var(--sidebar-text-muted)" }}>
+            <p className="mt-0.5 text-xs" style={{ color: "rgba(252,211,77,0.7)" }}>
               SERVLO Leads launches Q4 2026
             </p>
           </div>
@@ -125,6 +131,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
             </span>
           </p>
           <div className="flex items-center gap-2">
+            <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}

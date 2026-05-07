@@ -397,6 +397,7 @@
 
 /* ── Monochromatic product theme tokens ─────────────────────────────────── */
 [data-product="core"] {
+  --product-rgb: 59, 130, 246;
   --product-accent: #3B82F6;
   --product-accent-light: #93C5FD;
   --product-muted: #1a2e4a;
@@ -405,6 +406,7 @@
   background-color: #080f1e !important;
 }
 [data-product="grow"] {
+  --product-rgb: 139, 92, 246;
   --product-accent: #8B5CF6;
   --product-accent-light: #C4B5FD;
   --product-muted: #2a1650;
@@ -413,6 +415,7 @@
   background-color: #0a0614 !important;
 }
 [data-product="leads"] {
+  --product-rgb: 245, 158, 11;
   --product-accent: #F59E0B;
   --product-accent-light: #FCD34D;
   --product-muted: #3d2000;
@@ -425,6 +428,7 @@
    Product shells apply `class="dark"` to an inner div rather than <html>, so the
    :root.dark vars don't cascade here — we must re-declare them explicitly. */
 [data-product] {
+  --product-rgb: 59, 130, 246;
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
   --text-primary: #f8fafc;
@@ -478,6 +482,137 @@
 [data-product] * {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--product-accent) 35%, transparent) transparent;
+}
+html.light-mode [data-product] ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--product-accent) 30%, #e2e8f0);
+}
+html.light-mode [data-product] * {
+  scrollbar-color: color-mix(in srgb, var(--product-accent) 30%, #e2e8f0) transparent;
+}
+
+/* ── Light mode overrides for product shells ──────────────────────────────── */
+html.light-mode [data-product] {
+  --sidebar-text: #0F172A;
+  --sidebar-text-muted: #475569;
+  --text-primary: #0F172A;
+  --text-secondary: #374151;
+  --text-muted: #6B7280;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --input-bg: #ffffff;
+  --sidebar-hover-bg: rgba(var(--product-rgb), 0.06);
+  --sidebar-divider: #e2e8f0;
+}
+
+html.light-mode [data-product="core"] {
+  background-color: #f8fbff !important;
+  --product-sidebar: #ffffff;
+  --product-main: #f8fbff;
+  --sidebar-active-bg: rgba(59, 130, 246, 0.08);
+  --sidebar-active-text: #3B82F6;
+}
+
+html.light-mode [data-product="grow"] {
+  background-color: #faf8ff !important;
+  --product-sidebar: #ffffff;
+  --product-main: #faf8ff;
+  --sidebar-active-bg: rgba(139, 92, 246, 0.08);
+  --sidebar-active-text: #8B5CF6;
+}
+
+html.light-mode [data-product="leads"] {
+  background-color: #fffbf0 !important;
+  --product-sidebar: #ffffff;
+  --product-main: #fffbf0;
+  --sidebar-active-bg: rgba(245, 158, 11, 0.08);
+  --sidebar-active-text: #F59E0B;
+}
+
+/* Light mode sidebar nav active item */
+html.light-mode [data-product] .owner-sidebar nav a[data-active="true"] {
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
+  border-left-color: var(--product-accent) !important;
+}
+
+html.light-mode [data-product] .owner-sidebar nav a:hover {
+  background-color: rgba(var(--product-rgb), 0.05) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Light mode sidebar border */
+html.light-mode [data-product] .owner-sidebar {
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+/* Light mode cards */
+html.light-mode [data-product] .rounded-xl.border,
+html.light-mode [data-product] .rounded-lg.border {
+  border-color: #e2e8f0 !important;
+}
+
+/* Light mode tables */
+html.light-mode [data-product] thead tr {
+  background: #f1f5f9 !important;
+}
+
+html.light-mode [data-product] table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+/* Light mode header */
+html.light-mode [data-product] header {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Light mode inputs */
+html.light-mode [data-product] input,
+html.light-mode [data-product] select,
+html.light-mode [data-product] textarea {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #0F172A !important;
+}
+
+/* Light mode text overrides */
+html.light-mode [data-product] .text-white,
+html.light-mode [data-product] .text-slate-100,
+html.light-mode [data-product] .text-slate-200 {
+  color: #0F172A !important;
+}
+
+html.light-mode [data-product] .text-slate-300,
+html.light-mode [data-product] .text-slate-400 {
+  color: #374151 !important;
+}
+
+html.light-mode [data-product] .text-slate-500,
+html.light-mode [data-product] .text-slate-600 {
+  color: #6B7280 !important;
+}
+
+/* Light mode sidebar text */
+html.light-mode [data-product] .owner-sidebar {
+  color: #0F172A !important;
+}
+
+html.light-mode [data-product] .owner-sidebar nav a {
+  color: #374151 !important;
+}
+
+/* Light mode stat values */
+html.light-mode [data-product] .dashboard-stat-value {
+  color: var(--product-accent) !important;
+}
+
+/* Public page light mode restore (in case product shell light-mode class persists) */
+html.light-mode:not(:has([data-product])) {
+  --bg-primary: color-mix(in srgb, var(--accent-color) 2.5%, #f8fafc);
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
 }
 
 /* ── Mobile card list — tables become stacked cards on small screens ─────── */

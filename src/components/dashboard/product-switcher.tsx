@@ -158,10 +158,11 @@ export function ProductSwitcher({
       {/* Dropdown panel */}
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-1 min-w-[280px] rounded-xl shadow-2xl"
+          className="absolute left-0 top-full z-50 mt-1 min-w-[300px] rounded-xl shadow-2xl"
           style={{
-            background: "var(--bg-secondary, #1a1a2e)",
-            border: "1px solid var(--border, rgba(255,255,255,0.1))",
+            background: "#0d1117",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06)",
           }}
         >
           {/* Active products */}
@@ -286,7 +287,7 @@ export function ProductSwitcher({
           <div
             className="rounded-b-xl px-4 py-2 text-center text-[10px]"
             style={{
-              background: "rgba(255,255,255,0.03)",
+              background: "rgba(255,255,255,0.04)",
               borderTop: "1px solid var(--border, rgba(255,255,255,0.08))",
               color: "var(--text-muted, #6b7280)",
             }}

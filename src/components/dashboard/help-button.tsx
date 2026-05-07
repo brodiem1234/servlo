@@ -47,12 +47,12 @@ export function HelpButton() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-[49]"
+            className="fixed inset-0 z-[59]"
             onClick={() => setOpen(false)}
             aria-label="Close help"
           />
-          <div className="fixed bottom-32 right-4 z-[50] w-72 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl md:bottom-20">
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+          <div className="fixed bottom-32 right-4 z-[60] w-72 overflow-hidden rounded-xl shadow-2xl md:bottom-20" style={{ background: "#1a1f2e", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" }}>
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
               <p className="text-sm font-semibold text-[var(--text-primary)]">Help</p>
               <button type="button" onClick={() => setOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
                 <X size={14} />
@@ -68,7 +68,7 @@ export function HelpButton() {
                     key={l.href}
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="rounded-md px-2 py-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
+                    className="rounded-md px-2 py-1.5 text-xs text-slate-400 hover:bg-white/8 hover:text-slate-200 transition-colors"
                   >
                     {l.label}
                   </a>
@@ -86,7 +86,7 @@ export function HelpButton() {
                 {SHORTCUTS.map((s) => (
                   <div key={s.keys} className="flex items-center justify-between px-1 text-xs">
                     <span className="text-[var(--text-secondary)]">{s.label}</span>
-                    <kbd className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--text-muted)]">
+                    <kbd className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-slate-400 border border-slate-700">
                       {s.keys}
                     </kbd>
                   </div>
@@ -98,7 +98,7 @@ export function HelpButton() {
             <div className="border-t border-[var(--border)] px-4 py-3">
               <a
                 href="mailto:hello@servlo.com.au"
-                className="flex items-center gap-2 text-xs text-[var(--accent-color)] hover:underline"
+                className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 hover:underline transition-colors"
               >
                 <ExternalLink size={12} />
                 Contact support — hello@servlo.com.au

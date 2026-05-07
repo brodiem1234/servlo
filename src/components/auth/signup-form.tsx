@@ -595,7 +595,7 @@ export function SignupForm() {
 
       if (!res.ok || parsed.error) {
         console.error("[signup/owner] setup-business failed after retry — continuing to dashboard", parsed);
-        router.push("/dashboard");
+        router.push("/dashboard/owner");
         router.refresh();
         return;
       }
@@ -649,7 +649,7 @@ export function SignupForm() {
         }
       }
 
-      router.push("/dashboard");
+      router.push("/dashboard/owner");
       router.refresh();
     } catch (err) {
       console.error("[signup/owner] unexpected error", err);
