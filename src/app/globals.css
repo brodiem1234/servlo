@@ -522,6 +522,17 @@ html.dark {
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(20deg) drop-shadow(0 0 10px #EAB308) drop-shadow(0 0 20px rgba(234,179,8,0.4));
 }
 
+[data-product="connect"] {
+  --product-rgb: 99,102,241;
+  --product-accent: #6366F1;
+  --product-accent-light: #818CF8;
+  --product-muted: #1a1a3d;
+  --product-sidebar: #0a0a24;
+  --product-main: #080d18;
+  background-color: #080d18 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(5) hue-rotate(220deg) drop-shadow(0 0 10px #6366F1) drop-shadow(0 0 20px rgba(99,102,241,0.4));
+}
+
 /* Ensure sidebar text is always readable inside product shells (always-dark).
    Product shells apply `class="dark"` to an inner div rather than <html>, so the
    html.dark vars don't cascade here — we must re-declare them explicitly. */

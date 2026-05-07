@@ -16,7 +16,8 @@ export type ProductId =
   | "insurance"
   | "safe"
   | "books"
-  | "academy";
+  | "academy"
+  | "connect";
 
 const ACTIVE_PRODUCTS: Array<{
   id: ProductId;
@@ -56,6 +57,14 @@ const COMING_SOON_PRODUCTS: Array<{
   color: string;
   launch: string;
 }> = [
+  {
+    id: "connect",
+    label: "Connect",
+    sub: "Trades Community",
+    href: "/dashboard/connect",
+    color: "#6366F1",
+    launch: "Q2 2026",
+  },
   {
     id: "answer",
     label: "Answer",
@@ -169,7 +178,7 @@ export function ProductSwitcher({
           className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums"
           style={{ background: "rgb(59 130 246 / 0.2)", color: "#93C5FD" }}
         >
-          3 / 12
+          3 / 13
         </span>
       </button>
 
@@ -319,7 +328,7 @@ export function ProductSwitcher({
               color: "var(--text-muted, #6b7280)",
             }}
           >
-            SERVLO Platform — 3 of 12 products active
+            SERVLO Platform — 3 of 13 products active
           </div>
           </div>
         </>

@@ -163,7 +163,7 @@ export default async function GrowDashboardPage() {
             Quick start
           </h2>
           <p className="mb-5 text-sm" style={{ color: "var(--text-muted)" }}>
-            Get started with SERVLO Grow — build your online presence in
+            Get started with SERVLO GROW — build your online presence in
             minutes.
           </p>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -227,7 +227,7 @@ export default async function GrowDashboardPage() {
           className="mt-4 text-xl font-bold"
           style={{ color: "var(--text-primary)" }}
         >
-          SERVLO Grow launching Q3 2026
+          SERVLO GROW launching Q3 2026
         </h2>
         <p
           className="mt-2 max-w-sm text-sm"

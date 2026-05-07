@@ -262,7 +262,10 @@ export default async function OwnerDashboardPage() {
           <h1 className="text-2xl font-bold text-[var(--text-primary)] md:text-3xl">
             Good morning, {firstName}
           </h1>
-          <p className="mt-0.5 text-sm text-[var(--text-secondary)]">{formatDateLong(new Date())}</p>
+          <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
+            {formatDateLong(new Date())} &mdash;{" "}
+            <span className="font-semibold text-[var(--accent-color)]">SERVLO CORE</span>
+          </p>
         </div>
         <div className="text-lg font-semibold tabular-nums">
           <LiveClock />

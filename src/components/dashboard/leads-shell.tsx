@@ -19,7 +19,7 @@ const LEADS_NAV: NavItem[] = [
   { href: "/dashboard/leads/browse", label: "Browse Leads", Icon: ShoppingBag },
   { href: "/dashboard/leads/my-leads", label: "My Leads", Icon: ClipboardList },
   { href: "/dashboard/leads/pipeline", label: "Lead Pipeline", Icon: GitBranch },
-  { href: "/dashboard/owner/settings?from=leads", label: "Settings", Icon: Settings2 },
+  { href: "/dashboard/leads/settings", label: "Settings", Icon: Settings2 },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -105,7 +105,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
               Coming soon
             </p>
             <p className="mt-0.5 text-xs" style={{ color: "rgba(252,211,77,0.7)" }}>
-              SERVLO Leads launches Q4 2026
+              SERVLO LEADS launches Q4 2026
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
           }}
         >
           <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            SERVLO Leads
+            SERVLO LEADS
             <span
               className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
               style={{ background: "rgb(245 158 11 / 0.2)", color: "#FCD34D", border: "1px solid rgb(245 158 11 / 0.35)" }}

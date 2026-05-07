@@ -101,9 +101,9 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
   const fromProduct = resolvedParams?.from ?? "core";
 
   const productLabel =
-    fromProduct === "grow" ? "SERVLO Grow"
-    : fromProduct === "leads" ? "SERVLO Leads"
-    : "SERVLO Core";
+    fromProduct === "grow" ? "SERVLO GROW"
+    : fromProduct === "leads" ? "SERVLO LEADS"
+    : "SERVLO CORE";
   const productBackHref =
     fromProduct === "grow" ? "/dashboard/grow"
     : fromProduct === "leads" ? "/dashboard/leads"

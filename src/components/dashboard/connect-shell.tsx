@@ -2,34 +2,33 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { LayoutDashboard, Megaphone, Settings2, Share2, Star, Users2 } from "lucide-react";
 import React, { useCallback } from "react";
+import { Rss, Search, MessageSquare, User, Users, Briefcase } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
-const GROW_COLOR = "#8B5CF6";
+const CONNECT_COLOR = "#6366F1";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
-const GROW_NAV: NavItem[] = [
-  { href: "/dashboard/grow", label: "Dashboard", Icon: LayoutDashboard },
-  { href: "/dashboard/grow/ads", label: "AI Ad Creation", Icon: Megaphone },
-  { href: "/dashboard/grow/social", label: "Social Content", Icon: Share2 },
-  { href: "/dashboard/grow/reviews", label: "Google Reviews", Icon: Star },
-  { href: "/dashboard/grow/referrals", label: "Referral Tracking", Icon: Users2 },
-  { href: "/dashboard/grow/settings", label: "Settings", Icon: Settings2 },
+const CONNECT_NAV: NavItem[] = [
+  { href: "/dashboard/connect", label: "Feed", Icon: Rss },
+  { href: "/dashboard/connect/discover", label: "Discover", Icon: Search },
+  { href: "/dashboard/connect/messages", label: "Messages", Icon: MessageSquare },
+  { href: "/dashboard/connect/profile", label: "My Profile", Icon: User },
+  { href: "/dashboard/connect/groups", label: "Groups", Icon: Users },
+  { href: "/dashboard/connect/jobs", label: "Trade Jobs", Icon: Briefcase },
 ];
 
 function isActive(pathname: string, href: string) {
-  const hrefPath = href.split("?")[0];
-  if (hrefPath === "/dashboard/grow") return pathname === "/dashboard/grow";
-  return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
+  if (href === "/dashboard/connect") return pathname === "/dashboard/connect";
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function GrowShell({ children }: { children: React.ReactNode }) {
+export default function ConnectShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const handleSignOut = useCallback(async () => {
@@ -40,12 +39,12 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      data-product="grow"
+      data-product="connect"
       className="dark dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
-        "--sidebar-active-bg": GROW_COLOR,
-        "--sidebar-ring": GROW_COLOR,
+        "--sidebar-active-bg": CONNECT_COLOR,
+        "--sidebar-ring": CONNECT_COLOR,
       } as React.CSSProperties}
     >
       {/* Sidebar */}
@@ -67,13 +66,16 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
 
         {/* Product switcher */}
         <div className="mb-4">
-          <ProductSwitcher activeProduct="grow" />
+          <ProductSwitcher activeProduct="connect" />
         </div>
+
+        {/* Divider */}
+        <div className="mb-4 h-px" style={{ background: "rgba(99,102,241,0.2)" }} />
 
         {/* Nav */}
         <nav className="flex flex-col gap-0">
           <div className="flex flex-col gap-2">
-            {GROW_NAV.map((item) => {
+            {CONNECT_NAV.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <a
@@ -94,13 +96,13 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
         <div className="mt-auto">
           <div
             className="rounded-lg px-3 py-2.5"
-            style={{ background: "rgb(139 92 246 / 0.12)", border: "1px solid rgb(139 92 246 / 0.3)" }}
+            style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)" }}
           >
-            <p className="text-xs font-semibold" style={{ color: "#C4B5FD" }}>
+            <p className="text-xs font-semibold" style={{ color: "#A5B4FC" }}>
               Coming soon
             </p>
-            <p className="mt-0.5 text-xs" style={{ color: "var(--sidebar-text-muted)" }}>
-              SERVLO GROW launches Q3 2026
+            <p className="mt-0.5 text-xs" style={{ color: "rgba(165,180,252,0.7)" }}>
+              SERVLO CONNECT launches Q2 2026
             </p>
           </div>
         </div>
@@ -110,16 +112,13 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
         <header
           className="flex items-center justify-between border-b px-4 py-3 md:px-6"
-          style={{
-            background: "var(--bg-secondary)",
-            borderColor: "var(--border)",
-          }}
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
           <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            SERVLO GROW
+            SERVLO CONNECT
             <span
               className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-              style={{ background: "rgb(139 92 246 / 0.2)", color: "#C4B5FD", border: "1px solid rgb(139 92 246 / 0.35)" }}
+              style={{ background: "rgb(99 102 241 / 0.2)", color: "#A5B4FC", border: "1px solid rgb(99 102 241 / 0.35)" }}
             >
               Coming soon
             </span>

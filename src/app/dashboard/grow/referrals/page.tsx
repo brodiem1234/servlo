@@ -6,7 +6,7 @@ import ReferralClient from "./referral-client";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "SERVLO Grow — Referral Tracking",
+  title: "SERVLO GROW — Referral Tracking",
 };
 
 function generateReferralCode(ownerId: string): string {

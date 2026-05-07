@@ -606,7 +606,7 @@ export default function GrowAdsPage() {
 
   return (
     <>
-      <title>SERVLO Grow — AI Ad Creation</title>
+      <title>SERVLO GROW — AI Ad Creation</title>
       <section className="space-y-5">
         <div className="flex items-center justify-between">
           <div>

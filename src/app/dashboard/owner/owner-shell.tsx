@@ -196,7 +196,7 @@ export default function OwnerShell({
         <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
           <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 md:px-6">
             <div className="flex items-center gap-3">
-              <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">SERVLO Core</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">SERVLO CORE</p>
             </div>
             <div className="flex items-center gap-2">
               <DarkModeToggle />
