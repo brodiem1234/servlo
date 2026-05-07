@@ -500,7 +500,7 @@ function ConvertToClientModal({
               {fullName} has been added to your clients.
             </p>
             <a
-              href={`/dashboard/owner/clients/${createdClientId}` as string}
+              href={`/dashboard/owner/clients/${createdClientId}` as any}
               className="mt-4 inline-flex items-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-bold text-white"
               style={{ background: "var(--accent-color)" }}
             >

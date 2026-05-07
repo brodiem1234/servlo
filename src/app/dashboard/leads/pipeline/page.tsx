@@ -734,7 +734,7 @@ export default function LeadsPipelinePage() {
                 </button>
 
                 <Link
-                  href={"/dashboard/owner/quotes" as string}
+                  href={"/dashboard/owner/quotes" as any}
                   className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition hover:bg-white/5"
                   style={{
                     borderColor: "var(--border)",
@@ -749,7 +749,7 @@ export default function LeadsPipelinePage() {
                 </Link>
 
                 <Link
-                  href={"/dashboard/owner/quotes" as string}
+                  href={"/dashboard/owner/quotes" as any}
                   className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition hover:bg-white/5"
                   style={{
                     borderColor: "var(--border)",
