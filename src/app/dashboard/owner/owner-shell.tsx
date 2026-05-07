@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Fragment, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   Bell,
   Briefcase,
@@ -18,6 +19,8 @@ import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/own
 import type { OwnerNavItem } from "@/app/dashboard/owner/nav-config";
 import { ToastProvider } from "@/components/ui/toast";
 import { ProductSwitcher } from "@/components/dashboard/product-switcher";
+
+const CORE_COLOR = "#3B82F6";
 
 /** Dashboard is only active on the exact path; other items match their section. */
 function isNavItemActive(pathname: string, href: string) {
@@ -102,29 +105,20 @@ export default function OwnerShell({
   return (
     <ToastProvider>
     <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
-        <aside className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto bg-[var(--sidebar-bg)] px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex">
+        <aside
+          className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto bg-[var(--sidebar-bg)] px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
+          style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
+        >
           <div className="mb-6">
-            <div className="flex items-center gap-2">
-              <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent-color)] p-0.5 shadow-inner ring-2 ring-[color-mix(in_srgb,var(--accent-color)_55%,white)]">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--accent-color)]" aria-hidden>
-                  <svg viewBox="0 0 24 24" className="h-[26px] w-[26px]">
-                    <text
-                      x="12"
-                      y="17"
-                      textAnchor="middle"
-                      fontSize="14"
-                      fontWeight="700"
-                      fontFamily="ui-sans-serif, system-ui, sans-serif"
-                      fill="currentColor"
-                    >
-                      S
-                    </text>
-                  </svg>
-                </span>
-              </span>
-              <p className="text-xl font-bold tracking-wide text-[var(--sidebar-text)]">SERVLO</p>
-            </div>
-            <div className="mt-2 h-[2px] w-full bg-[var(--sidebar-ring)]" aria-hidden />
+            <Image
+              src="/logo.png"
+              alt="SERVLO"
+              width={120}
+              height={120}
+              className="dark:invert"
+              style={{ height: "auto", maxWidth: "120px" }}
+            />
+            <div className="mt-3 h-[2px] w-full bg-[var(--sidebar-ring)]" aria-hidden />
           </div>
           <div className="mb-4">
             <ProductSwitcher activeProduct="core" />

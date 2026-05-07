@@ -1,11 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Fragment } from "react";
+import Image from "next/image";
 import { LayoutDashboard, Megaphone, Share2, Star, Users2 } from "lucide-react";
+import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
+
+const GROW_COLOR = "#8B5CF6";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -30,45 +33,24 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside
         className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-        style={{ background: "var(--sidebar-bg)", color: "var(--sidebar-text)" }}
+        style={{
+          background: "var(--sidebar-bg)",
+          color: "var(--sidebar-text)",
+          "--sidebar-active-bg": GROW_COLOR,
+          "--sidebar-ring": GROW_COLOR,
+        } as React.CSSProperties}
       >
         {/* Brand */}
         <div className="mb-4">
-          <div className="flex items-center gap-2">
-            <span
-              className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full p-0.5 shadow-inner ring-2 ring-[color-mix(in_srgb,var(--accent-color)_55%,white)]"
-              style={{ background: "var(--accent-color)" }}
-            >
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white"
-                style={{ color: "var(--accent-color)" }}
-                aria-hidden
-              >
-                <svg viewBox="0 0 24 24" className="h-[26px] w-[26px]">
-                  <text
-                    x="12"
-                    y="17"
-                    textAnchor="middle"
-                    fontSize="14"
-                    fontWeight="700"
-                    fontFamily="ui-sans-serif, system-ui, sans-serif"
-                    fill="currentColor"
-                  >
-                    S
-                  </text>
-                </svg>
-              </span>
-            </span>
-            <div>
-              <p className="text-xl font-bold tracking-wide" style={{ color: "var(--sidebar-text)" }}>
-                SERVLO
-              </p>
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "var(--accent-color)" }}>
-                Grow
-              </p>
-            </div>
-          </div>
-          <div className="mt-2 h-[2px] w-full" style={{ background: "var(--sidebar-ring)" }} aria-hidden />
+          <Image
+            src="/logo.png"
+            alt="SERVLO"
+            width={120}
+            height={120}
+            className="dark:invert"
+            style={{ height: "auto", maxWidth: "120px" }}
+          />
+          <div className="mt-3 h-[2px] w-full" style={{ background: "var(--sidebar-ring)" }} aria-hidden />
         </div>
 
         {/* Product switcher */}

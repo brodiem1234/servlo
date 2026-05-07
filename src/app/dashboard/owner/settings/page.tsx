@@ -253,7 +253,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Brand Colour</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Choose one of the preset brand accents — safe contrast on buttons, sidebar highlights and links across your dashboard.
+          Choose one of the preset brand accents. Applied to buttons, links, and invoice accents across your dashboard.{" "}
+          <span className="text-slate-400">Note: product sidebar colours (Core blue, Grow purple, Leads amber) are fixed and not affected by this setting.</span>
         </p>
         <BrandAccentForm savedAccent={savedAccent} />
       </article>
