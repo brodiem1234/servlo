@@ -70,6 +70,11 @@ function isPhoneValid(value: string): boolean {
   return phoneLocalDigits(value).length >= 9;
 }
 
+function isValidAustralianPhone(phone: string): boolean {
+  const stripped = phone.replace(/[\s\-\(\)]/g, '');
+  return /^(04\d{8}|\+614\d{8}|0[2-9]\d{8}|\+61[2-9]\d{8})$/.test(stripped);
+}
+
 // ── Industry chips ───────────────────────────────────────────────────────────
 
 type IndustryChip = {
@@ -430,6 +435,7 @@ export function SignupForm() {
   const [abnConfirmed, setAbnConfirmed] = useState(false);
   const [abnLookup, setAbnLookup] = useState<AbnLookupResult | null>(null);
   const [abnLookupLoading, setAbnLookupLoading] = useState(false);
+  const [entityName, setEntityName] = useState<string>("");
 
   // Phone (AU-only)
   const [phoneInput, setPhoneInput] = useState("");
@@ -463,6 +469,7 @@ export function SignupForm() {
 
   // UI state
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [productTooltip, setProductTooltip] = useState<string | null>(null);
@@ -538,7 +545,9 @@ export function SignupForm() {
     setAbnConfirmed(false);
     setAbnLookup(null);
     setAbnLookupLoading(false);
-  }, [abnInput]);
+    setEntityName("");
+    if (fieldErrors.abn) clearFieldError("abn");
+  }, [abnInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ABN lookup — fires whenever abnDigits changes and the checksum is valid
   useEffect(() => {
@@ -546,10 +555,14 @@ export function SignupForm() {
     let cancelled = false;
     setAbnLookupLoading(true);
     setAbnLookup(null);
+    setEntityName("");
     lookupABN(abnDigits).then((result) => {
       if (cancelled) return;
       setAbnLookup(result);
       setAbnLookupLoading(false);
+      if (result.status === "active" || result.status === "inactive") {
+        setEntityName(result.entityName);
+      }
     }).catch(() => {
       if (cancelled) return;
       setAbnLookup({ status: "error", message: "Lookup failed" });
@@ -616,10 +629,64 @@ export function SignupForm() {
 
   // ── Validation ───────────────────────────────────────────────────────────
 
+  function setFieldError(field: string, msg: string) {
+    setFieldErrors((prev) => ({ ...prev, [field]: msg }));
+  }
+
+  function clearFieldError(field: string) {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function validateBusinessNameField(value: string): string | null {
+    if (!value.trim()) return "Business name is required.";
+    if (value.trim().length < 2) return "Business name must be at least 2 characters.";
+    if (value.length > 100) return "Business name must be under 100 characters.";
+    return null;
+  }
+
+  function handleBusinessNameBlur() {
+    const err = validateBusinessNameField(businessNameInput);
+    if (err) setFieldError("businessName", err);
+    else clearFieldError("businessName");
+  }
+
+  function handlePhoneBlur() {
+    if (!phoneInput.trim()) {
+      setFieldError("phone", "Phone number is required.");
+      return;
+    }
+    // Build testable E.164-equivalent strings from the local input
+    const localDigits = phoneLocalDigits(phoneInput);
+    const withZero = `0${localDigits}`;
+    const e164 = `+61${localDigits}`;
+    if (!isValidAustralianPhone(withZero) && !isValidAustralianPhone(e164)) {
+      setFieldError("phone", "Please enter a valid Australian phone number (e.g. 04xx xxx xxx)");
+    } else {
+      clearFieldError("phone");
+    }
+  }
+
+  function handleNameBlur() {
+    if (!nameInput.trim()) setFieldError("name", "Full name is required.");
+    else clearFieldError("name");
+  }
+
+  function handleEmailBlur() {
+    if (!emailInput.trim()) setFieldError("email", "Email is required.");
+    else clearFieldError("email");
+  }
+
   function validateStep1(): string | null {
     if (!nameInput.trim()) return "Full name is required.";
     if (!emailInput.trim()) return "Email is required.";
     if (!businessNameInput.trim()) return "Business name is required.";
+    const bizErr = validateBusinessNameField(businessNameInput);
+    if (bizErr) return bizErr;
     if (!allPasswordRequirementsMet(passwordRules)) return "Please meet every password requirement before continuing.";
     if (!isPhoneValid(phoneInput)) return "Enter a valid Australian phone number (9 digits).";
     if (!abnHas11) return "ABN must be 11 digits.";
@@ -632,6 +699,14 @@ export function SignupForm() {
 
   function handleContinue(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
+    // Run all field validations and collect errors
+    const newErrors: { [key: string]: string } = {};
+    if (!nameInput.trim()) newErrors.name = "Full name is required.";
+    if (!emailInput.trim()) newErrors.email = "Email is required.";
+    const bizErr = validateBusinessNameField(businessNameInput);
+    if (bizErr) newErrors.businessName = bizErr;
+    if (!isPhoneValid(phoneInput)) newErrors.phone = "Please enter a valid Australian phone number (e.g. 04xx xxx xxx)";
+    setFieldErrors(newErrors);
     const gate = validateStep1();
     if (gate) { setError(gate); return; }
     setError(null);
@@ -740,12 +815,16 @@ export function SignupForm() {
 
       const setupBody = {
         userId,
+        fullName: nameInput.trim(),
         businessName: businessNameInput.trim(),
         abn: abnRaw,
         phone: phoneE164,
         industries: selected,
         workspaceFeaturesEnabled,
-        accentColour: DEFAULT_ACCENT_HEX
+        accentColour: DEFAULT_ACCENT_HEX,
+        selectedPlan: selectedPlanTier,
+        selectedProducts: selectedProductCombo,
+        entityName: entityName || undefined,
       };
 
       let res = await fetch("/api/setup-business", {
@@ -762,6 +841,12 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
+        // Surface ABN duplicate error immediately — do NOT retry or continue
+        if (res.status === 409 || (parsed.error && parsed.error.includes("ABN is already registered"))) {
+          setError(parsed.error ?? "This ABN is already registered with SERVLO. Please sign in to your existing account.");
+          setFieldErrors((prev) => ({ ...prev, abn: parsed.error ?? "ABN already registered" }));
+          return;
+        }
         console.warn("[signup/owner] setup-business failed — retrying", res.status, parsed);
         res = await fetch("/api/setup-business", {
           method: "POST",
@@ -777,6 +862,12 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
+        // Surface ABN duplicate error from retry too
+        if (res.status === 409 || (parsed.error && parsed.error.includes("ABN is already registered"))) {
+          setError(parsed.error ?? "This ABN is already registered with SERVLO. Please sign in to your existing account.");
+          setFieldErrors((prev) => ({ ...prev, abn: parsed.error ?? "ABN already registered" }));
+          return;
+        }
         console.error("[signup/owner] setup-business failed after retry — continuing to dashboard", parsed);
         router.push("/dashboard/owner");
         router.refresh();
@@ -952,7 +1043,12 @@ export function SignupForm() {
           {error ? (
             <div className="mt-4 flex items-start gap-2.5 rounded-md border border-red-700/50 bg-red-950/40 px-3 py-2.5 text-sm text-red-300">
               <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
-              <span className="whitespace-pre-wrap break-words">{error}</span>
+              <span className="whitespace-pre-wrap break-words">
+                {error}
+                {error.includes("ABN is already registered") ? (
+                  <span> <Link href="/auth/login" className="font-semibold underline">Sign in instead →</Link></span>
+                ) : null}
+              </span>
             </div>
           ) : null}
 
@@ -969,10 +1065,12 @@ export function SignupForm() {
                 </label>
                 <input
                   id="name" name="name" value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
+                  onChange={(e) => { setNameInput(e.target.value); if (fieldErrors.name) clearFieldError("name"); }}
+                  onBlur={handleNameBlur}
                   required
-                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.name ? "border-red-500 focus:border-red-500" : "border-slate-600 focus:border-[#3B82F6]"}`}
                 />
+                {fieldErrors.name ? <p className="mt-1 text-xs text-red-400">{fieldErrors.name}</p> : null}
               </div>
               <div>
                 <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
@@ -980,10 +1078,13 @@ export function SignupForm() {
                 </label>
                 <input
                   id="email" name="email" type="email" autoComplete="email"
-                  value={emailInput} onChange={(e) => setEmailInput(e.target.value)}
+                  value={emailInput}
+                  onChange={(e) => { setEmailInput(e.target.value); if (fieldErrors.email) clearFieldError("email"); }}
+                  onBlur={handleEmailBlur}
                   required
-                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.email ? "border-red-500 focus:border-red-500" : "border-slate-600 focus:border-[#3B82F6]"}`}
                 />
+                {fieldErrors.email ? <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p> : null}
               </div>
               <div className="sm:col-span-2">
                 <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
@@ -999,15 +1100,27 @@ export function SignupForm() {
               </div>
 
               <div>
-                <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
-                  Business name
-                </label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label htmlFor="business_name" className="block text-sm font-medium text-slate-300">
+                    Business name
+                  </label>
+                  <span className={`text-xs ${businessNameInput.length > 80 ? (businessNameInput.length > 100 ? "text-red-400" : "text-amber-400") : "text-slate-500"}`}>
+                    {businessNameInput.length}/100
+                  </span>
+                </div>
                 <input
                   id="business_name" name="business_name"
-                  value={businessNameInput} onChange={(e) => setBusinessNameInput(e.target.value)}
+                  value={businessNameInput}
+                  onChange={(e) => {
+                    setBusinessNameInput(e.target.value);
+                    if (fieldErrors.businessName) clearFieldError("businessName");
+                  }}
+                  onBlur={handleBusinessNameBlur}
+                  maxLength={100}
                   required
-                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.businessName ? "border-red-500 focus:border-red-500" : "border-slate-600 focus:border-[#3B82F6]"}`}
                 />
+                {fieldErrors.businessName ? <p className="mt-1 text-xs text-red-400">{fieldErrors.businessName}</p> : null}
               </div>
 
               {/* ABN */}
@@ -1036,10 +1149,17 @@ export function SignupForm() {
                     </span>
                   ) : null}
                 </div>
-                {abnInput.trim() && !abnHas11 ? (
+                {fieldErrors.abn ? (
+                  <div className="mt-2 rounded-md border border-red-700/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">
+                    {fieldErrors.abn}
+                    {fieldErrors.abn.includes("already registered") ? (
+                      <span> <Link href="/auth/login" className="font-semibold underline">Sign in instead →</Link></span>
+                    ) : null}
+                  </div>
+                ) : abnInput.trim() && !abnHas11 ? (
                   <p className="mt-1 text-xs font-medium text-amber-400">ABN must be 11 digits</p>
                 ) : abnHas11 && !abnValid ? (
-                  <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please re-enter</p>
+                  <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please check the number</p>
                 ) : null}
 
                 {/* ABN lookup result box */}
@@ -1071,7 +1191,7 @@ export function SignupForm() {
                     ) : (
                       /* skipped, error, or null — fallback */
                       <span className="font-semibold text-emerald-400">
-                        ✓ Valid ABN format — please confirm this matches your registered business name
+                        ✓ Valid ABN — enter your registered business name above to confirm
                       </span>
                     )}
                   </div>
@@ -1096,7 +1216,7 @@ export function SignupForm() {
                 <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
                   Phone number
                 </label>
-                <div className="flex h-10 items-center overflow-hidden rounded-md border border-slate-600 bg-slate-800 focus-within:border-[#3B82F6]">
+                <div className={`flex h-10 items-center overflow-hidden rounded-md border bg-slate-800 ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-slate-600 focus-within:border-[#3B82F6]"}`}>
                   <span className="select-none border-r border-slate-600 bg-slate-700 px-3 text-sm text-slate-300 h-full flex items-center gap-1.5 shrink-0">
                     🇦🇺 +61
                   </span>
@@ -1106,13 +1226,19 @@ export function SignupForm() {
                     autoComplete="tel-national" inputMode="tel"
                     placeholder="412 345 678"
                     onKeyDown={blockPhoneKeyDown}
-                    onChange={(e) => setPhoneInput(formatAUPhone(e.target.value))}
+                    onChange={(e) => {
+                      setPhoneInput(formatAUPhone(e.target.value));
+                      if (fieldErrors.phone) clearFieldError("phone");
+                    }}
+                    onBlur={handlePhoneBlur}
                     required
                     className="h-full flex-1 bg-transparent px-3 text-sm text-slate-200 outline-none placeholder:text-slate-500"
                   />
                 </div>
-                {phoneInput.trim() && !isPhoneValid(phoneInput) ? (
-                  <p className="mt-1 text-xs font-medium text-amber-400">Enter a valid Australian number (e.g. 412 345 678).</p>
+                {fieldErrors.phone ? (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.phone}</p>
+                ) : phoneInput.trim() && !isPhoneValid(phoneInput) ? (
+                  <p className="mt-1 text-xs font-medium text-amber-400">Please enter a valid Australian phone number (e.g. 04xx xxx xxx)</p>
                 ) : null}
               </div>
 

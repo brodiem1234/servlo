@@ -24,13 +24,13 @@ export function readStoredAccentHex(): string | null {
   return null;
 }
 
-/** Sets owner accent on `<html>` + optional localStorage cache. */
+/** Sets owner brand accent on `<html>` + optional localStorage cache. */
 export function applyAccentToDocument(rawHex: string, options?: ApplyAccentOptions) {
   if (typeof document === "undefined") return;
   const hex = normalizeAccentHexForCss(rawHex);
   const root = document.documentElement;
-  root.style.setProperty("--accent-color", hex);
-  root.style.setProperty("--accent-hover", `color-mix(in srgb, ${hex} 82%, black)`);
+  root.style.setProperty("--brand-accent", hex);
+  root.style.setProperty("--brand-accent-hover", `color-mix(in srgb, ${hex} 82%, black)`);
   if (options?.persist !== true) return;
   try {
     localStorage.setItem(ACCENT_LOCAL_STORAGE_KEY, hex);

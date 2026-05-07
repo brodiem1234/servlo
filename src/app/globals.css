@@ -46,8 +46,8 @@
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 35%, transparent);
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-accent) 35%, transparent);
   }
 
   thead tr {
@@ -79,47 +79,52 @@
   }
 }
 
-/* globals.css */
+/* globals.css — public/light page defaults */
 :root {
-  --accent-color: #0891b2;
-  --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
-  --bg-primary: #F4F7FB;
-  --bg-secondary: color-mix(in srgb, var(--accent-color) 6%, #ffffff);
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
+  --brand-accent: #0891b2;
+  --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
+  /* Backward-compat alias: component files using var(--accent-color) still work */
+  --accent-color: var(--brand-accent);
+  --accent-hover: var(--brand-accent-hover);
+  --bg-primary: #F0F4F8;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --text-primary: #0F172A;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border: color-mix(in srgb, var(--accent-color) 14%, #e2e8f0);
-  --input-bg: #ffffff;
-  --sidebar-bg: color-mix(in srgb, var(--accent-color) 14%, #eef2f7);
+  --text-muted: #94A3B8;
+  --border: #e2e8f0;
+  --input-bg: #FFFFFF;
+  --sidebar-bg: #eef2f7;
   --sidebar-text: #0f172a;
   --sidebar-text-muted: #475569;
-  --sidebar-divider: color-mix(in srgb, var(--accent-color) 22%, #cbd5e1);
-  --sidebar-hover-bg: color-mix(in srgb, var(--accent-color) 10%, #e2e8f0);
-  --sidebar-active-bg: var(--accent-color);
+  --sidebar-divider: #cbd5e1;
+  --sidebar-hover-bg: #e2e8f0;
+  --sidebar-active-bg: var(--brand-accent);
   --sidebar-active-text: #ffffff;
-  --sidebar-ring: var(--accent-color);
+  --sidebar-ring: var(--brand-accent);
 }
 
-:root.dark {
-  --accent-color: #0891b2;
-  --accent-hover: color-mix(in srgb, var(--accent-color) 82%, black);
-  --bg-primary: color-mix(in srgb, var(--accent-color) 3%, #0f172a);
-  --bg-secondary: color-mix(in srgb, var(--accent-color) 15%, #0f172a);
-  --bg-card: color-mix(in srgb, var(--accent-color) 8%, #131f30);
-  --text-primary: #f8fafc;
-  --text-secondary: color-mix(in srgb, #e2e8f0 82%, var(--accent-color) 18%);
-  --text-muted: color-mix(in srgb, #94a3b8 88%, var(--accent-color) 12%);
-  --border: color-mix(in srgb, var(--accent-color) 26%, #334155);
-  --input-bg: color-mix(in srgb, var(--accent-color) 6%, #0f172a);
-  --sidebar-bg: color-mix(in srgb, var(--accent-color) 15%, #0f172a);
-  --sidebar-text: color-mix(in srgb, #f8fafc 94%, var(--accent-color) 6%);
-  --sidebar-text-muted: color-mix(in srgb, #cbd5e1 82%, var(--accent-color) 18%);
-  --sidebar-divider: color-mix(in srgb, var(--accent-color) 38%, transparent);
-  --sidebar-hover-bg: color-mix(in srgb, #ffffff 8%, var(--sidebar-bg));
-  --sidebar-active-bg: var(--accent-color);
+html.dark {
+  --brand-accent: #0891b2;
+  --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
+  --bg-primary: #080d18;
+  --bg-secondary: #0f1623;
+  --bg-card: #0f1623;
+  --card-bg: #0f1623;
+  --text-primary: #CBD5E1;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: rgba(255,255,255,0.08);
+  --input-bg: #0d1420;
+  --sidebar-bg: #0f1623;
+  --sidebar-text: #f8fafc;
+  --sidebar-text-muted: #cbd5e1;
+  --sidebar-divider: rgba(255,255,255,0.08);
+  --sidebar-hover-bg: rgba(255,255,255,0.05);
+  --sidebar-active-bg: var(--brand-accent);
   --sidebar-active-text: #ffffff;
-  --sidebar-ring: var(--accent-color);
+  --sidebar-ring: var(--brand-accent);
 }
 
 .dashboard-theme {
@@ -168,13 +173,13 @@
 :root.dark .dashboard-theme .dashboard-card,
 :root.dark .dashboard-theme .dashboard-panel,
 :root.dark .auth-theme .auth-card {
-  border-color: color-mix(in srgb, var(--accent-color) 22%, var(--border)) !important;
+  border-color: rgba(255,255,255,0.08) !important;
 }
 
 :root.dark .dashboard-theme .border-white,
 :root.dark .dashboard-theme .border-slate-100,
 :root.dark .dashboard-theme .border-slate-200 {
-  border-color: color-mix(in srgb, var(--accent-color) 20%, var(--border)) !important;
+  border-color: rgba(255,255,255,0.08) !important;
 }
 
 .dashboard-theme input,
@@ -194,7 +199,7 @@
 :root.dark .auth-theme input,
 :root.dark .auth-theme select,
 :root.dark .auth-theme textarea {
-  border-color: color-mix(in srgb, var(--accent-color) 24%, var(--border)) !important;
+  border-color: rgba(255,255,255,0.10) !important;
 }
 
 .dashboard-theme input::placeholder,
@@ -221,7 +226,7 @@
 :root.dark .dashboard-theme table,
 :root.dark .dashboard-theme th,
 :root.dark .dashboard-theme td {
-  border-color: color-mix(in srgb, var(--accent-color) 18%, #1e293b) !important;
+  border-color: rgba(255,255,255,0.07) !important;
 }
 
 .dashboard-theme label,
@@ -260,7 +265,7 @@
 /* Links in main content / auth — not sidebar */
 .dashboard-theme main a,
 .auth-theme a {
-  color: var(--accent-color);
+  color: var(--brand-accent);
 }
 
 /* Explicit primary-coloured links (overrides main `a` accent colour when contrast matters) */
@@ -273,7 +278,7 @@
 }
 
 .dashboard-theme main a.dashboard-text-link:hover {
-  color: var(--accent-color) !important;
+  color: var(--brand-accent) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a {
@@ -282,33 +287,33 @@
 }
 
 .dashboard-theme .owner-sidebar nav a:hover {
-  border-left-color: color-mix(in srgb, var(--accent-color) 42%, transparent);
+  border-left-color: color-mix(in srgb, var(--brand-accent) 42%, transparent);
   background-color: var(--sidebar-hover-bg) !important;
   color: var(--sidebar-text) !important;
 }
 
 .dashboard-theme .owner-sidebar nav a[data-active="true"] {
-  border-left-color: var(--accent-color);
+  border-left-color: var(--brand-accent);
   background-color: var(--sidebar-active-bg) !important;
   color: var(--sidebar-active-text) !important;
   font-weight: 700;
 }
 
 .dashboard-theme .owner-sidebar nav a[data-active="true"]:hover {
-  border-left-color: var(--accent-color);
+  border-left-color: var(--brand-accent);
   background-color: var(--sidebar-active-bg) !important;
   color: var(--sidebar-active-text) !important;
 }
 
 .dashboard-theme input[type="checkbox"] {
-  accent-color: var(--accent-color);
+  accent-color: var(--brand-accent);
 }
 
 .dashboard-theme :where(a, button, input:not([type="hidden"]), select, textarea):focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--bg-card),
-    0 0 0 4px var(--accent-color);
+    0 0 0 4px var(--brand-accent);
 }
 
 .dashboard-theme .owner-mobile-nav a {
@@ -368,194 +373,205 @@
 }
 
 .dashboard-theme .dashboard-primary {
-  background: var(--accent-color) !important;
+  background: var(--product-accent, var(--brand-accent)) !important;
   color: #fff !important;
 }
 
 .dashboard-theme .text-accent-strong {
-  color: var(--accent-color);
+  color: var(--product-accent, var(--brand-accent));
 }
 
 :root.dark .dashboard-theme .text-accent-strong {
-  color: color-mix(in srgb, var(--accent-color) 82%, white);
+  color: color-mix(in srgb, var(--product-accent, var(--brand-accent)) 82%, white);
 }
 
 .dashboard-theme .dashboard-stat-value {
-  color: var(--accent-color) !important;
+  color: var(--product-accent, var(--brand-accent)) !important;
 }
 
 :root.dark .dashboard-theme .dashboard-stat-value {
-  color: var(--accent-color) !important;
+  color: var(--product-accent, var(--brand-accent)) !important;
 }
 
-/* Modal / slide-over cards — subtle accent-tinted border */
+/* Modal / slide-over cards — subtle border in dark mode */
 :root.dark .dashboard-theme .rounded-xl.border,
 :root.dark .dashboard-theme .rounded-lg.border,
 :root.dark .dashboard-theme .border.border-slate-700 {
-  border-color: color-mix(in srgb, var(--accent-color) 22%, var(--border)) !important;
+  border-color: rgba(255,255,255,0.08) !important;
 }
 
 /* ── Monochromatic product theme tokens ─────────────────────────────────── */
 [data-product="core"] {
-  --product-rgb: 59, 130, 246;
+  --product-rgb: 59,130,246;
   --product-accent: #3B82F6;
   --product-accent-light: #93C5FD;
   --product-muted: #1a2e4a;
-  --product-sidebar: #0d1b36;
+  --product-sidebar: #0a1628;
   --product-main: #080f1e;
   background-color: #080f1e !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(195deg) drop-shadow(0 0 10px #3B82F6) drop-shadow(0 0 20px rgba(59,130,246,0.4));
 }
 [data-product="grow"] {
-  --product-rgb: 139, 92, 246;
+  --product-rgb: 139,92,246;
   --product-accent: #8B5CF6;
   --product-accent-light: #C4B5FD;
   --product-muted: #2a1650;
-  --product-sidebar: #120a2e;
+  --product-sidebar: #0f0a24;
   --product-main: #0a0614;
   background-color: #0a0614 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(250deg) drop-shadow(0 0 10px #8B5CF6) drop-shadow(0 0 20px rgba(139,92,246,0.4));
 }
 [data-product="leads"] {
-  --product-rgb: 245, 158, 11;
+  --product-rgb: 245,158,11;
   --product-accent: #F59E0B;
   --product-accent-light: #FCD34D;
   --product-muted: #3d2000;
-  --product-sidebar: #1f1200;
+  --product-sidebar: #1a0f00;
   --product-main: #120b00;
   background-color: #120b00 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(10deg) drop-shadow(0 0 10px #F59E0B) drop-shadow(0 0 20px rgba(245,158,11,0.4));
 }
 [data-product="answer"] {
-  --product-rgb: 20, 184, 166;
+  --product-rgb: 20,184,166;
   --product-accent: #14B8A6;
   --product-accent-light: #5EEAD4;
   --product-muted: #003d36;
-  --product-sidebar: #001f1c;
+  --product-sidebar: #001a18;
   --product-main: #001210;
   background-color: #001210 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(155deg) drop-shadow(0 0 10px #14B8A6) drop-shadow(0 0 20px rgba(20,184,166,0.4));
 }
 [data-product="pay"] {
-  --product-rgb: 34, 197, 94;
+  --product-rgb: 34,197,94;
   --product-accent: #22C55E;
   --product-accent-light: #86EFAC;
   --product-muted: #003d1a;
-  --product-sidebar: #001f0d;
+  --product-sidebar: #001a0a;
   --product-main: #001207;
   background-color: #001207 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(115deg) drop-shadow(0 0 10px #22C55E) drop-shadow(0 0 20px rgba(34,197,94,0.4));
 }
 [data-product="hire"] {
-  --product-rgb: 249, 115, 22;
+  --product-rgb: 249,115,22;
   --product-accent: #F97316;
   --product-accent-light: #FDBA74;
   --product-muted: #3d1500;
-  --product-sidebar: #1f0a00;
+  --product-sidebar: #1a0800;
   --product-main: #120600;
   background-color: #120600 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(355deg) drop-shadow(0 0 10px #F97316) drop-shadow(0 0 20px rgba(249,115,22,0.4));
 }
 [data-product="fleet"] {
-  --product-rgb: 14, 165, 233;
+  --product-rgb: 14,165,233;
   --product-accent: #0EA5E9;
   --product-accent-light: #7DD3FC;
   --product-muted: #003d5c;
-  --product-sidebar: #001f2e;
+  --product-sidebar: #00101a;
   --product-main: #00121c;
   background-color: #00121c !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(175deg) drop-shadow(0 0 10px #0EA5E9) drop-shadow(0 0 20px rgba(14,165,233,0.4));
 }
 [data-product="finance-hub"] {
-  --product-rgb: 99, 102, 241;
+  --product-rgb: 99,102,241;
   --product-accent: #6366F1;
   --product-accent-light: #A5B4FC;
   --product-muted: #1a1a50;
-  --product-sidebar: #0d0d2e;
+  --product-sidebar: #08001a;
   --product-main: #08081c;
   background-color: #08081c !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(215deg) drop-shadow(0 0 10px #6366F1) drop-shadow(0 0 20px rgba(99,102,241,0.4));
 }
 [data-product="insurance"] {
-  --product-rgb: 244, 63, 94;
+  --product-rgb: 244,63,94;
   --product-accent: #F43F5E;
   --product-accent-light: #FDA4AF;
   --product-muted: #3d0015;
-  --product-sidebar: #1f000a;
+  --product-sidebar: #1a0008;
   --product-main: #120006;
   background-color: #120006 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(325deg) drop-shadow(0 0 10px #F43F5E) drop-shadow(0 0 20px rgba(244,63,94,0.4));
 }
 [data-product="safe"] {
-  --product-rgb: 239, 68, 68;
+  --product-rgb: 239,68,68;
   --product-accent: #EF4444;
   --product-accent-light: #FCA5A5;
   --product-muted: #3d0000;
-  --product-sidebar: #1f0000;
+  --product-sidebar: #1a0000;
   --product-main: #120000;
   background-color: #120000 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(0deg) drop-shadow(0 0 10px #EF4444) drop-shadow(0 0 20px rgba(239,68,68,0.4));
 }
 [data-product="books"] {
-  --product-rgb: 16, 185, 129;
-  --product-accent: #10B981;
+  --product-rgb: 5,150,105;
+  --product-accent: #059669;
   --product-accent-light: #6EE7B7;
   --product-muted: #003d2a;
-  --product-sidebar: #001f15;
+  --product-sidebar: #001a0d;
   --product-main: #00120c;
   background-color: #00120c !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(135deg) drop-shadow(0 0 10px #10B981) drop-shadow(0 0 20px rgba(16,185,129,0.4));
 }
 [data-product="academy"] {
-  --product-rgb: 234, 179, 8;
+  --product-rgb: 234,179,8;
   --product-accent: #EAB308;
   --product-accent-light: #FDE047;
   --product-muted: #3d2d00;
-  --product-sidebar: #1f1700;
+  --product-sidebar: #1a1400;
   --product-main: #120e00;
   background-color: #120e00 !important;
   --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(20deg) drop-shadow(0 0 10px #EAB308) drop-shadow(0 0 20px rgba(234,179,8,0.4));
 }
 
-/* Ensure sidebar text is always readable inside product shells (dark backgrounds).
+/* Ensure sidebar text is always readable inside product shells (always-dark).
    Product shells apply `class="dark"` to an inner div rather than <html>, so the
-   :root.dark vars don't cascade here — we must re-declare them explicitly. */
+   html.dark vars don't cascade here — we must re-declare them explicitly. */
 [data-product] {
-  --product-rgb: 59, 130, 246;
+  --product-rgb: 59,130,246;
+  /* Backward-compat: --accent-color inside product shells maps to --brand-accent
+     so existing component files using var(--accent-color) continue to work */
+  --accent-color: var(--brand-accent);
+  --accent-hover: var(--brand-accent-hover);
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --bg-primary: #0f172a;
-  --bg-secondary: rgba(255, 255, 255, 0.05);
-  --bg-card: rgba(255, 255, 255, 0.04);
-  --border: rgba(255, 255, 255, 0.10);
-  --input-bg: rgba(255, 255, 255, 0.05);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.07);
-  --sidebar-divider: rgba(255, 255, 255, 0.08);
-  --panel-bg: #0d1117;
-  --panel-border: rgba(255,255,255,0.12);
-  --panel-shadow: 0 8px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
+  --text-primary: #CBD5E1;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --bg-primary: #080d18;
+  --bg-secondary: #0f1623;
+  --bg-tertiary: #0d1420;
+  --bg-card: #0f1623;
+  --card-bg: #0f1623;
+  --card-border: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.06);
+  --input-bg: #0d1420;
+  --input-border: rgba(255,255,255,0.10);
+  --modal-bg: #111927;
+  --modal-shadow: 0 25px 50px rgba(0,0,0,0.6);
+  --panel-bg: #111927;
+  --panel-border: rgba(255,255,255,0.10);
+  --panel-shadow: 0 25px 50px rgba(0,0,0,0.6);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-divider: rgba(255, 255, 255, 0.06);
 }
 [data-product] .owner-sidebar {
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
 }
 
-/* Active nav item uses product muted bg + accent-light text inside product shells */
+/* Active nav item — product-tinted background with accent border */
 [data-product] .owner-sidebar nav a[data-active="true"] {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(var(--product-rgb), 0.15) !important;
   color: #ffffff !important;
   font-weight: 600;
-  border-left-color: var(--product-accent) !important;
+  border-left: 3px solid var(--product-accent) !important;
 }
 [data-product] .owner-sidebar nav a[data-active="true"]:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(var(--product-rgb), 0.20) !important;
   color: #ffffff !important;
 }
 [data-product] .owner-sidebar nav a:not([data-active="true"]) {
   color: rgba(255, 255, 255, 0.6) !important;
+  border-left: 3px solid transparent !important;
 }
 [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
   background-color: rgba(255, 255, 255, 0.04) !important;
@@ -589,157 +605,126 @@ html.light-mode [data-product] * {
 }
 
 /* ── Light mode overrides for product shells ──────────────────────────────── */
+/* The dashboard is always dark — sidebar stays dark even in html.light-mode.
+   Only the main content area may use light tokens if light mode is active. */
 html.light-mode [data-product] {
-  --sidebar-text: #0F172A;
-  --sidebar-text-muted: #475569;
+  /* Keep dashboard dark — do NOT override sidebar or bg-primary here.
+     Only override content-area tokens so cards/inputs look lighter. */
   --text-primary: #0F172A;
   --text-secondary: #374151;
   --text-muted: #6B7280;
-  --bg-secondary: #f8fafc;
   --bg-card: #ffffff;
+  --card-bg: #ffffff;
   --border: #e2e8f0;
+  --card-border: #e2e8f0;
   --input-bg: #ffffff;
-  --sidebar-hover-bg: rgba(var(--product-rgb), 0.06);
-  --sidebar-divider: #e2e8f0;
   --panel-bg: #ffffff;
   --panel-border: #e2e8f0;
   --panel-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  --modal-bg: #ffffff;
+  --modal-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 
+/* In light mode, product shell main-content areas get a light tint;
+   sidebar colours are NOT overridden here — sidebar always stays dark. */
 html.light-mode [data-product="core"] {
   background-color: #EEF4FF !important;
-  --product-sidebar: #ffffff;
   --product-main: #EEF4FF;
-  --sidebar-active-bg: rgba(59, 130, 246, 0.08);
-  --sidebar-active-text: #3B82F6;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(199deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(59,130,246,0.5));
 }
 
 html.light-mode [data-product="grow"] {
   background-color: #F0EEFF !important;
-  --product-sidebar: #ffffff;
   --product-main: #F0EEFF;
-  --sidebar-active-bg: rgba(139, 92, 246, 0.08);
-  --sidebar-active-text: #8B5CF6;
   --logo-filter: brightness(0) saturate(100%) invert(33%) sepia(97%) saturate(1300%) hue-rotate(250deg) brightness(95%) drop-shadow(0 0 8px rgba(139,92,246,0.5));
 }
 
 html.light-mode [data-product="leads"] {
   background-color: #FFF4E0 !important;
-  --product-sidebar: #ffffff;
   --product-main: #FFF4E0;
-  --sidebar-active-bg: rgba(245, 158, 11, 0.08);
-  --sidebar-active-text: #F59E0B;
   --logo-filter: brightness(0) saturate(100%) invert(70%) sepia(90%) saturate(900%) hue-rotate(5deg) brightness(102%) drop-shadow(0 0 8px rgba(245,158,11,0.5));
 }
 
 html.light-mode [data-product="answer"] {
   background-color: #E6FAF8 !important;
-  --product-sidebar: #ffffff;
   --product-main: #E6FAF8;
-  --sidebar-active-bg: rgba(20, 184, 166, 0.08);
-  --sidebar-active-text: #14B8A6;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(155deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(20,184,166,0.5));
 }
 
 html.light-mode [data-product="pay"] {
   background-color: #E8FAF0 !important;
-  --product-sidebar: #ffffff;
   --product-main: #E8FAF0;
-  --sidebar-active-bg: rgba(34, 197, 94, 0.08);
-  --sidebar-active-text: #22C55E;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(115deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(34,197,94,0.5));
 }
 
 html.light-mode [data-product="hire"] {
   background-color: #FEF3EB !important;
-  --product-sidebar: #ffffff;
   --product-main: #FEF3EB;
-  --sidebar-active-bg: rgba(249, 115, 22, 0.08);
-  --sidebar-active-text: #F97316;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(355deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(249,115,22,0.5));
 }
 
 html.light-mode [data-product="fleet"] {
   background-color: #E6F6FE !important;
-  --product-sidebar: #ffffff;
   --product-main: #E6F6FE;
-  --sidebar-active-bg: rgba(14, 165, 233, 0.08);
-  --sidebar-active-text: #0EA5E9;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(175deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(14,165,233,0.5));
 }
 
 html.light-mode [data-product="finance-hub"] {
   background-color: #EEEEFF !important;
-  --product-sidebar: #ffffff;
   --product-main: #EEEEFF;
-  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
-  --sidebar-active-text: #6366F1;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(215deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(99,102,241,0.5));
 }
 
 html.light-mode [data-product="insurance"] {
   background-color: #FEE8EC !important;
-  --product-sidebar: #ffffff;
   --product-main: #FEE8EC;
-  --sidebar-active-bg: rgba(244, 63, 94, 0.08);
-  --sidebar-active-text: #F43F5E;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(325deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(244,63,94,0.5));
 }
 
 html.light-mode [data-product="safe"] {
   background-color: #FEE8E8 !important;
-  --product-sidebar: #ffffff;
   --product-main: #FEE8E8;
-  --sidebar-active-bg: rgba(239, 68, 68, 0.08);
-  --sidebar-active-text: #EF4444;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(0deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(239,68,68,0.5));
 }
 
 html.light-mode [data-product="books"] {
   background-color: #E6FAF4 !important;
-  --product-sidebar: #ffffff;
   --product-main: #E6FAF4;
-  --sidebar-active-bg: rgba(16, 185, 129, 0.08);
-  --sidebar-active-text: #10B981;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(135deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(16,185,129,0.5));
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(135deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(5,150,105,0.5));
 }
 
 html.light-mode [data-product="academy"] {
   background-color: #FEFAE6 !important;
-  --product-sidebar: #ffffff;
   --product-main: #FEFAE6;
-  --sidebar-active-bg: rgba(234, 179, 8, 0.08);
-  --sidebar-active-text: #EAB308;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(20deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(234,179,8,0.5));
 }
 
-/* Light mode sidebar nav active item */
+/* Light mode — sidebar nav active item stays dark-themed (sidebar is always dark) */
 html.light-mode [data-product] .owner-sidebar nav a[data-active="true"] {
-  background-color: rgba(var(--product-rgb), 0.08) !important;
-  color: var(--product-accent) !important;
-  font-weight: 700;
-  border-left-color: var(--product-accent) !important;
+  background: rgba(var(--product-rgb), 0.15) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-left: 3px solid var(--product-accent) !important;
 }
 html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]) {
-  color: #374151 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  border-left: 3px solid transparent !important;
 }
 html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
-  background-color: #f8fafc !important;
-  color: #374151 !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
-/* Light mode sidebar border */
+/* Sidebar always stays dark — do NOT apply white background in light mode */
 html.light-mode [data-product] .owner-sidebar {
-  background: #ffffff !important;
-  border-right: 1px solid #e2e8f0 !important;
-  box-shadow: none !important;
+  /* sidebar bg is set by --product-sidebar on the sidebar element itself — keep dark */
 }
 
+/* product-switcher-trigger in light mode stays dark-sidebar themed */
 html.light-mode [data-product] .product-switcher-trigger {
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  background: rgba(0, 0, 0, 0.04) !important;
-  color: #0F172A !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.06) !important;
+  color: rgba(255,255,255,0.85) !important;
 }
 
 /* Light mode cards */
@@ -789,13 +774,13 @@ html.light-mode [data-product] .text-slate-600 {
   color: #6B7280 !important;
 }
 
-/* Light mode sidebar text */
+/* Light mode — sidebar text stays light (sidebar is always dark) */
 html.light-mode [data-product] .owner-sidebar {
-  color: #0F172A !important;
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 html.light-mode [data-product] .owner-sidebar nav a {
-  color: #374151 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Light mode stat values */
@@ -803,12 +788,16 @@ html.light-mode [data-product] .dashboard-stat-value {
   color: var(--product-accent) !important;
 }
 
-/* Public page light mode restore (in case product shell light-mode class persists) */
+/* Public page light mode restore */
 html.light-mode:not(:has([data-product])) {
-  --bg-primary: #F4F7FB;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --input-bg: #ffffff;
+  --bg-primary: #F0F4F8;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --input-bg: #FFFFFF;
   --border: #e2e8f0;
 }
 
@@ -825,4 +814,92 @@ html.light-mode:not(:has([data-product])) {
   .mobile-card-list td { border: none !important; padding: 4px 8px; display: flex; align-items: flex-start; gap: 8px; text-align: left; }
   .mobile-card-list td::before { content: attr(data-label); font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 90px; flex-shrink: 0; padding-top: 2px; }
   .touch-target { min-height: 44px; min-width: 44px; }
+}
+
+/* ── Dashboard typography (product shells — always dark) ────────────────── */
+[data-product] h1,
+[data-product] h2,
+[data-product] h3,
+[data-product] h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ── Dashboard card hover (product-tinted border) ───────────────────────── */
+.dashboard-card:hover,
+[data-card]:hover {
+  border-color: rgba(var(--product-rgb, 59,130,246), 0.25);
+}
+
+/* ── Dashboard input focus (product accent border) ──────────────────────── */
+.dashboard-input:focus,
+[data-product] input:focus,
+[data-product] select:focus,
+[data-product] textarea:focus {
+  border-color: var(--product-accent) !important;
+  outline: none;
+}
+
+/* ── Modal / panel backgrounds inside product shells ────────────────────── */
+[data-product] .modal-bg,
+[data-product] [data-modal] {
+  background: var(--modal-bg);
+  box-shadow: var(--modal-shadow);
+}
+
+/* ── Status badge utility classes ───────────────────────────────────────── */
+.badge-active, .badge-paid, .badge-completed {
+  background: rgba(16,185,129,0.15);
+  color: #10B981;
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+.badge-pending, .badge-draft {
+  background: rgba(245,158,11,0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+.badge-overdue, .badge-error, .badge-cancelled {
+  background: rgba(239,68,68,0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+.badge-progress, .badge-sent, .badge-in-progress {
+  background: rgba(59,130,246,0.15);
+  color: #3B82F6;
+  border: 1px solid rgba(59,130,246,0.3);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+.badge-coming-soon, .badge-locked {
+  background: rgba(255,255,255,0.06);
+  color: #64748B;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
 }

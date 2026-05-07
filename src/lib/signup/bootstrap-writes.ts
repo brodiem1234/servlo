@@ -99,6 +99,8 @@ export type BootstrapSignupParams = {
   otherNote: string | null;
   accentColourRaw: string;
   full_name: string;
+  planTier?: string;
+  selectedProducts?: string;
 };
 
 /** Profiles only (service role). Used by signup before session-scoped business insert. */
@@ -113,12 +115,17 @@ export async function bootstrapSignupProfiles(
 > {
   const role = params.role;
 
-  const corePayload = {
+  const corePayload: Record<string, unknown> = {
     id: params.userId,
     full_name: params.full_name || params.email.split("@")[0],
     role:
-      role === "owner" ? ("owner" as const) : role === "employee" ? ("employee" as const) : ("client" as const)
+      role === "owner" ? ("owner" as const) : role === "employee" ? ("employee" as const) : ("client" as const),
+    onboarding_completed: false,
   };
+  if (role === "owner") {
+    corePayload.plan_tier = params.planTier ?? "solo";
+    corePayload.selected_products = params.selectedProducts ?? "core";
+  }
 
   try {
     const coreRes = await admin.from("profiles").upsert(corePayload, { onConflict: "id" });

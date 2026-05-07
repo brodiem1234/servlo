@@ -1,6 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import {
+  siStripe,
+  siXero,
+  siPaypal,
+  siMailchimp,
+  siDropbox,
+  siSquare,
+  siZapier,
+  siGoogle,
+  siZoom,
+  siGoogledrive,
+  siGooglecalendar,
+  siGooglemaps,
+  siMake,
+  siQuickbooks,
+} from "simple-icons";
+
+// ── Simple Icons helper ─────────────────────────────────────────────────────
+
+function SIIcon({ icon, size = 20 }: { icon: { path: string; hex: string; title: string }; size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill={`#${icon.hex}`} aria-label={icon.title}>
+      <path d={icon.path} />
+    </svg>
+  );
+}
 
 // ── Notification preferences ────────────────────────────────────────────────
 
@@ -855,6 +881,8 @@ export function ImportExportTab() {
 
 // ── Integrations Tab (ITEM 9) ───────────────────────────────────────────────
 
+type SimpleIconDef = { path: string; hex: string; title: string };
+
 type IntegrationCard = {
   name: string;
   bg: string;
@@ -862,6 +890,7 @@ type IntegrationCard = {
   description: string;
   status: string;
   textDark?: boolean;
+  siIcon?: SimpleIconDef;
 };
 
 type IntegrationCategory = {
@@ -873,45 +902,45 @@ const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
   {
     label: "Accounting",
     cards: [
-      { name: "Xero", bg: "#1AB4D3", initial: "X", description: "Import invoices & contacts", status: "Coming soon" },
+      { name: "Xero", bg: "#1AB4D3", initial: "X", description: "Import invoices & contacts", status: "Coming soon", siIcon: siXero },
       { name: "MYOB", bg: "#7B2D8B", initial: "M", description: "Sync financial data", status: "Coming soon" },
-      { name: "QuickBooks", bg: "#2CA01C", initial: "Q", description: "Two-way sync", status: "Coming soon" },
+      { name: "QuickBooks", bg: "#2CA01C", initial: "Q", description: "Two-way sync", status: "Coming soon", siIcon: siQuickbooks },
     ],
   },
   {
     label: "Payments",
     cards: [
-      { name: "Stripe", bg: "#635BFF", initial: "S", description: "Online payments", status: "Active" },
-      { name: "Square", bg: "#00C244", initial: "Sq", description: "POS integration", status: "Coming soon" },
-      { name: "PayPal", bg: "#003087", initial: "PP", description: "Payment processing", status: "Coming soon" },
+      { name: "Stripe", bg: "#635BFF", initial: "S", description: "Online payments", status: "Active", siIcon: siStripe },
+      { name: "Square", bg: "#00C244", initial: "Sq", description: "POS integration", status: "Coming soon", siIcon: siSquare },
+      { name: "PayPal", bg: "#003087", initial: "PP", description: "Payment processing", status: "Coming soon", siIcon: siPaypal },
     ],
   },
   {
     label: "Communication",
     cards: [
       { name: "Twilio", bg: "#F22F46", initial: "Tw", description: "SMS notifications", status: "Coming soon" },
-      { name: "Mailchimp", bg: "#FFE01B", initial: "Mc", description: "Email campaigns", status: "Coming soon", textDark: true },
+      { name: "Mailchimp", bg: "#FFE01B", initial: "Mc", description: "Email campaigns", status: "Coming soon", textDark: true, siIcon: siMailchimp },
     ],
   },
   {
     label: "Calendar",
     cards: [
-      { name: "Google Calendar", bg: "#4285F4", initial: "GC", description: "Sync job schedules", status: "Coming soon" },
+      { name: "Google Calendar", bg: "#4285F4", initial: "GC", description: "Sync job schedules", status: "Coming soon", siIcon: siGooglecalendar },
       { name: "Microsoft 365", bg: "#D83B01", initial: "Ms", description: "Outlook calendar", status: "Coming soon" },
     ],
   },
   {
     label: "Documents",
     cards: [
-      { name: "Google Drive", bg: "#0F9D58", initial: "GD", description: "Store job documents", status: "Coming soon" },
-      { name: "Dropbox", bg: "#0061FF", initial: "Db", description: "File storage", status: "Coming soon" },
+      { name: "Google Drive", bg: "#0F9D58", initial: "GD", description: "Store job documents", status: "Coming soon", siIcon: siGoogledrive },
+      { name: "Dropbox", bg: "#0061FF", initial: "Db", description: "File storage", status: "Coming soon", siIcon: siDropbox },
     ],
   },
   {
     label: "Automation",
     cards: [
-      { name: "Zapier", bg: "#FF4A00", initial: "Za", description: "Connect 5000+ apps", status: "Coming soon" },
-      { name: "Make", bg: "#6D00CC", initial: "Mk", description: "Visual automation", status: "Coming soon" },
+      { name: "Zapier", bg: "#FF4A00", initial: "Za", description: "Connect 5000+ apps", status: "Coming soon", siIcon: siZapier },
+      { name: "Make", bg: "#6D00CC", initial: "Mk", description: "Visual automation", status: "Coming soon", siIcon: siMake },
     ],
   },
   {
@@ -931,7 +960,7 @@ const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
   {
     label: "Maps",
     cards: [
-      { name: "Google Maps", bg: "#4285F4", initial: "GM", description: "Job location & routing", status: "Coming soon" },
+      { name: "Google Maps", bg: "#4285F4", initial: "GM", description: "Job location & routing", status: "Coming soon", siIcon: siGooglemaps },
       { name: "HERE Maps", bg: "#48DAD0", initial: "HM", description: "Fleet tracking", status: "Coming soon", textDark: true },
     ],
   },
@@ -965,11 +994,17 @@ export function IntegrationsTab({ stripeConnected }: IntegrationsTabProps) {
                   key={card.name}
                   className="rounded-lg border border-gray-200 dark:border-white/10 p-4 flex items-start gap-3"
                 >
-                  <div
-                    className={`h-10 w-10 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${card.textDark ? "text-gray-900" : "text-white"}`}
-                    style={{ background: card.bg }}
-                  >
-                    {card.initial}
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-gray-900 shrink-0">
+                    {card.siIcon ? (
+                      <SIIcon icon={card.siIcon} size={20} />
+                    ) : (
+                      <span
+                        className={`font-bold text-sm ${card.textDark ? "text-gray-900" : "text-white"}`}
+                        style={{ color: card.textDark ? "#111" : "#fff" }}
+                      >
+                        {card.initial}
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -996,83 +1031,7 @@ export function IntegrationsTab({ stripeConnected }: IntegrationsTabProps) {
   );
 }
 
-// ── Welcome Overlay (ITEM 10) ───────────────────────────────────────────────
-
-type WelcomeOverlayProps = {
-  onboardingCompleted: boolean;
-  completeAction: () => Promise<void>;
-};
-
-export function WelcomeOverlay({ onboardingCompleted, completeAction }: WelcomeOverlayProps) {
-  const [showWelcome, setShowWelcome] = useState(!onboardingCompleted);
-
-  async function closeWelcome() {
-    setShowWelcome(false);
-    try {
-      await completeAction();
-    } catch {
-      // Non-fatal — just hide the overlay
-    }
-  }
-
-  if (!showWelcome) return null;
-
-  return (
-    <>
-      <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.7)" }} />
-      <div
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%,-50%)",
-          zIndex: 51,
-          width: "min(480px,90vw)",
-        }}
-        className="bg-white dark:bg-[#1a2235] rounded-xl p-8 shadow-2xl"
-      >
-        <h2 className="text-xl font-bold mb-2">Welcome to SERVLO! 🎉</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{"Let's get your account set up in 3 simple steps."}</p>
-        <ol className="space-y-4 mb-8">
-          <li className="flex gap-3">
-            <span className="h-6 w-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-bold shrink-0">1</span>
-            <div>
-              <p className="font-semibold text-sm">Add your business details</p>
-              <p className="text-xs text-gray-500">ABN, trading name, and contact info.</p>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="h-6 w-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-bold shrink-0">2</span>
-            <div>
-              <p className="font-semibold text-sm">Invite your team</p>
-              <p className="text-xs text-gray-500">Add employees or subcontractors.</p>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="h-6 w-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-bold shrink-0">3</span>
-            <div>
-              <p className="font-semibold text-sm">Explore with demo data</p>
-              <p className="text-xs text-gray-500">Load sample jobs, clients, and invoices.</p>
-            </div>
-          </li>
-        </ol>
-        <button
-          onClick={closeWelcome}
-          className="w-full rounded-lg py-2.5 font-semibold text-white"
-          style={{ background: "#3B82F6" }}
-        >
-          Get started
-        </button>
-        <button
-          onClick={closeWelcome}
-          className="mt-3 w-full text-sm text-gray-400 hover:text-gray-600"
-        >
-          Skip for now
-        </button>
-      </div>
-    </>
-  );
-}
+// WelcomeOverlay removed — onboarding tour now lives on dashboard only (see onboarding-tour.tsx)
 
 // ── Danger Zone Tab (ITEM 11) ───────────────────────────────────────────────
 

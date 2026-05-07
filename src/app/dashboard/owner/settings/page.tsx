@@ -32,7 +32,6 @@ import {
   IntegrationsTab,
   ImportExportTab,
   DangerZoneTab,
-  WelcomeOverlay
 } from "./settings-client";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -143,21 +142,6 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     }
   } catch {
     // Column may not exist — use defaults
-  }
-
-  // Fetch onboarding_completed separately — column may not exist on all DB versions
-  let onboardingCompleted = false;
-  try {
-    const onbResult = await supabase
-      .from("profiles")
-      .select("onboarding_completed")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!onbResult.error) {
-      onboardingCompleted = (onbResult.data as { onboarding_completed?: boolean | null } | null)?.onboarding_completed ?? false;
-    }
-  } catch {
-    // Column may not exist — default false
   }
 
   // Industry resolution
@@ -342,24 +326,13 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     redirect("/dashboard/owner/settings?tab=demo-data&demo=removed_ok");
   }
 
-  async function completeOnboardingAction() {
-    "use server";
-    const sb = await createClient();
-    const {
-      data: { user: owner }
-    } = await sb.auth.getUser();
-    if (!owner) return;
-    await sb.from("profiles").update({ onboarding_completed: true } as Record<string, unknown>).eq("id", owner.id);
-    revalidatePath("/dashboard/owner/settings");
-  }
-
   // deleteAccountAction removed — account deletion now via email (DangerZoneTab)
+  // completeOnboardingAction removed — onboarding tour now lives on dashboard only
 
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
     <section className="space-y-6">
-      <WelcomeOverlay onboardingCompleted={onboardingCompleted} completeAction={completeOnboardingAction} />
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
 
       {/* Tab navigation */}
@@ -442,6 +415,12 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                 className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 text-sm text-[var(--text-muted)] cursor-not-allowed"
               />
               <p className="text-xs text-[var(--text-muted)]">Email cannot be changed here.</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                To update your login email, contact{' '}
+                <a href="mailto:hello@servlo.com.au" className="text-blue-500 hover:underline">
+                  hello@servlo.com.au
+                </a>
+              </p>
             </div>
             <div className="space-y-1 sm:col-span-2">
               <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Street address</label>

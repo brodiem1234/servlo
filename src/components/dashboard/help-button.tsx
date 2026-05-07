@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HelpCircle, X, ExternalLink, Keyboard } from "lucide-react";
+import { HelpCircle, X, ExternalLink, Keyboard, RotateCcw } from "lucide-react";
+import { resetOnboarding } from "@/app/dashboard/owner/actions";
 
 const SHORTCUTS = [
   { keys: "⌘K / Ctrl+K", label: "Open command palette" },
@@ -21,6 +22,12 @@ const QUICK_LINKS = [
 
 export function HelpButton() {
   const [open, setOpen] = useState(false);
+  const [restartMsg, setRestartMsg] = useState("");
+
+  async function handleRestartTour() {
+    await resetOnboarding();
+    setRestartMsg("Refresh the page to start the tour");
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -94,14 +101,29 @@ export function HelpButton() {
               </div>
             </div>
 
+            {/* Restart onboarding tour */}
+            <div className="border-t border-[var(--border)] px-4 py-3">
+              <button
+                type="button"
+                onClick={handleRestartTour}
+                className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                <RotateCcw size={12} />
+                Restart onboarding tour
+              </button>
+              {restartMsg ? (
+                <p className="text-xs text-green-400 mt-1">{restartMsg}</p>
+              ) : null}
+            </div>
+
             {/* Contact support */}
             <div className="border-t border-[var(--border)] px-4 py-3">
               <a
-                href="mailto:hello@servlo.com.au"
+                href="mailto:support@servlo.com.au"
                 className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 hover:underline transition-colors"
               >
                 <ExternalLink size={12} />
-                Contact support — hello@servlo.com.au
+                Contact support — support@servlo.com.au
               </a>
             </div>
           </div>

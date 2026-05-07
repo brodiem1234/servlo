@@ -18,6 +18,7 @@ import { formatIndustryLabels } from "@/lib/industries";
 
 type SetupBusinessBody = {
   userId?: string;
+  fullName?: string;
   businessName?: string;
   abn?: string;
   phone?: string;
@@ -25,6 +26,9 @@ type SetupBusinessBody = {
   accentColour?: string;
   demoOnly?: boolean;
   workspaceFeaturesEnabled?: unknown;
+  selectedPlan?: string;
+  selectedProducts?: string;
+  entityName?: string;
 };
 
 function jsonErr(message: string, status: number) {
@@ -150,6 +154,23 @@ export async function POST(request: Request) {
     );
   }
 
+  // Duplicate ABN prevention — check before creating anything
+  const cleanABN = (body.abn as string || '').replace(/\s/g, '');
+  if (cleanABN) {
+    const { data: existingBusiness } = await supabaseAdmin
+      .from('businesses')
+      .select('owner_id')
+      .eq('abn', cleanABN)
+      .neq('owner_id', userId)
+      .single();
+    if (existingBusiness) {
+      return NextResponse.json(
+        { error: 'This ABN is already registered with SERVLO. Please sign in to your existing account.' },
+        { status: 409 }
+      );
+    }
+  }
+
   const {
     data: authUserRes,
     error: authLookupErr
@@ -167,12 +188,25 @@ export async function POST(request: Request) {
     return jsonErr("Auth user has no email.", 422);
   }
 
-  const fullName = String(meta.name ?? "").trim() || email.split("@")[0];
+  const fullName =
+    (typeof body.fullName === "string" ? body.fullName.trim() : "") ||
+    String(meta.name ?? "").trim() ||
+    email.split("@")[0];
   const businessName =
     typeof body.businessName === "string" ? body.businessName.trim() : String(meta.business_name ?? "").trim();
   const abn = typeof body.abn === "string" ? body.abn.trim() : String(meta.abn ?? "").trim();
   const phone =
     typeof body.phone === "string" ? body.phone.trim() : String(meta.phone_number ?? "").trim();
+  const entityName =
+    typeof body.entityName === "string" ? body.entityName.trim() : null;
+  const planTier =
+    typeof body.selectedPlan === "string" && body.selectedPlan.trim()
+      ? body.selectedPlan.trim()
+      : "solo";
+  const selectedProducts =
+    typeof body.selectedProducts === "string" && body.selectedProducts.trim()
+      ? body.selectedProducts.trim()
+      : "core";
 
   let industries = parseIndustriesField(body.industries);
   if (!industries.length) {
@@ -224,7 +258,9 @@ export async function POST(request: Request) {
       otherNote,
       // Unused by bootstrapSignupProfiles for DB writes; accent is saved only on businesses insert below.
       accentColourRaw: DEFAULT_ACCENT_HEX,
-      full_name: fullName
+      full_name: fullName,
+      planTier,
+      selectedProducts
     },
     trialStart,
     trialEnd
@@ -252,9 +288,10 @@ export async function POST(request: Request) {
   const buildBusinessPayload = (accentHex: string) => ({
     owner_id: userId,
     business_name: businessName || null,
-    abn: abn || null,
+    abn: abn ? abn.replace(/\s/g, '') : null,
     phone: phone || null,
     industries,
+    entity_name: entityName || null,
     accent_colour: accentHex,
     ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
   });
