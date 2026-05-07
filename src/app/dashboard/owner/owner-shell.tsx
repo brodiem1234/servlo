@@ -17,6 +17,7 @@ import OwnerKeyboardShortcuts from "@/components/dashboard/owner-keyboard-shortc
 import OwnerSidebarTodos, { type OwnerTaskRow } from "@/components/dashboard/owner-sidebar-todos";
 import type { OwnerNavItem } from "@/app/dashboard/owner/nav-config";
 import { ToastProvider } from "@/components/ui/toast";
+import { ProductSwitcher } from "@/components/dashboard/product-switcher";
 
 /** Dashboard is only active on the exact path; other items match their section. */
 function isNavItemActive(pathname: string, href: string) {
@@ -124,6 +125,9 @@ export default function OwnerShell({
               <p className="text-xl font-bold tracking-wide text-[var(--sidebar-text)]">SERVLO</p>
             </div>
             <div className="mt-2 h-[2px] w-full bg-[var(--sidebar-ring)]" aria-hidden />
+          </div>
+          <div className="mb-4">
+            <ProductSwitcher activeProduct="core" />
           </div>
           <nav className="flex flex-col gap-0">
             {navSections.map((section, sectionIndex) => (
