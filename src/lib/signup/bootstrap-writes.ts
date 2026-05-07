@@ -93,7 +93,8 @@ export type BootstrapSignupParams = {
   businessName: string;
   abn: string;
   phoneNumber: string;
-  role: "owner" | "client";
+  /** Database `profiles.role` — contractors map to employee. */
+  role: "owner" | "client" | "employee";
   industry_tags: IndustrySlug[];
   otherNote: string | null;
   accentColourRaw: string;
@@ -107,7 +108,7 @@ export async function bootstrapSignupProfiles(
   trialStart: Date,
   trialEnd: Date
 ): Promise<
-  | { ok: true; role: "owner" | "client" }
+  | { ok: true; role: "owner" | "client" | "employee" }
   | { ok: false; step: "core_profile" | "extended_profile"; message: string }
 > {
   const role = params.role;
@@ -115,7 +116,8 @@ export async function bootstrapSignupProfiles(
   const corePayload = {
     id: params.userId,
     full_name: params.full_name || params.email.split("@")[0],
-    role: role === "owner" ? ("owner" as const) : ("client" as const)
+    role:
+      role === "owner" ? ("owner" as const) : role === "employee" ? ("employee" as const) : ("client" as const)
   };
 
   try {
@@ -198,7 +200,7 @@ export async function bootstrapSignupWrites(
   trialStart: Date,
   trialEnd: Date
 ): Promise<
-  | { ok: true; role: "owner" | "client" }
+  | { ok: true; role: "owner" | "client" | "employee" }
   | { ok: false; step: "core_profile" | "extended_profile" | "business"; message: string }
 > {
   const profiles = await bootstrapSignupProfiles(admin, params, trialStart, trialEnd);

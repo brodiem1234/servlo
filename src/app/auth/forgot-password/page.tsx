@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { Button } from "@/components/ui/button";
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
+import { authUrl } from "@/lib/auth/site-origin";
 
 async function requestReset(formData: FormData) {
   "use server";
@@ -30,7 +31,7 @@ async function requestReset(formData: FormData) {
     }
   );
 
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/auth/login`;
+  const redirectTo = authUrl("/auth/reset-password");
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) {
     redirect(`/auth/forgot-password?error=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`);

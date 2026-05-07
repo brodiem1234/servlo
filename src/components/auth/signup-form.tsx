@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ComponentProps, FormEvent, MouseEvent } from "react";
+import type { ComponentProps, FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,17 @@ import type { SignupFormState } from "@/app/auth/signup/signup-form-state";
 import { signUpAction } from "@/app/auth/signup/signup-actions";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import {
+  allPasswordRequirementsMet,
+  normalizePasswordStrength,
+  abnDigitsFromInput,
+  formatAbnDigits,
+  formatPhoneInput,
+  validatePhoneMinimum,
+  type PasswordRequirementState,
+  type PasswordRuleKey
+} from "@/lib/auth/signup-field-validation";
+import {
+  Check,
   ClipboardList,
   HardHat,
   HeartPulse,
@@ -80,6 +91,45 @@ const OPTIONS: Array<{ slug: IndustrySlug; label: string; sub: string; Icon: Luc
 
 const initialSignupState: SignupFormState = { error: null };
 
+export type SignupRoleOption = "owner" | "manager" | "employee" | "contractor" | "client";
+
+function passwordHintLabel(rule: PasswordRuleKey): string {
+  switch (rule) {
+    case "length":
+      return "Minimum 8 characters";
+    case "upper":
+      return "At least one uppercase letter";
+    case "number":
+      return "At least one number";
+    case "noPersonal":
+      return "Cannot contain your first name, last name, or email address";
+    default:
+      return "";
+  }
+}
+
+function PasswordStrengthHints({ rules }: { rules: PasswordRequirementState }) {
+  const order: PasswordRuleKey[] = ["length", "noPersonal", "upper", "number"];
+  return (
+    <ul className="mt-2 space-y-1 text-[11px] leading-snug" aria-live="polite">
+      {order.map((key) => {
+        const ok = rules[key];
+        return (
+          <li
+            key={key}
+            className={`flex items-center gap-2 ${ok ? "text-emerald-600 dark:text-emerald-400" : "text-[#94a3b8]"}`}
+          >
+            <span className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${ok ? "bg-emerald-600/15" : "bg-slate-700/40"}`}>
+              {ok ? <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} aria-hidden /> : null}
+            </span>
+            <span>{passwordHintLabel(key)}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function SubmitPrimary({
   children,
   className,
@@ -103,13 +153,26 @@ export function SignupForm() {
   const [state, formAction] = useFormState(signUpAction, initialSignupState);
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [role, setRole] = useState<"owner" | "client">("owner");
+  const [role, setRole] = useState<SignupRoleOption>("owner");
+  const [nameInput, setNameInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [abnInput, setAbnInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [selected, setSelected] = useState<IndustrySlug[]>([]);
   const [otherNote, setOtherNote] = useState("");
   const [accentColour, setAccentColour] = useState<AccentPresetHex>(DEFAULT_ACCENT_HEX);
   const [optionalFeatureOn, setOptionalFeatureOn] = useState<Record<string, boolean>>({});
   const [localError, setLocalError] = useState<string | null>(null);
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
+
+  const needsWizard = role === "owner" || role === "manager";
+  const needsInvite = role === "employee" || role === "contractor" || role === "client";
+  const passwordRules = useMemo(
+    () => normalizePasswordStrength(passwordInput, nameInput, emailInput),
+    [passwordInput, nameInput, emailInput]
+  );
 
   const needsOtherNote = selected.includes("other");
   const industriesJson = useMemo(() => JSON.stringify(selected), [selected]);
@@ -130,6 +193,41 @@ export function SignupForm() {
     setLocalError(null);
   }, [role]);
 
+  useEffect(() => {
+    setStep(1);
+  }, [role]);
+
+  function blockAbnKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" || e.key.startsWith("Arrow")) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^\d$/.test(e.key)) return;
+    e.preventDefault();
+  }
+
+  function blockPhoneKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    const el = e.currentTarget;
+    if (e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" || e.key.startsWith("Arrow")) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^\d$/.test(e.key)) return;
+    if (e.key === "+" && el.selectionStart === 0 && !el.value.includes("+")) return;
+    e.preventDefault();
+  }
+
+  function validateOwnerStepOne(): string | null {
+    if (!allPasswordRequirementsMet(passwordRules)) {
+      return "Please meet every password requirement before continuing.";
+    }
+    if (!validatePhoneMinimum(phoneInput)) {
+      return "Phone number must contain at least 10 digits.";
+    }
+    if (needsWizard) {
+      if (abnDigitsFromInput(abnInput).length !== 11) {
+        return "ABN must be 11 digits";
+      }
+    }
+    return null;
+  }
+
   function toggleIndustry(slug: IndustrySlug) {
     setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   }
@@ -139,6 +237,11 @@ export function SignupForm() {
     const form = formRef.current;
     if (!form?.checkValidity()) {
       form?.reportValidity();
+      return;
+    }
+    const gate = validateOwnerStepOne();
+    if (gate) {
+      setLocalError(gate);
       return;
     }
     setStep(2);
@@ -163,7 +266,7 @@ export function SignupForm() {
 
   async function handleOwnerSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (role !== "owner" || step !== 4) return;
+    if (!needsWizard || step !== 4) return;
 
     const form = formRef.current;
     if (!form?.checkValidity()) {
@@ -172,6 +275,12 @@ export function SignupForm() {
     }
 
     setLocalError(null);
+    const gate = validateOwnerStepOne();
+    if (gate) {
+      setLocalError(gate);
+      return;
+    }
+
     setOwnerSubmitting(true);
 
     try {
@@ -180,7 +289,7 @@ export function SignupForm() {
       const email = String(fd.get("email") ?? "").trim();
       const password = String(fd.get("password") ?? "");
       const businessName = String(fd.get("business_name") ?? "").trim();
-      const abn = String(fd.get("abn") ?? "").trim();
+      const abnRaw = String(fd.get("abn") ?? "").trim();
       const phoneNumber = String(fd.get("phone_number") ?? "").trim();
 
       if (!email || !password) {
@@ -188,7 +297,23 @@ export function SignupForm() {
         return;
       }
 
+      if (!allPasswordRequirementsMet(normalizePasswordStrength(password, fullName, email))) {
+        setLocalError("Please meet every password requirement before continuing.");
+        return;
+      }
+
+      if (!validatePhoneMinimum(phoneNumber)) {
+        setLocalError("Phone number must contain at least 10 digits.");
+        return;
+      }
+
+      if (abnDigitsFromInput(abnRaw).length !== 11) {
+        setLocalError("ABN must be 11 digits");
+        return;
+      }
+
       const supabase = createSupabaseBrowser();
+      const signupIntentRole = role === "manager" ? "manager" : "owner";
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -196,9 +321,9 @@ export function SignupForm() {
           data: {
             name: fullName,
             business_name: businessName,
-            abn,
+            abn: abnRaw.replace(/\s/g, ""),
             phone_number: phoneNumber,
-            role: "owner",
+            role: signupIntentRole,
             industry_tags: selected.join(","),
             industry_other_note: otherNote || ""
           }
@@ -235,7 +360,7 @@ export function SignupForm() {
       const baseSetupBody = {
         userId,
         businessName,
-        abn,
+        abn: abnRaw.replace(/\s/g, ""),
         phone: phoneNumber,
         industries: selected,
         workspaceFeaturesEnabled
@@ -332,14 +457,14 @@ export function SignupForm() {
 
         <form
           ref={formRef}
-          action={role === "client" ? formAction : undefined}
-          onSubmit={role === "owner" ? handleOwnerSignup : undefined}
+          action={needsInvite ? formAction : undefined}
+          onSubmit={needsWizard ? handleOwnerSignup : undefined}
           className="mt-6 space-y-6"
         >
-          <input type="hidden" name="industry_tags_json" value={industriesJson} />
-          <input type="hidden" name="industry_other_note" value={otherNote} />
-          {role === "client" ? (
-            <input type="hidden" name="accent_colour" value={accentColour} readOnly />
+          <input type="hidden" name="industry_tags_json" value={needsWizard ? industriesJson : "[]"} />
+          <input type="hidden" name="industry_other_note" value={needsWizard ? otherNote : ""} />
+          {needsInvite ? (
+            <input type="hidden" name="accent_colour" value={DEFAULT_ACCENT_HEX} readOnly />
           ) : null}
 
           <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
@@ -352,13 +477,15 @@ export function SignupForm() {
                 name="role"
                 value={role}
                 onChange={(e) => {
-                  const r = e.target.value === "client" ? "client" : "owner";
-                  setRole(r);
+                  setRole(e.target.value as SignupRoleOption);
                   setStep(1);
                 }}
                 className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
               >
-                <option value="owner">Business owner</option>
+                <option value="owner">Business Owner</option>
+                <option value="manager">Manager</option>
+                <option value="employee">Employee</option>
+                <option value="contractor">Contractor</option>
                 <option value="client">Client</option>
               </select>
             </div>
@@ -369,6 +496,8 @@ export function SignupForm() {
               <input
                 id="name"
                 name="name"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
                 required
                 className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
               />
@@ -381,11 +510,14 @@ export function SignupForm() {
                 id="email"
                 name="email"
                 type="email"
+                autoComplete="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
                 required
                 className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
               />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
                 Password
               </label>
@@ -393,27 +525,69 @@ export function SignupForm() {
                 id="password"
                 name="password"
                 type="password"
-                minLength={8}
+                autoComplete="new-password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
                 required
                 className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
               />
+              <PasswordStrengthHints rules={passwordRules} />
             </div>
-            <div>
-              <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
-                Business name
-              </label>
-              <input
-                id="business_name"
-                name="business_name"
-                className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
-              />
-            </div>
-            <div>
-              <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
-                ABN
-              </label>
-              <input id="abn" name="abn" className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200" />
-            </div>
+
+            {needsWizard ? (
+              <>
+                <div>
+                  <label htmlFor="business_name" className="mb-1 block text-sm font-medium text-slate-300">
+                    Business name
+                  </label>
+                  <input
+                    id="business_name"
+                    name="business_name"
+                    required
+                    className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
+                    ABN
+                  </label>
+                  <input
+                    id="abn"
+                    name="abn"
+                    value={abnInput}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    onKeyDown={blockAbnKeyDown}
+                    onChange={(e) => setAbnInput(formatAbnDigits(e.target.value.replace(/\D/g, "")))}
+                    className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+                    required={needsWizard}
+                  />
+                  {needsWizard && abnInput.trim() && abnDigitsFromInput(abnInput).length !== 11 ? (
+                    <p className="mt-1 text-xs font-medium text-amber-500">ABN must be 11 digits</p>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <>
+                <input type="hidden" name="business_name" value="" readOnly />
+                <input type="hidden" name="abn" value="" readOnly />
+                <div className="sm:col-span-2">
+                  <label htmlFor="invite_code" className="mb-1 block text-sm font-medium text-slate-300">
+                    Invite code
+                  </label>
+                  <input
+                    id="invite_code"
+                    name="invite_code"
+                    value={inviteCodeInput}
+                    onChange={(e) => setInviteCodeInput(e.target.value)}
+                    autoComplete="off"
+                    required
+                    className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="sm:col-span-2">
               <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
                 Phone number
@@ -421,22 +595,53 @@ export function SignupForm() {
               <input
                 id="phone_number"
                 name="phone_number"
+                value={phoneInput}
+                autoComplete="tel"
+                inputMode="tel"
+                onKeyDown={blockPhoneKeyDown}
+                onChange={(e) => setPhoneInput(formatPhoneInput(e.target.value))}
+                required
                 className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-200"
               />
+              {needsWizard || needsInvite ? (
+                <>
+                  {!validatePhoneMinimum(phoneInput) && phoneInput.trim() !== "" ? (
+                    <p className="mt-1 text-xs font-medium text-amber-500">Enter at least 10 digits.</p>
+                  ) : null}
+                </>
+              ) : null}
             </div>
 
             <div className="sm:col-span-2 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              {role === "owner" ? (
-                <Button type="button" onClick={handleContinue} className={`w-full sm:w-auto ${accentBtn}`}>
+              {needsWizard ? (
+                <Button
+                  type="button"
+                  onClick={handleContinue}
+                  disabled={
+                    !allPasswordRequirementsMet(passwordRules) ||
+                    !validatePhoneMinimum(phoneInput) ||
+                    abnDigitsFromInput(abnInput).length !== 11
+                  }
+                  className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                >
                   Continue
                 </Button>
               ) : (
-                <SubmitPrimary className={`w-full sm:ml-auto sm:w-auto ${accentBtn}`}>Create account</SubmitPrimary>
+                <SubmitPrimary
+                  disabled={
+                    !allPasswordRequirementsMet(passwordRules) ||
+                    !validatePhoneMinimum(phoneInput) ||
+                    !inviteCodeInput.trim()
+                  }
+                  className={`w-full sm:ml-auto sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                >
+                  Create account
+                </SubmitPrimary>
               )}
             </div>
           </div>
 
-          <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
+          <div className={step === 2 && needsWizard ? "space-y-4" : "hidden"} aria-hidden={step !== 2 || !needsWizard}>
             <div>
               <h2 className="text-lg font-semibold text-white">What industries do you serve?</h2>
               <p className="mt-1 text-sm text-slate-400">
@@ -503,7 +708,7 @@ export function SignupForm() {
             </div>
           </div>
 
-          <div className={step === 3 ? "space-y-4" : "hidden"} aria-hidden={step !== 3}>
+          <div className={step === 3 && needsWizard ? "space-y-4" : "hidden"} aria-hidden={step !== 3 || !needsWizard}>
             <WorkspaceSetupPreview
               primaryIndustryLabel={signupIndustryHeadline}
               recommendedIds={signupRecommendedIds}
@@ -515,7 +720,7 @@ export function SignupForm() {
             />
           </div>
 
-          <div className={step === 4 ? "space-y-4" : "hidden"} aria-hidden={step !== 4}>
+          <div className={step === 4 && needsWizard ? "space-y-4" : "hidden"} aria-hidden={step !== 4 || !needsWizard}>
             <div>
               <h2 className="text-lg font-semibold text-white">Choose your brand colour</h2>
               <p className="mt-1 text-sm text-slate-400">
@@ -530,7 +735,15 @@ export function SignupForm() {
               <Button type="button" variant="dark-ghost" onClick={handleBack}>
                 Back
               </Button>
-              <SubmitPrimary externalPending={ownerSubmitting} className={accentBtn}>
+              <SubmitPrimary
+                externalPending={ownerSubmitting}
+                disabled={
+                  !allPasswordRequirementsMet(passwordRules) ||
+                  !validatePhoneMinimum(phoneInput) ||
+                  abnDigitsFromInput(abnInput).length !== 11
+                }
+                className={accentBtn}
+              >
                 Create account
               </SubmitPrimary>
             </div>
