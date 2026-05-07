@@ -27,7 +27,7 @@ type Props = {
   createQuoteAction: (formData: FormData) => Promise<void>;
   updateQuoteAction: (formData: FormData) => Promise<void>;
   updateQuoteStatusAction: (formData: FormData) => Promise<void>;
-  acceptQuoteAction: (formData: FormData) => Promise<void>;
+  acceptQuoteAction: (formData: FormData) => Promise<{ jobId?: string }>;
   convertToInvoiceAction: (formData: FormData) => Promise<void>;
   sendQuoteEmailAction: (formData: FormData) => Promise<void>;
   loadQuoteItemsAction: (quoteId: string) => Promise<LineItem[]>;
@@ -361,15 +361,24 @@ export default function QuotesManager({
                               {sendingEmail === quote.id ? "Sending…" : "Send"}
                             </button>
                           ) : null}
-                          <form action={acceptQuoteAction}>
-                            <input type="hidden" name="quote_id" value={quote.id} />
-                            <button
-                              type="submit"
-                              className="rounded border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-200 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
-                            >
-                              Accept → Job
-                            </button>
-                          </form>
+                          <button
+                            type="button"
+                            className="rounded border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-200 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
+                            onClick={async () => {
+                              const fd = new FormData();
+                              fd.set("quote_id", quote.id);
+                              try {
+                                const result = await acceptQuoteAction(fd);
+                                if (result?.jobId) {
+                                  setToast({ type: "success", message: "Quote accepted — job created." });
+                                }
+                              } catch {
+                                setToast({ type: "error", message: "Failed to accept quote." });
+                              }
+                            }}
+                          >
+                            Accept → Job
+                          </button>
                           <form action={convertToInvoiceAction}>
                             <input type="hidden" name="quote_id" value={quote.id} />
                             <button

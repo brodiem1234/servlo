@@ -169,10 +169,32 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     if (!id || !status) return;
     const { error } = await sb.from("quotes").update({ status }).eq("id", id).eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
+    // When a quote is accepted via the status dropdown, auto-create a linked job.
+    if (status === "accepted") {
+      const { data: quote } = await sb
+        .from("quotes")
+        .select("client_id, quote_number, notes, is_demo")
+        .eq("id", id)
+        .eq("owner_id", owner.id)
+        .maybeSingle();
+      if (quote && !quote.is_demo) {
+        await sb.from("jobs").insert({
+          owner_id: owner.id,
+          client_id: quote.client_id,
+          title: quote.quote_number ?? "Quote Job",
+          description: (quote as { notes?: string | null }).notes ?? "",
+          status: "scheduled",
+          priority: "normal",
+          is_demo: false,
+          quote_id: id
+        });
+        revalidatePath("/dashboard/owner/jobs");
+      }
+    }
     revalidatePath("/dashboard/owner/quotes");
   }
 
-  async function acceptQuoteAction(formData: FormData) {
+  async function acceptQuoteAction(formData: FormData): Promise<{ jobId?: string }> {
     "use server";
     const sb = await createClient();
     const { data: { user: owner } } = await sb.auth.getUser();
@@ -180,29 +202,29 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     const quoteId = String(formData.get("quote_id") ?? "");
     const { data: quote } = await sb
       .from("quotes")
-      .select("id, quote_number, client_id, total, is_demo")
+      .select("id, quote_number, client_id, total, is_demo, notes")
       .eq("id", quoteId)
       .eq("owner_id", owner.id)
       .single();
-    if (quote?.is_demo) return;
+    if (quote?.is_demo) return {};
     if (quote) {
-      const { data: linkedClient } = quote.client_id
-        ? await sb.from("clients").select("full_name").eq("id", quote.client_id).eq("owner_id", owner.id).maybeSingle()
-        : { data: null };
-      await sb.from("jobs").insert({
+      const { data: newJob } = await sb.from("jobs").insert({
         owner_id: owner.id,
         client_id: quote.client_id,
-        title: `Job from ${quote.quote_number ?? "quote"}`,
-        description: linkedClient?.full_name ? `Client: ${linkedClient.full_name}` : undefined,
+        title: quote.quote_number ?? "Quote Job",
+        description: (quote as { notes?: string | null }).notes ?? "",
         status: "scheduled",
         priority: "normal",
-        is_demo: false
-      });
+        is_demo: false,
+        quote_id: quote.id
+      }).select("id").single();
       await sb.from("quotes").update({ status: "accepted" }).eq("id", quote.id).eq("owner_id", owner.id);
+      revalidatePath("/dashboard/owner/quotes");
+      revalidatePath("/dashboard/owner/jobs");
+      revalidatePath("/dashboard/owner");
+      return { jobId: newJob?.id };
     }
-    revalidatePath("/dashboard/owner/quotes");
-    revalidatePath("/dashboard/owner/jobs");
-    revalidatePath("/dashboard/owner");
+    return {};
   }
 
   async function convertToInvoiceAction(formData: FormData) {

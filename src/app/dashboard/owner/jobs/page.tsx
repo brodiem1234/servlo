@@ -135,7 +135,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     revalidateOwnerWorkspaceRoutes();
   }
 
-  async function updateJobStatusAction(formData: FormData) {
+  async function updateJobStatusAction(formData: FormData): Promise<{ invoiceId?: string }> {
     "use server";
     const sb = await createClient();
     const {
@@ -146,7 +146,92 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     const status = String(formData.get("status") ?? "scheduled");
     const { error } = await sb.from("jobs").update({ status }).eq("id", id).eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
+
+    // When a job is completed, auto-generate a draft invoice.
+    let invoiceId: string | undefined;
+    if (status === "completed") {
+      const { data: job } = await sb
+        .from("jobs")
+        .select("client_id, title, materials_cost, labour_hours, hourly_rate, is_demo")
+        .eq("id", id)
+        .eq("owner_id", owner.id)
+        .maybeSingle();
+      if (job && !job.is_demo) {
+        const materialsAmt = Number(job.materials_cost ?? 0);
+        const labourAmt = Number(job.labour_hours ?? 0) * Number(job.hourly_rate ?? 0);
+        const subtotal = materialsAmt + labourAmt;
+        const gst = subtotal * 0.1;
+        const total = subtotal + gst;
+
+        // Get next invoice number
+        const { data: existingNums } = await sb
+          .from("invoices")
+          .select("invoice_number")
+          .eq("owner_id", owner.id);
+        const max = (existingNums ?? []).reduce((highest: number, item: { invoice_number: string | null }) => {
+          const match = /^INV-?(\d+)$/i.exec(item.invoice_number ?? "");
+          const num = match ? Number(match[1]) : 0;
+          return Number.isFinite(num) ? Math.max(highest, num) : highest;
+        }, 0);
+        const invoiceNumber = `INV-${String(max + 1).padStart(5, "0")}`;
+
+        const issueDate = new Date().toISOString().slice(0, 10);
+        const dueAt = new Date();
+        dueAt.setDate(dueAt.getDate() + 14);
+        const dueDate = dueAt.toISOString().slice(0, 10);
+
+        const { data: inv } = await sb
+          .from("invoices")
+          .insert({
+            owner_id: owner.id,
+            client_id: job.client_id,
+            invoice_number: invoiceNumber,
+            status: "draft",
+            subtotal,
+            gst,
+            total,
+            issue_date: issueDate,
+            due_date: dueDate,
+            notes: `Auto-generated from job: ${job.title ?? id}`,
+            job_id: id
+          })
+          .select("id")
+          .maybeSingle();
+        if (inv?.id) {
+          invoiceId = inv.id;
+          // Add a single line item for labour if there's a cost to track
+          if (subtotal > 0) {
+            const lineItems = [];
+            if (materialsAmt > 0) {
+              lineItems.push({
+                invoice_id: inv.id,
+                description: "Materials",
+                quantity: 1,
+                unit_price: materialsAmt,
+                gst_applicable: true,
+                line_total: materialsAmt
+              });
+            }
+            if (labourAmt > 0) {
+              lineItems.push({
+                invoice_id: inv.id,
+                description: `Labour (${job.labour_hours}h @ $${job.hourly_rate}/hr)`,
+                quantity: 1,
+                unit_price: labourAmt,
+                gst_applicable: true,
+                line_total: labourAmt
+              });
+            }
+            if (lineItems.length > 0) {
+              await sb.from("invoice_items").insert(lineItems);
+            }
+          }
+        }
+      }
+    }
+
     revalidateOwnerWorkspaceRoutes();
+    return { invoiceId };
   }
 
   async function createInvoiceFromJobAction(formData: FormData) {
@@ -248,6 +333,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
 
     const label = String(formData.get("photo_label") ?? "before").toLowerCase() === "after" ? "after" : "before";
     const files = formData.getAll("photos").filter((entry): entry is File => entry instanceof File);
+    let uploaded = false;
     for (const file of files) {
       if (!file.name) continue;
       const bytes = await file.arrayBuffer();
@@ -263,6 +349,11 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         storage_path: path,
         label
       });
+      uploaded = true;
+    }
+    // Keep has_photos flag in sync.
+    if (uploaded) {
+      await sb.from("jobs").update({ has_photos: true }).eq("id", jobId).eq("owner_id", owner.id);
     }
     revalidateOwnerWorkspaceRoutes();
   }

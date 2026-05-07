@@ -25,6 +25,25 @@ export async function POST(req: Request) {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
+
+      // --- Invoice payment via Payment Link ---
+      // When a client pays an invoice via a Stripe Payment Link, the session
+      // carries metadata.invoice_id set at link creation time.
+      const invoiceId = session.metadata?.invoice_id;
+      if (invoiceId && session.payment_link) {
+        const amountTotal = session.amount_total ?? 0;
+        await admin
+          .from("invoices")
+          .update({
+            status: "paid",
+            amount_paid: amountTotal / 100
+          })
+          .eq("id", invoiceId);
+        // Early return — this is an invoice payment, not a subscription checkout.
+        return NextResponse.json({ received: true });
+      }
+
+      // --- Subscription checkout ---
       const customerEmail = session.customer_details?.email || session.customer_email;
       const customerId = typeof session.customer === "string" ? session.customer : null;
       const subscriptionId =

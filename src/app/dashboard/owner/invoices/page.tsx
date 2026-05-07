@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import InvoicesManager from "./invoices-manager";
-import { invoiceSentEmailTemplate, invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
+import { invoiceSentEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
+import { stripe } from "@/lib/stripe";
 
 function getNextInvoiceNumber(existing: Array<{ invoice_number: string | null }>) {
   const max = existing.reduce((highest, item) => {
@@ -131,23 +132,56 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       );
     }
 
+    // Create a Stripe Payment Link for this invoice so the client can pay directly.
+    let stripePaymentLink: string | null = null;
+    if (total > 0 && created.data?.id) {
+      try {
+        const price = await stripe.prices.create({
+          unit_amount: Math.round(total * 100),
+          currency: "aud",
+          product_data: { name: `Invoice ${invoiceNumber}` }
+        });
+        const paymentLink = await stripe.paymentLinks.create({
+          line_items: [{ price: price.id, quantity: 1 }],
+          metadata: { invoice_id: created.data.id, owner_id: owner.id },
+          after_completion: {
+            type: "redirect",
+            redirect: { url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/client` }
+          }
+        });
+        stripePaymentLink = paymentLink.url;
+        await sb
+          .from("invoices")
+          .update({ stripe_payment_link: stripePaymentLink })
+          .eq("id", created.data.id);
+      } catch (stripeErr) {
+        // Non-fatal — invoice is created, just without a payment link.
+        console.error("[invoices] Stripe payment link creation failed", stripeErr);
+      }
+    }
+
     if (clientId) {
-      const { data: client } = await sb
-        .from("clients")
-        .select("email, full_name, is_demo")
-        .eq("id", clientId)
-        .maybeSingle();
+      const [clientRes, bizRes] = await Promise.all([
+        sb.from("clients").select("email, full_name, is_demo").eq("id", clientId).maybeSingle(),
+        sb.from("businesses").select("business_name, accent_colour").eq("owner_id", owner.id).maybeSingle()
+      ]);
+      const client = clientRes.data;
       if (client?.email && !client.is_demo) {
-        const payNowUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/client`;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
         await sendEmail(
           client.email,
-          `Invoice ${invoiceNumber}`,
-          invoiceReminderEmailTemplate({
+          `Invoice ${invoiceNumber} from ${bizRes.data?.business_name ?? "SERVLO"}`,
+          invoiceSentEmailTemplate({
             clientName: client.full_name ?? "there",
+            businessName: bizRes.data?.business_name ?? "SERVLO",
             invoiceNumber,
-            amount: `$${total.toFixed(2)}`,
             dueDate: String(formData.get("due_date") ?? "-"),
-            payNowUrl
+            subtotal: `$${subTotal.toFixed(2)}`,
+            gst: `$${gst.toFixed(2)}`,
+            total: `$${total.toFixed(2)}`,
+            accentHex: bizRes.data?.accent_colour ?? undefined,
+            appUrl,
+            payNowUrl: stripePaymentLink
           })
         );
       }
@@ -234,7 +268,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     const id = String(formData.get("id") ?? "");
     const { data: inv } = await sb
       .from("invoices")
-      .select("invoice_number, total, subtotal, gst, due_date, client_id, is_demo")
+      .select("invoice_number, total, subtotal, gst, due_date, client_id, is_demo, stripe_payment_link")
       .eq("id", id)
       .eq("owner_id", owner.id)
       .maybeSingle();
@@ -264,7 +298,8 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
         gst: `$${gst.toFixed(2)}`,
         total: `$${total.toFixed(2)}`,
         accentHex: biz?.accent_colour ?? undefined,
-        appUrl
+        appUrl,
+        payNowUrl: (inv as { stripe_payment_link?: string | null }).stripe_payment_link ?? null
       }),
       "SERVLO <hello@servlo.com.au>"
     );

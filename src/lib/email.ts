@@ -52,9 +52,17 @@ export function invoiceSentEmailTemplate(args: {
   total: string;
   accentHex?: string;
   appUrl?: string;
+  /** Stripe Payment Link URL — when present, a prominent Pay Now button is shown. */
+  payNowUrl?: string | null;
 }) {
   const accent = args.accentHex ?? "#0891B2";
   const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
+  const payNowBlock = args.payNowUrl
+    ? `<p style="margin:20px 0 0;">
+        <a href="${args.payNowUrl}" style="display:inline-block;background:#16a34a;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.01em;">Pay Now</a>
+      </p>
+      <p style="margin:6px 0 0;font-size:12px;color:#94a3b8;">Secure payment via Stripe</p>`
+    : "";
   return wrapEmail(`
     <h2 style="margin:0 0 8px;color:#0f172a;font-size:20px;">Invoice from ${args.businessName}</h2>
     <p style="margin:0 0 20px;color:#64748b;">Hi ${args.clientName},</p>
@@ -82,6 +90,8 @@ export function invoiceSentEmailTemplate(args: {
         <td style="padding:12px 0 8px;text-align:right;font-weight:700;font-size:16px;color:#0f172a;">${args.total}</td>
       </tr>
     </table>
+
+    ${payNowBlock}
 
     <p style="margin:20px 0 0;">
       <a href="${portalUrl}" style="display:inline-block;background:${accent};color:white;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Invoice</a>

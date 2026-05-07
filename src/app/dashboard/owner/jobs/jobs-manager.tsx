@@ -47,7 +47,7 @@ type Props = {
   initialOpenJobId?: string;
   createJobAction: (formData: FormData) => Promise<void>;
   updateJobAction: (formData: FormData) => Promise<void>;
-  updateJobStatusAction: (formData: FormData) => Promise<void>;
+  updateJobStatusAction: (formData: FormData) => Promise<{ invoiceId?: string }>;
   createInvoiceFromJobAction: (formData: FormData) => Promise<void>;
   updateJobScheduleAction: (formData: FormData) => Promise<void>;
   updateJobEmployeeAction: (formData: FormData) => Promise<void>;
@@ -363,8 +363,11 @@ export default function JobsManager({
     fd.set("id", id);
     fd.set("status", status);
     try {
-      await updateJobStatusAction(fd);
+      const result = await updateJobStatusAction(fd);
       router.refresh();
+      if (result?.invoiceId) {
+        setToast({ type: "success", message: "Job completed — draft invoice created." });
+      }
     } catch (error) {
       console.error(error);
       setToast({ type: "error", message: "Unable to update status" });
