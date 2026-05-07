@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { authUrl } from "@/lib/auth/site-origin";
+import { immediateOwnerUpsert } from "@/app/auth/signup/owner-signup-action";
 import { lookupABN, type AbnLookupResult } from "@/app/auth/signup/lookup-abn";
 import {
   allPasswordRequirementsMet,
@@ -806,6 +807,26 @@ export function SignupForm() {
       if (!accessToken) {
         setError("Account created. Confirm your email if required, then sign in to finish setup.");
         return;
+      }
+
+      // Immediately upsert profiles + businesses using service-role so data is
+      // persisted even if /api/setup-business fails or times out.
+      try {
+        await immediateOwnerUpsert({
+          userId,
+          fullName: nameInput.trim(),
+          email: emailInput.trim(),
+          phone: phoneE164,
+          businessName: businessNameInput.trim(),
+          abn: abnRaw,
+          entityName: entityName || null,
+          selectedIndustries: selected,
+          selectedPlan: selectedPlanTier,
+          selectedProducts: selectedProductCombo,
+        });
+      } catch (upsertErr) {
+        // Non-fatal — /api/setup-business will also upsert as a second pass
+        console.error("[signup/owner] immediateOwnerUpsert threw (non-fatal)", upsertErr);
       }
 
       const optionalChosen = new Set(

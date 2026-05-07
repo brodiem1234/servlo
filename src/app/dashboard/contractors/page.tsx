@@ -107,14 +107,6 @@ export default async function ContractorsPage() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Contractors</h1>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Track subcontractors and external crews. Contractors can be assigned to jobs and appear on your schedule.
-          </p>
-        </div>
-      </div>
       <ContractorsManager
         contractors={visibleContractors}
         createContractorAction={createContractorAction}

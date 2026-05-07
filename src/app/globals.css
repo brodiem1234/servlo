@@ -83,7 +83,7 @@
 :root {
   --brand-accent: #0891b2;
   --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
-  /* Backward-compat alias: component files using var(--accent-color) still work */
+  /* Alias for public/landing pages only — dashboard components use var(--product-accent) */
   --accent-color: var(--brand-accent);
   --accent-hover: var(--brand-accent-hover);
   --bg-primary: #F0F4F8;
@@ -527,10 +527,6 @@ html.dark {
    html.dark vars don't cascade here — we must re-declare them explicitly. */
 [data-product] {
   --product-rgb: 59,130,246;
-  /* Backward-compat: --accent-color inside product shells maps to --brand-accent
-     so existing component files using var(--accent-color) continue to work */
-  --accent-color: var(--brand-accent);
-  --accent-hover: var(--brand-accent-hover);
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
   --text-primary: #CBD5E1;

@@ -20,12 +20,13 @@ const GROW_NAV: NavItem[] = [
   { href: "/dashboard/grow/social", label: "Social Content", Icon: Share2 },
   { href: "/dashboard/grow/reviews", label: "Google Reviews", Icon: Star },
   { href: "/dashboard/grow/referrals", label: "Referral Tracking", Icon: Users2 },
-  { href: "/dashboard/owner/settings", label: "Settings", Icon: Settings2 },
+  { href: "/dashboard/owner/settings?from=grow", label: "Settings", Icon: Settings2 },
 ];
 
 function isActive(pathname: string, href: string) {
-  if (href === "/dashboard/grow") return pathname === "/dashboard/grow";
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const hrefPath = href.split("?")[0];
+  if (hrefPath === "/dashboard/grow") return pathname === "/dashboard/grow";
+  return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
 }
 
 export default function GrowShell({ children }: { children: React.ReactNode }) {

@@ -19,12 +19,13 @@ const LEADS_NAV: NavItem[] = [
   { href: "/dashboard/leads/browse", label: "Browse Leads", Icon: ShoppingBag },
   { href: "/dashboard/leads/my-leads", label: "My Leads", Icon: ClipboardList },
   { href: "/dashboard/leads/pipeline", label: "Lead Pipeline", Icon: GitBranch },
-  { href: "/dashboard/owner/settings", label: "Settings", Icon: Settings2 },
+  { href: "/dashboard/owner/settings?from=leads", label: "Settings", Icon: Settings2 },
 ];
 
 function isActive(pathname: string, href: string) {
-  if (href === "/dashboard/leads") return pathname === "/dashboard/leads";
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const hrefPath = href.split("?")[0];
+  if (hrefPath === "/dashboard/leads") return pathname === "/dashboard/leads";
+  return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
 }
 
 export default function LeadsShell({ children }: { children: React.ReactNode }) {

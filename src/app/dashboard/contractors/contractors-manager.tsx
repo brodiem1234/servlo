@@ -115,6 +115,12 @@ function LicenceSelect({ selected, onChange }: { selected: string[]; onChange: (
   );
 }
 
+const TEAM_TABS = [
+  { id: "employees",   label: "Employees",   href: "/dashboard/owner/team?tab=employees" },
+  { id: "contractors", label: "Contractors", href: "/dashboard/contractors" },
+  { id: "timesheets",  label: "Timesheets",  href: "/dashboard/owner/team?tab=timesheets" },
+] as const;
+
 export default function ContractorsManager({ contractors, createContractorAction, updateContractorAction, deleteContractorAction }: Props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -177,6 +183,28 @@ export default function ContractorsManager({ contractors, createContractorAction
 
   return (
     <div className="space-y-4">
+      {/* Tab bar — mirrors Team page tabs */}
+      <div className="mb-2 border-b border-[var(--border)]">
+        <h1 className="mb-3 text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+          Team
+        </h1>
+        <div className="flex gap-1">
+          {TEAM_TABS.map((t) => (
+            <a
+              key={t.id}
+              href={t.href}
+              className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                t.id === "contractors"
+                  ? "border-[#3B82F6] text-[#3B82F6]"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {t.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
       {toast ? (
         <div className={`rounded-md px-4 py-3 text-sm font-medium ${toast.type === "success" ? "border border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100" : "border border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100"}`}>
           {toast.message}

@@ -1,3 +1,4 @@
+import React from "react";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -42,6 +43,7 @@ type SettingsPageProps = {
     demo?: string;
     demo_msg?: string;
     tab?: string;
+    from?: string;
   }>;
 };
 
@@ -96,6 +98,24 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
   const { user, enabled: workspaceFeatures, supabase } = await requireOwnerWorkspaceFeatures();
   const resolvedParams = await searchParams;
   const activeTab: TabId = (resolvedParams?.tab as TabId | undefined) ?? "profile";
+  const fromProduct = resolvedParams?.from ?? "core";
+
+  const productLabel =
+    fromProduct === "grow" ? "SERVLO Grow"
+    : fromProduct === "leads" ? "SERVLO Leads"
+    : "SERVLO Core";
+  const productBackHref =
+    fromProduct === "grow" ? "/dashboard/grow"
+    : fromProduct === "leads" ? "/dashboard/leads"
+    : "/dashboard/owner";
+  const productColour =
+    fromProduct === "grow" ? "#8B5CF6"
+    : fromProduct === "leads" ? "#F59E0B"
+    : "#3B82F6";
+  const productRgb =
+    fromProduct === "grow" ? "139,92,246"
+    : fromProduct === "leads" ? "245,158,11"
+    : "59,130,246";
 
   const [profileResult, businessResult] = await Promise.all([
     supabase
@@ -332,18 +352,32 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <section className="space-y-6">
-      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
+    <section
+      className="space-y-6"
+      style={{ "--product-accent": productColour, "--product-rgb": productRgb } as React.CSSProperties}
+    >
+      {/* Product context header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <a
+            href={productBackHref}
+            className="mb-1 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <span aria-hidden>←</span> Back to {productLabel}
+          </a>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{productLabel} — Settings</h1>
+        </div>
+      </div>
 
       {/* Tab navigation */}
       <div className="flex flex-wrap gap-0 border-b border-[var(--border)]">
         {TABS.map((tab) => (
           <a
             key={tab.id}
-            href={`/dashboard/owner/settings?tab=${tab.id}`}
+            href={`/dashboard/owner/settings?tab=${tab.id}${fromProduct !== "core" ? `&from=${fromProduct}` : ""}`}
             className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
-                ? "border-b-2 border-[var(--accent-color)] text-[var(--accent-color)]"
+                ? "border-b-2 border-[var(--product-accent)] text-[var(--product-accent)]"
                 : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
             }`}
           >
@@ -376,7 +410,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <input
                 name="business_name"
                 defaultValue={businessRow?.business_name ?? ""}
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 placeholder="ACME Plumbing"
               />
             </div>
@@ -392,7 +426,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <input
                 name="abn"
                 defaultValue={businessRow?.abn ?? ""}
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 placeholder="XX XXX XXX XXX"
               />
             </div>
@@ -401,7 +435,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <input
                 name="phone"
                 defaultValue={businessRow?.phone ?? ""}
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 placeholder="0400 000 000"
               />
             </div>
@@ -427,7 +461,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <input
                 name="address"
                 defaultValue={businessRow?.address ?? ""}
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 placeholder="123 Main Street"
               />
             </div>
@@ -436,7 +470,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <input
                 name="suburb"
                 defaultValue={(businessRow as { suburb?: string | null } | null)?.suburb ?? ""}
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 placeholder="Suburb"
               />
             </div>
@@ -446,7 +480,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                 <select
                   name="state"
                   defaultValue={(businessRow as { state?: string | null } | null)?.state ?? ""}
-                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 >
                   <option value="">— State —</option>
                   {AU_STATES.map((s) => (
@@ -459,7 +493,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                 <input
                   name="postcode"
                   defaultValue={(businessRow as { postcode?: string | null } | null)?.postcode ?? ""}
-                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                   placeholder="2000"
                 />
               </div>
@@ -467,7 +501,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             <div className="sm:col-span-2">
               <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
                 Logo upload coming soon — contact{" "}
-                <a href="mailto:hello@servlo.com.au" className="text-[var(--accent-color)] hover:underline">
+                <a href="mailto:hello@servlo.com.au" className="text-[var(--product-accent)] hover:underline">
                   hello@servlo.com.au
                 </a>{" "}
                 to update your logo.
@@ -477,7 +511,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             <div className="sm:col-span-2">
               <button
                 type="submit"
-                className="rounded-md bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                className="rounded-md bg-[var(--product-accent)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-accent-hover)]"
               >
                 Save profile
               </button>
@@ -686,7 +720,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               <div className="sticky bottom-0 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2235] p-4 -mx-6 -mb-6">
                 <button
                   type="submit"
-                  className="rounded-md bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+                  className="rounded-md bg-[var(--product-accent)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-accent-hover)]"
                 >
                   Save features
                 </button>

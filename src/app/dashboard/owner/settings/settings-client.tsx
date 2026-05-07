@@ -71,7 +71,7 @@ function Toggle({
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${disabled ? "cursor-not-allowed" : ""} ${
-          checked ? "bg-[var(--accent-color)]" : "bg-slate-300 dark:bg-slate-600"
+          checked ? "bg-[var(--product-accent)]" : "bg-slate-300 dark:bg-slate-600"
         }`}
       >
         <span
@@ -193,7 +193,7 @@ export function NotificationsForm({ initialPrefs, saveAction }: NotificationsFor
                       aria-checked={checked}
                       onClick={() => set(item.key, !checked as NotificationPrefs[typeof item.key])}
                       className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        checked ? "bg-[var(--accent-color)]" : "bg-slate-300 dark:bg-slate-600"
+                        checked ? "bg-[var(--product-accent)]" : "bg-slate-300 dark:bg-slate-600"
                       }`}
                     >
                       <span
@@ -221,7 +221,7 @@ export function NotificationsForm({ initialPrefs, saveAction }: NotificationsFor
                 <select
                   value={prefs.overdue_invoice_frequency}
                   onChange={(e) => set("overdue_invoice_frequency", Number(e.target.value) as 7 | 14 | 30)}
-                  className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                  className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 >
                   <option value={7}>7 days</option>
                   <option value={14}>14 days</option>
@@ -245,7 +245,7 @@ export function NotificationsForm({ initialPrefs, saveAction }: NotificationsFor
           aria-checked={prefs.weekly_digest ?? false}
           onClick={() => set("weekly_digest", !(prefs.weekly_digest ?? false))}
           className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            (prefs.weekly_digest ?? false) ? "bg-[var(--accent-color)]" : "bg-slate-300 dark:bg-slate-600"
+            (prefs.weekly_digest ?? false) ? "bg-[var(--product-accent)]" : "bg-slate-300 dark:bg-slate-600"
           }`}
         >
           <span
@@ -262,7 +262,7 @@ export function NotificationsForm({ initialPrefs, saveAction }: NotificationsFor
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+          className="rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-accent-hover)] disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save notification preferences"}
         </button>
@@ -448,7 +448,7 @@ export function DemoDataButtons({ resetAction, removeAction }: DemoButtonProps) 
             type="button"
             disabled={busy}
             onClick={() => run(resetAction)}
-            className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+            className="rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-accent-hover)] disabled:opacity-60"
           >
             {busy ? "Seeding…" : "Confirm seed demo data"}
           </button>
@@ -484,7 +484,7 @@ export function DemoDataButtons({ resetAction, removeAction }: DemoButtonProps) 
       <button
         type="button"
         onClick={() => setConfirming("reset")}
-        className="rounded border border-[var(--accent-color)] bg-[var(--bg-card)] px-4 py-2 text-sm font-medium text-[var(--accent-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))]"
+        className="rounded border border-[var(--product-accent)] bg-[var(--bg-card)] px-4 py-2 text-sm font-medium text-[var(--product-accent)] hover:bg-[color-mix(in_srgb,var(--product-accent)_10%,var(--bg-card))]"
       >
         Seed demo data
       </button>
@@ -640,12 +640,12 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
                 return (
                   <tr
                     key={plan.key}
-                    className={`border-b border-[var(--border)] last:border-0 ${isCurrent ? "bg-[color-mix(in_srgb,var(--accent-color)_8%,transparent)]" : ""}`}
+                    className={`border-b border-[var(--border)] last:border-0 ${isCurrent ? "bg-[color-mix(in_srgb,var(--product-accent)_8%,transparent)]" : ""}`}
                   >
                     <td className="py-3 pr-4 font-semibold text-[var(--text-primary)]">
                       {plan.label}
                       {isCurrent ? (
-                        <span className="ml-2 inline-flex items-center rounded-full bg-[var(--accent-color)] px-2 py-0.5 text-[10px] font-bold text-white">Current</span>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-[var(--product-accent)] px-2 py-0.5 text-[10px] font-bold text-white">Current</span>
                       ) : null}
                     </td>
                     <td className="py-3 pr-4 text-[var(--text-primary)]">{plan.price}</td>
@@ -665,7 +665,7 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
                           type="button"
                           disabled={checkoutLoading === plan.key}
                           onClick={() => startCheckout(planPriceIds[plan.key] ?? "", plan.key)}
-                          className="rounded-md bg-[var(--accent-color)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                          className="rounded-md bg-[var(--product-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--brand-accent-hover)] disabled:opacity-60"
                         >
                           {checkoutLoading === plan.key ? "Redirecting…" : "Upgrade"}
                         </button>
@@ -688,7 +688,7 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
             type="button"
             onClick={openStripePortal}
             disabled={portalLoading}
-            className="text-[var(--accent-color)] hover:underline disabled:opacity-60"
+            className="text-[var(--product-accent)] hover:underline disabled:opacity-60"
           >
             Stripe billing portal
           </button>

@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ReferralClient from "./referral-client";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "SERVLO Grow — Referral Tracking",
+};
 
 function generateReferralCode(ownerId: string): string {
   // Deterministic short code from the owner UUID suffix

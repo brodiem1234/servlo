@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ReviewHubClient from "./review-hub-client";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "SERVLO Grow — Google Reviews",
+};
 
 export default async function GrowReviewsPage() {
   const sb = await createClient();

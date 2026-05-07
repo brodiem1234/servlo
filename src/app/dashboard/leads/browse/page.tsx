@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import BrowseLeadsClient, { DEMO_LEADS } from "./browse-leads-client";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "SERVLO Leads — Browse Leads",
+};
 
 export default async function LeadsBrowsePage() {
   const supabase = await createClient();
@@ -26,7 +31,7 @@ export default async function LeadsBrowsePage() {
             className="text-2xl font-bold"
             style={{ color: "var(--text-primary)" }}
           >
-            Browse Leads Marketplace
+            Browse Leads
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
             Demo leads — live marketplace launches Q4 2026. You&apos;re on the

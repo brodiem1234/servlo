@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import MyLeadsClient, { type LeadRow } from "./my-leads-client";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "SERVLO Leads — My Leads",
+};
 
 export default async function LeadsMyLeadsPage() {
   const supabase = await createClient();
