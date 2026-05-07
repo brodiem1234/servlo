@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
-import { LoginSubmit } from "@/components/auth/login-submit";
 import { Button } from "@/components/ui/button";
 import { authUrl } from "@/lib/auth/site-origin";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 type Props = {
   emailValue: string;
@@ -50,55 +51,70 @@ function MicrosoftLogo() {
   );
 }
 
+function mapSignInError(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes("invalid login credentials") || lower.includes("invalid credentials")) {
+    return "Incorrect email or password. Please try again.";
+  }
+  if (lower.includes("email not confirmed")) {
+    return "Please check your email and confirm your account before signing in.";
+  }
+  return raw;
+}
+
 export function LoginExperience({
   emailValue,
   rememberMeChecked,
-  signInAction,
+  signInAction: _signInAction,
   flashError,
-  flashSuccess
+  flashSuccess,
 }: Props) {
+  const router = useRouter();
   const [mode, setMode] = useState<"login" | "reset">("login");
   const [resetEmail, setResetEmail] = useState(emailValue);
   const [resetStatus, setResetStatus] = useState<{ ok: boolean; message: string } | null>(null);
-  const [oauthWorking, setOauthWorking] = useState(false);
-
-  const oauthRedirect = authUrl("/auth/callback");
+  const [inlineError, setInlineError] = useState<string | null>(flashError ?? null);
+  const [submitting, setSubmitting] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
 
   const onGoogleSignIn = useCallback(async () => {
-    setOauthWorking(true);
+    setOauthLoading("google");
+    setInlineError(null);
     try {
       const supabase = createSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: oauthRedirect }
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) {
-        window.alert(error.message || "Unable to connect to Google.");
-        setOauthWorking(false);
+        setInlineError(error.message || "Unable to connect to Google.");
+        setOauthLoading(null);
       }
+      // On success the browser redirects — don't reset loading state
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : "Google sign-in failed.");
-      setOauthWorking(false);
+      setInlineError(e instanceof Error ? e.message : "Google sign-in failed.");
+      setOauthLoading(null);
     }
-  }, [oauthRedirect]);
+  }, []);
 
   const onMicrosoftSignIn = useCallback(async () => {
-    setOauthWorking(true);
+    setOauthLoading("microsoft");
+    setInlineError(null);
     try {
       const supabase = createSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "azure",
-        options: { scopes: "email", redirectTo: oauthRedirect }
+        options: { scopes: "email", redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) {
-        window.alert(error.message || "Unable to connect to Microsoft.");
-        setOauthWorking(false);
+        setInlineError(error.message || "Unable to connect to Microsoft.");
+        setOauthLoading(null);
       }
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : "Microsoft sign-in failed.");
-      setOauthWorking(false);
+      setInlineError(e instanceof Error ? e.message : "Microsoft sign-in failed.");
+      setOauthLoading(null);
     }
-  }, [oauthRedirect]);
+  }, []);
 
   const submitResetEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +126,7 @@ export function LoginExperience({
     }
     const supabase = createSupabaseBrowser();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: authUrl("/auth/reset-password")
+      redirectTo: authUrl("/auth/reset-password"),
     });
     if (error) {
       setResetStatus({ ok: false, message: error.message });
@@ -118,6 +134,47 @@ export function LoginExperience({
     }
     setResetStatus({ ok: true, message: "Check your email for a reset link" });
   };
+
+  async function handleEmailSignIn(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+    const rememberMe = formData.get("remember_me") === "on";
+
+    setSubmitting(true);
+    setInlineError(null);
+
+    try {
+      const supabase = createSupabaseBrowser();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setInlineError(mapSignInError(error.message));
+        return;
+      }
+
+      // Persist remember-me — readable by server component on next visit
+      const oneYear = 60 * 60 * 24 * 365;
+      if (rememberMe) {
+        document.cookie = `servlo_remember_email=${encodeURIComponent(email)}; path=/; max-age=${oneYear}; samesite=lax`;
+        document.cookie = `servlo_persist_session=true; path=/; max-age=${oneYear}; samesite=lax`;
+      } else {
+        document.cookie = "servlo_remember_email=; path=/; max-age=0; samesite=lax";
+        document.cookie = "servlo_persist_session=false; path=/; max-age=0; samesite=lax";
+      }
+
+      router.push("/dashboard/owner");
+    } catch (err) {
+      setInlineError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const anyOauthLoading = oauthLoading !== null;
 
   return (
     <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
@@ -128,7 +185,7 @@ export function LoginExperience({
         </div>
         <h1 className="text-3xl font-bold text-white">Welcome back</h1>
         <p className="mt-2 text-sm text-slate-400">
-          Welcome back. Access your dashboard and continue managing your business.
+          Access your dashboard and continue managing your business.
         </p>
 
         {flashSuccess ? (
@@ -141,23 +198,34 @@ export function LoginExperience({
               <Button
                 type="button"
                 variant="outline"
-                disabled={oauthWorking}
+                disabled={anyOauthLoading}
                 onClick={onGoogleSignIn}
                 className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white font-medium text-[#374151] shadow-sm hover:bg-slate-50 disabled:opacity-60"
               >
-                <GoogleLogo />
+                {oauthLoading === "google" ? (
+                  <Loader2 size={18} className="animate-spin shrink-0" />
+                ) : (
+                  <GoogleLogo />
+                )}
                 Continue with Google
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                disabled={oauthWorking}
+                disabled={anyOauthLoading}
                 onClick={onMicrosoftSignIn}
                 className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white font-medium text-[#374151] shadow-sm hover:bg-slate-50 disabled:opacity-60"
               >
-                <MicrosoftLogo />
+                {oauthLoading === "microsoft" ? (
+                  <Loader2 size={18} className="animate-spin shrink-0" />
+                ) : (
+                  <MicrosoftLogo />
+                )}
                 Continue with Microsoft
               </Button>
+              <p className="text-center text-xs text-slate-500">
+                Make sure pop-ups are enabled in your browser for Google and Microsoft sign-in to work.
+              </p>
             </div>
             <div className="my-6 flex items-center gap-3">
               <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
@@ -165,7 +233,7 @@ export function LoginExperience({
               <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
             </div>
 
-            <form action={signInAction} className="space-y-4">
+            <form onSubmit={handleEmailSignIn} className="space-y-4">
               <div>
                 <label htmlFor="email" className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
                   Email
@@ -176,6 +244,7 @@ export function LoginExperience({
                   type="email"
                   defaultValue={emailValue}
                   required
+                  onChange={() => setInlineError(null)}
                   className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900"
                 />
               </div>
@@ -188,6 +257,7 @@ export function LoginExperience({
                   name="password"
                   type="password"
                   required
+                  onChange={() => setInlineError(null)}
                   className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900"
                 />
                 <button
@@ -210,8 +280,26 @@ export function LoginExperience({
                 />
                 Remember me
               </label>
-              {flashError ? <p className="text-sm text-red-700">{flashError}</p> : null}
-              <LoginSubmit />
+              {inlineError ? (
+                <div className="flex items-start gap-2.5 rounded-md border border-red-300 bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:border-red-700/50 dark:bg-red-900/20 dark:text-red-300">
+                  <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
+                  <span>{inlineError}</span>
+                </div>
+              ) : null}
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-[var(--accent-color)] text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              >
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Signing in…
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
             </form>
           </>
         ) : (

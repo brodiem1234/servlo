@@ -372,6 +372,105 @@ export default function HomePage() {
         </p>
       </section>
 
+      {/* ── Full platform section ──────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+        <div className="mb-2 text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
+            The complete SERVLO platform
+          </span>
+        </div>
+        <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">
+          Built for Australian service businesses
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
+          Start with what you need today. Unlock the full platform as it launches.
+        </p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* ── Active: Core ── */}
+          <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
+            <div className="h-1 w-full" style={{ backgroundColor: "#3B82F6" }} />
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">SERVLO Core</h3>
+                <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
+                  Available now
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
+                Job management, invoicing, scheduling and clients
+              </p>
+            </div>
+          </article>
+          {/* ── Active: Grow ── */}
+          <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
+            <div className="h-1 w-full" style={{ backgroundColor: "#8B5CF6" }} />
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">SERVLO Grow</h3>
+                <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
+                  Available now
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
+                AI ads, review automation and social content
+              </p>
+              <p className="mt-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">Coming Q3 2026</p>
+            </div>
+          </article>
+          {/* ── Active: Leads ── */}
+          <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
+            <div className="h-1 w-full" style={{ backgroundColor: "#F59E0B" }} />
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">SERVLO Leads</h3>
+                <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
+                  Available now
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
+                Verified job leads marketplace
+              </p>
+              <p className="mt-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">Coming Q4 2026</p>
+            </div>
+          </article>
+          {/* ── Coming soon: Answer ── */}
+          {([
+            { name: "SERVLO Answer",   color: "#14B8A6", desc: "AI phone agent — answers calls and books jobs automatically", date: "Q3 2026" },
+            { name: "SERVLO Pay",      color: "#22C55E", desc: "Integrated payment processing for every job",               date: "Q4 2026" },
+            { name: "SERVLO Hire",     color: "#F97316", desc: "Find tradies or find work — the trade job board",           date: "Q1 2027" },
+            { name: "SERVLO Fleet",    color: "#0EA5E9", desc: "GPS tracking for vehicles and equipment",                   date: "Q2 2027" },
+            { name: "SERVLO Finance",  color: "#6366F1", desc: "Business loans and invoice financing",                      date: "Q3 2027" },
+            { name: "SERVLO Insurance",color: "#F43F5E", desc: "Embedded tradie insurance, quoted instantly",               date: "Q4 2027" },
+            { name: "SERVLO Academy",  color: "#EAB308", desc: "Trade training, compliance and licence management",         date: "Q1 2028" },
+          ] as const).map(({ name, color, desc, date }) => (
+            <a
+              key={name}
+              href={`mailto:hello@servlo.com.au?subject=SERVLO ${encodeURIComponent(name.replace("SERVLO ", ""))} Early Access`}
+              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white opacity-60 shadow-sm transition hover:opacity-80 dark:border-slate-700 dark:bg-[#111827]"
+              title={`Register interest in ${name}`}
+            >
+              <div className="h-1 w-full" style={{ backgroundColor: color }} />
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
+                    <Lock size={9} />
+                    {date}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
+                <p className="mt-2 text-xs font-semibold text-[var(--accent-color)] opacity-0 transition group-hover:opacity-100 dark:text-cyan-400">
+                  Register interest →
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+        <p className="mt-8 text-center text-sm text-[#475569] dark:text-slate-400">
+          All products included in one login &nbsp;·&nbsp; Add products as your business grows &nbsp;·&nbsp; Cancel anytime
+        </p>
+      </section>
+
       <section className="bg-[#1e3a5f] px-4 py-16 dark:bg-[#0b1628]" aria-labelledby="cta-heading">
         <div className="mx-auto max-w-3xl text-center">
           <h2 id="cta-heading" className="text-3xl font-bold text-white md:text-4xl">

@@ -17,10 +17,12 @@ import {
   type PasswordRuleKey
 } from "@/lib/auth/signup-field-validation";
 import {
+  AlertTriangle,
   Check,
   ClipboardList,
   HardHat,
   HeartPulse,
+  Loader2,
   LucideIcon,
   Megaphone,
   PartyPopper,
@@ -332,27 +334,34 @@ export function SignupForm() {
   // UI state
   const [error, setError] = useState<string | null>(null);
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
-  const [oauthWorking, setOauthWorking] = useState(false);
-
-  const oauthRedirect = authUrl("/auth/callback");
+  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
 
   const onGoogleSignUp = useCallback(async () => {
-    setOauthWorking(true);
+    setOauthLoading("google");
+    setError(null);
     try {
       const supabase = createSupabaseBrowser();
-      const { error: e } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: oauthRedirect } });
-      if (e) { window.alert(e.message || "Unable to connect to Google."); setOauthWorking(false); }
-    } catch (e) { window.alert(e instanceof Error ? e.message : "Google sign-up failed."); setOauthWorking(false); }
-  }, [oauthRedirect]);
+      const { error: e } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (e) { setError(e.message || "Unable to connect to Google."); setOauthLoading(null); }
+      // On success the browser redirects — don't reset loading state
+    } catch (e) { setError(e instanceof Error ? e.message : "Google sign-up failed."); setOauthLoading(null); }
+  }, []);
 
   const onMicrosoftSignUp = useCallback(async () => {
-    setOauthWorking(true);
+    setOauthLoading("microsoft");
+    setError(null);
     try {
       const supabase = createSupabaseBrowser();
-      const { error: e } = await supabase.auth.signInWithOAuth({ provider: "azure", options: { scopes: "email", redirectTo: oauthRedirect } });
-      if (e) { window.alert(e.message || "Unable to connect to Microsoft."); setOauthWorking(false); }
-    } catch (e) { window.alert(e instanceof Error ? e.message : "Microsoft sign-up failed."); setOauthWorking(false); }
-  }, [oauthRedirect]);
+      const { error: e } = await supabase.auth.signInWithOAuth({
+        provider: "azure",
+        options: { scopes: "email", redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (e) { setError(e.message || "Unable to connect to Microsoft."); setOauthLoading(null); }
+    } catch (e) { setError(e instanceof Error ? e.message : "Microsoft sign-up failed."); setOauthLoading(null); }
+  }, []);
 
   const passwordRules = useMemo(
     () => normalizePasswordStrength(passwordInput, nameInput, emailInput),
@@ -537,7 +546,12 @@ export function SignupForm() {
 
       if (authError) {
         console.error("[signup/owner] signUp failed", authError);
-        setError(authError.message);
+        const lower = authError.message.toLowerCase();
+        if (lower.includes("user already registered") || lower.includes("email already") || lower.includes("already registered")) {
+          setError("An account with this email already exists. Try signing in instead.");
+        } else {
+          setError(authError.message);
+        }
         return;
       }
 
@@ -726,23 +740,34 @@ export function SignupForm() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={oauthWorking}
+                disabled={oauthLoading !== null}
                 onClick={onGoogleSignUp}
                 className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-600 bg-slate-800 font-medium text-slate-200 shadow-sm hover:bg-slate-700 disabled:opacity-60"
               >
-                <GoogleLogoSmall />
+                {oauthLoading === "google" ? (
+                  <Loader2 size={18} className="animate-spin shrink-0" />
+                ) : (
+                  <GoogleLogoSmall />
+                )}
                 Continue with Google
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                disabled={oauthWorking}
+                disabled={oauthLoading !== null}
                 onClick={onMicrosoftSignUp}
                 className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-600 bg-slate-800 font-medium text-slate-200 shadow-sm hover:bg-slate-700 disabled:opacity-60"
               >
-                <MicrosoftLogoSmall />
+                {oauthLoading === "microsoft" ? (
+                  <Loader2 size={18} className="animate-spin shrink-0" />
+                ) : (
+                  <MicrosoftLogoSmall />
+                )}
                 Continue with Microsoft
               </Button>
+              <p className="text-center text-xs text-slate-500">
+                Make sure pop-ups are enabled in your browser for Google and Microsoft sign-in to work.
+              </p>
               <div className="flex items-center gap-3">
                 <span className="h-px flex-1 bg-slate-700" />
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">or sign up with email</span>
@@ -752,9 +777,10 @@ export function SignupForm() {
           ) : null}
 
           {error ? (
-            <p className="mt-4 rounded-md bg-red-950/40 px-3 py-2 text-sm text-red-300 whitespace-pre-wrap break-words">
-              {error}
-            </p>
+            <div className="mt-4 flex items-start gap-2.5 rounded-md border border-red-700/50 bg-red-950/40 px-3 py-2.5 text-sm text-red-300">
+              <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
+              <span className="whitespace-pre-wrap break-words">{error}</span>
+            </div>
           ) : null}
 
           <form ref={formRef} onSubmit={handleOwnerSignup} className="mt-6 space-y-6">
