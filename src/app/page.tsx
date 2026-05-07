@@ -156,11 +156,11 @@ function HeroAppMock() {
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen scroll-smooth bg-slate-50 text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0f172a] dark:text-white">
+    <main className="min-h-screen scroll-smooth bg-slate-50 text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0a0f1e] dark:text-white">
       <LandingScrollReveal />
       <LandingHeader />
 
-      <section className="reveal-item bg-[#f1f5f9] dark:bg-[#1e3a5f]" data-reveal>
+      <section className="reveal-item bg-[#f1f5f9] dark:bg-[#0d1b36]" data-reveal>
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:px-6 md:py-24">
           <div>
             <h1 className="text-4xl font-extrabold leading-tight text-[#1e3a5f] dark:text-white md:text-6xl">
@@ -195,7 +195,7 @@ export default function HomePage() {
       <section id="platform" className="reveal-item mx-auto max-w-7xl px-4 py-16 md:px-6" data-reveal>
         <div className="mb-2 text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
-            Three products, one platform
+            Twelve products, one platform
           </span>
         </div>
         <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">
@@ -204,98 +204,47 @@ export default function HomePage() {
         <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
           Start with Core to run your business. Add Grow to market it. Use Leads to fill your pipeline.
         </p>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {/* Core */}
-          <article className="relative flex flex-col rounded-xl border border-[var(--accent-color)] bg-white p-6 shadow-md dark:border-cyan-400/60 dark:bg-[#111827]">
-            <div className="mb-3 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)]">
-                <Briefcase size={18} className="text-[var(--accent-color)] dark:text-cyan-400" />
-              </span>
-              <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Core</h3>
-            </div>
-            <p className="mb-4 text-sm text-[#475569] dark:text-slate-300">
-              The operating system for your service business — jobs, clients, invoices and your team in one place.
-            </p>
-            <ul className="flex-1 space-y-2 text-sm text-[#334155] dark:text-slate-200">
-              {["Jobs & scheduling", "Client management", "Invoices & quotes", "Team timesheets", "Purchase orders"].map((f) => (
-                <li key={f} className="flex gap-2">
-                  <span className="mt-0.5 shrink-0 text-[var(--accent-color)] dark:text-cyan-400" aria-hidden>✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 text-xl font-bold text-[#1e3a5f] dark:text-white">From $49/mo</p>
-            <Link
-              href="/auth/signup"
-              className="mt-3 block rounded-lg bg-[var(--accent-color)] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Row 1 — Active products */}
+          {[
+            { name: "SERVLO Core",  color: "#3B82F6", desc: "Job management, invoicing, scheduling",          badge: "Available now",   badgeClass: "bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30", available: true  },
+            { name: "SERVLO Grow",  color: "#8B5CF6", desc: "AI ads, reviews and social content",             badge: "Coming Q3 2026",  badgeClass: "bg-purple-100 text-purple-700 ring-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:ring-purple-500/30", available: false },
+            { name: "SERVLO Leads", color: "#F59E0B", desc: "Verified job leads marketplace",                 badge: "Coming Q4 2026",  badgeClass: "bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30", available: false },
+            /* Row 2 */
+            { name: "SERVLO Answer",   color: "#14B8A6", desc: "AI phone agent — answers calls, books jobs",  badge: "Q3 2026",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            { name: "SERVLO Pay",      color: "#22C55E", desc: "Integrated payment processing for every job", badge: "Q4 2026",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            { name: "SERVLO Hire",     color: "#F97316", desc: "Find tradies or find work — trade job board", badge: "Q1 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            /* Row 3 */
+            { name: "SERVLO Fleet",    color: "#0EA5E9", desc: "GPS tracking for vehicles and equipment",     badge: "Q2 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            { name: "SERVLO Finance",  color: "#6366F1", desc: "Business loans and invoice financing",         badge: "Q3 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            { name: "SERVLO Insurance",color: "#F43F5E", desc: "Embedded tradie insurance, quoted instantly",  badge: "Q4 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            /* Row 4 */
+            { name: "SERVLO Safe",     color: "#EF4444", desc: "Safety compliance, incidents and toolbox talks", badge: "Q2 2027", badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            { name: "SERVLO Books",    color: "#10B981", desc: "Bookkeeping, BAS lodgement and expenses",     badge: "Q3 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+            { name: "SERVLO Academy",  color: "#EAB308", desc: "Trade training, compliance and licences",     badge: "Q1 2028",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
+          ].map(({ name, color, desc, badge, badgeClass, available }) => (
+            <article
+              key={name}
+              className={`flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition dark:bg-[#111827] ${available ? "border-slate-200 dark:border-slate-600" : "border-slate-200 opacity-70 dark:border-slate-700"}`}
             >
-              Start free trial
-            </Link>
-          </article>
-
-          {/* Grow */}
-          <article className="relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
-            <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30">
-              <Lock size={9} />
-              Launching soon
-            </div>
-            <div className="mb-3 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-500/15">
-                <TrendingUp size={18} className="text-purple-600 dark:text-purple-400" />
-              </span>
-              <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Grow</h3>
-            </div>
-            <p className="mb-4 text-sm text-[#475569] dark:text-slate-300">
-              AI-powered marketing built for service businesses — ads, social content, review automation and referrals.
-            </p>
-            <ul className="flex-1 space-y-2 text-sm text-[#334155] dark:text-slate-200">
-              {["AI ad creation", "Social media content", "Google review automation", "Referral tracking", "Campaign analytics"].map((f) => (
-                <li key={f} className="flex gap-2">
-                  <span className="mt-0.5 shrink-0 text-purple-500 dark:text-purple-400" aria-hidden>✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 text-xl font-bold text-[#1e3a5f] dark:text-white">From $59/mo</p>
-            <button
-              disabled
-              className="mt-3 block w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
-            >
-              Launching soon
-            </button>
-          </article>
-
-          {/* Leads */}
-          <article className="relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
-            <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30">
-              <Lock size={9} />
-              Launching soon
-            </div>
-            <div className="mb-3 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15">
-                <Zap size={18} className="text-amber-600 dark:text-amber-400" />
-              </span>
-              <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Leads</h3>
-            </div>
-            <p className="mb-4 text-sm text-[#475569] dark:text-slate-300">
-              Buy qualified leads matched to your industry and location — pay per lead, no lock-in.
-            </p>
-            <ul className="flex-1 space-y-2 text-sm text-[#334155] dark:text-slate-200">
-              {["Browse leads marketplace", "Industry-filtered leads", "Lead pipeline tracking", "Pay per lead", "Quality guaranteed"].map((f) => (
-                <li key={f} className="flex gap-2">
-                  <span className="mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" aria-hidden>✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 text-xl font-bold text-[#1e3a5f] dark:text-white">From $12/lead</p>
-            <button
-              disabled
-              className="mt-3 block w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-center text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500"
-            >
-              Launching soon
-            </button>
-          </article>
+              <div className="h-1 w-full" style={{ backgroundColor: color }} />
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeClass}`}>
+                    {!available && <Lock size={9} className="mr-0.5 inline-block align-middle" />}
+                    {badge}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
+                {available && (
+                  <Link href="/auth/signup" className="mt-4 block rounded-lg bg-[var(--accent-color)] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]">
+                    Start free trial
+                  </Link>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -331,7 +280,7 @@ export default function HomePage() {
           {painPoints.map(({ Icon, title, copy }) => (
             <article
               key={title}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
+              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#0f1929]"
             >
               <Icon className={`h-9 w-9 ${tealIcon}`} strokeWidth={1.75} aria-hidden />
               <h3 className="mt-3 text-lg font-semibold text-[#1e3a5f] dark:text-white">{title}</h3>
@@ -386,88 +335,61 @@ export default function HomePage() {
           Start with what you need today. Unlock the full platform as it launches.
         </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* ── Active: Core ── */}
-          <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
-            <div className="h-1 w-full" style={{ backgroundColor: "#3B82F6" }} />
-            <div className="flex flex-1 flex-col p-5">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">SERVLO Core</h3>
-                <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
-                  Available now
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
-                Job management, invoicing, scheduling and clients
-              </p>
-            </div>
-          </article>
-          {/* ── Active: Grow ── */}
-          <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
-            <div className="h-1 w-full" style={{ backgroundColor: "#8B5CF6" }} />
-            <div className="flex flex-1 flex-col p-5">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">SERVLO Grow</h3>
-                <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
-                  Available now
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
-                AI ads, review automation and social content
-              </p>
-              <p className="mt-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">Coming Q3 2026</p>
-            </div>
-          </article>
-          {/* ── Active: Leads ── */}
-          <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
-            <div className="h-1 w-full" style={{ backgroundColor: "#F59E0B" }} />
-            <div className="flex flex-1 flex-col p-5">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">SERVLO Leads</h3>
-                <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
-                  Available now
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
-                Verified job leads marketplace
-              </p>
-              <p className="mt-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">Coming Q4 2026</p>
-            </div>
-          </article>
-          {/* ── Coming soon: Answer ── */}
-          {([
-            { name: "SERVLO Answer",   color: "#14B8A6", desc: "AI phone agent — answers calls and books jobs automatically", date: "Q3 2026" },
-            { name: "SERVLO Pay",      color: "#22C55E", desc: "Integrated payment processing for every job",               date: "Q4 2026" },
-            { name: "SERVLO Hire",     color: "#F97316", desc: "Find tradies or find work — the trade job board",           date: "Q1 2027" },
-            { name: "SERVLO Fleet",    color: "#0EA5E9", desc: "GPS tracking for vehicles and equipment",                   date: "Q2 2027" },
-            { name: "SERVLO Finance",  color: "#6366F1", desc: "Business loans and invoice financing",                      date: "Q3 2027" },
-            { name: "SERVLO Insurance",color: "#F43F5E", desc: "Embedded tradie insurance, quoted instantly",               date: "Q4 2027" },
-            { name: "SERVLO Academy",  color: "#EAB308", desc: "Trade training, compliance and licence management",         date: "Q1 2028" },
-          ] as const).map(({ name, color, desc, date }) => (
-            <a
-              key={name}
-              href={`mailto:hello@servlo.com.au?subject=SERVLO ${encodeURIComponent(name.replace("SERVLO ", ""))} Early Access`}
-              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white opacity-60 shadow-sm transition hover:opacity-80 dark:border-slate-700 dark:bg-[#111827]"
-              title={`Register interest in ${name}`}
-            >
-              <div className="h-1 w-full" style={{ backgroundColor: color }} />
-              <div className="flex flex-1 flex-col p-5">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
-                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
-                    <Lock size={9} />
-                    {date}
-                  </span>
+          {/* Active products */}
+          {[
+            { name: "SERVLO Core",  color: "#3B82F6", desc: "Job management, invoicing, scheduling and clients", badge: "Available now", available: true  },
+            { name: "SERVLO Grow",  color: "#8B5CF6", desc: "AI ads, review automation and social content",      badge: "Coming Q3 2026", available: false },
+            { name: "SERVLO Leads", color: "#F59E0B", desc: "Verified job leads marketplace",                    badge: "Coming Q4 2026", available: false },
+            { name: "SERVLO Answer",   color: "#14B8A6", desc: "AI phone agent — answers calls and books jobs",   badge: "Q3 2026" , available: false },
+            { name: "SERVLO Pay",      color: "#22C55E", desc: "Integrated payment processing for every job",    badge: "Q4 2026",  available: false },
+            { name: "SERVLO Hire",     color: "#F97316", desc: "Find tradies or find work — the trade job board",badge: "Q1 2027",  available: false },
+            { name: "SERVLO Fleet",    color: "#0EA5E9", desc: "GPS tracking for vehicles and equipment",        badge: "Q2 2027",  available: false },
+            { name: "SERVLO Finance",  color: "#6366F1", desc: "Business loans and invoice financing",            badge: "Q3 2027",  available: false },
+            { name: "SERVLO Insurance",color: "#F43F5E", desc: "Embedded tradie insurance, quoted instantly",    badge: "Q4 2027",  available: false },
+            { name: "SERVLO Safe",     color: "#EF4444", desc: "Safety compliance, incidents and toolbox talks", badge: "Q2 2027",  available: false },
+            { name: "SERVLO Books",    color: "#10B981", desc: "Bookkeeping, BAS lodgement and expenses",        badge: "Q3 2027",  available: false },
+            { name: "SERVLO Academy",  color: "#EAB308", desc: "Trade training, compliance and licences",        badge: "Q1 2028",  available: false },
+          ].map(({ name, color, desc, badge, available }) =>
+            available ? (
+              <article key={name} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
+                <div className="h-1 w-full" style={{ backgroundColor: color }} />
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
+                    <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
+                      {badge}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
                 </div>
-                <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
-                <p className="mt-2 text-xs font-semibold text-[var(--accent-color)] opacity-0 transition group-hover:opacity-100 dark:text-cyan-400">
-                  Register interest →
-                </p>
-              </div>
-            </a>
-          ))}
+              </article>
+            ) : (
+              <a
+                key={name}
+                href={`mailto:hello@servlo.com.au?subject=SERVLO ${encodeURIComponent(name.replace("SERVLO ", ""))} Early Access`}
+                className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white opacity-65 shadow-sm transition hover:opacity-85 dark:border-slate-700 dark:bg-[#111827]"
+                title={`Register interest in ${name}`}
+              >
+                <div className="h-1 w-full" style={{ backgroundColor: color }} />
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
+                      <Lock size={9} />
+                      {badge}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
+                  <p className="mt-2 text-xs font-semibold text-[var(--accent-color)] opacity-0 transition group-hover:opacity-100 dark:text-cyan-400">
+                    Register interest →
+                  </p>
+                </div>
+              </a>
+            )
+          )}
         </div>
         <p className="mt-8 text-center text-sm text-[#475569] dark:text-slate-400">
-          All products included in one login &nbsp;·&nbsp; Add products as your business grows &nbsp;·&nbsp; Cancel anytime
+          All 12 products included in one login &nbsp;·&nbsp; Add products as your business grows &nbsp;·&nbsp; Cancel anytime
         </p>
       </section>
 

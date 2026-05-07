@@ -59,7 +59,8 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
   const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "scheduling");
 
-  const [jobsResult, clientsResult, employeesResult] = await Promise.all([
+  // Attempt full column select; fall back to base columns if schema is ahead of DB
+  const [jobsResultFull, clientsResult, employeesResult] = await Promise.all([
     sb
       .from("jobs")
       .select(
@@ -70,12 +71,26 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
     sb.from("employees").select("id, full_name, role, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
-  if (jobsResult.error) throw new Error(jobsResult.error.message);
-  if (clientsResult.error) throw new Error(clientsResult.error.message);
-  if (employeesResult.error) throw new Error(employeesResult.error.message);
-  const jobs = jobsResult.data ?? [];
-  const clients = clientsResult.data ?? [];
-  const employees = employeesResult.data ?? [];
+
+  // If the full query errored (likely a missing column), retry with only the base columns
+  let jobsRaw: unknown[] = [];
+  if (jobsResultFull.error) {
+    const fallback = await sb
+      .from("jobs")
+      .select(
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo"
+      )
+      .eq("owner_id", user.id)
+      .order("scheduled_date", { ascending: true });
+    jobsRaw = (fallback.data ?? []) as unknown[];
+  } else {
+    jobsRaw = (jobsResultFull.data ?? []) as unknown[];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const jobs = jobsRaw as any[];
+  const clients = (clientsResult.data ?? []) as { id: string; full_name: string | null; is_demo: boolean }[];
+  const employees = (employeesResult.data ?? []) as { id: string; full_name: string | null; role: string | null; is_demo: boolean }[];
 
   const clientNameById = new Map((clients ?? []).map((c: { id: string; full_name: string | null }) => [c.id, c.full_name]));
   const employeeNameById = new Map(

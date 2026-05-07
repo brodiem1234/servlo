@@ -529,6 +529,57 @@ export function LandingPricing() {
         </div>
       </div>
 
+      {/* ── Grow & Leads pricing ────────────────────────────────────────────── */}
+      <div className="mt-12 grid gap-6 md:grid-cols-2">
+        {/* Grow pricing */}
+        <div>
+          <div className="mb-4 flex items-center gap-3">
+            <TrendingUp size={20} className="text-purple-500" />
+            <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Grow</h3>
+            <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">Coming Q3 2026</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { name: "Starter", price: "$59", desc: "1 business. AI ad creation, 5 campaigns/mo", highlight: false },
+              { name: "Pro",     price: "$119", desc: "Up to 3 businesses, unlimited campaigns, review automation", highlight: true  },
+              { name: "Agency",  price: "$299", desc: "Manage all your clients. White-label reporting.", highlight: false },
+            ].map(({ name, price, desc, highlight }) => (
+              <div key={name} className={`rounded-xl border p-4 ${highlight ? "border-purple-400/60 bg-purple-50 dark:bg-purple-900/20" : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"}`}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="font-bold text-[#1e3a5f] dark:text-white">{name}</p>
+                  <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{price}<span className="text-sm font-normal text-slate-500">/mo</span></p>
+                </div>
+                <p className="mt-1 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Leads pricing */}
+        <div>
+          <div className="mb-4 flex items-center gap-3">
+            <Zap size={20} className="text-amber-500" />
+            <h3 className="text-lg font-bold text-[#1e3a5f] dark:text-white">SERVLO Leads</h3>
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">Coming Q4 2026</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { name: "Pay-as-you-go", price: "$12",  unit: "/lead", desc: "No subscription. Pay only for leads you accept.", highlight: false },
+              { name: "Verified",      price: "$39",  unit: "/mo",   desc: "5 guaranteed leads per month. Priority matching.", highlight: true  },
+              { name: "Pro",           price: "$89",  unit: "/mo",   desc: "15 leads/mo. Advanced filters + direct contact.", highlight: false },
+            ].map(({ name, price, unit, desc, highlight }) => (
+              <div key={name} className={`rounded-xl border p-4 ${highlight ? "border-amber-400/60 bg-amber-50 dark:bg-amber-900/20" : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]"}`}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="font-bold text-[#1e3a5f] dark:text-white">{name}</p>
+                  <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{price}<span className="text-sm font-normal text-slate-500">{unit}</span></p>
+                </div>
+                <p className="mt-1 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── Grow & Leads coming-soon preview ─────────────────────────────── */}
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {/* Grow */}

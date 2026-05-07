@@ -14,6 +14,8 @@ export type ProductId =
   | "fleet"
   | "finance-hub"
   | "insurance"
+  | "safe"
+  | "books"
   | "academy";
 
 const ACTIVE_PRODUCTS: Array<{
@@ -103,6 +105,22 @@ const COMING_SOON_PRODUCTS: Array<{
     launch: "Q4 2027",
   },
   {
+    id: "safe",
+    label: "Safe",
+    sub: "Safety & Compliance",
+    href: "/dashboard/safe",
+    color: "#EF4444",
+    launch: "Q2 2027",
+  },
+  {
+    id: "books",
+    label: "Books",
+    sub: "Bookkeeping & BAS",
+    href: "/dashboard/books",
+    color: "#10B981",
+    launch: "Q3 2027",
+  },
+  {
     id: "academy",
     label: "Academy",
     sub: "Trade Training",
@@ -151,7 +169,7 @@ export function ProductSwitcher({
           className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums"
           style={{ background: "rgb(59 130 246 / 0.2)", color: "#93C5FD" }}
         >
-          3 / 10
+          3 / 12
         </span>
       </button>
 
@@ -292,7 +310,7 @@ export function ProductSwitcher({
               color: "var(--text-muted, #6b7280)",
             }}
           >
-            SERVLO Platform — 3 of 10 products active
+            SERVLO Platform — 3 of 12 products active
           </div>
         </div>
       )}
