@@ -5,7 +5,7 @@ import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import QuotesManager from "./quotes-manager";
 import { filterDemoEntities } from "@/lib/demo/visibility";
-import { quoteFollowUpEmailTemplate, sendEmail } from "@/lib/email";
+import { quoteSentEmailTemplate, sendEmail } from "@/lib/email";
 
 function getNextNumber(
   existing: Array<Record<string, string | null>>,
@@ -280,28 +280,38 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     const quoteId = String(formData.get("quote_id") ?? "");
     const { data: quote } = await sb
       .from("quotes")
-      .select("id, quote_number, client_id, is_demo, created_at")
+      .select("id, quote_number, client_id, is_demo, created_at, subtotal, gst, total")
       .eq("id", quoteId)
       .eq("owner_id", owner.id)
       .maybeSingle();
     if (!quote || quote.is_demo) return;
-    const { data: client } = await sb
-      .from("clients")
-      .select("email, full_name")
-      .eq("id", quote.client_id ?? "")
-      .maybeSingle();
-    if (!client?.email) return;
-    const quoteDate = quote.created_at
-      ? new Date(quote.created_at).toLocaleDateString("en-AU")
-      : new Date().toLocaleDateString("en-AU");
+    const [clientRes, bizRes] = await Promise.all([
+      sb.from("clients").select("email, full_name").eq("id", quote.client_id ?? "").maybeSingle(),
+      sb.from("businesses").select("business_name, accent_colour").eq("owner_id", owner.id).maybeSingle()
+    ]);
+    if (!clientRes.data?.email) {
+      throw new Error("This client has no email address — add one in the Clients page first.");
+    }
+    const client = clientRes.data;
+    const biz = bizRes.data;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const subtotal = Number(quote.subtotal ?? 0);
+    const gst = Number(quote.gst ?? 0);
+    const total = Number(quote.total ?? 0);
     await sendEmail(
       client.email,
-      `Quote ${quote.quote_number ?? "from SERVLO"}`,
-      quoteFollowUpEmailTemplate({
+      `Quote ${quote.quote_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
+      quoteSentEmailTemplate({
         clientName: client.full_name ?? "there",
+        businessName: biz?.business_name ?? "SERVLO",
         quoteNumber: quote.quote_number ?? "Quote",
-        quoteDate
-      })
+        subtotal: `$${subtotal.toFixed(2)}`,
+        gst: `$${gst.toFixed(2)}`,
+        total: `$${total.toFixed(2)}`,
+        accentHex: biz?.accent_colour ?? undefined,
+        appUrl
+      }),
+      "SERVLO <hello@servlo.com.au>"
     );
     await sb.from("quotes").update({ status: "sent" }).eq("id", quote.id).eq("owner_id", owner.id);
     revalidatePath("/dashboard/owner/quotes");

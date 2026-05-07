@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import InvoicesManager from "./invoices-manager";
-import { invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
+import { invoiceSentEmailTemplate, invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 
 function getNextInvoiceNumber(existing: Array<{ invoice_number: string | null }>) {
@@ -234,28 +234,39 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     const id = String(formData.get("id") ?? "");
     const { data: inv } = await sb
       .from("invoices")
-      .select("invoice_number, total, due_date, client_id, is_demo")
+      .select("invoice_number, total, subtotal, gst, due_date, client_id, is_demo")
       .eq("id", id)
       .eq("owner_id", owner.id)
       .maybeSingle();
     if (!inv || inv.is_demo) return;
-    const { data: client } = await sb
-      .from("clients")
-      .select("email, full_name")
-      .eq("id", inv.client_id ?? "")
-      .maybeSingle();
-    if (!client?.email) return;
-    const payNowUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/client`;
+    const [clientRes, bizRes] = await Promise.all([
+      sb.from("clients").select("email, full_name").eq("id", inv.client_id ?? "").maybeSingle(),
+      sb.from("businesses").select("business_name, accent_colour").eq("owner_id", owner.id).maybeSingle()
+    ]);
+    if (!clientRes.data?.email) {
+      throw new Error("This client has no email address — add one in the Clients page first.");
+    }
+    const client = clientRes.data;
+    const biz = bizRes.data;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const subtotal = Number(inv.subtotal ?? 0);
+    const gst = Number(inv.gst ?? 0);
+    const total = Number(inv.total ?? 0);
     await sendEmail(
       client.email,
-      `Invoice ${inv.invoice_number ?? "from SERVLO"}`,
-      invoiceReminderEmailTemplate({
+      `Invoice ${inv.invoice_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
+      invoiceSentEmailTemplate({
         clientName: client.full_name ?? "there",
+        businessName: biz?.business_name ?? "SERVLO",
         invoiceNumber: inv.invoice_number ?? "Invoice",
-        amount: `$${Number(inv.total ?? 0).toFixed(2)}`,
         dueDate: inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-AU") : "-",
-        payNowUrl
-      })
+        subtotal: `$${subtotal.toFixed(2)}`,
+        gst: `$${gst.toFixed(2)}`,
+        total: `$${total.toFixed(2)}`,
+        accentHex: biz?.accent_colour ?? undefined,
+        appUrl
+      }),
+      "SERVLO <hello@servlo.com.au>"
     );
     revalidatePath("/dashboard/owner/invoices");
   }

@@ -7,6 +7,10 @@ function localDateKey(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+function daysFromNow(n: number) {
+  return localDateKey(new Date(Date.now() + n * 864e5));
+}
+
 export async function removeAllDemoForOwner(sb: SupabaseClient, ownerId: string): Promise<void> {
   const { data: demoJobs } = await sb.from("jobs").select("id").eq("owner_id", ownerId).eq("is_demo", true);
   const jobIds = (demoJobs ?? []).map((j) => j.id);
@@ -28,14 +32,23 @@ export async function removeAllDemoForOwner(sb: SupabaseClient, ownerId: string)
     await sb.from("quotes").delete().in("id", quoteIds);
   }
 
+  await sb.from("purchase_orders").delete().eq("owner_id", ownerId).eq("is_demo", true);
+
+  // Remove demo timesheets via the employees that belong to this owner.
+  const { data: demoEmps } = await sb.from("employees").select("id").eq("owner_id", ownerId).eq("is_demo", true);
+  const demoEmpIds = (demoEmps ?? []).map((e) => e.id);
+  if (demoEmpIds.length > 0) {
+    await sb.from("timesheets").delete().eq("is_demo", true).in("employee_id", demoEmpIds);
+  }
+
   await sb.from("jobs").delete().eq("owner_id", ownerId).eq("is_demo", true);
-  await sb.from("clients").delete().eq("owner_id", ownerId).eq("is_demo", true);
   await sb.from("employees").delete().eq("owner_id", ownerId).eq("is_demo", true);
+  await sb.from("clients").delete().eq("owner_id", ownerId).eq("is_demo", true);
 }
 
 /**
  * Seeds template records for a brand-new owner account (service role client).
- * Column sets match owner dashboard schema; optional fallbacks handle legacy DB shapes.
+ * Provides enough data so every major dashboard page shows non-zero numbers.
  */
 export async function seedOwnerDemoData(
   sb: SupabaseClient,
@@ -49,231 +62,270 @@ export async function seedOwnerDemoData(
     await removeAllDemoForOwner(sb, ownerId);
 
     const today = localDateKey();
-    const overdueKey = localDateKey(new Date(Date.now() - 1000 * 60 * 60 * 24 * 7));
+    const overdueKey = daysFromNow(-7);
+    const tomorrowKey = daysFromNow(1);
+    const nextWeekKey = daysFromNow(7);
 
-    const token =
+    const portalToken =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `demo-portal-${ownerId}`;
 
-    let clientAttempt = await sb
-      .from("clients")
-      .insert({
-        owner_id: ownerId,
-        full_name: "Alex Johnson",
-        email: "demo-client@servlo.com.au",
-        phone: "0412 345 678",
-        company_name: "Johnson Properties",
-        abn: "",
-        address: "12 Example Street",
-        suburb: "Adelaide",
-        state: "SA",
-        postcode: "5000",
-        notes: "Demo client — replace with your real clients",
-        client_type: "customer",
-        status: "active",
-        source: "other",
-        portal_token: token,
-        is_demo: true
-      })
-      .select("id")
-      .single();
+    // ── Clients ──────────────────────────────────────────────────────────────
 
-    if (clientAttempt.error || !clientAttempt.data?.id) {
-      console.warn("[seed-owner-demo] client full insert failed, retrying minimal shape", clientAttempt.error?.message);
-      clientAttempt = await sb
+    const clientInsert = async (payload: Record<string, unknown>) => {
+      const full = await sb.from("clients").insert({ ...payload, is_demo: true }).select("id").single();
+      if (!full.error && full.data?.id) return full.data.id as string;
+      // Fallback: minimal shape without optional columns
+      const minimal = await sb
         .from("clients")
-        .insert({
-          owner_id: ownerId,
-          full_name: "Alex Johnson",
-          email: "demo-client@servlo.com.au",
-          phone: "0412 345 678",
-          company_name: "Johnson Properties",
-          abn: "",
-          address: "12 Example Street",
-          suburb: "Adelaide",
-          state: "SA",
-          postcode: "5000",
-          notes: "Demo client — replace with your real clients",
-          is_demo: true
-        })
+        .insert({ owner_id: payload.owner_id, full_name: payload.full_name, is_demo: true })
         .select("id")
         .single();
-    }
-
-    const { data: clientRow, error: clientErr } = clientAttempt;
-
-    if (clientErr || !clientRow?.id) {
-      console.error("Demo client insert failed:", clientErr);
-      return { ok: false, message: clientErr?.message ?? "Failed to insert demo client" };
-    }
-
-    const clientId = clientRow.id as string;
-    let employeeRow: { id: string } | null = null;
-    let empErr = null;
-
-    const empMinimal = await sb
-      .from("employees")
-      .insert({
-        owner_id: ownerId,
-        full_name: "Sam Taylor",
-        email: "demo-employee@servlo.com.au",
-        phone: "0423 456 789",
-        role: "Field Technician",
-        is_demo: true
-      })
-      .select("id")
-      .single();
-
-    if (!empMinimal.error && empMinimal.data?.id) {
-      employeeRow = empMinimal.data as { id: string };
-    } else {
-      empErr = empMinimal.error;
-      const empLegacy = await sb
-        .from("employees")
-        .insert({
-          owner_id: ownerId,
-          full_name: "Sam Taylor",
-          email: "demo-employee@servlo.com.au",
-          phone: "0423 456 789",
-          role: "Field Technician",
-          trade_type: "",
-          licences: [],
-          hourly_rate: 0,
-          is_demo: true
-        })
-        .select("id")
-        .single();
-
-      if (!empLegacy.error && empLegacy.data?.id) {
-        employeeRow = empLegacy.data as { id: string };
-        empErr = null;
-      } else {
-        const empRoleEnum = await sb
-          .from("employees")
-          .insert({
-            owner_id: ownerId,
-            full_name: "Sam Taylor",
-            email: "demo-employee@servlo.com.au",
-            phone: "0423 456 789",
-            role: "employee",
-            trade_type: "Field Technician",
-            licences: [],
-            hourly_rate: 0,
-            is_demo: true
-          })
-          .select("id")
-          .single();
-
-        if (!empRoleEnum.error && empRoleEnum.data?.id) {
-          employeeRow = empRoleEnum.data as { id: string };
-          empErr = null;
-        } else {
-          empErr = empRoleEnum.error ?? empLegacy.error ?? empErr;
-        }
-      }
-    }
-
-    if (!employeeRow?.id || empErr) {
-      console.error("Demo employee insert failed:", empErr);
-      await sb.from("clients").delete().eq("id", clientId);
-      return { ok: false, message: empErr?.message ?? "Failed to insert demo employee" };
-    }
-
-    const employeeId = employeeRow.id;
-    const jobMinimal = {
-      owner_id: ownerId,
-      client_id: clientId,
-      employee_id: employeeId,
-      title: "Residential Service Call",
-      description: "Demo job — create your first real job to get started",
-      status: "in_progress",
-      priority: "normal",
-      scheduled_date: today,
-      is_demo: true
+      if (!minimal.error && minimal.data?.id) return minimal.data.id as string;
+      return null;
     };
 
-    let jobErr = null;
-    let jobRow: { id: string } | null = null;
+    const c1Id = await clientInsert({
+      owner_id: ownerId,
+      full_name: "Alex Johnson",
+      email: "demo-client@servlo.com.au",
+      phone: "0412 345 678",
+      company_name: "Johnson Properties",
+      abn: "12 345 678 901",
+      address: "12 Example Street",
+      suburb: "Adelaide",
+      state: "SA",
+      postcode: "5000",
+      notes: "Demo client — replace with your real clients",
+      client_type: "customer",
+      status: "active",
+      source: "referral",
+      portal_token: portalToken
+    });
 
-    const jobTry1 = await sb.from("jobs").insert(jobMinimal).select("id").single();
-    if (!jobTry1.error && jobTry1.data?.id) {
-      jobRow = jobTry1.data as { id: string };
-    } else {
-      if (jobTry1.error) {
-        console.warn("[seed-owner-demo] demo job minimal insert failed, retrying expanded shape", jobTry1.error);
-      }
-      const jobTry2 = await sb
+    const c2Id = await clientInsert({
+      owner_id: ownerId,
+      full_name: "Riverview Supplies",
+      email: "orders@riverviewsupplies.com.au",
+      phone: "0387 654 321",
+      company_name: "Riverview Supplies Pty Ltd",
+      abn: "98 765 432 109",
+      suburb: "Melbourne",
+      state: "VIC",
+      postcode: "3000",
+      notes: "Demo supplier for purchase orders",
+      client_type: "supplier",
+      status: "active",
+      source: "other"
+    });
+
+    const c3Id = await clientInsert({
+      owner_id: ownerId,
+      full_name: "Sarah Chen",
+      email: "sarah.chen@example.com",
+      phone: "0455 987 654",
+      suburb: "Sydney",
+      state: "NSW",
+      postcode: "2000",
+      notes: "Demo lead — follow up this week",
+      client_type: "lead",
+      status: "active",
+      source: "website"
+    });
+
+    if (!c1Id) {
+      console.error("[seed-owner-demo] all client inserts failed");
+      return { ok: false, message: "Failed to insert demo clients" };
+    }
+
+    // ── Employees ─────────────────────────────────────────────────────────────
+
+    const empInsert = async (payload: Record<string, unknown>) => {
+      const res = await sb.from("employees").insert({ ...payload, is_demo: true }).select("id").single();
+      if (!res.error && res.data?.id) return res.data.id as string;
+      // fallback without optional columns
+      const min = await sb
+        .from("employees")
+        .insert({ owner_id: payload.owner_id, full_name: payload.full_name, email: payload.email, is_demo: true })
+        .select("id")
+        .single();
+      return min.data?.id ? (min.data.id as string) : null;
+    };
+
+    const emp1Id = await empInsert({
+      owner_id: ownerId,
+      full_name: "Sam Taylor",
+      email: "demo-employee@servlo.com.au",
+      phone: "0423 456 789",
+      role: "Field Technician"
+    });
+
+    const emp2Id = await empInsert({
+      owner_id: ownerId,
+      full_name: "Jordan Lee",
+      email: "demo-employee2@servlo.com.au",
+      phone: "0434 567 890",
+      role: "Senior Technician"
+    });
+
+    if (!emp1Id) {
+      console.error("[seed-owner-demo] employee inserts failed");
+      return { ok: false, message: "Failed to insert demo employees" };
+    }
+
+    // ── Jobs ─────────────────────────────────────────────────────────────────
+
+    const jobInsert = async (payload: Record<string, unknown>) => {
+      const res = await sb.from("jobs").insert({ ...payload, is_demo: true }).select("id").single();
+      if (!res.error && res.data?.id) return res.data.id as string;
+      // fallback without optional columns
+      const min = await sb
         .from("jobs")
         .insert({
-          ...jobMinimal,
-          job_type: "",
-          scheduled_start: null,
-          scheduled_end: null,
-          address: "",
-          suburb: "",
-          state: "",
-          notes: "",
-          materials_cost: 0,
-          labour_hours: 0,
-          hourly_rate: 0
+          owner_id: payload.owner_id,
+          client_id: payload.client_id,
+          title: payload.title,
+          status: payload.status ?? "scheduled",
+          priority: "normal",
+          is_demo: true
         })
         .select("id")
         .single();
-      jobErr = jobTry2.error;
-      if (!jobTry2.error && jobTry2.data?.id) {
-        jobRow = jobTry2.data as { id: string };
+      return min.data?.id ? (min.data.id as string) : null;
+    };
+
+    const job1Id = await jobInsert({
+      owner_id: ownerId,
+      client_id: c1Id,
+      employee_id: emp1Id,
+      title: "Residential Service Call",
+      description: "Demo job — inspect and service main unit",
+      status: "in_progress",
+      priority: "normal",
+      scheduled_date: today
+    });
+
+    const job2Id = await jobInsert({
+      owner_id: ownerId,
+      client_id: c1Id,
+      employee_id: emp2Id,
+      title: "Annual Maintenance Visit",
+      description: "Demo job — scheduled annual check",
+      status: "scheduled",
+      priority: "normal",
+      scheduled_date: tomorrowKey
+    });
+
+    const job3Id = await jobInsert({
+      owner_id: ownerId,
+      client_id: c3Id,
+      title: "New Client Assessment",
+      description: "Demo job — initial site assessment",
+      status: "completed",
+      priority: "high",
+      scheduled_date: overdueKey
+    });
+
+    // ── Invoices ─────────────────────────────────────────────────────────────
+
+    const invBase = { owner_id: ownerId, is_demo: true };
+
+    await sb.from("invoices").insert([
+      {
+        ...invBase,
+        client_id: c1Id,
+        invoice_number: "INV-00001",
+        status: "unpaid",
+        subtotal: 772.73,
+        gst: 77.27,
+        total: 850.00,
+        issue_date: overdueKey,
+        due_date: overdueKey
+      },
+      {
+        ...invBase,
+        client_id: c1Id,
+        invoice_number: "INV-00002",
+        status: "paid",
+        subtotal: 454.55,
+        gst: 45.45,
+        total: 500.00,
+        issue_date: daysFromNow(-30),
+        due_date: daysFromNow(-14)
+      },
+      {
+        ...invBase,
+        client_id: c3Id,
+        invoice_number: "INV-00003",
+        status: "draft",
+        subtotal: 1136.36,
+        gst: 113.64,
+        total: 1250.00,
+        issue_date: today,
+        due_date: nextWeekKey
+      }
+    ]);
+
+    // ── Quotes ────────────────────────────────────────────────────────────────
+
+    await sb.from("quotes").insert([
+      {
+        owner_id: ownerId,
+        client_id: c1Id,
+        quote_number: "QTE-00001",
+        status: "draft",
+        subtotal: 1136.36,
+        gst: 113.64,
+        total: 1250.00,
+        is_demo: true
+      },
+      {
+        owner_id: ownerId,
+        client_id: c3Id,
+        quote_number: "QTE-00002",
+        status: "sent",
+        subtotal: 681.82,
+        gst: 68.18,
+        total: 750.00,
+        is_demo: true
+      }
+    ]);
+
+    // ── Purchase order ────────────────────────────────────────────────────────
+
+    if (c2Id) {
+      try {
+        await sb.from("purchase_orders").insert({
+          owner_id: ownerId,
+          po_number: "PO-00001",
+          supplier_client_id: c2Id,
+          job_id: job1Id ?? null,
+          status: "sent",
+          total: 320.00,
+          notes: "Demo PO — materials for residential service call",
+          is_demo: true
+        });
+      } catch {
+        // Non-fatal if purchase_orders table doesn't have is_demo column yet
       }
     }
 
-    if (jobErr || !jobRow?.id) {
-      console.error("Demo job insert failed:", jobErr);
-      await sb.from("employees").delete().eq("id", employeeId);
-      await sb.from("clients").delete().eq("id", clientId);
-      return { ok: false, message: jobErr?.message ?? "Failed to insert demo job" };
-    }
+    // ── Timesheets ────────────────────────────────────────────────────────────
 
-    const invPayload = {
-      owner_id: ownerId,
-      client_id: clientId,
-      invoice_number: "INV-00001",
-      status: "unpaid",
-      subtotal: 772.73,
-      gst: 77.27,
-      total: 850.0,
-      issue_date: overdueKey,
-      due_date: overdueKey,
-      is_demo: true
-    };
-
-    const invTry = await sb.from("invoices").insert(invPayload).select("id").single();
-    if (invTry.error || !invTry.data?.id) {
-      await sb.from("jobs").delete().eq("owner_id", ownerId).eq("client_id", clientId).eq("is_demo", true);
-      await sb.from("employees").delete().eq("id", employeeId);
-      await sb.from("clients").delete().eq("id", clientId);
-      console.error("Demo invoice insert failed:", invTry.error);
-      const msg = invTry.error && typeof invTry.error.message === "string"
-          ? invTry.error.message
-          : "Failed to insert demo invoice";
-      return { ok: false, message: msg };
-    }
-
-    const quotePayload = {
-      owner_id: ownerId,
-      client_id: clientId,
-      quote_number: "QT00001",
-      status: "draft",
-      total: 1250.0,
-      subtotal: 1136.36,
-      gst: 113.64,
-      is_demo: true
-    };
-
-    const qTry = await sb.from("quotes").insert(quotePayload).select("id").single();
-    if (qTry.error || !qTry.data?.id) {
-      console.error("Demo quote insert failed:", qTry.error);
-      // Don't fail signup completely if quote insert fails; core demo set is still useful.
-      return { ok: true };
+    if (emp1Id) {
+      const tsRows: Array<{ employee_id: string; clock_in_at: string; clock_out_at: string; is_demo: boolean }> = [
+        { employee_id: emp1Id, clock_in_at: `${overdueKey}T08:00:00+10:00`, clock_out_at: `${overdueKey}T16:30:00+10:00`, is_demo: true },
+        { employee_id: emp1Id, clock_in_at: `${today}T07:45:00+10:00`, clock_out_at: `${today}T15:00:00+10:00`, is_demo: true }
+      ];
+      if (emp2Id) {
+        tsRows.push({ employee_id: emp2Id, clock_in_at: `${overdueKey}T09:00:00+10:00`, clock_out_at: `${overdueKey}T17:00:00+10:00`, is_demo: true });
+      }
+      try {
+        await sb.from("timesheets").insert(tsRows);
+      } catch {
+        // Non-fatal if timesheets doesn't have is_demo column yet
+      }
     }
 
     console.log("[seed-owner-demo] finished OK for owner", ownerId);

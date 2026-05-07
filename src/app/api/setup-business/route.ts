@@ -284,7 +284,7 @@ export async function POST(request: Request) {
       .upsert(
         {
           owner_id: userId,
-          accent_colour: teal_fallback,
+          accent_colour: accent_colour,
           ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
         },
         { onConflict: "owner_id" }
