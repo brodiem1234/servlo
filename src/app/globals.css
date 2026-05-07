@@ -404,6 +404,7 @@
   --product-sidebar: #0d1b36;
   --product-main: #080f1e;
   background-color: #080f1e !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(195deg) drop-shadow(0 0 10px #3B82F6) drop-shadow(0 0 20px rgba(59,130,246,0.4));
 }
 [data-product="grow"] {
   --product-rgb: 139, 92, 246;
@@ -413,6 +414,7 @@
   --product-sidebar: #120a2e;
   --product-main: #0a0614;
   background-color: #0a0614 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(250deg) drop-shadow(0 0 10px #8B5CF6) drop-shadow(0 0 20px rgba(139,92,246,0.4));
 }
 [data-product="leads"] {
   --product-rgb: 245, 158, 11;
@@ -422,6 +424,7 @@
   --product-sidebar: #1f1200;
   --product-main: #120b00;
   background-color: #120b00 !important;
+  --logo-filter: brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(10deg) drop-shadow(0 0 10px #F59E0B) drop-shadow(0 0 20px rgba(245,158,11,0.4));
 }
 
 /* Ensure sidebar text is always readable inside product shells (dark backgrounds).
@@ -452,19 +455,21 @@
 
 /* Active nav item uses product muted bg + accent-light text inside product shells */
 [data-product] .owner-sidebar nav a[data-active="true"] {
-  background-color: var(--product-muted) !important;
-  color: var(--product-accent-light) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  font-weight: 600;
   border-left-color: var(--product-accent) !important;
 }
 [data-product] .owner-sidebar nav a[data-active="true"]:hover {
-  background-color: var(--product-muted) !important;
-  color: var(--product-accent-light) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
 }
-[data-product] .owner-sidebar nav a:hover {
-  background-color: color-mix(in srgb, var(--product-muted) 60%, transparent) !important;
+[data-product] .owner-sidebar nav a:not([data-active="true"]) {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
-[data-product] .owner-sidebar nav a[data-active="false"]:hover {
-  background-color: color-mix(in srgb, var(--product-muted) 50%, transparent) !important;
+[data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 /* ── Custom scrollbars (product-scoped) ─────────────────────────────────── */
@@ -517,6 +522,7 @@ html.light-mode [data-product="core"] {
   --product-main: #EEF4FF;
   --sidebar-active-bg: rgba(59, 130, 246, 0.08);
   --sidebar-active-text: #3B82F6;
+  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(199deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(59,130,246,0.5));
 }
 
 html.light-mode [data-product="grow"] {
@@ -525,6 +531,7 @@ html.light-mode [data-product="grow"] {
   --product-main: #F0EEFF;
   --sidebar-active-bg: rgba(139, 92, 246, 0.08);
   --sidebar-active-text: #8B5CF6;
+  --logo-filter: brightness(0) saturate(100%) invert(33%) sepia(97%) saturate(1300%) hue-rotate(250deg) brightness(95%) drop-shadow(0 0 8px rgba(139,92,246,0.5));
 }
 
 html.light-mode [data-product="leads"] {
@@ -533,18 +540,22 @@ html.light-mode [data-product="leads"] {
   --product-main: #FFF4E0;
   --sidebar-active-bg: rgba(245, 158, 11, 0.08);
   --sidebar-active-text: #F59E0B;
+  --logo-filter: brightness(0) saturate(100%) invert(70%) sepia(90%) saturate(900%) hue-rotate(5deg) brightness(102%) drop-shadow(0 0 8px rgba(245,158,11,0.5));
 }
 
 /* Light mode sidebar nav active item */
 html.light-mode [data-product] .owner-sidebar nav a[data-active="true"] {
-  background-color: var(--sidebar-active-bg) !important;
-  color: var(--sidebar-active-text) !important;
+  background-color: rgba(var(--product-rgb), 0.08) !important;
+  color: var(--product-accent) !important;
+  font-weight: 700;
   border-left-color: var(--product-accent) !important;
 }
-
-html.light-mode [data-product] .owner-sidebar nav a:hover {
-  background-color: rgba(var(--product-rgb), 0.05) !important;
-  color: var(--text-primary) !important;
+html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]) {
+  color: #374151 !important;
+}
+html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
+  background-color: #f8fafc !important;
+  color: #374151 !important;
 }
 
 /* Light mode sidebar border */

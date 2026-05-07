@@ -175,14 +175,23 @@ export function ProductSwitcher({
 
       {/* Dropdown panel */}
       {open && (
-        <div
-          className="absolute left-0 top-full z-[60] mt-1 min-w-[300px] rounded-xl"
-          style={{
-            background: "var(--panel-bg, #0d1117)",
-            border: "1px solid var(--panel-border, rgba(255,255,255,0.12))",
-            boxShadow: "var(--panel-shadow, 0 8px 40px rgba(0,0,0,0.75))",
-          }}
-        >
+        <>
+          <div
+            className="fixed inset-0"
+            style={{ zIndex: 98 }}
+            onClick={() => setOpen(false)}
+          />
+          <div
+            className="fixed left-0 top-0 overflow-y-auto"
+            style={{
+              width: "256px",
+              height: "100vh",
+              zIndex: 99,
+              background: "var(--panel-bg, #0d1117)",
+              borderRight: "1px solid var(--panel-border, rgba(255,255,255,0.12))",
+              boxShadow: "var(--panel-shadow, 4px 0 20px rgba(0,0,0,0.5))",
+            }}
+          >
           {/* Active products */}
           <div className="px-3 pt-3 pb-2">
             <p
@@ -303,7 +312,7 @@ export function ProductSwitcher({
 
           {/* Footer */}
           <div
-            className="rounded-b-xl px-4 py-2 text-center text-[10px]"
+            className="px-4 py-2 text-center text-[10px]"
             style={{
               background: "rgba(0,0,0,0.04)",
               borderTop: "1px solid var(--panel-border, rgba(255,255,255,0.08))",
@@ -312,7 +321,8 @@ export function ProductSwitcher({
           >
             SERVLO Platform — 3 of 12 products active
           </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

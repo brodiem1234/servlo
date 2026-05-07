@@ -1215,7 +1215,7 @@ export default function JobsManager({
         <div className="fixed inset-0 z-50 bg-black/40">
           <div className="flex h-full w-full flex-col md:flex-row md:justify-end md:overflow-hidden">
             {quickAdd === "client" ? (
-              <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
+              <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl dark:bg-[#1e2433] md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-base font-semibold text-[var(--text-primary)]">New client</h3>
                   <button type="button" onClick={() => setQuickAdd(null)} className="text-sm text-slate-500 hover:text-slate-800">
@@ -1243,7 +1243,7 @@ export default function JobsManager({
               </aside>
             ) : null}
             {quickAdd === "employee" ? (
-              <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
+              <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl dark:bg-[#1e2433] md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-base font-semibold text-[var(--text-primary)]">New employee</h3>
                   <button type="button" onClick={() => setQuickAdd(null)} className="text-sm text-slate-500 hover:text-slate-800">
@@ -1270,7 +1270,7 @@ export default function JobsManager({
                 </form>
               </aside>
             ) : null}
-            <div className="flex h-full min-h-0 w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-xl md:shrink-0">
+            <div className="flex h-full min-h-0 w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-xl dark:bg-[#1e2433] md:shrink-0">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">{editing ? "Edit Job" : "Add Job"}</h2>
               <button type="button" onClick={() => closeJobOverlay()} className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>

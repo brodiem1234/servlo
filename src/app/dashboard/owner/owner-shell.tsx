@@ -26,8 +26,6 @@ import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
 const CORE_COLOR = "#3B82F6";
-const CORE_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(195deg)";
 
 /** Dashboard is only active on the exact path; other items match their section. */
 function isNavItemActive(pathname: string, href: string) {
@@ -159,7 +157,7 @@ export default function OwnerShell({
       >
         <aside
           className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-          style={{ background: "var(--product-sidebar)", overflow: "hidden" }}
+          style={{ background: "var(--product-sidebar)" }}
         >
           <div className="mb-6 flex flex-col items-center">
             <Image
@@ -167,7 +165,7 @@ export default function OwnerShell({
               alt="SERVLO"
               width={120}
               height={120}
-              style={{ height: "auto", maxWidth: "120px", filter: CORE_LOGO_FILTER }}
+              style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
             />
             <div className="mt-3 h-[2px] w-full bg-[var(--product-accent)]" aria-hidden />
           </div>

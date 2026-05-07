@@ -455,7 +455,7 @@ export default function QuotesManager({
 
       {open ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-black/50 md:flex-row md:justify-end">
-          <div className="relative ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+          <div className="relative ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1e2433]">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {editingId ? `Edit Quote ${editingQuote?.quote_number ?? ""}` : "New Quote"}
@@ -677,7 +677,7 @@ export default function QuotesManager({
       {/* Quick-create client modal */}
       {newClientOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1e2433]">
             <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Client</h3>
             <div className="space-y-3">
               <div>

@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useCallback } from "react";
-import { LayoutDashboard, ShoppingBag, ClipboardList, GitBranch } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, ClipboardList, GitBranch, Settings2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
@@ -11,8 +11,6 @@ import { HelpButton } from "./help-button";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
 const LEADS_COLOR = "#F59E0B";
-const LEADS_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(4) hue-rotate(10deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -21,6 +19,7 @@ const LEADS_NAV: NavItem[] = [
   { href: "/dashboard/leads/browse", label: "Browse Leads", Icon: ShoppingBag },
   { href: "/dashboard/leads/my-leads", label: "My Leads", Icon: ClipboardList },
   { href: "/dashboard/leads/pipeline", label: "Lead Pipeline", Icon: GitBranch },
+  { href: "/dashboard/owner/settings", label: "Settings", Icon: Settings2 },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -59,7 +58,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
             alt="SERVLO"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: LEADS_LOGO_FILTER }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div className="mt-3 h-[2px] w-full" style={{ background: "var(--product-accent)" }} aria-hidden />
         </div>
@@ -83,7 +82,6 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
                   href={item.href}
                   data-active={active ? "true" : "false"}
                   className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors border-l-4 border-transparent"
-                  style={{ color: "var(--sidebar-text)" }}
                 >
                   <item.Icon size={15} aria-hidden />
                   {item.label}

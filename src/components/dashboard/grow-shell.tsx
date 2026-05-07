@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { LayoutDashboard, Megaphone, Share2, Star, Users2 } from "lucide-react";
+import { LayoutDashboard, Megaphone, Settings2, Share2, Star, Users2 } from "lucide-react";
 import React, { useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
@@ -11,9 +11,6 @@ import { HelpButton } from "./help-button";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 
 const GROW_COLOR = "#8B5CF6";
-const GROW_BG = "#110928";
-const GROW_LOGO_FILTER =
-  "brightness(0) saturate(100%) invert(1) sepia(1) saturate(3) hue-rotate(250deg)";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -23,6 +20,7 @@ const GROW_NAV: NavItem[] = [
   { href: "/dashboard/grow/social", label: "Social Content", Icon: Share2 },
   { href: "/dashboard/grow/reviews", label: "Google Reviews", Icon: Star },
   { href: "/dashboard/grow/referrals", label: "Referral Tracking", Icon: Users2 },
+  { href: "/dashboard/owner/settings", label: "Settings", Icon: Settings2 },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -61,7 +59,7 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
             alt="SERVLO"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: GROW_LOGO_FILTER }}
+            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
           />
           <div className="mt-3 h-[2px] w-full" style={{ background: "var(--product-accent)" }} aria-hidden />
         </div>
@@ -81,8 +79,7 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   data-active={active ? "true" : "false"}
-                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors"
-                  style={{ color: "var(--sidebar-text)" }}
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors border-l-4 border-transparent"
                 >
                   <item.Icon size={15} aria-hidden />
                   {item.label}

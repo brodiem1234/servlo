@@ -99,7 +99,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     supabase
       .from("profiles")
       .select(
-        "plan, subscription_status, subscription_tier, stripe_customer_id, email_digest_enabled, industry_tags, trial_start, trial_end, notification_preferences"
+        "plan, subscription_status, subscription_tier, stripe_customer_id, email_digest_enabled, industry_tags, trial_start, trial_end"
       )
       .eq("id", user.id)
       .maybeSingle(),
@@ -110,9 +110,11 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       .maybeSingle()
   ]);
 
-  if (profileResult.error) throw new Error(profileResult.error.message);
+  if (profileResult.error) {
+    console.error("[settings] profile query failed:", profileResult.error.message);
+  }
 
-  const profile = profileResult.data as {
+  const profile = profileResult.error ? null : (profileResult.data as {
     plan?: string | null;
     subscription_status?: string | null;
     subscription_tier?: string | null;
@@ -121,10 +123,24 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     industry_tags?: unknown;
     trial_start?: string | null;
     trial_end?: string | null;
-    notification_preferences?: unknown;
-  } | null;
+  } | null);
 
   const businessRow = businessResult.data;
+
+  // Fetch notification_preferences separately — column may not exist on all DB versions
+  let savedNotifPrefs: unknown = null;
+  try {
+    const notifResult = await supabase
+      .from("profiles")
+      .select("notification_preferences")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!notifResult.error) {
+      savedNotifPrefs = (notifResult.data as { notification_preferences?: unknown } | null)?.notification_preferences ?? null;
+    }
+  } catch {
+    // Column may not exist — use defaults
+  }
 
   // Industry resolution
   const industriesFromBiz = businessRow?.industries as unknown;
@@ -155,7 +171,6 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
   }
 
   // Notification prefs
-  const savedNotifPrefs = profile?.notification_preferences;
   const notifPrefs: NotificationPrefs = {
     ...DEFAULT_NOTIF_PREFS,
     ...(typeof savedNotifPrefs === "object" && savedNotifPrefs !== null ? (savedNotifPrefs as Partial<NotificationPrefs>) : {})
@@ -537,9 +552,9 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               currentPlan={currentPlan}
               success={resolvedParams?.success === "true"}
               priceIds={{
-                solo: process.env.STRIPE_SOLO_PRICE_ID ?? "",
-                team: process.env.STRIPE_TEAM_PRICE_ID ?? "",
-                business: process.env.STRIPE_BUSINESS_PRICE_ID ?? ""
+                solo: process.env.STRIPE_SOLO_PRICE_ID ?? "price_1TTiL8K1tzStyRcJQAfbuJ5n",
+                team: process.env.STRIPE_TEAM_PRICE_ID ?? "price_1TTiLaK1tzStyRcJNOgCeg0X",
+                business: process.env.STRIPE_BUSINESS_PRICE_ID ?? "price_1TTiLyK1tzStyRcJ4BVJz0o8"
               }}
             />
           </div>

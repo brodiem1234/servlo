@@ -415,8 +415,12 @@ export default function GrowAdsPage() {
                   value={form.businessName}
                   onChange={(e) => update({ businessName: e.target.value })}
                   placeholder="e.g. Adelaide Plumbing Co."
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/70"
+                  style={{
+                    background: "rgba(139,92,246,0.08)",
+                    border: "1px solid rgba(139,92,246,0.3)",
+                    color: "#e2e8f0",
+                  }}
                 />
               </div>
               <div>
@@ -426,8 +430,12 @@ export default function GrowAdsPage() {
                 <select
                   value={form.tradeType}
                   onChange={(e) => update({ tradeType: e.target.value })}
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/70"
+                  style={{
+                    background: "rgba(139,92,246,0.08)",
+                    border: "1px solid rgba(139,92,246,0.3)",
+                    color: "#e2e8f0",
+                  }}
                 >
                   <option value="">Select a trade type…</option>
                   {TRADE_TYPES.map((t) => (
@@ -444,8 +452,12 @@ export default function GrowAdsPage() {
                   value={form.suburb}
                   onChange={(e) => update({ suburb: e.target.value })}
                   placeholder="e.g. Norwood SA"
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/70"
+                  style={{
+                    background: "rgba(139,92,246,0.08)",
+                    border: "1px solid rgba(139,92,246,0.3)",
+                    color: "#e2e8f0",
+                  }}
                 />
               </div>
             </div>
@@ -501,8 +513,12 @@ export default function GrowAdsPage() {
                 value={form.targetSuburb}
                 onChange={(e) => update({ targetSuburb: e.target.value })}
                 placeholder="e.g. Adelaide CBD, 5000"
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
-                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/70"
+                style={{
+                  background: "rgba(139,92,246,0.08)",
+                  border: "1px solid rgba(139,92,246,0.3)",
+                  color: "#e2e8f0",
+                }}
               />
             </div>
             <div>
