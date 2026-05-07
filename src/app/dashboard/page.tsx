@@ -165,7 +165,7 @@ export default async function DashboardPage() {
 
                 {p.active ? (
                   <Link
-                    href={p.href as any}
+                    href={p.href}
                     className="mt-4 block rounded-lg px-4 py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
                     style={{ background: "var(--accent-color)" }}
                   >
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                   </Link>
                 ) : (
                   <Link
-                    href={p.href as any}
+                    href={p.href}
                     className="mt-4 block rounded-lg border px-4 py-2.5 text-center text-sm font-semibold transition-colors hover:bg-white/5"
                     style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
                   >
