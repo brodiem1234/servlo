@@ -249,17 +249,7 @@ export async function POST(request: Request) {
     console.error("[setup-business] trial dates reinforcement failed", trialReinforce.error);
   }
 
-  const trialEndDateSync = await supabaseAdmin
-    .from("profiles")
-    .update({ trial_end_date: trialEnd.toISOString() })
-    .eq("id", userId);
-
-  if (trialEndDateSync.error) {
-    console.warn("[setup-business] trial_end_date sync skipped (column may not exist yet)", trialEndDateSync.error);
-  }
-
   const buildBusinessPayload = (accentHex: string) => ({
-    user_id: userId,
     owner_id: userId,
     business_name: businessName || null,
     abn: abn || null,
@@ -272,7 +262,7 @@ export async function POST(request: Request) {
   let bizRowId: string | null = null;
   let insertAttempt = await supabaseAdmin
     .from("businesses")
-    .upsert(buildBusinessPayload(accent_colour), { onConflict: "user_id" })
+    .upsert(buildBusinessPayload(accent_colour), { onConflict: "owner_id" })
     .select("id")
     .single();
 
@@ -280,7 +270,7 @@ export async function POST(request: Request) {
     logBusinessInsertError("[setup-business] businesses upsert (chosen accent) failed — retrying teal", insertAttempt.error);
     insertAttempt = await supabaseAdmin
       .from("businesses")
-      .upsert(buildBusinessPayload(teal_fallback), { onConflict: "user_id" })
+      .upsert(buildBusinessPayload(teal_fallback), { onConflict: "owner_id" })
       .select("id")
       .single();
   }
@@ -293,12 +283,11 @@ export async function POST(request: Request) {
       .from("businesses")
       .upsert(
         {
-          user_id: userId,
           owner_id: userId,
           accent_colour: teal_fallback,
           ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
         },
-        { onConflict: "user_id" }
+        { onConflict: "owner_id" }
       )
       .select("id")
       .single();

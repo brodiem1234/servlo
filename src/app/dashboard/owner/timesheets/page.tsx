@@ -56,16 +56,39 @@ export default async function OwnerTimesheetsPage({ searchParams }: TimesheetsPr
   });
 
   const empIds = visibleEmployees.map((e: { id: string }) => e.id);
-  const { data: entriesRaw } =
-    empIds.length === 0
-      ? { data: [] as Array<{ employee_id: string; work_date: string; hours: number | string | null }> }
-      : await sb
-          .from("timesheet_entries")
-          .select("employee_id, work_date, hours")
-          .eq("owner_id", user.id)
-          .gte("work_date", weekStartIso)
-          .lte("work_date", weekEndIso)
-          .in("employee_id", empIds);
+  let entriesRaw: Array<{ employee_id: string; work_date: string; hours: number | string | null }> = [];
+  if (empIds.length > 0) {
+    const endExclusive = new Date(days[6]);
+    endExclusive.setDate(endExclusive.getDate() + 1);
+    const timesheetsResult = await sb
+      .from("timesheets")
+      .select("employee_id, clock_in, clock_out, total_hours")
+      .in("employee_id", empIds)
+      .gte("clock_in", `${weekStartIso}T00:00:00`)
+      .lt("clock_in", `${iso(endExclusive)}T00:00:00`);
+
+    if (timesheetsResult.error) {
+      throw new Error(timesheetsResult.error.message);
+    }
+
+    const aggregate = new Map<string, number>();
+    for (const row of timesheetsResult.data ?? []) {
+      const dateKey = String(row.clock_in ?? "").slice(0, 10);
+      if (!dateKey || !row.employee_id) continue;
+      const inMs = row.clock_in ? new Date(row.clock_in).getTime() : NaN;
+      const outMs = row.clock_out ? new Date(row.clock_out).getTime() : NaN;
+      const explicitHours = Number(row.total_hours ?? 0);
+      const derivedHours =
+        Number.isFinite(inMs) && Number.isFinite(outMs) && outMs > inMs ? (outMs - inMs) / 36e5 : 0;
+      const hours = explicitHours > 0 ? explicitHours : derivedHours;
+      const key = `${row.employee_id}|${dateKey}`;
+      aggregate.set(key, (aggregate.get(key) ?? 0) + hours);
+    }
+    entriesRaw = Array.from(aggregate.entries()).map(([key, hours]) => {
+      const [employee_id, work_date] = key.split("|");
+      return { employee_id, work_date, hours: Number(hours.toFixed(2)) };
+    });
+  }
 
   const entries = entriesRaw ?? [];
   const hourLookup = new Map<string, number>();
@@ -85,16 +108,28 @@ export default async function OwnerTimesheetsPage({ searchParams }: TimesheetsPr
     const hours = Number(formData.get("hours") ?? 0);
     if (!employee_id || !work_date) return;
 
-    const { error } = await sb2.from("timesheet_entries").upsert(
-      {
-        owner_id: owner.id,
+    const base = new Date(`${work_date}T09:00:00`);
+    const next = new Date(base);
+    next.setDate(next.getDate() + 1);
+
+    const deleteRes = await sb2
+      .from("timesheets")
+      .delete()
+      .eq("employee_id", employee_id)
+      .gte("clock_in", `${work_date}T00:00:00`)
+      .lt("clock_in", `${iso(next)}T00:00:00`);
+    if (deleteRes.error) throw new Error(deleteRes.error.message);
+
+    if (hours > 0) {
+      const clockOut = new Date(base.getTime() + Math.round(hours * 60) * 60 * 1000);
+      const insertRes = await sb2.from("timesheets").insert({
         employee_id,
-        work_date,
-        hours: Number.isFinite(hours) ? hours : 0
-      },
-      { onConflict: "employee_id,work_date" }
-    );
-    if (error) throw new Error(error.message);
+        clock_in: base.toISOString(),
+        clock_out: clockOut.toISOString(),
+        total_hours: Number(hours.toFixed(2))
+      });
+      if (insertRes.error) throw new Error(insertRes.error.message);
+    }
     revalidatePath("/dashboard/owner/timesheets");
   }
 

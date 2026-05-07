@@ -28,7 +28,7 @@ export default async function ClientPortalPage({ params }: Props) {
       .order("created_at", { ascending: false }),
     supabase
       .from("invoices")
-      .select("id, invoice_number, amount, status, due_date")
+      .select("id, invoice_number, total, status, due_date")
       .eq("client_id", client.id)
       .order("due_date", { ascending: true })
   ]);
@@ -97,7 +97,7 @@ export default async function ClientPortalPage({ params }: Props) {
                 <div key={invoice.id} className="flex items-center justify-between rounded border p-3">
                   <div>
                     <p className="font-medium">{invoice.invoice_number ?? "Invoice"}</p>
-                    <p className="text-[#64748b]">${Number(invoice.amount ?? 0).toFixed(2)}</p>
+                    <p className="text-[#64748b]">${Number(invoice.total ?? 0).toFixed(2)}</p>
                   </div>
                   <a
                     href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || "#"}

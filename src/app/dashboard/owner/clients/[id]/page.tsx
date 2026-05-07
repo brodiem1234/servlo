@@ -29,7 +29,7 @@ export default async function OwnerClientDetailPage({ params }: Props) {
       .order("scheduled_date", { ascending: false }),
     supabase
       .from("invoices")
-      .select("id, invoice_number, amount, status, due_date")
+      .select("id, invoice_number, total, status, due_date")
       .eq("owner_id", user.id)
       .eq("client_id", clientId)
       .order("due_date", { ascending: false }),

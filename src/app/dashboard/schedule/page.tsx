@@ -24,16 +24,20 @@ export default async function SchedulePage({ searchParams }: { searchParams?: Sc
   const dateKey =
     raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw.slice(0, 10) : todayKey;
 
-  const { data: jobsRaw } = await sb
+  const jobsResult = await sb
     .from("jobs")
-    .select(
-      "id, title, scheduled_date, scheduled_start, scheduled_end, status, client_name, address, suburb, state, is_demo"
-    )
+    .select("id, title, scheduled_date, scheduled_start, scheduled_end, status, client_id, address, suburb, state, is_demo")
     .eq("owner_id", user.id)
     .eq("scheduled_date", dateKey)
     .order("scheduled_start", { ascending: true });
 
-  const jobs = jobsRaw ?? [];
+  const jobs = jobsResult.data ?? [];
+  const clientIds = jobs.map((j) => j.client_id).filter((id): id is string => Boolean(id));
+  const { data: clientRows } =
+    clientIds.length === 0
+      ? { data: [] as Array<{ id: string; full_name: string | null }> }
+      : await sb.from("clients").select("id, full_name").in("id", clientIds).eq("owner_id", user.id);
+  const clientNameById = new Map((clientRows ?? []).map((row) => [row.id, row.full_name]));
   const label = new Date(`${dateKey}T12:00:00`).toLocaleDateString("en-AU", {
     weekday: "long",
     day: "numeric",
@@ -85,7 +89,7 @@ export default async function SchedulePage({ searchParams }: { searchParams?: Sc
                     · {job.status ?? "scheduled"}
                   </p>
                   <p className="mt-1 text-xs text-[var(--text-muted)]">
-                    {job.client_name ?? "—"}
+                    {(job.client_id ? clientNameById.get(job.client_id) : null) ?? "—"}
                     {job.address || job.suburb
                       ? ` · ${[job.address, job.suburb, job.state].filter(Boolean).join(", ")}`
                       : ""}

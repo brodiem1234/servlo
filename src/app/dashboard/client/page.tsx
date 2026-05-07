@@ -22,7 +22,7 @@ export default async function ClientDashboardPage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("invoices")
-      .select("id, invoice_number, amount, due_date, status")
+      .select("id, invoice_number, total, due_date, status")
       .in("client_id", ids)
       .order("due_date", { ascending: true })
   ]);
@@ -88,7 +88,7 @@ export default async function ClientDashboardPage() {
               <div key={invoice.id} className="rounded border p-2">
                 <p className="font-medium">{invoice.invoice_number ?? "Invoice"}</p>
                 <p className="text-[var(--text-secondary)]">
-                  ${Number(invoice.amount ?? 0).toFixed(2)} · {invoice.status ?? "draft"}
+                  ${Number(invoice.total ?? 0).toFixed(2)} · {invoice.status ?? "draft"}
                 </p>
               </div>
             ))}

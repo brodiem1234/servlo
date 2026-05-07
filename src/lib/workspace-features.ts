@@ -1,6 +1,5 @@
 import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug } from "@/lib/industries";
-import { businessesOwnerOrEq } from "@/lib/businesses";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** Canonical feature ids persisted in businesses.feature_flags.enabled */
@@ -211,7 +210,7 @@ export async function loadWorkspaceFeatureSet(
   const { data: row } = await sb
     .from("businesses")
     .select("feature_flags, industries")
-    .or(businessesOwnerOrEq(ownerUserId))
+    .eq("owner_id", ownerUserId)
     .maybeSingle();
 
   const parsed = parseFeatureFlagsColumn(row?.feature_flags ?? null);

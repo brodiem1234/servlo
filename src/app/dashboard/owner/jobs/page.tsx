@@ -25,28 +25,28 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
   const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "scheduling");
 
-  const jobsSelectPlain =
-    "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo";
-
-  const [{ data: jobsRaw, error: jobsErr }, { data: clients }, { data: employees }] = await Promise.all([
-    sb.from("jobs").select(jobsSelectPlain).eq("owner_id", user.id).order("scheduled_date", { ascending: true }),
+  const [jobsResult, clientsResult, employeesResult] = await Promise.all([
+    sb
+      .from("jobs")
+      .select(
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo"
+      )
+      .eq("owner_id", user.id)
+      .order("scheduled_date", { ascending: true }),
     sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
     sb.from("employees").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
-
-  console.log("Fetching jobs for owner:", user.id);
-  console.log("Raw results:", JSON.stringify(jobsRaw ?? []));
-
-  if (jobsErr) {
-    console.error("[jobs-page] jobs query failed", jobsErr);
-  }
+  if (jobsResult.error) throw new Error(jobsResult.error.message);
+  if (clientsResult.error) throw new Error(clientsResult.error.message);
+  if (employeesResult.error) throw new Error(employeesResult.error.message);
+  const jobs = jobsResult.data ?? [];
+  const clients = clientsResult.data ?? [];
+  const employees = employeesResult.data ?? [];
 
   const clientNameById = new Map((clients ?? []).map((c: { id: string; full_name: string | null }) => [c.id, c.full_name]));
   const employeeNameById = new Map(
     (employees ?? []).map((e: { id: string; full_name: string | null }) => [e.id, e.full_name])
   );
-
-  const jobs = jobsRaw ?? [];
 
   const photoUrlsByJob: Record<string, Array<{ url: string; label: "before" | "after" }>> = {};
   const jobIds = jobs.map((job) => job.id);

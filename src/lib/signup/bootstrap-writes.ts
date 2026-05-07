@@ -141,8 +141,6 @@ export async function bootstrapSignupProfiles(
   const extendedPayload: Record<string, unknown> = {
     email: params.email,
     phone: params.phoneNumber || null,
-    business_name: params.businessName || null,
-    abn: params.abn || null,
     trial_start: trialStart.toISOString(),
     trial_end: trialEnd.toISOString(),
     subscription_status: "trialing",
@@ -169,13 +167,7 @@ export async function bootstrapSignupProfiles(
       }
       console.warn("[bootstrapSignupProfiles] extended profile update failed (non-fatal)", extRes.error);
     } else {
-      const legacyTrialEndDate = await admin
-        .from("profiles")
-        .update({ trial_end_date: trialEnd.toISOString() })
-        .eq("id", params.userId);
-      if (legacyTrialEndDate.error) {
-        console.warn("[bootstrapSignupProfiles] trial_end_date sync skipped", legacyTrialEndDate.error);
-      }
+      // no-op: trial_end is canonical
     }
   } catch (e) {
     if (role === "owner") {

@@ -50,21 +50,21 @@ export default async function OwnerDashboardPage() {
     redirect("/auth/login");
   }
 
-  const [{ data: profile }, dashboardData] = await Promise.all([
+  const [{ data: profile }, { data: businessRow }, dashboardData] = await Promise.all([
     sb
       .from("profiles")
       .select(
-        "trial_end, trial_end_date, trial_start, subscription_status, industry_tags, industry_other_note, business_name"
+        "trial_end, trial_start, subscription_status, industry_tags, industry_other_note"
       )
       .eq("id", user.id)
       .maybeSingle(),
+    sb.from("businesses").select("business_name").eq("owner_id", user.id).maybeSingle(),
     getOwnerDashboardData(user.id)
   ]);
 
   const trialDaysRemaining = computeTrialDaysRemaining(
     profile as {
       trial_end?: string | null;
-      trial_end_date?: string | null;
       trial_start?: string | null;
       subscription_status?: string | null;
     }
@@ -77,7 +77,7 @@ export default async function OwnerDashboardPage() {
   const checklistItems = getGettingStartedChecklist(industryTags.length ? industryTags : null);
 
   const onboardingCounts = dashboardData.onboardingCounts;
-  const bizDone = Boolean(((profile as { business_name?: string | null })?.business_name ?? "").trim());
+  const bizDone = Boolean((businessRow?.business_name ?? "").trim());
 
   function checklistDone(href: string): boolean {
     const h = href.toLowerCase();
@@ -161,7 +161,7 @@ export default async function OwnerDashboardPage() {
     const invoiceId = String(formData.get("invoice_id") ?? "");
     const { data: invoice } = await sb
       .from("invoices")
-      .select("invoice_number, amount, due_date, client_id, is_demo")
+      .select("invoice_number, total, due_date, client_id, is_demo")
       .eq("id", invoiceId)
       .eq("owner_id", owner.id)
       .maybeSingle();
@@ -179,7 +179,7 @@ export default async function OwnerDashboardPage() {
           invoiceReminderEmailTemplate({
             clientName: client.full_name ?? "there",
             invoiceNumber: invoice.invoice_number ?? "Invoice",
-            amount: formatCurrency(Number(invoice.amount ?? 0)),
+            amount: formatCurrency(Number(invoice.total ?? 0)),
             dueDate: invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-",
             payNowUrl: process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || `${process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au"}/dashboard/client`
           })
@@ -204,11 +204,10 @@ export default async function OwnerDashboardPage() {
     const quoteId = String(formData.get("quote_id") ?? "");
     const { data: quote } = await sb
       .from("quotes")
-      .select("quote_number, created_at, client_id, is_demo")
+      .select("quote_number, created_at, client_id")
       .eq("id", quoteId)
       .eq("owner_id", owner.id)
       .maybeSingle();
-    if (quote?.is_demo) return;
     if (quote?.client_id) {
       const { data: client } = await sb
         .from("clients")
@@ -568,7 +567,7 @@ export default async function OwnerDashboardPage() {
                   </form>
                 </div>
                 <p className="text-[var(--text-secondary)]">
-                  {formatCurrency(Number(invoice.amount ?? 0))} · Due{" "}
+                  {formatCurrency(Number(invoice.total ?? 0))} · Due{" "}
                   {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-"}
                 </p>
                 <p className="text-xs text-[var(--text-muted)]">

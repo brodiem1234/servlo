@@ -95,11 +95,16 @@ export async function getOwnerContext() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, trial_start, trial_end, trial_end_date, subscription_tier, subscription_status")
+    .select("trial_start, trial_end, subscription_tier, subscription_status")
     .eq("id", user.id)
     .maybeSingle();
+  const { data: businessRow } = await supabase
+    .from("businesses")
+    .select("business_name")
+    .eq("owner_id", user.id)
+    .maybeSingle();
 
-  let trialEnd = profile?.trial_end ?? profile?.trial_end_date ?? null;
+  let trialEnd = profile?.trial_end ?? null;
   if (!trialEnd) {
     if (profile?.trial_start) {
       const fallback = new Date(profile.trial_start);
@@ -114,7 +119,7 @@ export async function getOwnerContext() {
 
   return {
     user,
-    businessName: profile?.business_name ?? "SERVLO Business",
+    businessName: businessRow?.business_name ?? "SERVLO Business",
     trialEnd,
     subscriptionTier: profile?.subscription_tier ?? "solo"
   };
@@ -140,36 +145,30 @@ export async function getOwnerDashboardData(ownerId: string) {
     { data: recentQuotesActivity },
     { count: employeeHeadcount }
   ] = await Promise.all([
-    supabase.from("clients").select("id, status, is_demo").eq("owner_id", ownerId),
+    supabase.from("clients").select("id, full_name, status, is_demo").eq("owner_id", ownerId),
     supabase
       .from("invoices")
-      .select(
-        "id, invoice_number, amount, due_date, status, client_id, is_demo, clients:clients(full_name), created_at, last_reminder_sent"
-      )
+      .select("id, invoice_number, total, due_date, status, client_id, is_demo, created_at, last_reminder_sent")
       .eq("owner_id", ownerId)
       .order("due_date", { ascending: true }),
     supabase
       .from("jobs")
-      .select(
-        "id, title, status, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, labour_hours, client_name, is_demo, clients:clients(full_name)"
-      )
+      .select("id, title, status, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, labour_hours, client_id, is_demo")
       .eq("owner_id", ownerId),
     supabase
       .from("invoices")
-      .select("id, invoice_number, amount, due_date, status, client_id, is_demo, clients:clients(full_name), last_reminder_sent")
+      .select("id, invoice_number, total, due_date, status, client_id, is_demo, last_reminder_sent")
       .eq("owner_id", ownerId)
       .eq("status", "unpaid")
       .order("due_date", { ascending: true }),
     supabase
       .from("quotes")
-      .select(
-        "id, quote_number, status, created_at, total, client_name, is_demo, clients:clients(full_name), client_id, last_reminder_sent"
-      )
+      .select("id, quote_number, status, created_at, total, client_id, is_demo, last_reminder_sent")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: true }),
     supabase
       .from("invoices")
-      .select("amount, created_at, is_demo")
+      .select("total, created_at, is_demo")
       .eq("owner_id", ownerId)
       .eq("status", "paid")
       .gte("created_at", sevenDaysAgo.toISOString()),
@@ -210,13 +209,25 @@ export async function getOwnerDashboardData(ownerId: string) {
   weekEnd.setDate(weekEnd.getDate() + 7);
 
   const safeClients = clients ?? [];
-  const safeInvoices = invoices ?? [];
+  const clientNameById = new Map(
+    (safeClients as Array<{ id: string; full_name?: string | null }>).map((c) => [c.id, c.full_name ?? null])
+  );
+  const safeInvoices = (invoices ?? []).map((invoice: any) => ({
+    ...invoice,
+    client_name: invoice.client_id ? clientNameById.get(invoice.client_id) ?? "Unknown client" : "Unknown client"
+  }));
   const safeAllJobs = (allJobs ?? []).map((job: any) => ({
     ...job,
-    client_name: job.client_name ?? job.clients?.full_name ?? null
+    client_name: job.client_id ? clientNameById.get(job.client_id) ?? null : null
   }));
-  const safeUnpaid = unpaidInvoices ?? [];
-  const safeQuotes = quotes ?? [];
+  const safeUnpaid = (unpaidInvoices ?? []).map((invoice: any) => ({
+    ...invoice,
+    client_name: invoice.client_id ? clientNameById.get(invoice.client_id) ?? "Unknown client" : "Unknown client"
+  }));
+  const safeQuotes = (quotes ?? []).map((quote: any) => ({
+    ...quote,
+    client_name: quote.client_id ? clientNameById.get(quote.client_id) ?? "Unknown client" : "Unknown client"
+  }));
 
   const visibleClients = filterDemoEntities(safeClients as Array<{ is_demo?: boolean | null }>);
   const visibleJobs = filterDemoEntities(safeAllJobs as Array<{ is_demo?: boolean | null }>);
@@ -296,7 +307,7 @@ export async function getOwnerDashboardData(ownerId: string) {
       if (!inv.created_at) continue;
       const invKey = String(inv.created_at).slice(0, 10);
       if (invKey === key) {
-        revenueByDay[i] += Number(inv.amount ?? 0);
+        revenueByDay[i] += Number(inv.total ?? 0);
       }
     }
   }
@@ -353,10 +364,10 @@ export async function getOwnerDashboardData(ownerId: string) {
         const date = new Date(invoice.created_at);
         return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
       })
-      .reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0),
+      .reduce((sum, invoice) => sum + Number(invoice.total ?? 0), 0),
     outstandingAmount: invoicesMoney
       .filter((invoice) => (invoice.status ?? "").toLowerCase() === "unpaid")
-      .reduce((sum, invoice) => sum + Number(invoice.amount ?? 0), 0),
+      .reduce((sum, invoice) => sum + Number(invoice.total ?? 0), 0),
     jobsCompletedThisWeek: (visibleJobs as any[]).filter((job) => {
       if ((job.status ?? "").toLowerCase() !== "completed") return false;
       if (!job.scheduled_date) return false;
@@ -370,10 +381,10 @@ export async function getOwnerDashboardData(ownerId: string) {
   for (const invoice of invoicesMoney) {
     const id = invoice.client_id ?? "unknown";
     const current = topClientsMap.get(id) ?? {
-      client_name: (invoice as any).client_name ?? (invoice as any).clients?.full_name ?? "Unknown client",
+      client_name: (invoice as any).client_name ?? "Unknown client",
       total: 0
     };
-    current.total += Number(invoice.amount ?? 0);
+    current.total += Number(invoice.total ?? 0);
     topClientsMap.set(id, current);
   }
   const topClients = Array.from(topClientsMap.values())
@@ -382,7 +393,7 @@ export async function getOwnerDashboardData(ownerId: string) {
 
   const chaseInvoices = excludeDemoFinancial(safeUnpaid as Array<{ is_demo?: boolean | null }>).map((invoice: any) => ({
     ...invoice,
-    client_name: invoice.client_name ?? invoice.clients?.full_name ?? "Unknown client"
+    client_name: invoice.client_name ?? "Unknown client"
   }));
 
   const invoiceStatusCounts = { draft: 0, unpaid: 0, overdue: 0, paid: 0 };
@@ -421,7 +432,7 @@ export async function getOwnerDashboardData(ownerId: string) {
       const ageDays = ref ? Math.floor((Date.now() - new Date(ref).getTime()) / (1000 * 60 * 60 * 24)) : 0;
       return {
         ...quote,
-        client_name: quote.client_name ?? quote.clients?.full_name ?? "Unknown client",
+        client_name: quote.client_name ?? "Unknown client",
         quote_amount: Number(quote.total ?? 0),
         days_waiting: ageDays
       };

@@ -7,15 +7,15 @@ import InvoicesManager from "./invoices-manager";
 import { invoiceReminderEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 
-function getNextNumber(existing: Array<{ invoice_number: string | null }>, prefix: string) {
+function getNextInvoiceNumber(existing: Array<{ invoice_number: string | null }>) {
   const max = existing.reduce((highest, item) => {
     const value = item.invoice_number ?? "";
-    const match = new RegExp(`^${prefix}-(\\d+)$`).exec(value);
+    const match = /^INV-?(\d+)$/i.exec(value);
     if (!match) return highest;
     const num = Number(match[1]);
     return Number.isFinite(num) ? Math.max(highest, num) : highest;
   }, 0);
-  return `${prefix}-${String(max + 1).padStart(3, "0")}`;
+  return `INV-${String(max + 1).padStart(5, "0")}`;
 }
 
 type InvoicesPageProps = {
@@ -33,102 +33,93 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
   const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "invoices");
 
-  const invWideSelect =
-    "id, invoice_number, client_id, amount, total, subtotal, gst, gst_amount, status, due_date, issue_date, is_demo";
-  const invNarrowSelect = "id, invoice_number, client_id, amount, status, due_date, issue_date, is_demo";
+  const invSelect =
+    "id, invoice_number, client_id, total, subtotal, gst, status, due_date, issue_date, is_demo, notes";
 
-  const clientsPromise = sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name");
-
-  const invFirst = await sb.from("invoices").select(invWideSelect).eq("owner_id", user.id).order("due_date", {
-    ascending: true
-  });
+  const [invResult, clientsResult, businessResult] = await Promise.all([
+    sb.from("invoices").select(invSelect).eq("owner_id", user.id).order("due_date", { ascending: true }),
+    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
+    sb.from("businesses").select("business_name, abn, phone, address").eq("owner_id", user.id).maybeSingle()
+  ]);
 
   let invoices: Array<{
     id: string;
     invoice_number: string | null;
     client_id: string | null;
-    amount: number | null;
-    total?: number | null;
+    total: number | null;
     subtotal?: number | null;
     gst?: number | null;
-    gst_amount?: number | null;
     status: string | null;
     due_date: string | null;
     issue_date: string | null;
     is_demo?: boolean | null;
+    notes?: string | null;
   }> = [];
 
-  if (!invFirst.error) {
-    invoices = (invFirst.data ?? []) as typeof invoices;
-  } else if (invFirst.error.code === "PGRST204") {
-    const invFb = await sb.from("invoices").select(invNarrowSelect).eq("owner_id", user.id).order("due_date", {
-      ascending: true
-    });
-    invoices = (invFb.data ?? []) as typeof invoices;
-    if (invFb.error) {
-      console.error("[invoices-page] invoices fallback query failed", invFb.error);
-      invoices = [];
-    }
+  if (!invResult.error) {
+    invoices = (invResult.data ?? []) as typeof invoices;
   } else {
-    console.error("[invoices-page] invoices query failed", invFirst.error);
+    console.error("[invoices-page] query failed", invResult.error);
     invoices = [];
   }
 
-  const { data: clients } = await clientsPromise;
+  if (clientsResult.error) {
+    throw new Error(clientsResult.error.message);
+  }
+  const clients = clientsResult.data ?? [];
+  const businessRow = businessResult.data;
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
 
   async function createInvoiceAction(formData: FormData) {
     "use server";
     const sb = await createClient();
-    const {
-      data: { user: owner }
-    } = await sb.auth.getUser();
+    const { data: { user: owner } } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
-    const lineItemsRaw = String(formData.get("line_items") ?? "[]");
-    const lineItems = JSON.parse(lineItemsRaw) as Array<{
-      description: string;
-      quantity: number;
-      unit_price: number;
-      gst_applicable: boolean;
-    }>;
+
+    let lineItems: Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }> = [];
+    try {
+      lineItems = JSON.parse(String(formData.get("line_items") ?? "[]"));
+    } catch { lineItems = []; }
+
     const subTotal = lineItems.reduce((sum, i) => sum + Number(i.quantity) * Number(i.unit_price), 0);
     const gst = lineItems.reduce(
       (sum, i) => sum + (i.gst_applicable ? Number(i.quantity) * Number(i.unit_price) * 0.1 : 0),
       0
     );
     const total = subTotal + gst;
-    const { data: existingNumbers } = await sb
-      .from("invoices")
-      .select("invoice_number")
-      .eq("owner_id", owner.id);
-    const invoiceNumber = getNextNumber(existingNumbers ?? [], "INV");
+
+    const { data: existingNumbers } = await sb.from("invoices").select("invoice_number").eq("owner_id", owner.id);
+    const invoiceNumber = getNextInvoiceNumber(existingNumbers ?? []);
+
+    const notes = String(formData.get("notes") ?? "") || null;
+
+    const requestedClientId = String(formData.get("client_id") ?? "") || null;
+    const ownedClient = requestedClientId
+      ? (await sb.from("clients").select("id").eq("id", requestedClientId).eq("owner_id", owner.id).maybeSingle()).data
+      : null;
+    const clientId = ownedClient?.id ?? null;
 
     const baseInsert = {
       owner_id: owner.id,
-      client_id: String(formData.get("client_id") ?? "") || null,
+      client_id: clientId,
       invoice_number: invoiceNumber,
       issue_date: String(formData.get("issue_date") ?? "") || null,
       due_date: String(formData.get("due_date") ?? "") || null,
       subtotal: subTotal,
-      status: "unpaid"
+      status: "unpaid",
+      notes
     };
 
-    let created = await sb
+    const created = await sb
       .from("invoices")
       .insert({ ...baseInsert, gst, total })
       .select("id")
       .single();
 
-    if (created.error) {
-      created = await sb
-        .from("invoices")
-        .insert({ ...baseInsert, gst_amount: gst, amount: total })
-        .select("id")
-        .single();
-    }
-
     if (!created.data?.id) throw new Error(created.error?.message ?? "Failed to create invoice");
+
     if (created.data?.id && lineItems.length > 0) {
-      const { error: itemsError } = await sb.from("invoice_items").insert(
+      await sb.from("invoice_items").insert(
         lineItems.map((i) => ({
           invoice_id: created.data.id,
           description: i.description,
@@ -138,16 +129,19 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
           line_total: i.quantity * i.unit_price
         }))
       );
-      if (itemsError) throw new Error(itemsError.message);
     }
-    const clientId = String(formData.get("client_id") ?? "") || null;
+
     if (clientId) {
-      const { data: client } = await sb.from("clients").select("email, full_name, is_demo").eq("id", clientId).maybeSingle();
+      const { data: client } = await sb
+        .from("clients")
+        .select("email, full_name, is_demo")
+        .eq("id", clientId)
+        .maybeSingle();
       if (client?.email && !client.is_demo) {
-        const payNowUrl = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || `${process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au"}/dashboard/client`;
+        const payNowUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/client`;
         await sendEmail(
           client.email,
-          `Invoice ${invoiceNumber} from SERVLO`,
+          `Invoice ${invoiceNumber}`,
           invoiceReminderEmailTemplate({
             clientName: client.full_name ?? "there",
             invoiceNumber,
@@ -159,45 +153,144 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       }
     }
     revalidatePath("/dashboard/owner/invoices");
+    revalidatePath("/dashboard/owner");
   }
 
   async function updateInvoiceAction(formData: FormData) {
     "use server";
     const sb = await createClient();
-    const {
-      data: { user: owner }
-    } = await sb.auth.getUser();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    const id = String(formData.get("id") ?? "");
+
+    let lineItems: Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }> = [];
+    try {
+      lineItems = JSON.parse(String(formData.get("line_items") ?? "[]"));
+    } catch { lineItems = []; }
+
+    const subTotal = lineItems.reduce((sum, i) => sum + Number(i.quantity) * Number(i.unit_price), 0);
+    const gst = lineItems.reduce(
+      (sum, i) => sum + (i.gst_applicable ? Number(i.quantity) * Number(i.unit_price) * 0.1 : 0),
+      0
+    );
+    const total = subTotal + gst;
+    const notes = String(formData.get("notes") ?? "") || null;
+
+    const payload: Record<string, unknown> = {
+      client_id: String(formData.get("client_id") ?? "") || null,
+      issue_date: String(formData.get("issue_date") ?? "") || null,
+      due_date: String(formData.get("due_date") ?? "") || null,
+      notes
+    };
+
+    if (lineItems.length > 0) {
+      payload.subtotal = subTotal;
+      payload.gst = gst;
+      payload.total = total;
+    }
+
+    const { error } = await sb.from("invoices").update(payload).eq("id", id).eq("owner_id", owner.id);
+    if (error) throw new Error(error.message);
+
+    if (lineItems.length > 0) {
+      await sb.from("invoice_items").delete().eq("invoice_id", id);
+      await sb.from("invoice_items").insert(
+        lineItems.map((i) => ({
+          invoice_id: id,
+          description: i.description,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+          gst_applicable: i.gst_applicable,
+          line_total: i.quantity * i.unit_price
+        }))
+      );
+    }
+
+    revalidatePath("/dashboard/owner/invoices");
+    revalidatePath("/dashboard/owner");
+  }
+
+  async function markPaidAction(formData: FormData) {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
     const { error } = await sb
       .from("invoices")
-      .update({
-        client_id: String(formData.get("client_id") ?? "") || null,
-        issue_date: String(formData.get("issue_date") ?? "") || null,
-        due_date: String(formData.get("due_date") ?? "") || null
-      })
+      .update({ status: "paid" })
       .eq("id", id)
       .eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
     revalidatePath("/dashboard/owner/invoices");
+    revalidatePath("/dashboard/owner");
+  }
+
+  async function sendInvoiceEmailAction(formData: FormData) {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) redirect("/auth/login");
+    const id = String(formData.get("id") ?? "");
+    const { data: inv } = await sb
+      .from("invoices")
+      .select("invoice_number, total, due_date, client_id, is_demo")
+      .eq("id", id)
+      .eq("owner_id", owner.id)
+      .maybeSingle();
+    if (!inv || inv.is_demo) return;
+    const { data: client } = await sb
+      .from("clients")
+      .select("email, full_name")
+      .eq("id", inv.client_id ?? "")
+      .maybeSingle();
+    if (!client?.email) return;
+    const payNowUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/client`;
+    await sendEmail(
+      client.email,
+      `Invoice ${inv.invoice_number ?? "from SERVLO"}`,
+      invoiceReminderEmailTemplate({
+        clientName: client.full_name ?? "there",
+        invoiceNumber: inv.invoice_number ?? "Invoice",
+        amount: `$${Number(inv.total ?? 0).toFixed(2)}`,
+        dueDate: inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-AU") : "-",
+        payNowUrl
+      })
+    );
+    revalidatePath("/dashboard/owner/invoices");
+  }
+
+  async function loadLineItemsAction(invoiceId: string): Promise<Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }>> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return [];
+    const { data } = await sb
+      .from("invoice_items")
+      .select("description, quantity, unit_price, gst_applicable")
+      .eq("invoice_id", invoiceId)
+      .order("id", { ascending: true });
+    return (data ?? []) as Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }>;
   }
 
   const visibleInvoices = filterDemoEntities(invoices ?? []);
-  const allInvoices = visibleInvoices;
 
   return (
     <section className="space-y-5">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Invoices</h1>
       <InvoicesManager
-        invoices={allInvoices}
+        invoices={visibleInvoices}
         clients={filterDemoEntities(clients ?? []).map((c) => ({ id: c.id, label: c.full_name ?? "Unnamed client" }))}
         createInvoiceAction={createInvoiceAction}
         updateInvoiceAction={updateInvoiceAction}
+        markPaidAction={markPaidAction}
+        sendInvoiceEmailAction={sendInvoiceEmailAction}
+        loadLineItemsAction={loadLineItemsAction}
         prefill={sp}
         initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
+        businessProfile={businessRow ? { businessName: businessRow.business_name ?? null, abn: businessRow.abn ?? null, phone: businessRow.phone ?? null, address: businessRow.address ?? null } : null}
+        appOrigin={appOrigin}
       />
     </section>
   );
 }
-
-

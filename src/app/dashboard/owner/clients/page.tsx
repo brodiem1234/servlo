@@ -184,24 +184,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       }>
     | null = null;
 
-  if (primaryClientsQuery.error?.code === "PGRST204") {
-    const fbSortCol = sortKey === "newest" || sortKey === "oldest" ? "created_at" : "full_name";
-    const fbAscending = sortKey === "oldest" || sortKey === "name_asc";
-    const fallbackClientsQuery = await supabase
-      .from("clients")
-      .select("id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, created_at, is_demo")
-      .eq("owner_id", ownerId)
-      .order(fbSortCol, { ascending: fbAscending });
-    clients = (fallbackClientsQuery.data ?? []).map((client) => ({
-      ...client,
-      status: null,
-      source: null,
-      portal_token: null,
-      /** Preserve seeded demo rows; never strip demo markers in this path. */
-      is_demo: (client as { is_demo?: boolean | null }).is_demo ?? false,
-      client_type: "customer"
-    }));
-  } else if (primaryClientsQuery.error) {
+  if (primaryClientsQuery.error) {
     console.error("[clients-page] clients query failed", primaryClientsQuery.error);
     clients = [];
   } else {
@@ -225,10 +208,10 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     clientIds.length
           ? supabase
               .from("invoices")
-              .select("id, client_id, amount, total")
+              .select("id, client_id, total")
               .in("client_id", clientIds)
               .eq("owner_id", ownerId)
-      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; amount: number | null; total?: number | null }> })
+      : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; total: number | null }> })
   ]);
 
   const metricsByClient = new Map<string, ClientMetric>();
@@ -248,7 +231,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     if (!invoice.client_id) continue;
     const metric = metricsByClient.get(invoice.client_id);
     if (!metric) continue;
-    metric.totalInvoiced += Number(invoice.total ?? invoice.amount ?? 0);
+    metric.totalInvoiced += Number(invoice.total ?? 0);
   }
 
   const metricsRecord = Object.fromEntries(metricsByClient) as Record<string, ClientMetric>;
@@ -308,18 +291,6 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       }).select("id").maybeSingle();
     }
 
-    if (attempt.error?.code === "PGRST204") {
-      const fallback = await sb.from("clients").insert({
-        owner_id: owner.id,
-        is_demo: false,
-        full_name: basePayload.full_name,
-        email: basePayload.email,
-        phone: basePayload.phone,
-        notes: basePayload.notes
-      }).select("id").maybeSingle();
-      attempt = fallback;
-    }
-
     if (attempt.error || !attempt.data?.id) {
       console.error("Create client failed", {
         code: attempt.error?.code,
@@ -375,20 +346,6 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       .update(payload)
       .eq("id", id)
       .eq("owner_id", owner.id);
-
-    if (error && error.code === "PGRST204") {
-      const fallback = await sb
-        .from("clients")
-        .update({
-          full_name: payload.full_name,
-          email: payload.email,
-          phone: payload.phone,
-          notes: payload.notes
-        })
-        .eq("id", id)
-        .eq("owner_id", owner.id);
-      error = fallback.error;
-    }
 
     if (error) {
       console.error("Update client failed", {

@@ -233,7 +233,7 @@ export async function seedOwnerDemoData(
       return { ok: false, message: jobErr?.message ?? "Failed to insert demo job" };
     }
 
-    const invNewShape = {
+    const invPayload = {
       owner_id: ownerId,
       client_id: clientId,
       invoice_number: "INV-00001",
@@ -246,74 +246,34 @@ export async function seedOwnerDemoData(
       is_demo: true
     };
 
-    const invLegacyShape = {
-      owner_id: ownerId,
-      client_id: clientId,
-      invoice_number: "INV-00001",
-      status: "unpaid",
-      subtotal: 772.73,
-      gst_amount: 77.27,
-      amount: 850.0,
-      issue_date: overdueKey,
-      due_date: overdueKey,
-      is_demo: true
-    };
-
-    const invTry1 = await sb.from("invoices").insert(invNewShape).select("id").single();
-
-    let invoiceOk = Boolean(!invTry1.error && invTry1.data?.id);
-    let invErrCombined = invTry1.error ?? null;
-
-    if (!invoiceOk && invTry1.error) {
-      const invTry2 = await sb.from("invoices").insert(invLegacyShape).select("id").single();
-      invoiceOk = Boolean(!invTry2.error && invTry2.data?.id);
-      invErrCombined = invTry2.error ?? invTry1.error;
-    }
-
-    if (!invoiceOk) {
-      const invErr = invErrCombined;
+    const invTry = await sb.from("invoices").insert(invPayload).select("id").single();
+    if (invTry.error || !invTry.data?.id) {
       await sb.from("jobs").delete().eq("owner_id", ownerId).eq("client_id", clientId).eq("is_demo", true);
       await sb.from("employees").delete().eq("id", employeeId);
       await sb.from("clients").delete().eq("id", clientId);
-      console.error("Demo invoice insert failed:", invErr);
-      const msg =
-        invErr &&
-        typeof invErr === "object" &&
-        "message" in invErr &&
-        typeof (invErr as { message: unknown }).message === "string"
-          ? (invErr as { message: string }).message
+      console.error("Demo invoice insert failed:", invTry.error);
+      const msg = invTry.error && typeof invTry.error.message === "string"
+          ? invTry.error.message
           : "Failed to insert demo invoice";
       return { ok: false, message: msg };
     }
 
-    const quoteNewShape = {
+    const quotePayload = {
       owner_id: ownerId,
       client_id: clientId,
-      client_name: "Alex Johnson",
       quote_number: "QT00001",
       status: "draft",
       total: 1250.0,
+      subtotal: 1136.36,
+      gst: 113.64,
       is_demo: true
     };
 
-    const quoteLegacyShape = {
-      owner_id: ownerId,
-      client_id: clientId,
-      client_name: "Alex Johnson",
-      quote_number: "QT00001",
-      status: "draft",
-      amount: 1250.0,
-      is_demo: true
-    };
-
-    const qTry1 = await sb.from("quotes").insert(quoteNewShape).select("id").single();
-    if (qTry1.error) {
-      const qTry2 = await sb.from("quotes").insert(quoteLegacyShape).select("id").single();
-      if (qTry2.error || !qTry2.data?.id) {
-        console.error("Demo quote insert failed:", qTry2.error ?? qTry1.error);
-        // Don't fail signup completely if quote insert fails; core demo set is still useful.
-        return { ok: true };
-      }
+    const qTry = await sb.from("quotes").insert(quotePayload).select("id").single();
+    if (qTry.error || !qTry.data?.id) {
+      console.error("Demo quote insert failed:", qTry.error);
+      // Don't fail signup completely if quote insert fails; core demo set is still useful.
+      return { ok: true };
     }
 
     console.log("[seed-owner-demo] finished OK for owner", ownerId);

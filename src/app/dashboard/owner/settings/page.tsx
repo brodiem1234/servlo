@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { removeAllDemoForOwner, seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import SubscriptionCards from "./subscription-cards";
-import { businessesOwnerOrEq } from "@/lib/businesses";
+import { BUSINESSES_UPSERT_ON_CONFLICT, businessesRowForOwner } from "@/lib/businesses";
 import { BrandAccentForm } from "./brand-accent-form";
 import { ReseedDemoApiButton } from "./reseed-demo-api-button";
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
@@ -35,16 +35,24 @@ type SettingsPageProps = {
 export default async function OwnerSettingsPage({ searchParams }: SettingsPageProps) {
   const { user, enabled: workspaceFeatures, supabase } = await requireOwnerWorkspaceFeatures();
 
-  const [{ data: profile }, { data: businessRow }] = await Promise.all([
+  const [profileResult, businessResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select(
-        "business_name, abn, phone, address, plan, subscription_status, subscription_tier, email_digest_enabled, industry_tags"
-      )
+      .select("plan, subscription_status, subscription_tier, email_digest_enabled, industry_tags")
       .eq("id", user.id)
       .maybeSingle(),
-    supabase.from("businesses").select("accent_colour, industries").or(businessesOwnerOrEq(user.id)).maybeSingle()
+    supabase
+      .from("businesses")
+      .select("business_name, abn, phone, address, accent_colour, industries")
+      .eq("owner_id", user.id)
+      .maybeSingle()
   ]);
+
+  if (profileResult.error) {
+    throw new Error(profileResult.error.message);
+  }
+  const profile = profileResult.data;
+  const businessRow = businessResult.data;
 
   const industriesFromBiz = businessRow?.industries as unknown;
   const tagsFromProfile = (profile as { industry_tags?: unknown } | null)?.industry_tags;
@@ -58,7 +66,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     if (tags.length) primaryIndustry = primaryIndustrySlug(tags);
   }
 
-  const businessName = profile?.business_name ?? "SERVLO Business";
+  const businessName = businessRow?.business_name ?? "SERVLO Business";
   const subscriptionTier = profile?.subscription_tier ?? "solo";
   const savedAccent = normalizeAccentColour(businessRow?.accent_colour);
   const digestOn = (profile as { email_digest_enabled?: boolean | null } | null)?.email_digest_enabled !== false;
@@ -79,7 +87,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       if (typeof x === "string" && isWorkspaceFeatureId(x)) next.add(x);
     }
     const payload = serializeFeatureFlags(next);
-    const { error } = await sb.from("businesses").update({ feature_flags: payload }).or(businessesOwnerOrEq(owner.id));
+    const { error } = await sb.from("businesses").update({ feature_flags: payload }).eq("owner_id", owner.id);
     if (error) {
       console.error("updateWorkspaceFeatures failed", error);
       throw new Error(error.message);
@@ -95,15 +103,23 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       data: { user: owner }
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
-    await sb
-      .from("profiles")
-      .update({
-        business_name: String(formData.get("business_name") ?? ""),
-        abn: String(formData.get("abn") ?? ""),
-        phone: String(formData.get("phone") ?? ""),
-        address: String(formData.get("address") ?? "")
-      })
-      .eq("id", owner.id);
+    const businessPayload = {
+      business_name: String(formData.get("business_name") ?? ""),
+      abn: String(formData.get("abn") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      address: String(formData.get("address") ?? "")
+    };
+    const upsert = await sb
+      .from("businesses")
+      .upsert(
+        {
+          ...businessesRowForOwner(owner.id, { accent_colour: normalizeAccentColour("") }),
+          ...businessPayload
+        },
+        { onConflict: BUSINESSES_UPSERT_ON_CONFLICT }
+      )
+      .select("id");
+    if (upsert.error) throw new Error(upsert.error.message);
     revalidatePath("/dashboard/owner/settings");
     revalidatePath("/dashboard/owner");
   }
@@ -221,10 +237,10 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Business Profile</h2>
         <form action={updateBusinessProfile} className="mt-3 grid gap-3 sm:grid-cols-2">
-          <input name="business_name" defaultValue={profile?.business_name ?? businessName} className="h-10 rounded border px-3" placeholder="Business name" />
-          <input name="abn" defaultValue={profile?.abn ?? ""} className="h-10 rounded border px-3" placeholder="ABN" />
-          <input name="phone" defaultValue={profile?.phone ?? ""} className="h-10 rounded border px-3" placeholder="Phone" />
-          <input name="address" defaultValue={profile?.address ?? ""} className="h-10 rounded border px-3" placeholder="Address" />
+          <input name="business_name" defaultValue={businessRow?.business_name ?? businessName} className="h-10 rounded border px-3" placeholder="Business name" />
+          <input name="abn" defaultValue={businessRow?.abn ?? ""} className="h-10 rounded border px-3" placeholder="ABN" />
+          <input name="phone" defaultValue={businessRow?.phone ?? ""} className="h-10 rounded border px-3" placeholder="Phone" />
+          <input name="address" defaultValue={businessRow?.address ?? ""} className="h-10 rounded border px-3" placeholder="Address" />
           <div className="sm:col-span-2">
             <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Save Business Profile</button>
           </div>

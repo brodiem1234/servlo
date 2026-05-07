@@ -28,7 +28,7 @@ type Job = {
 type Invoice = {
   id: string;
   invoice_number: string | null;
-  amount: number | null;
+  total: number | null;
   status: string | null;
   due_date: string | null;
 };
@@ -101,7 +101,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes }: Pro
               <div key={invoice.id} className="rounded border p-2">
                 <p className="font-medium">{invoice.invoice_number ?? "Invoice"}</p>
                 <p className="text-slate-600">
-                  ${Number(invoice.amount ?? 0).toFixed(2)} · {invoice.status ?? "draft"}
+                  ${Number(invoice.total ?? 0).toFixed(2)} · {invoice.status ?? "draft"}
                 </p>
               </div>
             ))}
