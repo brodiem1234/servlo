@@ -7,6 +7,7 @@ import InvoicesManager from "./invoices-manager";
 import { invoiceSentEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 import { stripe } from "@/lib/stripe";
+import { createNotification } from "@/lib/notifications";
 
 function getNextInvoiceNumber(existing: Array<{ invoice_number: string | null }>) {
   const max = existing.reduce((highest, item) => {
@@ -251,12 +252,22 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     const { data: { user: owner } } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
-    const { error } = await sb
+    const { data: inv, error } = await sb
       .from("invoices")
       .update({ status: "paid" })
       .eq("id", id)
-      .eq("owner_id", owner.id);
+      .eq("owner_id", owner.id)
+      .select("invoice_number, total, is_demo")
+      .maybeSingle();
     if (error) throw new Error(error.message);
+    if (inv && !inv.is_demo) {
+      await createNotification(owner.id, {
+        type: "invoice_paid",
+        title: `Invoice ${inv.invoice_number ?? id} marked as paid`,
+        body: inv.total != null ? `Amount: $${Number(inv.total).toFixed(2)}` : undefined,
+        actionUrl: `/dashboard/owner/finance?tab=invoices`,
+      });
+    }
     revalidatePath("/dashboard/owner/invoices");
     revalidatePath("/dashboard/owner");
   }

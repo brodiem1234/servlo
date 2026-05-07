@@ -10,6 +10,7 @@ import { isIndustrySlug, type IndustrySlug } from "@/lib/industries";
 import LiveClock from "@/components/dashboard/live-clock";
 import WeeklyRevenueChart from "@/components/dashboard/weekly-revenue-chart";
 import OwnerSidebarTodos from "@/components/dashboard/owner-sidebar-todos";
+import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -45,10 +46,10 @@ function extractFirstName(displayName: string | null | undefined, email: string 
 
 function getStatusBadgeStyle(status: string | null): { bg: string; text: string } {
   const key = (status ?? "").toLowerCase();
-  if (key === "completed" || key === "complete") return { bg: "bg-green-100", text: "text-green-700" };
-  if (key === "in_progress" || key === "in-progress") return { bg: "bg-orange-100", text: "text-orange-700" };
-  if (key === "cancelled") return { bg: "bg-red-100", text: "text-red-700" };
-  return { bg: "bg-blue-100", text: "text-blue-700" };
+  if (key === "completed" || key === "complete") return { bg: "bg-green-100 dark:bg-green-950", text: "text-green-700 dark:text-green-300" };
+  if (key === "in_progress" || key === "in-progress") return { bg: "bg-orange-100 dark:bg-orange-950", text: "text-orange-700 dark:text-orange-300" };
+  if (key === "cancelled") return { bg: "bg-red-100 dark:bg-red-950", text: "text-red-700 dark:text-red-300" };
+  return { bg: "bg-blue-100 dark:bg-blue-950", text: "text-blue-700 dark:text-blue-300" };
 }
 
 export default async function OwnerDashboardPage() {
@@ -227,6 +228,7 @@ export default async function OwnerDashboardPage() {
 
   return (
     <section className="space-y-6">
+      <OnboardingChecklist />
       {/* Trial banner */}
       {trialDaysRemaining > 0 ? (
         <div className="rounded-lg border border-[color-mix(in_srgb,var(--accent-color)_42%,var(--border))] bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))] px-4 py-3 text-sm text-[var(--text-primary)]">
@@ -453,12 +455,12 @@ export default async function OwnerDashboardPage() {
             ) : (
               recentActivity.map((item) => {
                 const kindColors: Record<string, string> = {
-                  job: "bg-blue-100 text-blue-700",
-                  client: "bg-green-100 text-green-700",
-                  invoice: "bg-purple-100 text-purple-700",
-                  quote: "bg-amber-100 text-amber-700"
+                  job: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+                  client: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
+                  invoice: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
+                  quote: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
                 };
-                const badge = kindColors[item.kind] ?? "bg-gray-100 text-gray-700";
+                const badge = kindColors[item.kind] ?? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
                 return (
                   <li
                     key={item.id}

@@ -24,28 +24,69 @@ export async function sendEmail(to: string, subject: string, html: string, fromO
   }
 }
 
-function wrapEmail(content: string, accentHex = "#0891B2") {
-  return `
-    <div style="font-family:Arial,sans-serif;background:#f8fafc;padding:24px;">
-      <div style="max-width:640px;margin:0 auto;background:white;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-        <div style="background:${accentHex};padding:20px 24px;">
-          <span style="font-size:22px;font-weight:700;color:white;letter-spacing:-0.5px;">SERVLO</span>
-        </div>
-        <div style="padding:24px;">
-          ${content}
-        </div>
-        <div style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;">
-          <p style="margin:0;font-size:11px;color:#94a3b8;">This email was sent by SERVLO on behalf of your service provider. Reply directly to contact them.</p>
-        </div>
-      </div>
-    </div>
-  `;
+function escHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function wrapEmail(content: string, accentHex = "#0891B2", options?: { businessName?: string }) {
+  const businessNameCell = options?.businessName
+    ? `<td style="font-family:Arial,sans-serif;font-size:13px;color:rgba(255,255,255,0.85);text-align:right;vertical-align:bottom;">${escHtml(options.businessName)}</td>`
+    : "";
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SERVLO</title></head>
+<body style="margin:0;padding:0;background:#f1f5f9;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f1f5f9;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">
+          <tr>
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${accentHex};">
+                <tr>
+                  <td style="padding:20px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:Arial,sans-serif;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">SERVLO</td>
+                        ${businessNameCell}
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="font-family:Arial,sans-serif;">${content}</td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-top:1px solid #e2e8f0;">
+                <tr>
+                  <td style="padding:20px 32px;">
+                    <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:#94a3b8;">Powered by <strong>SERVLO</strong> — business management software for Australian service businesses. This email was sent on behalf of your service provider.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 export function invoiceSentEmailTemplate(args: {
   clientName: string;
   businessName: string;
   invoiceNumber: string;
+  issueDate?: string;
   dueDate: string;
   subtotal: string;
   gst: string;
@@ -57,53 +98,79 @@ export function invoiceSentEmailTemplate(args: {
 }) {
   const accent = args.accentHex ?? "#0891B2";
   const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
-  const payNowBlock = args.payNowUrl
-    ? `<p style="margin:20px 0 0;">
-        <a href="${args.payNowUrl}" style="display:inline-block;background:#16a34a;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.01em;">Pay Now</a>
-      </p>
-      <p style="margin:6px 0 0;font-size:12px;color:#94a3b8;">Secure payment via Stripe</p>`
+  const issueDateCol = args.issueDate
+    ? `<td width="33%" style="padding:12px 16px;border-right:1px solid #e2e8f0;">
+        <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Issue Date</p>
+        <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;">${escHtml(args.issueDate)}</p>
+      </td>`
     : "";
+  const colWidth = args.issueDate ? "33%" : "50%";
+  const detailGrid = `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
+      <tr>
+        <td width="${colWidth}" style="padding:12px 16px;border-right:1px solid #e2e8f0;">
+          <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Invoice No.</p>
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;">${escHtml(args.invoiceNumber)}</p>
+        </td>
+        ${issueDateCol}
+        <td width="${colWidth}" style="padding:12px 16px;">
+          <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Due Date</p>
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#dc2626;">${escHtml(args.dueDate)}</p>
+        </td>
+      </tr>
+    </table>`;
+  const amountTable = `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Subtotal</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.subtotal)}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">GST (10%)</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.gst)}</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 0 8px;font-family:Arial,sans-serif;font-size:18px;font-weight:700;color:#0f172a;border-top:2px solid #e2e8f0;">Total due</td>
+        <td style="padding:12px 0 8px;font-family:Arial,sans-serif;font-size:18px;font-weight:700;color:#0f172a;text-align:right;border-top:2px solid #e2e8f0;">${escHtml(args.total)}</td>
+      </tr>
+    </table>`;
+  const payNowBlock = args.payNowUrl
+    ? `<table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
+        <tr>
+          <td style="border-radius:6px;background:#16a34a;">
+            <a href="${escHtml(args.payNowUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;letter-spacing:0.01em;">Pay Now</a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">Secure payment processed via Stripe.</p>`
+    : "";
+  const viewBlock = !args.payNowUrl
+    ? `<table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
+        <tr>
+          <td style="border-radius:6px;background:${accent};">
+            <a href="${escHtml(portalUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">View Invoice</a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:4px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">Or copy this link: ${escHtml(portalUrl)}</p>`
+    : `<p style="margin:8px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Or <a href="${escHtml(portalUrl)}" style="color:${accent};text-decoration:underline;">view invoice in your portal</a>.</p>`;
   return wrapEmail(`
-    <h2 style="margin:0 0 8px;color:#0f172a;font-size:20px;">Invoice from ${args.businessName}</h2>
-    <p style="margin:0 0 20px;color:#64748b;">Hi ${args.clientName},</p>
-    <p style="color:#334155;">Please find your invoice details below.</p>
-
-    <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
-      <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">Invoice number</td>
-        <td style="padding:8px 0;text-align:right;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.invoiceNumber}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">Due date</td>
-        <td style="padding:8px 0;text-align:right;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.dueDate}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">Subtotal</td>
-        <td style="padding:8px 0;text-align:right;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.subtotal}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">GST (10%)</td>
-        <td style="padding:8px 0;text-align:right;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.gst}</td>
-      </tr>
-      <tr>
-        <td style="padding:12px 0 8px;font-weight:700;font-size:16px;color:#0f172a;">Total due</td>
-        <td style="padding:12px 0 8px;text-align:right;font-weight:700;font-size:16px;color:#0f172a;">${args.total}</td>
-      </tr>
-    </table>
-
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Invoice from ${escHtml(args.businessName)}</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
+    <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Please find your invoice details below. Payment is due by <strong>${escHtml(args.dueDate)}</strong>.</p>
+    ${detailGrid}
+    ${amountTable}
     ${payNowBlock}
-
-    <p style="margin:20px 0 0;">
-      <a href="${portalUrl}" style="display:inline-block;background:${accent};color:white;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Invoice</a>
-    </p>
-    <p style="margin:12px 0 0;font-size:12px;color:#94a3b8;">Or copy this link: ${portalUrl}</p>
-  `, accent);
+    ${viewBlock}
+  `, accent, { businessName: args.businessName });
 }
 
 export function quoteSentEmailTemplate(args: {
   clientName: string;
   businessName: string;
   quoteNumber: string;
+  issueDate?: string;
+  expiryDate?: string | null;
   subtotal: string;
   gst: string;
   total: string;
@@ -112,55 +179,109 @@ export function quoteSentEmailTemplate(args: {
 }) {
   const accent = args.accentHex ?? "#0891B2";
   const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
+  const colCount = args.issueDate && args.expiryDate ? 3 : args.issueDate ? 2 : 1;
+  const colWidth = colCount === 3 ? "33%" : colCount === 2 ? "50%" : "100%";
+  const issueDateCol = args.issueDate
+    ? `<td width="${colWidth}" style="padding:12px 16px;border-right:1px solid #e2e8f0;">
+        <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Issue Date</p>
+        <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;">${escHtml(args.issueDate)}</p>
+      </td>`
+    : "";
+  const expiryCol = args.expiryDate
+    ? `<td width="${colWidth}" style="padding:12px 16px;">
+        <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Valid Until</p>
+        <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#d97706;">${escHtml(args.expiryDate)}</p>
+      </td>`
+    : "";
+  const detailGrid = `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
+      <tr>
+        <td width="${colWidth}" style="padding:12px 16px;${args.issueDate || args.expiryDate ? "border-right:1px solid #e2e8f0;" : ""}">
+          <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Quote No.</p>
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;">${escHtml(args.quoteNumber)}</p>
+        </td>
+        ${issueDateCol}
+        ${expiryCol}
+      </tr>
+    </table>`;
+  const expiryNotice = args.expiryDate
+    ? `<p style="margin:16px 0;font-family:Arial,sans-serif;font-size:13px;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:10px 14px;">This quote is valid until <strong>${escHtml(args.expiryDate)}</strong>. Accept it before then to lock in these prices.</p>`
+    : "";
+  const amountTable = `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Subtotal</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.subtotal)}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">GST (10%)</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.gst)}</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 0 8px;font-family:Arial,sans-serif;font-size:18px;font-weight:700;color:#0f172a;border-top:2px solid #e2e8f0;">Total</td>
+        <td style="padding:12px 0 8px;font-family:Arial,sans-serif;font-size:18px;font-weight:700;color:#0f172a;text-align:right;border-top:2px solid #e2e8f0;">${escHtml(args.total)}</td>
+      </tr>
+    </table>`;
   return wrapEmail(`
-    <h2 style="margin:0 0 8px;color:#0f172a;font-size:20px;">Quote from ${args.businessName}</h2>
-    <p style="margin:0 0 20px;color:#64748b;">Hi ${args.clientName},</p>
-    <p style="color:#334155;">We have prepared a quote for you. Please review the details below and contact us to accept or if you have any questions.</p>
-
-    <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Quote from ${escHtml(args.businessName)}</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
+    <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">We have prepared a quote for your review. Please find the details below.</p>
+    ${detailGrid}
+    ${amountTable}
+    ${expiryNotice}
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
       <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">Quote number</td>
-        <td style="padding:8px 0;text-align:right;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.quoteNumber}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">Subtotal</td>
-        <td style="padding:8px 0;text-align:right;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.subtotal}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;color:#64748b;border-bottom:1px solid #f1f5f9;">GST (10%)</td>
-        <td style="padding:8px 0;text-align:right;color:#0f172a;border-bottom:1px solid #f1f5f9;">${args.gst}</td>
-      </tr>
-      <tr>
-        <td style="padding:12px 0 8px;font-weight:700;font-size:16px;color:#0f172a;">Total</td>
-        <td style="padding:12px 0 8px;text-align:right;font-weight:700;font-size:16px;color:#0f172a;">${args.total}</td>
+        <td style="border-radius:6px;background:${accent};">
+          <a href="${escHtml(portalUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">View &amp; Accept Your Quote</a>
+        </td>
       </tr>
     </table>
-
-    <p style="color:#334155;margin:16px 0;">To accept this quote or request changes, please contact us or use your client portal.</p>
-
-    <p style="margin:20px 0 0;">
-      <a href="${portalUrl}" style="display:inline-block;background:${accent};color:white;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Quote</a>
-    </p>
-    <p style="margin:12px 0 0;font-size:12px;color:#94a3b8;">Or copy this link: ${portalUrl}</p>
-  `, accent);
+    <p style="margin:4px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">Or copy this link: ${escHtml(portalUrl)}</p>
+    <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Questions about this quote? Simply reply to this email and we will get back to you promptly.</p>
+  `, accent, { businessName: args.businessName });
 }
 
-/** Legacy reminder template — kept for cron digest use. */
+/** Invoice payment reminder template. */
 export function invoiceReminderEmailTemplate(args: {
   clientName: string;
+  businessName?: string;
   invoiceNumber: string;
   amount: string;
   dueDate: string;
   payNowUrl: string;
+  accentHex?: string;
 }) {
+  const accent = args.accentHex ?? "#0891B2";
+  const payBlock = `
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
+      <tr>
+        <td style="border-radius:6px;background:#16a34a;">
+          <a href="${escHtml(args.payNowUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">Pay Now</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">Secure payment processed via Stripe.</p>`;
   return wrapEmail(`
-    <h2 style="margin:0 0 12px; color:#0f172a;">Invoice Reminder</h2>
-    <p>Hi ${args.clientName},</p>
-    <p>This is a friendly reminder for invoice <strong>${args.invoiceNumber}</strong>.</p>
-    <p>Amount: <strong>${args.amount}</strong><br/>Due date: <strong>${args.dueDate}</strong></p>
-    <p><a href="${args.payNowUrl}" style="background:#0891B2;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Pay Now</a></p>
-    <p style="color:#64748b;">Thank you,<br/>SERVLO Team</p>
-  `);
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Friendly Payment Reminder</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">
+      Just a friendly reminder — <strong>Invoice ${escHtml(args.invoiceNumber)}</strong> is due on <strong>${escHtml(args.dueDate)}</strong>.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
+      <tr>
+        <td width="50%" style="padding:16px;border-right:1px solid #e2e8f0;">
+          <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Invoice No.</p>
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:15px;font-weight:600;color:#0f172a;">${escHtml(args.invoiceNumber)}</p>
+        </td>
+        <td width="50%" style="padding:16px;">
+          <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Amount Outstanding</p>
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:18px;font-weight:700;color:#0f172a;">${escHtml(args.amount)}</p>
+        </td>
+      </tr>
+    </table>
+    ${payBlock}
+    <p style="margin:16px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">If you have already made payment, please disregard this reminder. Thank you for your business!</p>
+  `, accent, args.businessName ? { businessName: args.businessName } : undefined);
 }
 
 /** Legacy follow-up template — kept for cron digest use. */
@@ -182,27 +303,61 @@ export function employeeAssignmentEmailTemplate(args: {
   employeeName: string;
   jobTitle: string;
   scheduledDate: string;
+  address?: string | null;
+  notes?: string | null;
+  accentHex?: string;
 }) {
+  const accent = args.accentHex ?? "#0891B2";
+  const addressRow = args.address
+    ? `<tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Location</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.address)}</td>
+      </tr>`
+    : "";
+  const notesBlock = args.notes
+    ? `<p style="margin:16px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;background:#f8fafc;border-radius:6px;padding:12px 14px;">${escHtml(args.notes)}</p>`
+    : "";
   return wrapEmail(`
-    <h2 style="margin:0 0 12px; color:#0f172a;">New Job Assignment</h2>
-    <p>Hi ${args.employeeName},</p>
-    <p>You have been assigned to <strong>${args.jobTitle}</strong>.</p>
-    <p>Scheduled date: <strong>${args.scheduledDate}</strong></p>
-    <p style="color:#64748b;">Please check your SERVLO dashboard for details.</p>
-  `);
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">New Job Assignment</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Hi ${escHtml(args.employeeName)},</p>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">You have been assigned to a new job. Please see the details below.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Job</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.jobTitle)}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Scheduled</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.scheduledDate)}</td>
+      </tr>
+      ${addressRow}
+    </table>
+    ${notesBlock}
+    <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Please check your SERVLO dashboard for full details.</p>
+  `, accent);
 }
 
 export function portalShareEmailTemplate(args: {
   clientName: string;
   portalUrl: string;
+  businessName?: string;
+  accentHex?: string;
 }) {
+  const accent = args.accentHex ?? "#0891B2";
   return wrapEmail(`
-    <h2 style="margin:0 0 12px; color:#0f172a;">Your SERVLO Client Portal</h2>
-    <p>Hi ${args.clientName},</p>
-    <p>You can view your quotes, invoices, and jobs using the portal link below:</p>
-    <p><a href="${args.portalUrl}" style="background:#1e3a5f;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Open Portal</a></p>
-    <p style="word-break:break-all;color:#64748b;">${args.portalUrl}</p>
-  `);
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Your Client Portal</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Hi ${escHtml(args.clientName)},</p>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">You now have access to your client portal where you can view your quotes, invoices, and job progress at any time.</p>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
+      <tr>
+        <td style="border-radius:6px;background:${accent};">
+          <a href="${escHtml(args.portalUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">Open Portal</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:8px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;word-break:break-all;">${escHtml(args.portalUrl)}</p>
+    <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Bookmark this link to access your portal anytime — no login required.</p>
+  `, accent, args.businessName ? { businessName: args.businessName } : undefined);
 }
 
 export function welcomeOwnerEmailTemplate(args: {
@@ -211,32 +366,54 @@ export function welcomeOwnerEmailTemplate(args: {
   supportUrl: string;
   industryLabel?: string | null;
   highlightFeatures?: string[];
+  businessName?: string;
 }) {
-  const industryLine =
-    args.industryLabel?.trim() ?
-      `<p style="color:#334155;">We&apos;ve tailored your workspace for <strong>${args.industryLabel.trim()}</strong>.</p>`
-    : "";
-  const highlights =
-    args.highlightFeatures?.filter(Boolean).slice(0, 3) ?? [];
-  const bullets =
-    highlights.length > 0 ?
-      `<ul style="margin:8px 0;padding-left:18px;color:#334155;line-height:1.6;">${highlights.map((h) => `<li>${h}</li>`).join("")}</ul>`
-    : `<ul style="margin:8px 0;padding-left:18px;color:#334155;line-height:1.6;">
-        <li>Add your first client and create a job so your calendar fills up.</li>
-        <li>Send quotes from SERVLO so follow-ups stay organised.</li>
-        <li>Use invoices with reminders to get paid on time.</li>
-      </ul>`;
+  const appUrl = args.dashboardUrl.replace(/\/dashboard\/owner$/, "").replace(/\/dashboard$/, "") || "https://servlo.com.au";
+  const clientsUrl = `${appUrl}/dashboard/owner/clients`;
+  const jobsUrl = `${appUrl}/dashboard/owner/jobs`;
+  const financeUrl = `${appUrl}/dashboard/owner/finance`;
+  const dashboardUrl = `${appUrl}/dashboard`;
+
+  const greeting = args.businessName?.trim()
+    ? `Welcome to SERVLO, ${args.businessName.trim()}!`
+    : `Welcome to SERVLO, ${args.ownerName}!`;
 
   return wrapEmail(`
-    <h2 style="margin:0 0 12px; color:#0f172a;">Welcome to SERVLO Core</h2>
-    <p>Hi ${args.ownerName},</p>
-    ${industryLine}
-    <p style="color:#334155;">Your workspace is ready — here are three highlights we&apos;ve switched on for you:</p>
-    ${bullets}
-    <p><a href="${args.dashboardUrl}" style="background:#1e3a5f;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Go to dashboard</a></p>
-    <p style="margin-top:16px;color:#334155;">You can turn modules on or off anytime under Settings → Features.</p>
-    <p style="margin-top:16px;color:#334155;">Questions? <a href="${args.supportUrl}" style="color:#1e3a5f;font-weight:600;">Contact support</a>.</p>
-    <p style="color:#64748b;">— SERVLO</p>
+    <h2 style="margin:0 0 8px;color:#0f172a;font-size:22px;font-weight:700;">${greeting}</h2>
+    <p style="margin:0 0 20px;color:#64748b;">Hi ${args.ownerName}, your workspace is ready. Here's how to get started in 5 minutes:</p>
+
+    <table style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+      <tr>
+        <td style="padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;vertical-align:top;">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0f172a;">1. Add your first client</p>
+          <p style="margin:0 0 10px;font-size:13px;color:#64748b;">Store contact details and track job history</p>
+          <a href="${clientsUrl}" style="font-size:12px;font-weight:600;color:#0891B2;text-decoration:none;">Go to Clients →</a>
+        </td>
+      </tr>
+      <tr><td style="padding:4px 0;"></td></tr>
+      <tr>
+        <td style="padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;vertical-align:top;">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0f172a;">2. Create your first job</p>
+          <p style="margin:0 0 10px;font-size:13px;color:#64748b;">Schedule, assign, and track every job</p>
+          <a href="${jobsUrl}" style="font-size:12px;font-weight:600;color:#0891B2;text-decoration:none;">Go to Jobs →</a>
+        </td>
+      </tr>
+      <tr><td style="padding:4px 0;"></td></tr>
+      <tr>
+        <td style="padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;vertical-align:top;">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0f172a;">3. Send your first invoice</p>
+          <p style="margin:0 0 10px;font-size:13px;color:#64748b;">Get paid faster with professional invoices</p>
+          <a href="${financeUrl}" style="font-size:12px;font-weight:600;color:#0891B2;text-decoration:none;">Go to Finance →</a>
+        </td>
+      </tr>
+    </table>
+
+    <p style="text-align:center;margin:24px 0 8px;">
+      <a href="${dashboardUrl}" style="display:inline-block;background:#0891B2;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.01em;">Go to your dashboard →</a>
+    </p>
+
+    <p style="margin-top:20px;color:#64748b;font-size:13px;">You can turn modules on or off anytime under Settings → Features.</p>
+    <p style="color:#64748b;font-size:13px;">Questions? <a href="${args.supportUrl}" style="color:#0891B2;font-weight:600;">Contact support</a>.</p>
   `);
 }
 
@@ -297,18 +474,147 @@ export function ownerDailyDigestEmailTemplate(args: {
   invoicesSection: string;
   quotesSection: string;
   dashboardUrl: string;
+  accentHex?: string;
 }) {
+  const accent = args.accentHex ?? "#0891B2";
   return wrapEmail(`
-    <h2 style="margin:0 0 12px; color:#0f172a;">Your SERVLO morning snapshot</h2>
-    <p style="color:#334155;">Here is what needs attention today.</p>
-    <h3 style="margin:18px 0 8px;color:#0f172a;font-size:15px;">Jobs scheduled today</h3>
+    <h1 style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Your morning snapshot</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:14px;color:#475569;">Here is what needs attention today.</p>
+    <h2 style="margin:18px 0 8px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#0f172a;">Jobs scheduled today</h2>
     ${args.jobsSection}
-    <h3 style="margin:18px 0 8px;color:#0f172a;font-size:15px;">Outstanding invoices</h3>
+    <h2 style="margin:18px 0 8px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#0f172a;">Outstanding invoices</h2>
     ${args.invoicesSection}
-    <h3 style="margin:18px 0 8px;color:#0f172a;font-size:15px;">Quotes awaiting acceptance</h3>
+    <h2 style="margin:18px 0 8px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#0f172a;">Quotes awaiting acceptance</h2>
     ${args.quotesSection}
-    <p style="margin-top:20px;"><a href="${args.dashboardUrl}" style="background:#1e3a5f;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;">Open dashboard</a></p>
-    <p style="color:#64748b;font-size:12px;">You can turn this email off in Settings → Notifications.</p>
-  `);
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px;">
+      <tr>
+        <td style="border-radius:6px;background:${accent};">
+          <a href="${escHtml(args.dashboardUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">Open dashboard</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:12px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">You can turn this email off in Settings &rarr; Notifications.</p>
+  `, accent);
+}
+
+/** Job completion notification sent to client when a job is marked complete. */
+export function jobCompletionEmailTemplate(args: {
+  clientName: string;
+  businessName: string;
+  jobTitle: string;
+  completionDate: string;
+  signoffName?: string | null;
+  jobNotes?: string | null;
+  portalUrl?: string | null;
+  accentHex?: string;
+  businessPhone?: string | null;
+}) {
+  const accent = args.accentHex ?? "#0891B2";
+  const signoffRow = args.signoffName
+    ? `<tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Signed off by</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.signoffName)}</td>
+      </tr>`
+    : "";
+  const notesBlock = args.jobNotes
+    ? `<p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;background:#f8fafc;border-radius:6px;padding:12px 14px;">${escHtml(args.jobNotes)}</p>`
+    : "";
+  const portalBlock = args.portalUrl
+    ? `<table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
+        <tr>
+          <td style="border-radius:6px;background:${accent};">
+            <a href="${escHtml(args.portalUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">View in Portal</a>
+          </td>
+        </tr>
+      </table>`
+    : "";
+  return wrapEmail(`
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Your job is complete!</h1>
+    <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Great news — the following job has been completed by <strong>${escHtml(args.businessName)}</strong>.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Job</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.jobTitle)}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Completed</td>
+        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escHtml(args.completionDate)}</td>
+      </tr>
+      ${signoffRow}
+    </table>
+    ${notesBlock}
+    ${portalBlock}
+    <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;line-height:1.6;">Thank you for choosing ${escHtml(args.businessName)}. We appreciate your business and hope the work meets your expectations. Please do not hesitate to get in touch if you have any questions.</p>
+    ${args.businessPhone ? `<p style="margin:0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Phone: <strong>${escHtml(args.businessPhone)}</strong></p>` : ""}
+  `, accent, { businessName: args.businessName });
+}
+
+/** Trial ending notification for owner accounts — copy varies by daysRemaining (7/3/1). */
+export function trialEndingEmailTemplate(args: {
+  firstName: string;
+  daysRemaining: number;
+  upgradeUrl: string;
+  accentHex?: string;
+}) {
+  const accent = args.accentHex ?? "#0891B2";
+  const d = args.daysRemaining;
+  let urgencyBanner = "";
+  let heading = "";
+  let intro = "";
+  let mainContent = "";
+
+  if (d >= 7) {
+    heading = `Your free trial ends in ${d} day${d === 1 ? "" : "s"}`;
+    intro = `Hi ${escHtml(args.firstName)}, we hope you have been enjoying SERVLO! Your free trial wraps up in <strong>${d} days</strong>. Here is everything you keep when you upgrade:`;
+    mainContent = `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-family:Arial,sans-serif;font-size:13px;color:#334155;">&#x2714; All your client records and contact history</td></tr>
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-family:Arial,sans-serif;font-size:13px;color:#334155;">&#x2714; All jobs, schedules, and job notes</td></tr>
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-family:Arial,sans-serif;font-size:13px;color:#334155;">&#x2714; All invoices, quotes, and financial history</td></tr>
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-family:Arial,sans-serif;font-size:13px;color:#334155;">&#x2714; Online invoice payments via Stripe</td></tr>
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;color:#334155;">&#x2714; Automated invoice reminders</td></tr>
+      </table>`;
+  } else if (d >= 3) {
+    urgencyBanner = `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:#fef3c7;border-radius:6px;border:1px solid #fde68a;">
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#92400e;">Your trial ends in ${d} days — upgrade to keep your data.</td></tr>
+      </table>`;
+    heading = `Your trial ends in ${d} days`;
+    intro = `Hi ${escHtml(args.firstName)}, your SERVLO free trial ends in <strong>${d} days</strong>. After that, you will lose access to:`;
+    mainContent = `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;border:1px solid #fecaca;border-radius:8px;overflow:hidden;background:#fef2f2;">
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #fee2e2;font-family:Arial,sans-serif;font-size:13px;color:#dc2626;">&#x2715; Your client records and contact history</td></tr>
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #fee2e2;font-family:Arial,sans-serif;font-size:13px;color:#dc2626;">&#x2715; All jobs and job scheduling</td></tr>
+        <tr><td style="padding:12px 16px;border-bottom:1px solid #fee2e2;font-family:Arial,sans-serif;font-size:13px;color:#dc2626;">&#x2715; Your invoices and financial data</td></tr>
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;color:#dc2626;">&#x2715; All quotes and documents</td></tr>
+      </table>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:13px;color:#334155;">Upgrade now to keep everything and continue without disruption.</p>`;
+  } else {
+    urgencyBanner = `
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca;">
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#dc2626;">Your trial ends tomorrow. Upgrade now to keep access.</td></tr>
+      </table>`;
+    heading = "Your trial ends tomorrow";
+    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder — your SERVLO free trial expires <strong>tomorrow</strong>.`;
+    mainContent = `
+      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Upgrade now to keep access to all your SERVLO data — clients, jobs, invoices, quotes, and everything you have built over your trial.</p>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Plans start from a low monthly fee with no lock-in contract.</p>`;
+  }
+
+  return wrapEmail(`
+    ${urgencyBanner}
+    <h1 style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">${heading}</h1>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">${intro}</p>
+    ${mainContent}
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px;">
+      <tr>
+        <td style="border-radius:6px;background:${accent};">
+          <a href="${escHtml(args.upgradeUrl)}" style="display:inline-block;padding:14px 32px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:6px;">Upgrade Your Plan</a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Questions about pricing? Reply to this email and we will help you choose the right plan.</p>
+  `, accent);
 }
 

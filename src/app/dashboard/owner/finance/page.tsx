@@ -4,6 +4,7 @@ import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import OwnerInvoicesPage from "../invoices/page";
 import OwnerQuotesPage from "../quotes/page";
 import OwnerPurchaseOrdersPage from "../purchase-orders/page";
+import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 
 type Props = {
   searchParams?: Promise<Record<string, string | string[]>>;
@@ -26,6 +27,11 @@ export default async function FinancePage({ searchParams }: Props) {
 
   return (
     <div>
+      <FirstVisitBanner
+        pageKey="finance"
+        title="Finance & billing"
+        description="Create invoices, send quotes, and track what you're owed. All in one place."
+      />
       {/* Tab bar */}
       <div className="mb-6 border-b border-[var(--border)]">
         <h1 className="mb-3 text-2xl font-bold" style={{ color: "var(--text-primary)" }}>

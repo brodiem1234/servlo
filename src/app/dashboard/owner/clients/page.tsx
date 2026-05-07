@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import OwnerClientsView, { type ClientMetric, type SortKey } from "./owner-clients-view";
 import { portalShareEmailTemplate, sendEmail } from "@/lib/email";
+import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -395,6 +396,12 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
 
   return (
+    <>
+      <FirstVisitBanner
+        pageKey="clients"
+        title="Your client database"
+        description="Store client details, view job history, and track outstanding invoices."
+      />
     <Suspense fallback={<div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-8 text-sm text-[var(--text-muted)]">Loading clients…</div>}>
       <OwnerClientsView
         clients={clientsForUi}
@@ -408,5 +415,6 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         appOrigin={appOrigin}
       />
     </Suspense>
+    </>
   );
 }

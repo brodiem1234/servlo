@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import { ThemeScript } from "@/components/theme-script";
+import { SwRegister } from "@/components/pwa/sw-register";
 import "./globals.css";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-sans" });
@@ -15,20 +16,31 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent"
   },
   icons: {
-    apple: [{ url: "/logo.png", sizes: "192x192", type: "image/png" }]
+    apple: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo.png", sizes: "192x192", type: "image/png" }
+    ]
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a"
+  themeColor: "#3B82F6"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#3B82F6" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+      </head>
       <body className={montserrat.className}>
         <ThemeScript />
         {children}
+        <SwRegister />
       </body>
     </html>
   );

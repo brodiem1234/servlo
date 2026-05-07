@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import {
-  Bell,
   Briefcase,
   FileText,
   Home,
@@ -21,6 +20,9 @@ import { ProductSwitcher } from "@/components/dashboard/product-switcher";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { HelpButton } from "@/components/dashboard/help-button";
 import { BackToTop } from "@/components/dashboard/back-to-top";
+import { InstallBanner } from "@/components/pwa/install-banner";
+import { QuickActionFab } from "@/components/dashboard/quick-action-fab";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 
 const CORE_COLOR = "#3B82F6";
 const CORE_LOGO_FILTER =
@@ -79,16 +81,15 @@ type Props = {
 };
 
 export default function OwnerShell({
-  businessName,
+  businessName: _businessName,
   signOutAction,
-  alerts,
+  alerts: _alerts,
   initialTasks,
   navSections,
   shortcutTargets,
   children
 }: Props) {
   const pathname = usePathname();
-  const [alertsOpen, setAlertsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
   const mainSections = useMemo(() => navSections.filter((s) => !s.pinnedBottom), [navSections]);
@@ -199,40 +200,7 @@ export default function OwnerShell({
               <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">SERVLO Core</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <button
-                  type="button"
-                  className={`relative rounded border border-[var(--border)] p-2 text-[var(--text-primary)] transition-shadow ${alerts.length > 0 ? "ring-2 ring-[var(--accent-color)] ring-offset-2 ring-offset-[var(--bg-secondary)]" : ""}`}
-                  onClick={() => setAlertsOpen((prev) => !prev)}
-                  aria-label="Notifications"
-                >
-                  <Bell size={16} />
-                  {alerts.length > 0 ? (
-                    <span className="absolute -right-1 -top-1 rounded-full bg-[#ef4444] px-1.5 text-[10px] text-white">
-                      {alerts.length}
-                    </span>
-                  ) : null}
-                </button>
-                {alertsOpen ? (
-                  <div className="absolute right-0 z-40 mt-2 w-80 rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-lg">
-                    <p className="px-2 py-1 text-xs font-semibold text-[var(--text-muted)]">Notifications</p>
-                    <div className="max-h-72 overflow-auto">
-                      {alerts.length === 0 ? (
-                        <p className="px-2 py-2 text-sm text-[var(--text-muted)]">No new alerts.</p>
-                      ) : (
-                        alerts.map((alert) => (
-                          <p
-                            key={alert.id}
-                            className="rounded px-2 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"
-                          >
-                            {alert.text}
-                          </p>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+              <NotificationBell />
               <form action={signOutAction}>
                 <button type="submit" className="dashboard-primary rounded-md px-4 py-2 text-sm font-semibold text-white">
                   Sign Out
@@ -305,6 +273,8 @@ export default function OwnerShell({
       <CommandPalette />
       <HelpButton />
       <BackToTop />
+      <QuickActionFab />
+      <InstallBanner />
     </div>
     </ToastProvider>
   );

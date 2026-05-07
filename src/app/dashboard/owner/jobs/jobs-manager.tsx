@@ -180,6 +180,8 @@ export default function JobsManager({
   const [photoLabel, setPhotoLabel] = useState<"before" | "after">("before");
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [quickAdd, setQuickAdd] = useState<null | "client" | "employee">(null);
+  const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
+  const [dragOverDateKey, setDragOverDateKey] = useState<string | null>(null);
   const [clientOptions, setClientOptions] = useState<RefOpt[]>(clients);
   const [employeeOptions, setEmployeeOptions] = useState<RefOpt[]>(employees);
   const [quickClientSaving, setQuickClientSaving] = useState(false);
@@ -245,14 +247,24 @@ export default function JobsManager({
   };
 
   const statusBlockClasses: Record<string, string> = {
+    pending:
+      "border border-indigo-400 hover:opacity-90",
     scheduled:
-      "border border-orange-300 bg-orange-100 text-orange-950 hover:bg-orange-200 dark:border-orange-700 dark:bg-orange-950/90 dark:text-orange-50 dark:hover:bg-orange-900",
+      "border border-blue-400 hover:opacity-90",
     in_progress:
-      "border border-sky-300 bg-sky-100 text-sky-950 hover:bg-sky-200 dark:border-sky-700 dark:bg-sky-950/90 dark:text-sky-50 dark:hover:bg-sky-900",
+      "border border-amber-400 hover:opacity-90",
     completed:
-      "border border-green-300 bg-green-100 text-green-950 hover:bg-green-200 dark:border-green-700 dark:bg-green-950/90 dark:text-green-50 dark:hover:bg-green-900",
+      "border border-green-400 hover:opacity-90",
     cancelled:
-      "border border-red-300 bg-red-100 text-red-950 hover:bg-red-200 dark:border-red-700 dark:bg-red-950/90 dark:text-red-50 dark:hover:bg-red-900"
+      "border border-slate-400 hover:opacity-90"
+  };
+
+  const statusBlockInlineStyle: Record<string, React.CSSProperties> = {
+    pending: { backgroundColor: "#6366F1", color: "#ffffff" },
+    scheduled: { backgroundColor: "#3B82F6", color: "#ffffff" },
+    in_progress: { backgroundColor: "#F59E0B", color: "#1a1a1a" },
+    completed: { backgroundColor: "#10B981", color: "#ffffff" },
+    cancelled: { backgroundColor: "#94A3B8", color: "#ffffff" }
   };
 
   const normalizeStatus = (status: string | null) => {
@@ -260,8 +272,12 @@ export default function JobsManager({
     if (raw === "complete" || raw === "completed") return "completed";
     if (["in_progress", "in-progress", "en_route", "on_site"].includes(raw)) return "in_progress";
     if (raw === "cancelled") return "cancelled";
+    if (raw === "pending") return "pending";
     return "scheduled";
   };
+
+  // Map normalizeStatus values to statusBlockClasses keys
+  const toBlockStatusKey = (st: string) => st;
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
@@ -592,40 +608,64 @@ export default function JobsManager({
     options?: { draggable?: boolean; className?: string; style?: CSSProperties }
   ) {
     const st = normalizeStatus(job.status);
-    const cls = statusBlockClasses[st] ?? statusBlockClasses.scheduled;
+    const blockKey = toBlockStatusKey(st);
+    const cls = statusBlockClasses[blockKey] ?? statusBlockClasses.scheduled;
+    const inlineStyle: CSSProperties = {
+      ...(statusBlockInlineStyle[blockKey] ?? statusBlockInlineStyle.scheduled)
+    };
     const time =
       job.scheduled_start || job.scheduled_end
         ? `${(job.scheduled_start ?? "—").slice(0, 5)}–${(job.scheduled_end ?? "—").slice(0, 5)}`
         : null;
     const draggable = Boolean(options?.draggable);
+    const isHovered = hoveredJobId === job.id;
+
+    const employeeName = displayEmployeeName(job);
+    const tooltipNotes = job.notes ? (job.notes.length > 100 ? job.notes.slice(0, 100) + "…" : job.notes) : null;
+
     return (
-      <button
-        key={job.id}
-        type="button"
-        data-job-block
-        draggable={draggable}
-        style={options?.style}
-        onDragStart={
-          draggable
-            ? (event: DragEvent<HTMLButtonElement>) => {
-                event.dataTransfer.setData("text/job-id", job.id);
-              }
-            : undefined
-        }
-        onClick={(event) => {
-          event.stopPropagation();
-          startEdit(job);
-        }}
-        className={`block w-full rounded-md px-2 py-1.5 text-left text-xs font-semibold shadow-sm ${cls} ${options?.className ?? ""}`}
-      >
-        {time ? <p className="text-[10px] font-bold uppercase tracking-wide opacity-90">{time}</p> : null}
-        <p className="flex flex-wrap items-center gap-1 leading-snug">
-          <span className="line-clamp-2">{job.title ?? "Untitled job"}</span>
-          {job.is_demo ? <DemoBadge className="!px-1.5 !py-px !text-[9px]" /> : null}
-        </p>
-        <p className="truncate text-[10px] font-normal opacity-95">{job.client_name ?? "—"}</p>
-        <p className="truncate text-[10px] font-normal opacity-95">{displayEmployeeName(job)}</p>
-      </button>
+      <div key={job.id} className={`relative ${options?.className ?? ""}`} style={options?.style}>
+        <button
+          type="button"
+          data-job-block
+          draggable={draggable}
+          style={inlineStyle}
+          onDragStart={
+            draggable
+              ? (event: DragEvent<HTMLButtonElement>) => {
+                  event.dataTransfer.setData("text/job-id", job.id);
+                }
+              : undefined
+          }
+          onMouseEnter={() => setHoveredJobId(job.id)}
+          onMouseLeave={() => setHoveredJobId(null)}
+          onClick={(event) => {
+            event.stopPropagation();
+            startEdit(job);
+          }}
+          className={`block w-full rounded-md px-2 py-1.5 text-left text-xs font-semibold shadow-sm ${cls}`}
+        >
+          {time ? <p className="text-[10px] font-bold uppercase tracking-wide opacity-90">{time}</p> : null}
+          <p className="flex flex-wrap items-center gap-1 leading-snug">
+            <span className="line-clamp-2">{job.title ?? "Untitled job"}</span>
+            {job.is_demo ? <DemoBadge className="!px-1.5 !py-px !text-[9px]" /> : null}
+          </p>
+          <p className="truncate text-[10px] font-normal opacity-95">{job.client_name ?? "—"}</p>
+          <p className="truncate text-[10px] font-normal opacity-95">{employeeName !== "—" ? employeeName : ""}</p>
+        </button>
+        {isHovered ? (
+          <div
+            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1.5 w-56 rounded-lg border border-slate-200 bg-white p-2.5 shadow-xl text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            style={{ minWidth: "200px" }}
+          >
+            <p className="font-semibold leading-snug">{job.title ?? "Untitled job"}</p>
+            {job.client_name ? <p className="mt-1 text-slate-600 dark:text-slate-400">Client: {job.client_name}</p> : null}
+            {job.suburb ? <p className="text-slate-600 dark:text-slate-400">Location: {job.suburb}</p> : null}
+            {employeeName !== "—" ? <p className="text-slate-600 dark:text-slate-400">Assigned: {employeeName}</p> : null}
+            {tooltipNotes ? <p className="mt-1 border-t border-slate-100 pt-1 text-slate-500 dark:border-slate-700 dark:text-slate-400">{tooltipNotes}</p> : null}
+          </div>
+        ) : null}
+      </div>
     );
   }
 
@@ -777,21 +817,43 @@ export default function JobsManager({
             </button>
           </div>
           <div className="mb-4 flex items-center justify-between gap-2">
-            <button type="button" onClick={() => navigateCalendar(-1)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--text-primary)]">
-              ←
-            </button>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => navigateCalendar(-1)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--text-primary)]">
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const now = new Date();
+                  setFocusDate(now);
+                  setMonthDate(new Date(now.getFullYear(), now.getMonth(), 1));
+                }}
+                className="rounded border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+              >
+                Today
+              </button>
+              <button type="button" onClick={() => navigateCalendar(1)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--text-primary)]">
+                →
+              </button>
+            </div>
             <p className="text-center text-sm font-semibold text-[var(--text-primary)]">{currentCalendarLabel}</p>
-            <button type="button" onClick={() => navigateCalendar(1)} className="rounded border border-[var(--border)] px-3 py-1 text-sm text-[var(--text-primary)]">
-              →
-            </button>
+            <div className="w-[5.5rem]" aria-hidden />
           </div>
           {calendarView === "today" ? (
             <div
-              className="relative cursor-pointer rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]"
+              className={`relative cursor-pointer rounded-lg border bg-[var(--bg-secondary)] transition-colors ${dragOverDateKey === todayKey ? "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_8%,var(--bg-secondary))]" : "border-[var(--border)]"}`}
               role="presentation"
               onClick={(event) => {
                 if ((event.target as HTMLElement).closest("[data-job-block]")) return;
                 startAddWithDate(todayKey);
+              }}
+              onDragOver={(e) => { e.preventDefault(); setDragOverDateKey(todayKey); }}
+              onDragEnter={() => setDragOverDateKey(todayKey)}
+              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDateKey(null); }}
+              onDrop={(e) => {
+                setDragOverDateKey(null);
+                const jobId = e.dataTransfer.getData("text/job-id");
+                if (jobId) quickUpdateSchedule(jobId, todayKey);
               }}
             >
               <div className="space-y-1">
@@ -829,6 +891,17 @@ export default function JobsManager({
                   const key = toDateKey(day);
                   const jobsOnDay = sortJobsByStartTime(jobsByDate.get(key) ?? []);
                   const today = isDayToday(day);
+                  const isDragTarget = dragOverDateKey === key;
+
+                  // Separate timed vs all-day jobs
+                  const timedJobs = jobsOnDay.filter((j) => j.scheduled_start && j.scheduled_end);
+                  const allDayJobs = jobsOnDay.filter((j) => !j.scheduled_start || !j.scheduled_end);
+
+                  const DAY_START_MIN = 7 * 60; // 7:00 AM
+                  const DAY_END_MIN = 19 * 60; // 7:00 PM
+                  const TOTAL_MINS = DAY_END_MIN - DAY_START_MIN;
+                  const GRID_HEIGHT = 480; // px for time grid
+
                   return (
                     <div
                       key={key}
@@ -837,9 +910,26 @@ export default function JobsManager({
                         if ((event.target as HTMLElement).closest("[data-job-block]")) return;
                         startAddWithDate(key);
                       }}
-                      className={`flex min-h-[520px] flex-col rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] ${
-                        today ? "ring-2 ring-[var(--accent-color)] ring-offset-2 ring-offset-[var(--bg-card)]" : ""
-                      }`}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        setDragOverDateKey(key);
+                      }}
+                      onDragEnter={() => setDragOverDateKey(key)}
+                      onDragLeave={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                          setDragOverDateKey(null);
+                        }
+                      }}
+                      onDrop={(event) => {
+                        setDragOverDateKey(null);
+                        const jobId = event.dataTransfer.getData("text/job-id");
+                        if (jobId) quickUpdateSchedule(jobId, key);
+                      }}
+                      className={`flex min-h-[520px] flex-col rounded-lg border bg-[var(--bg-secondary)] transition-colors ${
+                        isDragTarget
+                          ? "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_8%,var(--bg-secondary))]"
+                          : "border-[var(--border)]"
+                      } ${today ? "ring-2 ring-[var(--accent-color)] ring-offset-2 ring-offset-[var(--bg-card)]" : ""}`}
                     >
                       <div
                         className={`border-b border-[var(--border)] px-2 py-2 text-center text-[11px] font-semibold leading-tight ${
@@ -849,10 +939,45 @@ export default function JobsManager({
                         <div>{day.toLocaleDateString("en-AU", { weekday: "short" })}</div>
                         <div className="text-xs">{day.toLocaleDateString("en-AU", { day: "numeric", month: "short" })}</div>
                       </div>
-                      <div className="flex flex-1 flex-col gap-2 p-2">
-                        {jobsOnDay.map((job) => calendarJobBlock(job, { draggable: true }))}
-                        <p className="mt-auto pt-2 text-center text-[10px] text-[var(--text-muted)]">Click empty space to add</p>
-                      </div>
+                      {/* All-day jobs strip at top */}
+                      {allDayJobs.length > 0 ? (
+                        <div className="flex flex-col gap-1 border-b border-[var(--border)] p-1.5">
+                          {allDayJobs.map((job) => calendarJobBlock(job, { draggable: true }))}
+                        </div>
+                      ) : null}
+                      {/* Timed jobs as positioned blocks */}
+                      {timedJobs.length > 0 ? (
+                        <div className="relative flex-1 overflow-hidden" style={{ height: GRID_HEIGHT }}>
+                          {/* Hour grid lines */}
+                          {Array.from({ length: 13 }, (_, i) => 7 + i).map((hour) => (
+                            <div
+                              key={hour}
+                              className="absolute left-0 right-0 border-t border-[var(--border)]"
+                              style={{ top: `${((hour * 60 - DAY_START_MIN) / TOTAL_MINS) * 100}%` }}
+                            >
+                              <span className="text-[9px] text-[var(--text-muted)] pl-0.5">{`${String(hour).padStart(2, "0")}:00`}</span>
+                            </div>
+                          ))}
+                          {timedJobs.map((job) => {
+                            const startMin = parseTimeToMinutes(job.scheduled_start) ?? DAY_START_MIN;
+                            const endMin = parseTimeToMinutes(job.scheduled_end) ?? startMin + 60;
+                            const clampedStart = Math.max(DAY_START_MIN, startMin);
+                            const clampedEnd = Math.min(DAY_END_MIN, endMin);
+                            const topPct = ((clampedStart - DAY_START_MIN) / TOTAL_MINS) * 100;
+                            const heightPct = Math.max(4, ((clampedEnd - clampedStart) / TOTAL_MINS) * 100);
+                            return calendarJobBlock(job, {
+                              draggable: true,
+                              style: { position: "absolute", top: `${topPct}%`, height: `${heightPct}%`, left: "4px", right: "4px" }
+                            });
+                          })}
+                        </div>
+                      ) : null}
+                      {/* If no timed jobs, show empty flex space with hint */}
+                      {timedJobs.length === 0 ? (
+                        <div className="flex flex-1 flex-col p-1">
+                          <p className="mt-auto pt-2 text-center text-[10px] text-[var(--text-muted)]">Click to add</p>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -875,6 +1000,10 @@ export default function JobsManager({
                   const dateKey = toDateKey(date);
                   const jobsOnDate = sortJobsByStartTime(jobsByDate.get(dateKey) ?? []);
                   const today = isDayToday(date);
+                  const isDragTarget = dragOverDateKey === dateKey;
+                  const MAX_VISIBLE = 3;
+                  const visibleJobs = jobsOnDate.slice(0, MAX_VISIBLE);
+                  const extraCount = jobsOnDate.length - MAX_VISIBLE;
 
                   return (
                     <div
@@ -882,26 +1011,56 @@ export default function JobsManager({
                       role="presentation"
                       onClick={(event) => {
                         if ((event.target as HTMLElement).closest("[data-job-block]")) return;
-                        startAddWithDate(dateKey);
+                        // If there are jobs, switch to week view for that date; otherwise open new job
+                        if (jobsOnDate.length > 0) {
+                          setFocusDate(date);
+                          setCalendarView("week");
+                        } else {
+                          startAddWithDate(dateKey);
+                        }
                       }}
-                      onDragOver={(event) => event.preventDefault()}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        setDragOverDateKey(dateKey);
+                      }}
+                      onDragEnter={() => setDragOverDateKey(dateKey)}
+                      onDragLeave={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                          setDragOverDateKey(null);
+                        }
+                      }}
                       onDrop={(event) => {
+                        setDragOverDateKey(null);
                         const jobId = event.dataTransfer.getData("text/job-id");
                         if (jobId) quickUpdateSchedule(jobId, dateKey);
                       }}
-                      className={`flex min-h-[140px] cursor-pointer flex-col rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-2 ${
-                        today ? "ring-2 ring-[var(--accent-color)] ring-offset-1 ring-offset-[var(--bg-card)]" : ""
-                      }`}
+                      className={`flex min-h-[140px] cursor-pointer flex-col rounded-lg border bg-[var(--bg-secondary)] p-2 transition-colors ${
+                        isDragTarget
+                          ? "border-[var(--accent-color)] bg-[color-mix(in_srgb,var(--accent-color)_8%,var(--bg-secondary))]"
+                          : "border-[var(--border)]"
+                      } ${today ? "ring-2 ring-[var(--accent-color)] ring-offset-1 ring-offset-[var(--bg-card)]" : ""}`}
                     >
-                      <p
-                        className={`mb-1.5 inline-flex min-h-[1.25rem] w-min min-w-[1.5rem] items-center justify-center rounded px-1 text-xs font-bold ${
-                          today ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"
-                        }`}
-                      >
-                        {date.getDate()}
-                      </p>
+                      <div className="mb-1.5 flex items-center justify-between gap-1">
+                        <p
+                          className={`inline-flex min-h-[1.25rem] min-w-[1.5rem] items-center justify-center rounded px-1 text-xs font-bold ${
+                            today ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"
+                          }`}
+                        >
+                          {date.getDate()}
+                        </p>
+                        {jobsOnDate.length > 0 ? (
+                          <span className="rounded-full bg-[var(--accent-color)] px-1.5 py-0.5 text-[10px] font-bold text-white leading-none">
+                            {jobsOnDate.length}
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="flex flex-1 flex-col gap-1 overflow-hidden">
-                        {jobsOnDate.map((job) => calendarJobBlock(job, { draggable: true }))}
+                        {visibleJobs.map((job) => calendarJobBlock(job, { draggable: true }))}
+                        {extraCount > 0 ? (
+                          <p className="text-center text-[10px] font-semibold text-[var(--accent-color)]">
+                            +{extraCount} more
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   );
@@ -1058,7 +1217,7 @@ export default function JobsManager({
             {quickAdd === "client" ? (
               <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base font-semibold text-slate-900">New client</h3>
+                  <h3 className="text-base font-semibold text-[var(--text-primary)]">New client</h3>
                   <button type="button" onClick={() => setQuickAdd(null)} className="text-sm text-slate-500 hover:text-slate-800">
                     Close
                   </button>
@@ -1086,7 +1245,7 @@ export default function JobsManager({
             {quickAdd === "employee" ? (
               <aside className="flex max-h-[45vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-200 bg-white p-5 shadow-xl md:h-full md:max-h-none md:max-w-sm md:border-b-0 md:border-r md:border-slate-200">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base font-semibold text-slate-900">New employee</h3>
+                  <h3 className="text-base font-semibold text-[var(--text-primary)]">New employee</h3>
                   <button type="button" onClick={() => setQuickAdd(null)} className="text-sm text-slate-500 hover:text-slate-800">
                     Close
                   </button>

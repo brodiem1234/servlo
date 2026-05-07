@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Star, Wifi, Copy, CheckCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Wifi, Copy, CheckCheck, ChevronDown, ChevronUp, X, Send, CheckSquare } from "lucide-react";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,13 @@ interface DemoReview {
   rating: number;
   date: string;
   text: string;
+}
+
+interface CompletedJob {
+  id: string;
+  title: string;
+  client_name: string | null;
+  client_email: string | null;
 }
 
 // ─── Demo data ────────────────────────────────────────────────────────────────
@@ -63,19 +71,6 @@ const DEMO_REVIEWS: DemoReview[] = [
   },
 ];
 
-const SAMPLE_RESPONSES: Record<string, string> = {
-  "demo-1":
-    "Hi Sarah, thank you so much for your kind words! We're really glad we could sort out the blocked drain quickly and leave things tidy. It means a lot to know you'd recommend us to others in Adelaide. We look forward to helping you again any time!",
-  "demo-2":
-    "Thanks for the 5-star review, James! Same-day callouts for electrical issues are something we're really proud of — safety first. So glad we could explain everything clearly and sort it out for you at a fair price.",
-  "demo-3":
-    "Hi Priya, thank you for the honest feedback! We're glad the team were friendly and got the job done for you. We apologise for the delay — we always try to call ahead when that happens. We'll keep working on our punctuality. Hope to serve you again!",
-  "demo-4":
-    "Michael, what a fantastic review — thank you! A full bathroom renovation is a big job and we're really proud of the result. Staying tidy on site and finishing on schedule are things we take seriously. We'd love to help with any future projects!",
-  "demo-5":
-    "Hi Lisa, thank you for taking the time to leave honest feedback. We're glad you were happy with the quality of work. You're absolutely right that communication during the job could have been better — that's something we're actively improving. We appreciate you letting us know and hope we can do better for you next time.",
-};
-
 // ─── Star rating display ──────────────────────────────────────────────────────
 
 function StarRating({ rating }: { rating: number }) {
@@ -93,31 +88,57 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+// ─── Spinner ─────────────────────────────────────────────────────────────────
+
+function Spinner() {
+  return (
+    <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+    </svg>
+  );
+}
+
 // ─── Review card ──────────────────────────────────────────────────────────────
 
 function ReviewCard({
   review,
+  businessName,
 }: {
   review: DemoReview;
+  businessName: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [responded, setResponded] = useState(false);
 
-  const handleDraftResponse = async () => {
+  const handleGenerateResponse = async () => {
     if (draft) {
       setExpanded((e) => !e);
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setDraft(
-      SAMPLE_RESPONSES[review.id] ??
-        `Hi ${review.name.split(" ")[0]}, thank you so much for taking the time to leave a review. We really appreciate your feedback and look forward to helping you again in the future!`
-    );
-    setExpanded(true);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/grow/generate-review-response", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reviewText: review.text,
+          businessName,
+          trade: "trade services",
+        }),
+      });
+      const data = (await res.json()) as { response?: string };
+      setDraft(data.response ?? "Thank you for your review!");
+      setExpanded(true);
+    } catch {
+      setDraft("Thank you so much for your kind review! We really appreciate your feedback and look forward to helping you again in the future!");
+      setExpanded(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopy = async () => {
@@ -131,10 +152,29 @@ function ReviewCard({
     }
   };
 
+  const handleMarkResponded = async () => {
+    setResponded(true);
+    // Optimistic — save to grow_review_responses
+    const sb = createSupabaseBrowser();
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return;
+    await sb.from("grow_review_responses").insert({
+      owner_id: user.id,
+      reviewer_name: review.name,
+      rating: review.rating,
+      review_text: review.text,
+      response_draft: draft,
+      response_status: "responded",
+    });
+  };
+
   return (
     <div
       className="rounded-xl border p-4 space-y-3"
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      style={{
+        background: responded ? "rgb(16 185 129 / 0.05)" : "var(--bg-card)",
+        borderColor: responded ? "rgb(16 185 129 / 0.4)" : "var(--border)",
+      }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
@@ -146,10 +186,7 @@ function ReviewCard({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <p
-                className="text-sm font-semibold"
-                style={{ color: "var(--text-primary)" }}
-              >
+              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
                 {review.name}
               </p>
               <span
@@ -158,6 +195,14 @@ function ReviewCard({
               >
                 DEMO
               </span>
+              {responded && (
+                <span
+                  className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                  style={{ background: "rgb(16 185 129 / 0.15)", color: "#10B981" }}
+                >
+                  RESPONDED
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <StarRating rating={review.rating} />
@@ -179,41 +224,17 @@ function ReviewCard({
 
       <button
         type="button"
-        onClick={handleDraftResponse}
+        onClick={handleGenerateResponse}
         disabled={loading}
         className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity disabled:opacity-50"
         style={{ background: "rgb(139 92 246 / 0.15)", color: "#A78BFA" }}
       >
         {loading ? (
-          <>
-            <svg
-              className="h-3 w-3 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8z"
-              />
-            </svg>
-            Drafting response…
-          </>
+          <><Spinner /> Generating AI response…</>
         ) : draft ? (
-          <>
-            {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            {expanded ? "Hide response" : "Show response"}
-          </>
+          <>{expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />} {expanded ? "Hide response" : "Show response"}</>
         ) : (
-          "Draft Response"
+          "Generate AI response"
         )}
       </button>
 
@@ -247,19 +268,203 @@ function ReviewCard({
             </button>
             <button
               type="button"
-              disabled
-              className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold opacity-40 cursor-not-allowed"
+              onClick={handleMarkResponded}
+              disabled={responded}
+              className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-50"
               style={{
-                borderColor: "var(--border)",
-                color: "var(--text-muted)",
+                background: responded ? "rgb(16 185 129 / 0.15)" : "var(--bg-secondary)",
+                borderColor: responded ? "#10B981" : "var(--border)",
+                color: responded ? "#10B981" : "var(--text-secondary)",
               }}
-              title="Coming with full Grow launch"
             >
-              Approve (coming soon)
+              <CheckSquare size={12} />
+              {responded ? "Marked as responded" : "Mark as responded"}
             </button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Request review modal ─────────────────────────────────────────────────────
+
+function RequestReviewModal({
+  onClose,
+  businessName,
+}: {
+  onClose: () => void;
+  businessName: string;
+}) {
+  const [jobs, setJobs] = useState<CompletedJob[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [selectedJobId, setSelectedJobId] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const load = async () => {
+      setLoadingJobs(true);
+      const sb = createSupabaseBrowser();
+      const { data } = await sb
+        .from("jobs")
+        .select("id, title, client_id, clients(full_name, email)")
+        .eq("status", "completed")
+        .eq("is_demo", false)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (data) {
+        setJobs(
+          data.map((j) => {
+            const raw = j as {
+              id: string;
+              title: string;
+              clients?: { full_name?: string; email?: string } | null;
+            };
+            return {
+              id: raw.id,
+              title: raw.title,
+              client_name: raw.clients?.full_name ?? null,
+              client_email: raw.clients?.email ?? null,
+            };
+          })
+        );
+      }
+      setLoadingJobs(false);
+    };
+    void load();
+  }, []);
+
+  const selectedJob = jobs.find((j) => j.id === selectedJobId);
+
+  const handleSend = async () => {
+    if (!selectedJob?.client_email) return;
+    setSending(true);
+    try {
+      await fetch("/api/grow/send-review-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName: selectedJob.client_name ?? "there",
+          clientEmail: selectedJob.client_email,
+          businessName,
+          jobTitle: selectedJob.title,
+        }),
+      });
+      setSent(true);
+    } catch {
+      setSent(true);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+      style={{ background: "rgba(0,0,0,0.6)" }}
+      onClick={(e) => { if (!modalRef.current?.contains(e.target as Node)) onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        className="w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+        style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+            Request a Review
+          </h2>
+          <button type="button" onClick={onClose} style={{ color: "var(--text-muted)" }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {sent ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <CheckCheck size={36} style={{ color: "#10B981" }} />
+            <p className="font-semibold" style={{ color: "var(--text-primary)" }}>Review request sent!</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              {selectedJob?.client_name ?? "Your client"} will receive an email asking them to leave a review.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-2 rounded-lg px-5 py-2 text-sm font-semibold text-white"
+              style={{ background: "#8B5CF6" }}
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              Select a completed job and we&apos;ll send the client a friendly email asking for a Google review.
+            </p>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                Completed job
+              </label>
+              {loadingJobs ? (
+                <div className="flex items-center gap-2 py-2" style={{ color: "var(--text-muted)" }}>
+                  <Spinner /> Loading jobs…
+                </div>
+              ) : jobs.length === 0 ? (
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>No completed jobs found.</p>
+              ) : (
+                <select
+                  value={selectedJobId}
+                  onChange={(e) => setSelectedJobId(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
+                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                >
+                  <option value="">Select a job…</option>
+                  {jobs.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.title}{j.client_name ? ` — ${j.client_name}` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {selectedJob && (
+              <div
+                className="rounded-lg border p-3 text-sm space-y-1"
+                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+              >
+                <p style={{ color: "var(--text-secondary)" }}>
+                  <span className="font-medium" style={{ color: "var(--text-primary)" }}>Client: </span>
+                  {selectedJob.client_name ?? "Unknown"}
+                </p>
+                <p style={{ color: "var(--text-secondary)" }}>
+                  <span className="font-medium" style={{ color: "var(--text-primary)" }}>Email: </span>
+                  {selectedJob.client_email ?? (
+                    <span style={{ color: "#EF4444" }}>No email on record</span>
+                  )}
+                </p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!selectedJobId || !selectedJob?.client_email || sending}
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
+              style={{ background: "#8B5CF6" }}
+            >
+              {sending ? <><Spinner /> Sending…</> : <><Send size={14} /> Send review request</>}
+            </button>
+
+            {selectedJob && !selectedJob.client_email && (
+              <p className="text-center text-xs" style={{ color: "#EF4444" }}>
+                This client has no email address. Add one in the Clients page first.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -274,6 +479,7 @@ export default function ReviewHubClient({
   businessName: string;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const STATS = [
     { label: "Average Rating", value: "4.6 ★" },
@@ -287,10 +493,7 @@ export default function ReviewHubClient({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1
-            className="text-2xl font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
+          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
             Review Hub
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
@@ -298,27 +501,33 @@ export default function ReviewHubClient({
             <span style={{ color: "#A78BFA" }}>{businessName}</span>.
           </p>
         </div>
-        <span
-          className="mt-1 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-purple-400/30"
-          style={{ background: "rgb(139 92 246 / 0.2)", color: "#C4B5FD" }}
-        >
-          Coming soon
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowRequestModal(true)}
+            className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: "#8B5CF6" }}
+          >
+            Request review from client
+          </button>
+          <span
+            className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-purple-400/30"
+            style={{ background: "rgb(139 92 246 / 0.2)", color: "#C4B5FD" }}
+          >
+            Coming soon
+          </span>
+        </div>
       </div>
 
       {/* Connection banner */}
       <div
         className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
-        style={{
-          background: "rgb(139 92 246 / 0.08)",
-          borderColor: "rgb(139 92 246 / 0.35)",
-        }}
+        style={{ background: "rgb(139 92 246 / 0.08)", borderColor: "rgb(139 92 246 / 0.35)" }}
       >
         <div className="flex items-center gap-2.5">
           <Wifi size={18} style={{ color: "#8B5CF6" }} />
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Connect your Google Business Profile to start managing reviews
-            automatically.
+            Connect your Google Business Profile to start managing reviews automatically.
           </p>
         </div>
         <button
@@ -337,21 +546,12 @@ export default function ReviewHubClient({
           <div
             key={label}
             className="flex flex-col gap-1 rounded-xl border p-4"
-            style={{
-              background: "var(--bg-card)",
-              borderColor: "var(--border)",
-            }}
+            style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
           >
-            <p
-              className="text-xs font-semibold uppercase tracking-wide"
-              style={{ color: "var(--text-muted)" }}
-            >
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
               {label}
             </p>
-            <p
-              className="text-2xl font-bold tabular-nums"
-              style={{ color: "var(--text-primary)" }}
-            >
+            <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
               {value}
             </p>
           </div>
@@ -361,10 +561,7 @@ export default function ReviewHubClient({
       {/* Demo reviews */}
       <div>
         <div className="mb-3 flex items-center gap-2">
-          <h2
-            className="text-base font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
+          <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
             Recent Reviews
           </h2>
           <span
@@ -377,7 +574,7 @@ export default function ReviewHubClient({
 
         <div className="space-y-3">
           {DEMO_REVIEWS.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard key={review.id} review={review} businessName={businessName} />
           ))}
         </div>
       </div>
@@ -385,10 +582,7 @@ export default function ReviewHubClient({
       {/* Saved responses from DB (if any) */}
       {savedResponses.length > 0 && (
         <div>
-          <h2
-            className="mb-3 text-base font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
+          <h2 className="mb-3 text-base font-bold" style={{ color: "var(--text-primary)" }}>
             Your Saved Responses ({savedResponses.length})
           </h2>
           <div className="space-y-3">
@@ -396,25 +590,22 @@ export default function ReviewHubClient({
               <div
                 key={r.id}
                 className="rounded-xl border p-4"
-                style={{
-                  background: "var(--bg-card)",
-                  borderColor: "var(--border)",
-                }}
+                style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
               >
                 <div className="flex items-center gap-2">
                   <StarRating rating={r.rating ?? 5} />
-                  <span
-                    className="text-sm font-semibold"
-                    style={{ color: "var(--text-primary)" }}
-                  >
+                  <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
                     {r.reviewer_name ?? "Anonymous"}
+                  </span>
+                  <span
+                    className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                    style={{ background: "rgb(16 185 129 / 0.15)", color: "#10B981" }}
+                  >
+                    {r.response_status}
                   </span>
                 </div>
                 {r.review_text && (
-                  <p
-                    className="mt-1 text-sm"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
+                  <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
                     {r.review_text}
                   </p>
                 )}
@@ -430,6 +621,14 @@ export default function ReviewHubClient({
             ))}
           </div>
         </div>
+      )}
+
+      {/* Request review modal */}
+      {showRequestModal && (
+        <RequestReviewModal
+          onClose={() => setShowRequestModal(false)}
+          businessName={businessName}
+        />
       )}
 
       {/* Google integration coming soon dialog */}
@@ -454,15 +653,11 @@ export default function ReviewHubClient({
           >
             <Star size={24} style={{ color: "#8B5CF6" }} />
           </div>
-          <h3
-            className="text-lg font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
+          <h3 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
             Google Business Profile
           </h3>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Google Business Profile integration is coming with the full SERVLO
-            Grow launch in Q3 2026. We&apos;ll notify you when it&apos;s ready.
+            Google Business Profile integration is coming with the full SERVLO Grow launch in Q3 2026. We&apos;ll notify you when it&apos;s ready.
           </p>
           <button
             type="button"

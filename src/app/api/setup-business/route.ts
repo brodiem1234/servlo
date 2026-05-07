@@ -321,13 +321,15 @@ export async function POST(request: Request) {
 
   try {
     const welcomeFrom = process.env.RESEND_WELCOME_FROM ?? "SERVLO <hello@servlo.com.au>";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
     await sendEmail(
       email,
-      "Welcome to SERVLO",
+      `Welcome to SERVLO${businessName ? `, ${businessName}` : ""}!`,
       welcomeOwnerEmailTemplate({
         ownerName: fullName,
-        dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/owner`,
-        supportUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/contact`,
+        businessName: businessName || undefined,
+        dashboardUrl: `${appUrl}/dashboard/owner`,
+        supportUrl: `${appUrl}/contact`,
         industryLabel: formatIndustryLabels(industries.length ? industries : []),
         highlightFeatures: welcomeHighlightLabels(primaryIndustry)
       }),

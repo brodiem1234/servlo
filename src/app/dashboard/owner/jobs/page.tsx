@@ -5,7 +5,9 @@ import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
 import JobsManager from "./jobs-manager";
 import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
+import { createNotification } from "@/lib/notifications";
 import { filterDemoEntities } from "@/lib/demo/visibility";
+import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -328,6 +330,13 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
             }
           }
         }
+        // Notify the owner that the job is complete
+        await createNotification(owner.id, {
+          type: "job_completed",
+          title: `Job completed: ${job.title ?? "Untitled"}`,
+          body: subtotal > 0 ? `Invoice ${invoiceNumber} ($${total.toFixed(2)}) generated.` : undefined,
+          actionUrl: invoiceId ? `/dashboard/owner/finance?tab=invoices` : `/dashboard/owner/jobs`,
+        });
       }
     }
 
@@ -671,6 +680,11 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
 
   return (
     <section className="space-y-5">
+      <FirstVisitBanner
+        pageKey="jobs"
+        title="Your job management hub"
+        description="Create, schedule, and track every job. Assign staff, attach photos, and get client sign-offs."
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Jobs</h1>
       </div>

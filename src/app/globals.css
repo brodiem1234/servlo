@@ -421,6 +421,28 @@
   background-color: #120b00 !important;
 }
 
+/* Ensure sidebar text is always readable inside product shells (dark backgrounds).
+   Product shells apply `class="dark"` to an inner div rather than <html>, so the
+   :root.dark vars don't cascade here — we must re-declare them explicitly. */
+[data-product] {
+  --sidebar-text: rgba(255, 255, 255, 0.85);
+  --sidebar-text-muted: rgba(255, 255, 255, 0.45);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --bg-primary: #0f172a;
+  --bg-secondary: rgba(255, 255, 255, 0.05);
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.10);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.07);
+  --sidebar-divider: rgba(255, 255, 255, 0.08);
+}
+[data-product] .owner-sidebar {
+  --sidebar-text: rgba(255, 255, 255, 0.85);
+  --sidebar-text-muted: rgba(255, 255, 255, 0.45);
+}
+
 /* Active nav item uses product muted bg + accent-light text inside product shells */
 [data-product] .owner-sidebar nav a[data-active="true"] {
   background-color: var(--product-muted) !important;
@@ -456,4 +478,19 @@
 [data-product] * {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--product-accent) 35%, transparent) transparent;
+}
+
+/* ── Mobile card list — tables become stacked cards on small screens ─────── */
+@media (max-width: 767px) {
+  .mobile-card-list table,
+  .mobile-card-list thead,
+  .mobile-card-list tbody,
+  .mobile-card-list th,
+  .mobile-card-list td,
+  .mobile-card-list tr { display: block; }
+  .mobile-card-list thead tr { position: absolute; top: -9999px; left: -9999px; }
+  .mobile-card-list tr { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; padding: 4px; }
+  .mobile-card-list td { border: none !important; padding: 4px 8px; display: flex; align-items: flex-start; gap: 8px; text-align: left; }
+  .mobile-card-list td::before { content: attr(data-label); font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 90px; flex-shrink: 0; padding-top: 2px; }
+  .touch-target { min-height: 44px; min-width: 44px; }
 }

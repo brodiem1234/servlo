@@ -1,6 +1,7 @@
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import { excludeDemoFinancial } from "@/lib/demo/visibility";
+import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 import {
   RevenueBarChart,
   JobsDonutChart,
@@ -182,6 +183,11 @@ export default async function ReportsPage() {
 
   return (
     <section className="space-y-6">
+      <FirstVisitBanner
+        pageKey="reports"
+        title="Business performance"
+        description="Track revenue trends, job stats, and team productivity. Data updates in real time."
+      />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Reports</h1>
