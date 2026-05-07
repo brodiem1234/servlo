@@ -34,7 +34,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       .eq("owner_id", user.id)
       .order("scheduled_date", { ascending: true }),
     sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
-    sb.from("employees").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name")
+    sb.from("employees").select("id, full_name, role, is_demo").eq("owner_id", user.id).order("full_name")
   ]);
   if (jobsResult.error) throw new Error(jobsResult.error.message);
   if (clientsResult.error) throw new Error(clientsResult.error.message);
@@ -471,7 +471,9 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
   }));
   const employeeRefs = filterDemoEntities(employees ?? []).map((e: any) => ({
     id: e.id,
-    label: e.full_name ?? "Unnamed employee"
+    label: e.role === "contractor"
+      ? `${e.full_name ?? "Unnamed"} (Contractor)`
+      : (e.full_name ?? "Unnamed employee")
   }));
 
   return (

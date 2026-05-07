@@ -39,6 +39,17 @@ function GoogleLogo() {
   );
 }
 
+function MicrosoftLogo() {
+  return (
+    <svg className="h-5 w-5 shrink-0" viewBox="0 0 21 21" aria-hidden>
+      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+    </svg>
+  );
+}
+
 export function LoginExperience({
   emailValue,
   rememberMeChecked,
@@ -67,6 +78,24 @@ export function LoginExperience({
       }
     } catch (e) {
       window.alert(e instanceof Error ? e.message : "Google sign-in failed.");
+      setOauthWorking(false);
+    }
+  }, [oauthRedirect]);
+
+  const onMicrosoftSignIn = useCallback(async () => {
+    setOauthWorking(true);
+    try {
+      const supabase = createSupabaseBrowser();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "azure",
+        options: { scopes: "email", redirectTo: oauthRedirect }
+      });
+      if (error) {
+        window.alert(error.message || "Unable to connect to Microsoft.");
+        setOauthWorking(false);
+      }
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Microsoft sign-in failed.");
       setOauthWorking(false);
     }
   }, [oauthRedirect]);
@@ -108,7 +137,7 @@ export function LoginExperience({
 
         {mode === "login" ? (
           <>
-            <div className="mt-6">
+            <div className="mt-6 flex flex-col gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -118,6 +147,16 @@ export function LoginExperience({
               >
                 <GoogleLogo />
                 Continue with Google
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={oauthWorking}
+                onClick={onMicrosoftSignIn}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white font-medium text-[#374151] shadow-sm hover:bg-slate-50 disabled:opacity-60"
+              >
+                <MicrosoftLogo />
+                Continue with Microsoft
               </Button>
             </div>
             <div className="my-6 flex items-center gap-3">

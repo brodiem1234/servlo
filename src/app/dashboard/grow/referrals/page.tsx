@@ -13,18 +13,18 @@ export default function GrowReferralsPage() {
       >
         <span
           className="flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: "color-mix(in srgb, var(--accent-color) 12%, transparent)" }}
+          style={{ background: "rgb(139 92 246 / 0.15)" }}
         >
-          <Users2 size={32} style={{ color: "var(--accent-color)" }} />
+          <Users2 size={32} style={{ color: "#8B5CF6" }} />
         </span>
         <h2 className="mt-4 text-xl font-bold" style={{ color: "var(--text-primary)" }}>
           Referral Tracking
         </h2>
         <span
-          className="mt-2 inline-block rounded-full px-3 py-0.5 text-xs font-semibold ring-1 ring-amber-400/30"
+          className="mt-2 inline-block rounded-full px-3 py-0.5 text-xs font-semibold ring-1 ring-purple-400/30"
           style={{
-            background: "rgb(245 158 11 / 0.15)",
-            color: "rgb(251 191 36)",
+            background: "rgb(139 92 246 / 0.2)",
+            color: "#C4B5FD",
           }}
         >
           Coming soon

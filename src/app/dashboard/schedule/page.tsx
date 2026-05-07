@@ -26,18 +26,31 @@ export default async function SchedulePage({ searchParams }: { searchParams?: Sc
 
   const jobsResult = await sb
     .from("jobs")
-    .select("id, title, scheduled_date, scheduled_start, scheduled_end, status, client_id, address, suburb, state, is_demo")
+    .select("id, title, scheduled_date, scheduled_start, scheduled_end, status, client_id, employee_id, address, suburb, state, is_demo")
     .eq("owner_id", user.id)
     .eq("scheduled_date", dateKey)
     .order("scheduled_start", { ascending: true });
 
   const jobs = jobsResult.data ?? [];
-  const clientIds = jobs.map((j) => j.client_id).filter((id): id is string => Boolean(id));
-  const { data: clientRows } =
+  const clientIds = jobs.map((j: { client_id?: string | null }) => j.client_id).filter((id): id is string => Boolean(id));
+  const employeeIds = jobs.map((j: { employee_id?: string | null }) => j.employee_id).filter((id): id is string => Boolean(id));
+
+  const [{ data: clientRows }, { data: employeeRows }] = await Promise.all([
     clientIds.length === 0
       ? { data: [] as Array<{ id: string; full_name: string | null }> }
-      : await sb.from("clients").select("id, full_name").in("id", clientIds).eq("owner_id", user.id);
+      : sb.from("clients").select("id, full_name").in("id", clientIds).eq("owner_id", user.id),
+    employeeIds.length === 0
+      ? { data: [] as Array<{ id: string; full_name: string | null; role: string | null }> }
+      : sb.from("employees").select("id, full_name, role").in("id", employeeIds).eq("owner_id", user.id),
+  ]);
+
   const clientNameById = new Map((clientRows ?? []).map((row) => [row.id, row.full_name]));
+  const assigneeById = new Map(
+    (employeeRows ?? []).map((row: { id: string; full_name: string | null; role: string | null }) => [
+      row.id,
+      { name: row.full_name ?? "Unknown", isContractor: (row.role ?? "").toLowerCase() === "contractor" },
+    ])
+  );
   const label = new Date(`${dateKey}T12:00:00`).toLocaleDateString("en-AU", {
     weekday: "long",
     day: "numeric",
@@ -94,6 +107,15 @@ export default async function SchedulePage({ searchParams }: { searchParams?: Sc
                       ? ` · ${[job.address, job.suburb, job.state].filter(Boolean).join(", ")}`
                       : ""}
                   </p>
+                  {(job as { employee_id?: string | null }).employee_id ? (() => {
+                    const assignee = assigneeById.get((job as { employee_id: string }).employee_id);
+                    return assignee ? (
+                      <p className="mt-1 text-xs text-[var(--text-muted)]">
+                        Assigned: {assignee.name}
+                        {assignee.isContractor ? <span className="ml-1 rounded-full bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[10px] font-semibold">Contractor</span> : null}
+                      </p>
+                    ) : null;
+                  })() : null}
                 </div>
                 <Link
                   href={`/dashboard/owner/jobs?openJob=${encodeURIComponent(job.id)}`}

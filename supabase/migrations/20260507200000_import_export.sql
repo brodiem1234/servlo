@@ -1,0 +1,10 @@
+-- Import/Export feature (no schema changes required)
+--
+-- This migration documents the Xero CSV import/export feature added to
+-- Settings > Data tab. The feature uses existing tables:
+--   clients  — for contact imports (INSERT into clients with owner_id, full_name, email, phone, etc.)
+--   invoices — for invoice imports (INSERT into invoices with client_id resolved by name match)
+--
+-- No new columns or tables are needed; the feature is implemented entirely
+-- in the client-side CSV parser + Supabase browser client calls in:
+--   src/app/dashboard/owner/settings/xero-import-export.tsx

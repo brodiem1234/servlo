@@ -394,3 +394,43 @@
 :root.dark .dashboard-theme .border.border-slate-700 {
   border-color: color-mix(in srgb, var(--accent-color) 22%, var(--border)) !important;
 }
+
+/* ── Monochromatic product theme tokens ─────────────────────────────────── */
+[data-product="core"] {
+  --product-accent: #3B82F6;
+  --product-accent-light: #93C5FD;
+  --product-muted: #1a2e4a;
+  --product-sidebar: #0d1b36;
+  --product-main: #080f1e;
+}
+[data-product="grow"] {
+  --product-accent: #8B5CF6;
+  --product-accent-light: #C4B5FD;
+  --product-muted: #2a1650;
+  --product-sidebar: #120a2e;
+  --product-main: #0a0614;
+}
+[data-product="leads"] {
+  --product-accent: #F59E0B;
+  --product-accent-light: #FCD34D;
+  --product-muted: #3d2000;
+  --product-sidebar: #1f1200;
+  --product-main: #120b00;
+}
+
+/* Active nav item uses product muted bg + accent-light text inside product shells */
+[data-product] .owner-sidebar nav a[data-active="true"] {
+  background-color: var(--product-muted) !important;
+  color: var(--product-accent-light) !important;
+  border-left-color: var(--product-accent) !important;
+}
+[data-product] .owner-sidebar nav a[data-active="true"]:hover {
+  background-color: var(--product-muted) !important;
+  color: var(--product-accent-light) !important;
+}
+[data-product] .owner-sidebar nav a:hover {
+  background-color: color-mix(in srgb, var(--product-muted) 60%, transparent) !important;
+}
+[data-product] .owner-sidebar nav a[data-active="false"]:hover {
+  background-color: color-mix(in srgb, var(--product-muted) 50%, transparent) !important;
+}

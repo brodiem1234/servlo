@@ -108,14 +108,15 @@ export default function OwnerShell({
   return (
     <ToastProvider>
     <div
-        className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
+        data-product="core"
+        className="dashboard-theme min-h-screen bg-[var(--product-main)] text-[var(--text-primary)]"
         style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
       >
         <aside
           className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-          style={{ background: CORE_BG }}
+          style={{ background: "var(--product-sidebar)" }}
         >
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col items-center">
             <Image
               src="/logo.png"
               alt="SERVLO"
@@ -123,7 +124,7 @@ export default function OwnerShell({
               height={120}
               style={{ height: "auto", maxWidth: "120px", filter: CORE_LOGO_FILTER }}
             />
-            <div className="mt-3 h-[2px] w-full bg-[var(--sidebar-ring)]" aria-hidden />
+            <div className="mt-3 h-[2px] w-full bg-[var(--product-accent)]" aria-hidden />
           </div>
           <div className="mb-4">
             <ProductSwitcher activeProduct="core" />
@@ -155,7 +156,7 @@ export default function OwnerShell({
           <OwnerSidebarTodos initialTasks={initialTasks} />
         </aside>
 
-        <div className="flex min-h-screen flex-col md:pl-[256px]">
+        <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
           <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 md:px-6">
             <div className="flex items-center gap-3">
               <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">{businessName}</p>

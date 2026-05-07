@@ -50,12 +50,16 @@ export default async function OwnerTimesheetsPage({ searchParams }: TimesheetsPr
     .eq("owner_id", user.id)
     .order("full_name", { ascending: true });
 
-  const visibleEmployees = filterDemoEntities(employees ?? []).filter((e: { role?: string | null }) => {
+  const allVisible = filterDemoEntities(employees ?? []).filter((e: { role?: string | null }) => {
     const r = (e.role ?? "employee").toLowerCase();
     return r === "employee" || r === "contractor";
   });
 
-  const empIds = visibleEmployees.map((e: { id: string }) => e.id);
+  // Separate employees and contractors for tabbed display
+  const visibleEmployees = allVisible.filter((e: { role?: string | null }) => (e.role ?? "employee").toLowerCase() === "employee");
+  const visibleContractors = allVisible.filter((e: { role?: string | null }) => (e.role ?? "").toLowerCase() === "contractor");
+
+  const empIds = allVisible.map((e: { id: string }) => e.id);
   let entriesRaw: Array<{ employee_id: string; work_date: string; hours: number | string | null }> = [];
   if (empIds.length > 0) {
     const endExclusive = new Date(days[6]);
@@ -170,6 +174,10 @@ export default async function OwnerTimesheetsPage({ searchParams }: TimesheetsPr
         employees={visibleEmployees.map((e: { id: string; full_name: string | null }) => ({
           id: e.id,
           label: e.full_name ?? "Employee"
+        }))}
+        contractors={visibleContractors.map((e: { id: string; full_name: string | null }) => ({
+          id: e.id,
+          label: e.full_name ?? "Contractor"
         }))}
         hourLookup={Object.fromEntries(hourLookup)}
         saveHoursAction={saveHoursAction}

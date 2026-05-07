@@ -25,17 +25,20 @@ import {
 } from "@/lib/workspace-features";
 import { WorkspaceFeatureSwitch } from "@/components/workspace-feature-switch";
 import { revalidateOwnerWorkspaceRoutes } from "@/lib/dashboard/revalidate-owner";
+import { XeroImportExport } from "./xero-import-export";
 
 type SettingsPageProps = {
   searchParams?: {
     success?: string;
     demo?: string;
     demo_msg?: string;
+    tab?: string;
   };
 };
 
 export default async function OwnerSettingsPage({ searchParams }: SettingsPageProps) {
   const { user, enabled: workspaceFeatures, supabase } = await requireOwnerWorkspaceFeatures();
+  const activeTab = searchParams?.tab ?? "general";
 
   const [profileResult, businessResult] = await Promise.all([
     supabase
@@ -225,6 +228,23 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     <section className="space-y-6">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
 
+      {/* Tab navigation */}
+      <div className="flex gap-1 border-b border-[var(--border)]">
+        {(["general", "data"] as const).map((tab) => (
+          <a
+            key={tab}
+            href={`/dashboard/owner/settings?tab=${tab}`}
+            className={`px-4 py-2 text-sm font-semibold capitalize transition-colors ${
+              activeTab === tab
+                ? "border-b-2 border-[var(--accent-color)] text-[var(--accent-color)]"
+                : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            {tab === "data" ? "Data" : "General"}
+          </a>
+        ))}
+      </div>
+
       {demoBanner ? (
         <div
           className={`rounded-lg border px-4 py-3 text-sm ${
@@ -237,6 +257,11 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         </div>
       ) : null}
 
+      {activeTab === "data" ? (
+        <XeroImportExport ownerId={user.id} />
+      ) : null}
+
+      {activeTab !== "data" ? <>
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Business Profile</h2>
         <form action={updateBusinessProfile} className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -250,6 +275,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         </form>
       </article>
 
+      {/* Brand colour picker — hidden, product colours are fixed per product */}
+      {false && (
       <article className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Brand Colour</h2>
         <p className="mt-2 text-sm text-slate-600">
@@ -258,6 +285,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         </p>
         <BrandAccentForm savedAccent={savedAccent} />
       </article>
+      )}
 
       <article className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Workspace features</h2>
@@ -391,6 +419,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Change Password</button>
         </form>
       </article>
+      </> : null}
     </section>
   );
 }

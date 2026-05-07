@@ -20,8 +20,8 @@ export default function GrowDashboardPage() {
           </p>
         </div>
         <span
-          className="mt-1 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-amber-400/30"
-          style={{ background: "rgb(245 158 11 / 0.15)", color: "rgb(251 191 36)" }}
+          className="mt-1 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-purple-400/30"
+          style={{ background: "rgb(139 92 246 / 0.2)", color: "#C4B5FD" }}
         >
           Coming soon
         </span>
@@ -41,9 +41,9 @@ export default function GrowDashboardPage() {
               </p>
               <span
                 className="flex h-8 w-8 items-center justify-center rounded-lg"
-                style={{ background: "color-mix(in srgb, var(--accent-color) 12%, transparent)" }}
+                style={{ background: "rgb(139 92 246 / 0.15)" }}
               >
-                <Icon size={15} style={{ color: "var(--accent-color)" }} />
+                <Icon size={15} style={{ color: "#8B5CF6" }} />
               </span>
             </div>
             <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
@@ -63,9 +63,9 @@ export default function GrowDashboardPage() {
       >
         <span
           className="flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: "color-mix(in srgb, var(--accent-color) 12%, transparent)" }}
+          style={{ background: "rgb(139 92 246 / 0.15)" }}
         >
-          <TrendingUp size={32} style={{ color: "var(--accent-color)" }} />
+          <TrendingUp size={32} style={{ color: "#8B5CF6" }} />
         </span>
         <h2 className="mt-4 text-xl font-bold" style={{ color: "var(--text-primary)" }}>
           SERVLO Grow — coming soon

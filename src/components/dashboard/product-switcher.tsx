@@ -32,9 +32,9 @@ export function ProductSwitcher({ activeProduct }: { activeProduct: ProductId })
             style={
               isActive
                 ? {
-                    background: "var(--sidebar-active-bg)",
-                    color: "var(--sidebar-active-text)",
-                    boxShadow: "0 0 0 2px color-mix(in srgb, var(--sidebar-active-bg) 40%, transparent)",
+                    background: "var(--product-accent, var(--sidebar-active-bg))",
+                    color: "#ffffff",
+                    boxShadow: "0 0 0 2px color-mix(in srgb, var(--product-accent, var(--sidebar-active-bg)) 40%, transparent)",
                   }
                 : { color: "var(--sidebar-text-muted)" }
             }

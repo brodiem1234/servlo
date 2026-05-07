@@ -32,9 +32,10 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
 
   return (
     <div
+      data-product="leads"
       className="dashboard-theme min-h-screen"
       style={{
-        background: "var(--bg-primary)",
+        background: "var(--product-main)",
         "--sidebar-active-bg": LEADS_COLOR,
         "--sidebar-ring": LEADS_COLOR,
       } as React.CSSProperties}
@@ -42,10 +43,10 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
       {/* Sidebar */}
       <aside
         className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
-        style={{ background: LEADS_BG, color: "var(--sidebar-text)" }}
+        style={{ background: "var(--product-sidebar)", color: "var(--sidebar-text)" }}
       >
         {/* Brand */}
-        <div className="mb-4">
+        <div className="mb-4 flex flex-col items-center">
           <Image
             src="/logo.png"
             alt="SERVLO"
@@ -53,7 +54,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
             height={120}
             style={{ height: "auto", maxWidth: "120px", filter: LEADS_LOGO_FILTER }}
           />
-          <div className="mt-3 h-[2px] w-full" style={{ background: "var(--sidebar-ring)" }} aria-hidden />
+          <div className="mt-3 h-[2px] w-full" style={{ background: "var(--product-accent)" }} aria-hidden />
         </div>
 
         {/* Product switcher */}
@@ -85,10 +86,10 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
         {/* Coming-soon notice */}
         <div className="mt-auto">
           <div
-            className="rounded-lg px-3 py-2.5 ring-1 ring-amber-400/30"
-            style={{ background: "rgb(245 158 11 / 0.1)" }}
+            className="rounded-lg px-3 py-2.5"
+            style={{ background: "rgb(245 158 11 / 0.12)", border: "1px solid rgb(245 158 11 / 0.3)" }}
           >
-            <p className="text-xs font-semibold" style={{ color: "rgb(251 191 36)" }}>
+            <p className="text-xs font-semibold" style={{ color: "#FCD34D" }}>
               Coming soon
             </p>
             <p className="mt-0.5 text-xs" style={{ color: "var(--sidebar-text-muted)" }}>
@@ -99,7 +100,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
       </aside>
 
       {/* Main */}
-      <div className="flex min-h-screen flex-col md:pl-[256px]">
+      <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
         <header
           className="flex items-center justify-between border-b px-4 py-3 md:px-6"
           style={{
@@ -110,8 +111,8 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
           <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             SERVLO Leads
             <span
-              className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-amber-400/30"
-              style={{ background: "rgb(245 158 11 / 0.15)", color: "rgb(251 191 36)" }}
+              className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+              style={{ background: "rgb(245 158 11 / 0.2)", color: "#FCD34D", border: "1px solid rgb(245 158 11 / 0.35)" }}
             >
               Coming soon
             </span>
