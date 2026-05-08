@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const [businessResult, brand] = await Promise.all([
       supabase
         .from("businesses")
-        .select("business_name, abn, address, suburb, state, postcode, phone, email, accent_colour")
+        .select("business_name, abn, address, suburb, state, postcode, phone, email, accent_colour, gst_registered")
         .eq("owner_id", user.id)
         .single(),
       getBusinessBrand(user.id),
@@ -89,8 +89,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     `).join("")}
   </tbody>
   <tfoot>
-    <tr><td style="text-align:right;color:#666">Subtotal</td><td style="text-align:right">$${(Number(invoice.total || 0) / 1.1).toFixed(2)}</td></tr>
-    <tr><td style="text-align:right;color:#666">GST (10%)</td><td style="text-align:right">$${(Number(invoice.total || 0) - Number(invoice.total || 0) / 1.1).toFixed(2)}</td></tr>
+    ${(business as { gst_registered?: boolean } | null)?.gst_registered !== false
+      ? `<tr><td style="text-align:right;color:#666">Subtotal</td><td style="text-align:right">$${(Number(invoice.total || 0) / 1.1).toFixed(2)}</td></tr>
+    <tr><td style="text-align:right;color:#666">GST (10%)</td><td style="text-align:right">$${(Number(invoice.total || 0) - Number(invoice.total || 0) / 1.1).toFixed(2)}</td></tr>`
+      : `<tr><td style="text-align:right;color:#666;font-size:11px" colspan="2">GST not registered — prices do not include GST</td></tr>`
+    }
     <tr class="total-row"><td style="text-align:right">Total</td><td style="text-align:right;color:${accent}">$${Number(invoice.total || 0).toFixed(2)}</td></tr>
   </tfoot>
 </table>

@@ -127,7 +127,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       .maybeSingle(),
     supabase
       .from("businesses")
-      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name")
+      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered")
       .eq("owner_id", user.id)
       .maybeSingle()
   ]);
@@ -234,7 +234,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       address: String(formData.get("address") ?? ""),
       suburb: suburb || null,
       state: state || null,
-      postcode: postcode || null
+      postcode: postcode || null,
+      gst_registered: formData.get("gst_registered") === "true",
     };
     const upsert = await sb
       .from("businesses")
@@ -428,7 +429,25 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                 defaultValue={businessRow?.abn ?? ""}
                 className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--product-accent)]"
                 placeholder="XX XXX XXX XXX"
+                inputMode="numeric"
+                maxLength={14}
               />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">GST Registration</label>
+              <label className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="gst_registered"
+                  defaultChecked={(businessRow as { gst_registered?: boolean } | null)?.gst_registered !== false}
+                  className="h-4 w-4 rounded"
+                  value="true"
+                />
+                <div>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">Registered for GST</p>
+                  <p className="text-xs text-[var(--text-muted)]">Uncheck if your business earns under $75k/year and is not GST registered</p>
+                </div>
+              </label>
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Phone</label>
@@ -633,6 +652,23 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </div>
               <a
                 href="/dashboard/owner/settings/sms"
+                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                Configure
+              </a>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Security &amp; Two-Factor Authentication</h2>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  Add a TOTP authenticator app to protect your account with two-factor authentication.
+                </p>
+              </div>
+              <a
+                href="/dashboard/owner/settings/security"
                 className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
                 Configure
