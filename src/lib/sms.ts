@@ -39,13 +39,19 @@ export async function sendSms(to: string, body: string): Promise<SmsSendResult> 
   }
 
   try {
-    // Dynamic require so the build doesn't fail when twilio isn't installed
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const twilio = require("twilio");
-    const client = twilio(ACCOUNT_SID, AUTH_TOKEN);
-    const message = await client.messages.create({
+    // Dynamic import so the build doesn't fail when twilio isn't installed
+    let twilioClient: { messages: { create: (opts: Record<string, string>) => Promise<{ sid: string }> } };
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require("twilio") as (sid: string, token: string) => typeof twilioClient;
+      twilioClient = mod(ACCOUNT_SID!, AUTH_TOKEN!);
+    } catch {
+      console.error("[sms] twilio package not installed — run: npm install twilio");
+      return { ok: false, error: "twilio package not installed" };
+    }
+    const message = await twilioClient.messages.create({
       body,
-      from: FROM_NUMBER,
+      from: FROM_NUMBER!,
       to: normalised,
     });
     return { ok: true, sid: message.sid };

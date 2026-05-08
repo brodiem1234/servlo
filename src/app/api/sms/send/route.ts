@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendSms } from "@/lib/sms";
-import { logAudit } from "@/lib/audit";
 
 /**
  * POST /api/sms/send
- * Body: { to: string; body: string; job_id?: string; type?: string }
+ * Body: { to: string; body: string; job_id?: string }
  * Authenticated — owner only.
- * Logs to audit_log on success.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -15,12 +14,11 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
-    const { to, body: smsBody, job_id, type = "manual_sms" } = body as {
+    const payload = await req.json().catch(() => ({}));
+    const { to, body: smsBody, job_id } = payload as {
       to?: string;
       body?: string;
       job_id?: string;
-      type?: string;
     };
 
     if (!to || !smsBody) {
@@ -30,15 +28,18 @@ export async function POST(req: NextRequest) {
     const result = await sendSms(to, smsBody);
 
     if (result.ok) {
-      // Audit log
-      await logAudit({
-        ownerId: user.id,
-        action: type,
-        entityType: job_id ? "job" : "sms",
-        entityId: job_id ?? result.sid ?? "",
-        metadata: { to, sid: result.sid },
-        request: req,
-      });
+      // Best-effort audit log
+      try {
+        const admin = createAdminClient();
+        await admin.from("audit_log").insert({
+          user_id: user.id,
+          business_id: null,
+          table_name: job_id ? "jobs" : "sms",
+          record_id: job_id ?? result.sid ?? null,
+          action: "updated",
+          changed_fields: { sms_to: to, sms_sid: result.sid },
+        });
+      } catch { /* swallow */ }
     }
 
     return NextResponse.json(result);
