@@ -33,7 +33,7 @@ export default async function ReportsPage() {
         .from("invoices")
         .select("id, total, status, paid_at, issue_date, client_id, due_date, is_demo")
         .eq("owner_id", user.id),
-      sb.from("jobs").select("id, status, is_demo").eq("owner_id", user.id),
+      sb.from("jobs").select("id, title, status, is_demo, materials_cost, labour_hours, hourly_rate, revenue").eq("owner_id", user.id).is("deleted_at", null),
       sb
         .from("timesheets")
         .select("employee_id, total_hours, clock_in, clock_out")
@@ -174,6 +174,35 @@ export default async function ReportsPage() {
   const employeeHours = Array.from(empHoursMap.entries())
     .map(([id, hours]) => ({ name: employeeNameById.get(id) ?? "Unknown", hours }))
     .sort((a, b) => b.hours - a.hours);
+
+  // ── Per-job profitability ─────────────────────────────────────────────────
+  type JobProfit = { title: string; revenue: number; cost: number; profit: number; margin: number };
+  const profitableJobs: JobProfit[] = allJobs
+    .filter((j) => !j.is_demo)
+    .map((j) => {
+      const materials = Number((j as { materials_cost?: number | null }).materials_cost ?? 0);
+      const hours = Number((j as { labour_hours?: number | null }).labour_hours ?? 0);
+      const rate = Number((j as { hourly_rate?: number | null }).hourly_rate ?? 0);
+      const rev = Number((j as { revenue?: number | null }).revenue ?? 0);
+      const cost = materials + hours * rate;
+      const profit = rev - cost;
+      const margin = rev > 0 ? (profit / rev) * 100 : 0;
+      return {
+        title: (j as { title?: string | null }).title ?? "Untitled",
+        revenue: rev,
+        cost,
+        profit,
+        margin,
+      };
+    })
+    .filter((j) => j.revenue > 0 || j.cost > 0)
+    .sort((a, b) => b.profit - a.profit)
+    .slice(0, 10);
+
+  const totalRevenue = profitableJobs.reduce((s, j) => s + j.revenue, 0);
+  const totalCost = profitableJobs.reduce((s, j) => s + j.cost, 0);
+  const totalProfit = totalRevenue - totalCost;
+  const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   // ── Empty state check ────────────────────────────────────────────────────
   const isEmpty =
@@ -325,6 +354,68 @@ export default async function ReportsPage() {
               )}
             </div>
           </div>
+
+          {/* Row 4 — Profitability */}
+          {profitableJobs.length > 0 ? (
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                Per-job profitability
+              </h2>
+              {/* Summary stats */}
+              <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="rounded-lg bg-[var(--bg-secondary)] px-3 py-2">
+                  <p className="text-xs text-[var(--text-muted)]">Total Revenue</p>
+                  <p className="text-lg font-bold text-[var(--text-primary)]">{formatAud(totalRevenue)}</p>
+                </div>
+                <div className="rounded-lg bg-[var(--bg-secondary)] px-3 py-2">
+                  <p className="text-xs text-[var(--text-muted)]">Total Cost</p>
+                  <p className="text-lg font-bold text-[var(--text-primary)]">{formatAud(totalCost)}</p>
+                </div>
+                <div className="rounded-lg bg-[var(--bg-secondary)] px-3 py-2">
+                  <p className="text-xs text-[var(--text-muted)]">Total Profit</p>
+                  <p className={`text-lg font-bold ${totalProfit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    {formatAud(totalProfit)}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-[var(--bg-secondary)] px-3 py-2">
+                  <p className="text-xs text-[var(--text-muted)]">Avg Margin</p>
+                  <p className={`text-lg font-bold ${avgMargin >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    {avgMargin.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+              {/* Top jobs table */}
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    <th className="pb-2 pr-3">Job</th>
+                    <th className="pb-2 text-right">Revenue</th>
+                    <th className="pb-2 text-right">Cost</th>
+                    <th className="pb-2 text-right">Profit</th>
+                    <th className="pb-2 text-right">Margin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {profitableJobs.map((j, i) => (
+                    <tr key={i} className="border-b border-[var(--border)] last:border-0">
+                      <td className="py-2 pr-3 font-medium text-[var(--text-primary)] max-w-[160px] truncate">{j.title}</td>
+                      <td className="py-2 text-right text-[var(--text-secondary)]">{formatAud(j.revenue)}</td>
+                      <td className="py-2 text-right text-[var(--text-secondary)]">{formatAud(j.cost)}</td>
+                      <td className={`py-2 text-right font-semibold ${j.profit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                        {formatAud(j.profit)}
+                      </td>
+                      <td className={`py-2 text-right font-semibold ${j.margin >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                        {j.margin.toFixed(1)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="mt-2 text-xs text-[var(--text-muted)]">
+                Only jobs with revenue or cost data entered are shown. Set revenue and costs in the job costing tab.
+              </p>
+            </div>
+          ) : null}
         </>
       )}
     </section>

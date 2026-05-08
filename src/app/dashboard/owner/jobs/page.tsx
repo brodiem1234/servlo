@@ -64,7 +64,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     sb
       .from("jobs")
       .select(
-        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, recurrence_rule, digital_signoff_image, signoff_name, signoff_at, created_at, is_demo"
+        "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, revenue, recurrence_rule, digital_signoff_image, signoff_name, signoff_at, created_at, is_demo"
       )
       .eq("owner_id", user.id)
       .is("deleted_at", null)
@@ -144,6 +144,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
         labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
         hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+        revenue: Number(formData.get("revenue_amount") ?? 0) || null,
         recurrence_rule: String(formData.get("recurrence_rule") ?? "") || null
       })
       .select("id")
@@ -177,6 +178,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
           materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
           labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
           hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+          revenue: Number(formData.get("revenue_amount") ?? 0) || null,
           recurrence_rule: recurrenceRule
         };
         await sb.from("jobs").insert(instances.map((d) => ({ ...baseJobData, scheduled_date: d })));
@@ -213,6 +215,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
         labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
         hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+        revenue: Number(formData.get("revenue_amount") ?? 0) || null,
         recurrence_rule: String(formData.get("recurrence_rule") ?? "") || null
       })
       .eq("id", id)
@@ -246,6 +249,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
           materials_cost: Number(formData.get("materials_cost") ?? 0) || 0,
           labour_hours: Number(formData.get("labour_hours") ?? 0) || 0,
           hourly_rate: Number(formData.get("hourly_rate") ?? 0) || 0,
+          revenue: Number(formData.get("revenue_amount") ?? 0) || null,
           recurrence_rule: recurrenceRule
         };
         await sb.from("jobs").insert(instances.map((d) => ({ ...baseJobData, scheduled_date: d })));

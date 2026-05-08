@@ -29,6 +29,7 @@ type Job = {
   materials_cost?: number | null;
   labour_hours?: number | null;
   hourly_rate?: number | null;
+  revenue?: number | null;
   recurrence_rule?: string | null;
   digital_signoff_image?: string | null;
   signoff_name?: string | null;
@@ -571,7 +572,7 @@ export default function JobsManager({
       materials_cost: String(job.materials_cost ?? 0),
       labour_hours: String(job.labour_hours ?? 0),
       hourly_rate: String(job.hourly_rate ?? 0),
-      revenue_amount: "0",
+      revenue_amount: String(job.revenue ?? 0),
       recurrence_rule: rule,
       digital_signoff_image: job.digital_signoff_image ?? "",
       signoff_name: job.signoff_name ?? "",
@@ -1292,6 +1293,7 @@ export default function JobsManager({
                   <input type="hidden" name="materials_cost" value={values.materials_cost} />
                   <input type="hidden" name="labour_hours" value={values.labour_hours} />
                   <input type="hidden" name="hourly_rate" value={values.hourly_rate} />
+                  <input type="hidden" name="revenue_amount" value={values.revenue_amount} />
                 </>
               ) : null}
               {/* Always carry core fields so they survive costing-only saves */}
@@ -1427,6 +1429,7 @@ export default function JobsManager({
                     <label className="mb-1 block text-xs text-[var(--text-muted)]">Revenue (from invoice, $)</label>
                     <input
                       type="number"
+                      name="revenue_amount"
                       step="0.01"
                       min="0"
                       value={values.revenue_amount}
