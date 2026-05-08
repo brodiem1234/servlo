@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { checkAILimit, logAICall, checkPerMinuteRateLimit } from "@/lib/ai-limits";
 
 const MOCK_COPIES = [
   {
@@ -32,6 +34,32 @@ export async function POST(req: Request) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
+  // Check AI limits for authenticated users
+  if (apiKey) {
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const [limitCheck, rateOk] = await Promise.all([
+          checkAILimit(user.id),
+          checkPerMinuteRateLimit(user.id),
+        ]);
+        if (!rateOk) {
+          return NextResponse.json({ error: "rate_limited", message: "Too many requests. Please wait a moment." }, { status: 429 });
+        }
+        if (!limitCheck.allowed) {
+          return NextResponse.json({
+            error: "ai_limit_reached",
+            used: limitCheck.used,
+            limit: limitCheck.limit,
+            resetDate: limitCheck.resetDate,
+            upgradeUrl: "/dashboard/owner/settings?tab=billing",
+          }, { status: 429 });
+        }
+      }
+    } catch { /* non-blocking — if limit check fails, allow the call */ }
+  }
+
   if (!apiKey) {
     return NextResponse.json({
       variations: MOCK_COPIES.map((c) => ({
@@ -63,10 +91,21 @@ Return ONLY a JSON array of 3 objects, each with: headline (max 30 chars), prima
         messages: [{ role: "user", content: prompt }],
       }),
     });
-    const data = (await res.json()) as { content?: Array<{ text: string }> };
+    const data = (await res.json()) as { content?: Array<{ text: string }>; usage?: { input_tokens?: number; output_tokens?: number } };
     const text = data.content?.[0]?.text ?? "";
     const match = text.match(/\[[\s\S]*\]/);
     const variations = match ? (JSON.parse(match[0]) as typeof MOCK_COPIES) : [];
+    // Log the AI call (non-blocking)
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await logAICall(user.id, null, "grow/generate-ad-copy", "claude-3-5-haiku-20241022", {
+          prompt: data.usage?.input_tokens ?? 0,
+          completion: data.usage?.output_tokens ?? 0,
+        }, 0);
+      }
+    } catch { /* non-blocking */ }
     return NextResponse.json({ variations: variations.length ? variations : MOCK_COPIES });
   } catch {
     return NextResponse.json({ variations: MOCK_COPIES });
