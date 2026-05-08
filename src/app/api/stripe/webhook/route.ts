@@ -157,6 +157,110 @@ export async function POST(req: Request) {
       }
     }
 
+    // ── Failed payment dunning ──────────────────────────────────────────────
+    if (event.type === "invoice.payment_failed") {
+      const invoice = event.data.object;
+      const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
+      const attemptCount = invoice.attempt_count ?? 1;
+      const amountDue = (invoice.amount_due ?? 0) / 100;
+      const currency = (invoice.currency ?? "aud").toUpperCase();
+
+      if (customerId) {
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("id, email, full_name, plan, stripe_subscription_id")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle();
+
+        if (profile?.email) {
+          // Update subscription_status to past_due in profiles
+          await admin
+            .from("profiles")
+            .update({ subscription_status: "past_due" })
+            .eq("stripe_customer_id", customerId);
+
+          const { sendEmail } = await import("@/lib/email");
+          const name = profile.full_name || "there";
+
+          let subject: string;
+          let body: string;
+
+          if (attemptCount === 1) {
+            subject = "Action required: Payment failed for your SERVLO subscription";
+            body = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
+              <h2 style="color:#dc2626">Payment failed</h2>
+              <p>Hi ${name},</p>
+              <p>We were unable to process your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong>.</p>
+              <p>This sometimes happens when a card expires or has insufficient funds. Your access is still active while we retry.</p>
+              <p><strong>What to do:</strong> Update your payment method in your billing portal to avoid any interruption to your service.</p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method</a></p>
+              <p style="color:#64748b;font-size:13px">We will automatically retry in a few days. If the payment continues to fail, your subscription will be suspended.</p>
+              <p style="color:#64748b">— The SERVLO team</p>
+            </div>`;
+          } else if (attemptCount === 2) {
+            subject = "Second payment attempt failed — please update your billing details";
+            body = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
+              <h2 style="color:#dc2626">Second payment attempt failed</h2>
+              <p>Hi ${name},</p>
+              <p>We tried again to collect your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong> but it was unsuccessful.</p>
+              <p>Please update your payment details now to keep your account active.</p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method now</a></p>
+              <p style="color:#64748b;font-size:13px">One more retry remains. If this fails your subscription will be cancelled and you may lose access to your data.</p>
+              <p style="color:#64748b">— The SERVLO team</p>
+            </div>`;
+          } else {
+            // 3rd attempt or more — final warning
+            subject = "Final notice: Your SERVLO subscription is at risk of cancellation";
+            body = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
+              <h2 style="color:#dc2626">⚠️ Final payment attempt failed</h2>
+              <p>Hi ${name},</p>
+              <p>We have been unable to collect your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong> after ${attemptCount} attempts.</p>
+              <p>Your subscription is at immediate risk of cancellation. Update your payment method right now to avoid losing access to your business data.</p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Restore my subscription</a></p>
+              <p style="color:#64748b;font-size:13px">Need help? Reply to this email or contact <a href="mailto:support@servlo.com.au">support@servlo.com.au</a>.</p>
+              <p style="color:#64748b">— The SERVLO team</p>
+            </div>`;
+          }
+
+          await sendEmail(profile.email, subject, body);
+        }
+      }
+    }
+
+    // ── Payment recovered (invoice paid after dunning) ──────────────────────
+    if (event.type === "invoice.paid") {
+      const invoice = event.data.object;
+      const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
+      // Only send recovery email if this was a previously-failed invoice (attempt_count > 1)
+      if (customerId && (invoice.attempt_count ?? 1) > 1) {
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("id, email, full_name")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle();
+
+        if (profile?.email) {
+          await admin
+            .from("profiles")
+            .update({ subscription_status: "active" })
+            .eq("stripe_customer_id", customerId);
+
+          const { sendEmail } = await import("@/lib/email");
+          await sendEmail(
+            profile.email,
+            "Payment received — your SERVLO subscription is active",
+            `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
+              <h2 style="color:#16a34a">Payment received ✓</h2>
+              <p>Hi ${profile.full_name || "there"},</p>
+              <p>We have successfully processed your SERVLO subscription payment. Your account is fully active.</p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
+              <p style="color:#64748b">— The SERVLO team</p>
+            </div>`
+          );
+        }
+      }
+    }
+
     return NextResponse.json({ received: true });
   } catch (error) {
     return NextResponse.json({ error: "Invalid signature", details: String(error) }, { status: 400 });
