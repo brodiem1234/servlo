@@ -1,0 +1,299 @@
+"use client";
+
+import { useState } from "react";
+
+type Thread = {
+  id: string;
+  subject: string;
+  last_message_at: string;
+  message_count: number;
+  client_id: string | null;
+  job_id: string | null;
+};
+
+type Client = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+};
+
+type Message = {
+  id: string;
+  direction: "inbound" | "outbound";
+  from_email: string;
+  to_email: string;
+  subject: string;
+  body_html: string | null;
+  body_text: string | null;
+  status: string;
+  sent_at: string | null;
+  received_at: string | null;
+  created_at: string;
+};
+
+type Props = {
+  threads: Thread[];
+  clients: Client[];
+  clientMap: Record<string, { full_name: string | null; email: string | null }>;
+};
+
+export function CommsClient({ threads, clients, clientMap }: Props) {
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [composing, setComposing] = useState(false);
+  const [newEmail, setNewEmail] = useState({ to: "", subject: "", body: "" });
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [localThreads, setLocalThreads] = useState<Thread[]>(threads);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const openThread = async (thread: Thread) => {
+    setSelectedThread(thread);
+    setLoadingMessages(true);
+    try {
+      const res = await fetch(`/api/email/thread/${thread.id}`);
+      if (res.ok) {
+        const d = await res.json();
+        setMessages(d.messages ?? []);
+      }
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const sendReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedThread && !composing) return;
+    setSending(true);
+    try {
+      const clientInfo = selectedThread?.client_id ? clientMap[selectedThread.client_id] : null;
+      const toEmail = composing ? newEmail.to : (clientInfo?.email ?? "");
+      const subject = composing ? newEmail.subject : selectedThread?.subject ?? "";
+      const bodyText = composing ? newEmail.body : (document.getElementById("reply-body") as HTMLTextAreaElement)?.value ?? "";
+
+      if (!toEmail) {
+        showToast("No recipient email address — add one to this client first.");
+        return;
+      }
+
+      const res = await fetch("/api/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          thread_id: composing ? undefined : selectedThread?.id,
+          client_id: selectedThread?.client_id,
+          to_email: toEmail,
+          subject,
+          body_html: `<p>${bodyText.replace(/\n/g, "<br>")}</p>`,
+          body_text: bodyText,
+        }),
+      });
+
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error ?? "Send failed");
+      }
+
+      const d = await res.json();
+      showToast("Email sent");
+
+      if (composing) {
+        setComposing(false);
+        setNewEmail({ to: "", subject: "", body: "" });
+        // Refresh thread list
+        if (d.thread_id) {
+          const now = new Date().toISOString();
+          setLocalThreads((prev) => {
+            const existing = prev.find((t) => t.id === d.thread_id);
+            if (existing) {
+              return prev.map((t) => t.id === d.thread_id ? { ...t, last_message_at: now } : t);
+            }
+            return [{ id: d.thread_id, subject, last_message_at: now, message_count: 1, client_id: null, job_id: null }, ...prev];
+          });
+        }
+      } else {
+        // Reload messages
+        if (selectedThread) openThread(selectedThread);
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Send failed");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const inputCls = "h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]";
+
+  return (
+    <section className="flex h-[calc(100vh-120px)] gap-0 overflow-hidden rounded-xl border border-[var(--border)]">
+      {/* Thread list */}
+      <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Messages</h2>
+          <button
+            onClick={() => { setComposing(true); setSelectedThread(null); }}
+            className="rounded bg-[var(--accent-color)] px-2 py-1 text-xs font-medium text-white hover:opacity-90"
+          >
+            + New
+          </button>
+        </div>
+        <ul className="flex-1 overflow-y-auto">
+          {localThreads.length === 0 ? (
+            <li className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">No email threads yet.</li>
+          ) : null}
+          {localThreads.map((thread) => {
+            const client = thread.client_id ? clientMap[thread.client_id] : null;
+            const isActive = selectedThread?.id === thread.id;
+            return (
+              <li key={thread.id}>
+                <button
+                  onClick={() => openThread(thread)}
+                  className={`w-full px-4 py-3 text-left hover:bg-[var(--bg-secondary)] ${isActive ? "bg-[var(--bg-secondary)]" : ""}`}
+                >
+                  <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                    {client?.full_name ?? thread.subject}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-[var(--text-muted)]">{thread.subject}</p>
+                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                    {new Date(thread.last_message_at).toLocaleDateString("en-AU")}
+                    {thread.message_count > 0 ? ` · ${thread.message_count} msgs` : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </aside>
+
+      {/* Main panel */}
+      <div className="flex flex-1 flex-col bg-[var(--bg-primary)]">
+        {composing ? (
+          <div className="flex flex-1 flex-col p-6">
+            <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">New Message</h3>
+            <form onSubmit={sendReply} className="flex flex-col gap-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">To</label>
+                <select
+                  className={inputCls}
+                  value={newEmail.to}
+                  onChange={(e) => setNewEmail((p) => ({ ...p, to: e.target.value }))}
+                  required
+                >
+                  <option value="">Select client…</option>
+                  {clients.filter((c) => c.email).map((c) => (
+                    <option key={c.id} value={c.email!}>{c.full_name} ({c.email})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Subject</label>
+                <input
+                  className={inputCls}
+                  required
+                  value={newEmail.subject}
+                  onChange={(e) => setNewEmail((p) => ({ ...p, subject: e.target.value }))}
+                  placeholder="Subject"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Message</label>
+                <textarea
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                  rows={8}
+                  required
+                  value={newEmail.body}
+                  onChange={(e) => setNewEmail((p) => ({ ...p, body: e.target.value }))}
+                  placeholder="Write your message…"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" disabled={sending} className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">
+                  {sending ? "Sending…" : "Send"}
+                </button>
+                <button type="button" onClick={() => setComposing(false)} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : selectedThread ? (
+          <div className="flex flex-1 flex-col">
+            {/* Thread header */}
+            <div className="border-b border-[var(--border)] px-6 py-3">
+              <p className="text-base font-semibold text-[var(--text-primary)]">{selectedThread.subject}</p>
+              {selectedThread.client_id && clientMap[selectedThread.client_id] ? (
+                <p className="text-xs text-[var(--text-muted)]">
+                  {clientMap[selectedThread.client_id].full_name} · {clientMap[selectedThread.client_id].email}
+                </p>
+              ) : null}
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {loadingMessages ? (
+                <p className="text-sm text-[var(--text-muted)]">Loading…</p>
+              ) : messages.length === 0 ? (
+                <p className="text-sm text-[var(--text-muted)]">No messages yet.</p>
+              ) : (
+                messages.map((msg) => (
+                  <div key={msg.id} className={`max-w-lg rounded-xl p-4 ${msg.direction === "outbound" ? "ml-auto bg-[var(--accent-color)] text-white" : "bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-primary)]"}`}>
+                    <p className="mb-1 text-xs font-medium opacity-75">
+                      {msg.direction === "outbound" ? "You" : msg.from_email}
+                      {" · "}
+                      {new Date(msg.sent_at ?? msg.received_at ?? msg.created_at).toLocaleString("en-AU")}
+                    </p>
+                    {msg.body_html ? (
+                      <div
+                        className="text-sm prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: msg.body_html }}
+                      />
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">{msg.body_text}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Reply box */}
+            <form onSubmit={sendReply} className="border-t border-[var(--border)] p-4 flex gap-2 items-end">
+              <textarea
+                id="reply-body"
+                className="flex-1 resize-none rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                rows={3}
+                placeholder="Type your reply…"
+                required
+              />
+              <button
+                type="submit"
+                disabled={sending}
+                className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+              >
+                {sending ? "…" : "Send"}
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="text-4xl mb-3">✉️</p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">Select a thread to read</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">or compose a new message</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {toast ? (
+        <div className="fixed bottom-6 right-6 rounded-lg bg-gray-900 px-4 py-2 text-sm text-white shadow-lg">
+          {toast}
+        </div>
+      ) : null}
+    </section>
+  );
+}

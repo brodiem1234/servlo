@@ -23,6 +23,7 @@ export const OWNER_NAV_SECTIONS: OwnerNavSection[] = [
       { href: "/dashboard/owner",         label: "Dashboard", req: null },
       { href: "/dashboard/owner/jobs",    label: "Jobs",      req: "scheduling" },
       { href: "/dashboard/owner/clients", label: "Clients",   req: "client_management" },
+      { href: "/dashboard/owner/comms",   label: "Comms",     req: "client_management" },
       { href: "/dashboard/owner/finance", label: "Finance",   req: "finance_any" },
       { href: "/dashboard/owner/team",    label: "Team",      req: "team_any" },
       { href: "/dashboard/reports",       label: "Reports",   req: "reports_bundle" },
