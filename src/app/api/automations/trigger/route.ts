@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       action_type: auto.action_type,
       recipient,
       status,
-    }).catch(() => {});
+    }).then(undefined, () => { /* best-effort log */ });
   }
 
   return NextResponse.json({ ok: true, fired });

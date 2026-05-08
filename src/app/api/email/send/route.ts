@@ -85,14 +85,11 @@ export async function POST(req: NextRequest) {
     console.error("[email/send] message insert error:", msgErr);
   }
 
-  // Update thread last_message_at and increment count
-  await admin.rpc("email_thread_bump" as never, { p_thread_id: threadId, p_sent_at: now }).maybeSingle().catch(() => {
-    // Fallback: direct update if RPC not available
-    return admin
-      .from("email_threads")
-      .update({ last_message_at: now })
-      .eq("id", threadId!);
-  });
+  // Update thread last_message_at
+  await admin
+    .from("email_threads")
+    .update({ last_message_at: now })
+    .eq("id", threadId!);
 
   if (status === "failed") {
     return NextResponse.json({ error: "Email delivery failed", thread_id: threadId }, { status: 500 });
