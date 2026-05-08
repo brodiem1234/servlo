@@ -7,6 +7,14 @@
     {
       "path": "/api/cron/generate-recurring-jobs",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/trial-check",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-summary",
+      "schedule": "0 8 * * 1"
     }
   ]
 }
