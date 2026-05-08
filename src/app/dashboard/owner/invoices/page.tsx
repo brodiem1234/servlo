@@ -8,6 +8,7 @@ import { invoiceSentEmailTemplate, sendEmail } from "@/lib/email";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 import { stripe } from "@/lib/stripe";
 import { createNotification } from "@/lib/notifications";
+import { logAudit } from "@/lib/audit";
 
 function getNextInvoiceNumber(existing: Array<{ invoice_number: string | null }>) {
   const max = existing.reduce((highest, item) => {
@@ -120,6 +121,9 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       .single();
 
     if (!created.data?.id) throw new Error(created.error?.message ?? "Failed to create invoice");
+
+    // Audit log
+    await logAudit({ userId: owner.id, businessId: null, table: "invoices", recordId: created.data.id, action: "created" });
 
     if (created.data?.id && lineItems.length > 0) {
       await sb.from("invoice_items").insert(
