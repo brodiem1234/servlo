@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getBusinessBrand } from "@/lib/business-brand";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,14 +18,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
 
-    const { data: business } = await supabase
-      .from("businesses")
-      .select("business_name, abn, address, suburb, state, postcode, phone, email, accent_colour")
-      .eq("owner_id", user.id)
-      .single();
+    const [businessResult, brand] = await Promise.all([
+      supabase
+        .from("businesses")
+        .select("business_name, abn, address, suburb, state, postcode, phone, email, accent_colour")
+        .eq("owner_id", user.id)
+        .single(),
+      getBusinessBrand(user.id),
+    ]);
+    const business = businessResult.data;
 
-    // Generate HTML for PDF
-    const accent = business?.accent_colour || "#3B82F6";
+    // Generate HTML for PDF — use brand settings with fallback to business row
+    const accent = brand.colorPrimary || business?.accent_colour || "#3B82F6";
+    const displayName = brand.businessName || business?.business_name || "SERVLO";
+    const logoUrl = brand.logoUrl;
+    const displayAddress = brand.address || [business?.address, business?.suburb, business?.state, business?.postcode].filter(Boolean).join(", ");
+    const displayPhone = brand.phone || business?.phone;
     const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Invoice ${invoice.invoice_number || invoice.id}</title>
@@ -50,10 +59,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 <body>
 <div class="header">
   <div>
-    <div class="brand">${business?.business_name || "SERVLO"}</div>
+    ${logoUrl ? `<img src="${logoUrl}" alt="${displayName}" style="max-height:60px;max-width:200px;margin-bottom:8px;display:block;" />` : `<div class="brand">${displayName}</div>`}
     ${business?.abn ? `<div style="color:#666;font-size:13px;margin-top:4px">ABN ${business.abn}</div>` : ""}
-    <div style="color:#666;font-size:13px;margin-top:8px">${[business?.address, business?.suburb, business?.state, business?.postcode].filter(Boolean).join(", ")}</div>
-    ${business?.phone ? `<div style="color:#666;font-size:13px">${business.phone}</div>` : ""}
+    ${displayAddress ? `<div style="color:#666;font-size:13px;margin-top:8px">${displayAddress}</div>` : ""}
+    ${displayPhone ? `<div style="color:#666;font-size:13px">${displayPhone}</div>` : ""}
     ${business?.email ? `<div style="color:#666;font-size:13px">${business.email}</div>` : ""}
   </div>
   <div class="invoice-title">
