@@ -1041,6 +1041,27 @@ type DangerZoneTabProps = {
 export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleteNameInput, setDeleteNameInput] = useState("");
+  const [showRetention, setShowRetention] = useState(false);
+  const [offerBusy, setOfferBusy] = useState(false);
+  const [offerResult, setOfferResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const applyRetentionOffer = async (offerType: "discount" | "pause") => {
+    setOfferBusy(true);
+    try {
+      const res = await fetch("/api/billing/retention-offer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer_type: offerType }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not apply offer");
+      setOfferResult({ ok: true, message: data.message });
+    } catch (err) {
+      setOfferResult({ ok: false, message: err instanceof Error ? err.message : "Something went wrong" });
+    } finally {
+      setOfferBusy(false);
+    }
+  };
 
   return (
     <div>
@@ -1050,12 +1071,69 @@ export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           To cancel, contact our support team. We&apos;ll process your cancellation within 1 business day.
         </p>
-        <a
-          href={`mailto:support@servlo.com.au?subject=${encodeURIComponent(`Cancel Subscription - ${businessName}`)}&body=${encodeURIComponent(`Please cancel my SERVLO subscription.\n\nBusiness name: ${businessName}\nAccount email: ${userEmail}`)}`}
-          className="inline-flex items-center gap-2 rounded-lg border border-orange-400 px-4 py-2 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-        >
-          Request cancellation via email
-        </a>
+
+        {!showRetention ? (
+          <button
+            type="button"
+            onClick={() => setShowRetention(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-orange-400 px-4 py-2 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+          >
+            Request cancellation
+          </button>
+        ) : null}
+
+        {/* Retention offer panel */}
+        {showRetention && !offerResult ? (
+          <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-5 space-y-4">
+            <div>
+              <p className="text-base font-semibold text-[var(--text-primary)]">Before you go — can we help?</p>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                We&apos;d hate to see you leave. Choose one of these options or proceed with cancellation below.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                disabled={offerBusy}
+                onClick={() => applyRetentionOffer("discount")}
+                className="flex flex-col items-start rounded-lg border-2 border-[var(--accent-color)] bg-[var(--bg-card)] p-4 text-left hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+              >
+                <span className="text-sm font-bold text-[var(--accent-color)]">50% off next month</span>
+                <span className="mt-1 text-xs text-[var(--text-secondary)]">
+                  Stay on your current plan at half price for the next billing cycle, then continue as normal.
+                </span>
+              </button>
+              <button
+                type="button"
+                disabled={offerBusy}
+                onClick={() => applyRetentionOffer("pause")}
+                className="flex flex-col items-start rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4 text-left hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+              >
+                <span className="text-sm font-bold text-[var(--text-primary)]">Pause for 30 days</span>
+                <span className="mt-1 text-xs text-[var(--text-secondary)]">
+                  Put your subscription on hold for 30 days — no charge, and your data stays safe.
+                </span>
+              </button>
+            </div>
+            <p className="text-xs text-[var(--text-muted)]">
+              Not interested? You can still{" "}
+              <a
+                href={`mailto:support@servlo.com.au?subject=${encodeURIComponent(`Cancel Subscription - ${businessName}`)}&body=${encodeURIComponent(`Please cancel my SERVLO subscription.\n\nBusiness name: ${businessName}\nAccount email: ${userEmail}`)}`}
+                className="underline text-orange-500 hover:text-orange-600"
+              >
+                request cancellation via email
+              </a>
+              .
+            </p>
+          </div>
+        ) : null}
+
+        {/* Offer applied confirmation */}
+        {offerResult ? (
+          <div className={`mt-4 rounded-lg p-4 text-sm ${offerResult.ok ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800"}`}>
+            {offerResult.message}
+          </div>
+        ) : null}
       </div>
 
       {/* Delete account */}
