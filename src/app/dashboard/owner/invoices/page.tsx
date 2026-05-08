@@ -39,8 +39,8 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     "id, invoice_number, client_id, total, subtotal, gst, status, due_date, issue_date, is_demo, notes";
 
   const [invResult, clientsResult, businessResult] = await Promise.all([
-    sb.from("invoices").select(invSelect).eq("owner_id", user.id).order("due_date", { ascending: true }),
-    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
+    sb.from("invoices").select(invSelect).eq("owner_id", user.id).is("deleted_at", null).order("due_date", { ascending: true }),
+    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("full_name"),
     sb.from("businesses").select("business_name, abn, phone, address").eq("owner_id", user.id).maybeSingle()
   ]);
 

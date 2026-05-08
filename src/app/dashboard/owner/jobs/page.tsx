@@ -67,9 +67,10 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, recurrence_rule, digital_signoff_image, signoff_name, signoff_at, created_at, is_demo"
       )
       .eq("owner_id", user.id)
+      .is("deleted_at", null)
       .order("scheduled_date", { ascending: true }),
-    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).order("full_name"),
-    sb.from("employees").select("id, full_name, role, is_demo").eq("owner_id", user.id).order("full_name")
+    sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("full_name"),
+    sb.from("employees").select("id, full_name, role, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("full_name")
   ]);
 
   // If the full query errored (likely a missing column), retry with only the base columns
@@ -81,6 +82,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         "id, owner_id, title, description, client_id, employee_id, job_type, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, priority, notes, status, materials_cost, labour_hours, hourly_rate, created_at, is_demo"
       )
       .eq("owner_id", user.id)
+      .is("deleted_at", null)
       .order("scheduled_date", { ascending: true });
     jobsRaw = (fallback.data ?? []) as unknown[];
   } else {

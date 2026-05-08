@@ -47,8 +47,9 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
       .from("quotes")
       .select("id, quote_number, client_id, total, subtotal, gst, status, created_at, is_demo, notes")
       .eq("owner_id", user.id)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false }),
-    sb.from("clients").select("id, full_name, email, is_demo").eq("owner_id", user.id).order("full_name"),
+    sb.from("clients").select("id, full_name, email, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("full_name"),
     sb.from("businesses").select("business_name, abn").eq("owner_id", user.id).maybeSingle()
   ]);
 

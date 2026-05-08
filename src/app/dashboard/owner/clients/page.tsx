@@ -139,7 +139,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     .select(
       "id, owner_id, full_name, email, phone, company_name, abn, address, suburb, state, postcode, notes, status, source, portal_token, created_at, is_demo, client_type"
     )
-    .eq("owner_id", ownerId);
+    .eq("owner_id", ownerId)
+    .is("deleted_at", null);
 
   if (sortKey === "newest") {
     clientsQuery = clientsQuery.order("created_at", { ascending: false });

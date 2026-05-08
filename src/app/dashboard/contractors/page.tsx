@@ -31,6 +31,7 @@ export default async function ContractorsPage() {
     .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role, abn, business_name, is_demo")
     .eq("owner_id", user.id)
     .eq("role", "contractor")
+    .is("deleted_at", null)
     .order("full_name", { ascending: true });
 
   async function createContractorAction(formData: FormData) {
@@ -92,9 +93,10 @@ export default async function ContractorsPage() {
     const { data: { user: owner } } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const id = String(formData.get("id") ?? "");
+    // Soft delete — keeps data recoverable for 30 days
     const { error } = await sb
       .from("employees")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq("id", id)
       .eq("owner_id", owner.id)
       .eq("role", "contractor");
