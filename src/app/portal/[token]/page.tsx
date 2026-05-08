@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { PortalClient } from "./portal-client";
+import { getBusinessBrand } from "@/lib/business-brand";
 
 type Props = {
   params: Promise<{ token: string }>;
@@ -25,6 +26,7 @@ export default async function ClientPortalPage({ params }: Props) {
     { data: quotes },
     { data: invoices },
     { data: business },
+    brand,
   ] = await Promise.all([
     supabase
       .from("jobs")
@@ -48,6 +50,7 @@ export default async function ClientPortalPage({ params }: Props) {
       .select("business_name, phone, email, accent_colour, google_review_url, logo_url")
       .eq("owner_id", client.owner_id)
       .maybeSingle(),
+    getBusinessBrand(client.owner_id),
   ]);
 
   async function acceptQuoteAction(formData: FormData) {
@@ -115,13 +118,24 @@ export default async function ClientPortalPage({ params }: Props) {
     return { ok: true };
   }
 
+  // Merge brand settings over business defaults
+  const mergedBusiness = business
+    ? {
+        ...business,
+        business_name: brand.businessName || business.business_name,
+        accent_colour: brand.colorPrimary || business.accent_colour,
+        logo_url: brand.logoUrl || (business as { logo_url?: string | null }).logo_url,
+        phone: brand.phone || business.phone,
+      }
+    : null;
+
   return (
     <PortalClient
       client={{ id: client.id, full_name: client.full_name, email: client.email }}
       jobs={jobs ?? []}
       invoices={invoices ?? []}
       quotes={quotes ?? []}
-      business={business ?? null}
+      business={mergedBusiness}
       token={token}
       acceptQuoteAction={acceptQuoteAction}
       declineQuoteAction={declineQuoteAction}
