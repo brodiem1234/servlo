@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 
 type Thread = {
   id: string;
@@ -46,6 +46,8 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [localThreads, setLocalThreads] = useState<Thread[]>(threads);
+  const [draftingReply, setDraftingReply] = useState(false);
+  const replyBodyRef = React.useRef<HTMLTextAreaElement>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -261,21 +263,49 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
             </div>
 
             {/* Reply box */}
-            <form onSubmit={sendReply} className="border-t border-[var(--border)] p-4 flex gap-2 items-end">
+            <form onSubmit={sendReply} className="border-t border-[var(--border)] p-3 space-y-2">
               <textarea
                 id="reply-body"
-                className="flex-1 resize-none rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                ref={replyBodyRef}
+                className="w-full resize-none rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
                 rows={3}
                 placeholder="Type your reply…"
                 required
               />
-              <button
-                type="submit"
-                disabled={sending}
-                className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-              >
-                {sending ? "…" : "Send"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {sending ? "…" : "Send"}
+                </button>
+                <button
+                  type="button"
+                  disabled={draftingReply}
+                  onClick={async () => {
+                    const lastInbound = [...messages].reverse().find((m) => m.direction === "inbound");
+                    if (!lastInbound) { showToast("No inbound message to reply to"); return; }
+                    setDraftingReply(true);
+                    try {
+                      const res = await fetch("/api/ai/draft-reply", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ client_message: lastInbound.body_text ?? lastInbound.body_html ?? "", format: "email" }),
+                      });
+                      if (res.ok) {
+                        const d = await res.json() as { reply?: string };
+                        if (replyBodyRef.current && d.reply) replyBodyRef.current.value = d.reply;
+                      }
+                    } finally {
+                      setDraftingReply(false);
+                    }
+                  }}
+                  className="rounded border border-[var(--border)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {draftingReply ? "Drafting…" : <><span aria-hidden>✨</span> AI Draft</>}
+                </button>
+              </div>
             </form>
           </div>
         ) : (

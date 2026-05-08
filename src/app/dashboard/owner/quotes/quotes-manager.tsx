@@ -101,6 +101,40 @@ export default function QuotesManager({
   const [newClientPhone, setNewClientPhone] = useState("");
   const [savingNewClient, setSavingNewClient] = useState(false);
 
+  // AI Draft modal
+  const [aiDraftOpen, setAiDraftOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const generateAiDraft = async () => {
+    if (!aiPrompt.trim() || aiGenerating) return;
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/ai/generate-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_description: aiPrompt }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({})) as { message?: string };
+        throw new Error(d.message ?? "Generation failed");
+      }
+      const d = await res.json() as { title?: string; description?: string; line_items?: Array<{ description: string; quantity: number; unit_price: number }> };
+      // Pre-fill the quote form
+      if (d.line_items && d.line_items.length > 0) {
+        setLineItems(d.line_items.map((li) => ({ description: li.description, quantity: li.quantity, unit_price: li.unit_price, gst_applicable: true })));
+      }
+      setNotes(d.description ?? "");
+      setAiDraftOpen(false);
+      setAiPrompt("");
+      // Open the create form
+      startNew();
+    } catch (err) {
+      setToast({ type: "error", message: err instanceof Error ? err.message : "AI generation failed" });
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
   useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 4000);
@@ -315,7 +349,49 @@ export default function QuotesManager({
         >
           New Quote
         </button>
+        <button
+          type="button"
+          onClick={() => setAiDraftOpen(true)}
+          className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] flex items-center gap-1.5"
+        >
+          <span aria-hidden>✨</span> AI Draft
+        </button>
       </div>
+
+      {/* AI Draft modal */}
+      {aiDraftOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-xl">
+            <h2 className="mb-3 text-base font-semibold text-[var(--text-primary)]">AI Quote Draft</h2>
+            <p className="mb-3 text-sm text-[var(--text-muted)]">Describe the job and Claude will generate line items and a description.</p>
+            <textarea
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+              rows={4}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="e.g. Replace hot water system, 25L electric unit, 2-storey house in Canberra"
+              autoFocus
+            />
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                disabled={!aiPrompt.trim() || aiGenerating}
+                onClick={generateAiDraft}
+                className="rounded-md bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {aiGenerating ? "Generating…" : <><span aria-hidden>✨</span> Generate</>}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAiDraftOpen(false); setAiPrompt(""); }}
+                className="rounded-md border border-[var(--border)] px-5 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {(initialBucket ?? "").trim() ? (
         <p className="text-xs text-[var(--text-muted)]">

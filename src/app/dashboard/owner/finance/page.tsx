@@ -59,18 +59,32 @@ export default async function FinancePage({ searchParams }: Props) {
       {activeTab === "quotes"          && <OwnerQuotesPage />}
       {activeTab === "purchase-orders" && <OwnerPurchaseOrdersPage />}
 
-      {/* Pricebook quick access */}
-      <div className="mt-8 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-[var(--text-primary)]">Pricebook</p>
-          <p className="text-xs text-[var(--text-muted)]">Manage reusable materials, labour rates, and service items.</p>
+      {/* Quick access cards */}
+      <div className="mt-8 space-y-3">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Pricebook</p>
+            <p className="text-xs text-[var(--text-muted)]">Manage reusable materials, labour rates, and service items.</p>
+          </div>
+          <Link
+            href="/dashboard/owner/pricebook"
+            className="shrink-0 rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+          >
+            Open Pricebook
+          </Link>
         </div>
-        <Link
-          href="/dashboard/owner/pricebook"
-          className="shrink-0 rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-        >
-          Open Pricebook
-        </Link>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">BAS Helper ✨</p>
+            <p className="text-xs text-[var(--text-muted)]">Estimate your quarterly BAS figures from your invoice and expense data.</p>
+          </div>
+          <Link
+            href={"/dashboard/owner/bas" as never}
+            className="shrink-0 rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+          >
+            Open BAS Helper
+          </Link>
+        </div>
       </div>
     </div>
   );
