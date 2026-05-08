@@ -437,6 +437,9 @@ export default function HomePage() {
             <Link href="/contact" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
               Contact
             </Link>
+            <Link href="/status" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
+              System Status
+            </Link>
           </div>
         </div>
         <p className="pb-8 text-center text-xs text-[#64748b] dark:text-slate-400">
