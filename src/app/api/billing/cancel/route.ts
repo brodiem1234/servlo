@@ -1,19 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/billing/cancel
  * Body: { reason?: string }
  * Sets cancel_at_period_end on the Stripe subscription and marks profile accordingly.
  */
-export async function POST(req: Request) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const rateLimitResponse = await checkRateLimit("billingRoutes", user.id);
+  if (rateLimitResponse) return rateLimitResponse;
+
+  try {
     const body = (await req.json().catch(() => ({}))) as { reason?: string };
 
     const admin = createAdminClient();

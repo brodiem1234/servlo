@@ -1,18 +1,22 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/billing/pause
  * Body: { months: 1 | 2 | 3 }
  * Pauses subscription collection for the specified number of months.
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const rateLimitResponse = await checkRateLimit("billingRoutes", user.id);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { months } = (await req.json()) as { months?: number };
     if (!months || ![1, 2, 3].includes(months)) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getIP } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/verify-turnstile
@@ -9,6 +10,9 @@ import { NextRequest, NextResponse } from "next/server";
  * If TURNSTILE_SECRET_KEY is not set, returns success: true (graceful fallback for dev).
  */
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = await checkRateLimit("authRoutes", getIP(req));
+  if (rateLimitResponse) return rateLimitResponse;
+
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
   // No secret key configured — skip in dev/staging

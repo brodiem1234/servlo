@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * GET /api/founders/count
  * Returns the current founding member count.
  * Public endpoint — no auth required.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const rateLimitResponse = await checkRateLimit("foundersCount", "global");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const admin = createAdminClient();
     const { count } = await admin
