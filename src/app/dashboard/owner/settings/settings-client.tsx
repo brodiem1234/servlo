@@ -526,11 +526,24 @@ const PLAN_ROWS: PlanRow[] = [
   { key: "enterprise", label: "Enterprise", price: "$499/mo", users: "Unlimited", jobs: "Unlimited", clients: "Unlimited + dedicated support" },
 ];
 
+const PLAN_FEATURES: Record<string, { price: string; features: string[] }> = {
+  solo: { price: "$39/mo", features: ["1 user", "500 clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"] },
+  team: { price: "$89/mo", features: ["5 users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"] },
+  business: { price: "$179/mo", features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB"] },
+  enterprise: { price: "$399/mo", features: ["Everything in Business", "2000 AI uses/mo", "Dedicated support"] },
+};
+
+const PLAN_ORDER_LOCAL: Record<string, number> = { free: 0, trial: 0, solo: 1, team: 2, business: 3, enterprise: 4 };
+
 export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }: BillingTabProps) {
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string>("");
   const [checkoutError, setCheckoutError] = useState<string>("");
+  const [changePlanModal, setChangePlanModal] = useState(false);
+  const [changingTo, setChangingTo] = useState<string | null>(null);
+  const [changePlanLoading, setChangePlanLoading] = useState(false);
+  const [changePlanResult, setChangePlanResult] = useState<{ success?: boolean; message?: string; error?: string } | null>(null);
 
   async function openStripePortal() {
     setPortalLoading(true);
@@ -543,6 +556,29 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
     } catch {
       setPortalError("Contact support@servlo.com.au to manage your billing");
       setPortalLoading(false);
+    }
+  }
+
+  async function handleChangePlan() {
+    if (!changingTo) return;
+    setChangePlanLoading(true);
+    setChangePlanResult(null);
+    try {
+      const res = await fetch("/api/billing/change-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetPlan: changingTo }),
+      });
+      const data = await res.json() as { success?: boolean; message?: string; error?: string };
+      setChangePlanResult(data);
+      if (data.success) {
+        // Reload page after a moment to reflect plan change
+        window.setTimeout(() => window.location.reload(), 2000);
+      }
+    } catch {
+      setChangePlanResult({ error: "Failed to change plan. Please try again." });
+    } finally {
+      setChangePlanLoading(false);
     }
   }
 
@@ -601,20 +637,101 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
                 Active
               </span>
             </div>
-            <button
-              type="button"
-              onClick={openStripePortal}
-              disabled={portalLoading}
-              className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] disabled:opacity-60"
-            >
-              {portalLoading ? "Loading…" : "Manage subscription"}
-            </button>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setChangePlanModal(true)}
+                className="rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+              >
+                Change plan
+              </button>
+              <button
+                type="button"
+                onClick={openStripePortal}
+                disabled={portalLoading}
+                className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] disabled:opacity-60"
+              >
+                {portalLoading ? "Loading…" : "Manage subscription"}
+              </button>
+            </div>
           </div>
           {portalError ? (
             <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">{portalError}</p>
           ) : null}
         </div>
       ) : null}
+
+      {/* Change plan modal */}
+      {changePlanModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="relative w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <button onClick={() => { setChangePlanModal(false); setChangingTo(null); setChangePlanResult(null); }} className="absolute right-4 top-4 text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-1">Change your plan</h2>
+            <p className="text-sm text-[var(--text-secondary)] mb-5">
+              Upgrades take effect immediately with prorated charges. Downgrades take effect at the next billing date.
+            </p>
+            {changePlanResult ? (
+              <div className={`rounded-lg px-4 py-3 mb-4 text-sm ${changePlanResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+                {changePlanResult.message ?? changePlanResult.error}
+              </div>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-3 mb-5">
+              {(["solo", "team", "business"] as const).map((plan) => {
+                const info = PLAN_FEATURES[plan];
+                const isCurrent = currentPlan.toLowerCase() === plan;
+                const targetOrder = PLAN_ORDER_LOCAL[plan] ?? 0;
+                const currentOrder2 = PLAN_ORDER_LOCAL[currentPlan?.toLowerCase() ?? "free"] ?? 0;
+                const isUpgrade = targetOrder > currentOrder2;
+                return (
+                  <button
+                    key={plan}
+                    onClick={() => setChangingTo(plan)}
+                    disabled={isCurrent}
+                    className={`rounded-xl border p-4 text-left transition-all ${
+                      changingTo === plan
+                        ? "border-[var(--accent-color)] ring-1 ring-[var(--accent-color)]"
+                        : "border-[var(--border)]"
+                    } ${isCurrent ? "opacity-50 cursor-not-allowed" : "hover:border-[var(--accent-color)] cursor-pointer"}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-[var(--text-primary)] capitalize">{plan}</p>
+                      {isCurrent && <span className="text-[10px] font-bold text-[var(--accent-color)] uppercase">Current</span>}
+                      {!isCurrent && <span className={`text-[10px] font-bold uppercase ${isUpgrade ? "text-green-500" : "text-amber-500"}`}>{isUpgrade ? "Upgrade" : "Downgrade"}</span>}
+                    </div>
+                    <p className="mt-1 text-sm font-bold text-[var(--text-primary)]">{info.price}</p>
+                    <ul className="mt-2 space-y-0.5">
+                      {info.features.map((f) => (
+                        <li key={f} className="text-xs text-[var(--text-secondary)]">· {f}</li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
+            </div>
+            {changingTo && !changePlanResult?.success && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-800">
+                {PLAN_ORDER_LOCAL[changingTo] > PLAN_ORDER_LOCAL[currentPlan?.toLowerCase() ?? "free"]
+                  ? "Upgrading to " + changingTo + " — you'll be charged the prorated difference today."
+                  : "Downgrading to " + changingTo + " — your plan changes at the end of your current billing period."}
+              </div>
+            )}
+            {!changePlanResult?.success && (
+              <div className="flex justify-end gap-2">
+                <button onClick={() => { setChangePlanModal(false); setChangingTo(null); }} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleChangePlan}
+                  disabled={!changingTo || changePlanLoading}
+                  className="rounded-lg bg-[var(--product-accent)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {changePlanLoading ? "Changing…" : "Confirm change"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* B. Plan comparison table */}
       <div id="plans" className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
