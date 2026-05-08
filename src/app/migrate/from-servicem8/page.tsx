@@ -91,7 +91,11 @@ export default function MigrateFromServiceM8Page() {
       <div style={{ marginTop: 48, borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
         <p style={{ color: "#94a3b8", fontSize: 13 }}>
           Also switching from another tool?{" "}
-          <Link href="/migrate/from-tradify" style={{ color: "#0891b2" }}>Tradify migration guide</Link>
+          <Link href="/migrate/from-tradify" style={{ color: "#0891b2" }}>Tradify</Link>
+          {" "}&middot;{" "}
+          <Link href="/migrate/from-jobber" style={{ color: "#0891b2" }}>Jobber</Link>
+          {" "}&middot;{" "}
+          <Link href="/migrate/from-simpro" style={{ color: "#0891b2" }}>simPRO</Link>
           {" "}&middot;{" "}
           <a href="/" style={{ color: "#0891b2" }}>Back to SERVLO</a>
         </p>
