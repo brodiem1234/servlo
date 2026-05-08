@@ -194,6 +194,50 @@ export default function JobsManager({
   const [clearingSignoff, setClearingSignoff] = useState(false);
   const [sendingToClient, setSendingToClient] = useState(false);
   const openJobDeepLinkDone = useRef(false);
+  const [selectedJobIds, setSelectedJobIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState("");
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  const toggleSelectJob = (id: string) => setSelectedJobIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const selectAll = () => setSelectedJobIds(new Set(filteredJobs.filter((j) => !j.is_demo).map((j) => j.id)));
+  const clearSelection = () => setSelectedJobIds(new Set());
+
+  const runBulkAction = async () => {
+    if (selectedJobIds.size === 0 || !bulkAction) return;
+    const ids = Array.from(selectedJobIds);
+    setBulkProcessing(true);
+    try {
+      let body: Record<string, unknown> = { job_ids: ids, action: bulkAction };
+      if (bulkAction === "update_status") {
+        const newStatus = window.prompt("Enter new status (scheduled/in_progress/completed/invoiced/cancelled):");
+        if (!newStatus) { setBulkProcessing(false); return; }
+        body.status = newStatus;
+      }
+      const res = await fetch("/api/jobs/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(d.error ?? "Bulk action failed");
+      }
+      const d = await res.json() as { affected?: number };
+      setToast({ type: "success", message: `Done — ${d.affected ?? ids.length} job(s) updated` });
+      clearSelection();
+      router.refresh();
+    } catch (err) {
+      setToast({ type: "error", message: err instanceof Error ? err.message : "Bulk action failed" });
+    } finally {
+      setBulkProcessing(false);
+      setBulkAction("");
+    }
+  };
 
   useEffect(() => {
     setClientOptions(clients);
@@ -1103,10 +1147,38 @@ export default function JobsManager({
               </button>
             </div>
           ) : (
+          <>
+          {selectedJobIds.size > 0 ? (
+            <div className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2">
+              <span className="text-sm font-medium text-[var(--text-primary)]">{selectedJobIds.size} selected</span>
+              <select
+                value={bulkAction}
+                onChange={(e) => setBulkAction(e.target.value)}
+                className="h-9 rounded border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm text-[var(--text-primary)]"
+              >
+                <option value="">— Bulk action —</option>
+                <option value="update_status">Update status</option>
+                <option value="delete">Delete (soft)</option>
+              </select>
+              <button
+                type="button"
+                disabled={!bulkAction || bulkProcessing}
+                onClick={runBulkAction}
+                className="rounded bg-[var(--accent-color)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+              >
+                {bulkProcessing ? "Working…" : "Apply"}
+              </button>
+              <button type="button" onClick={clearSelection} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]">Clear</button>
+            </div>
+          ) : null}
+
           <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
             <table className="w-full min-w-[840px] text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                  <th className="px-2 py-2">
+                    <input type="checkbox" onChange={(e) => { if (e.target.checked) selectAll(); else clearSelection(); }} checked={selectedJobIds.size > 0 && selectedJobIds.size === filteredJobs.filter((j) => !j.is_demo).length} className="rounded" />
+                  </th>
                   <th className="whitespace-nowrap px-2 py-2 font-medium">Job #</th>
                   <th className="px-2 py-2 font-medium">Title</th>
                   <th className="px-2 py-2 font-medium">Client</th>
@@ -1120,7 +1192,7 @@ export default function JobsManager({
               <tbody>
                 {filteredJobs.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-2 py-8 text-center text-sm text-[var(--text-muted)]">
+                    <td colSpan={9} className="px-2 py-8 text-center text-sm text-[var(--text-muted)]">
                       <p>No jobs match your filters. Try adjusting search, dates or filters.</p>
                     </td>
                   </tr>
@@ -1141,6 +1213,16 @@ export default function JobsManager({
                         }}
                         className="cursor-pointer border-b border-[var(--border)] hover:bg-[var(--bg-primary)]"
                       >
+                        <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                          {!job.is_demo && (
+                            <input
+                              type="checkbox"
+                              checked={selectedJobIds.has(job.id)}
+                              onChange={() => toggleSelectJob(job.id)}
+                              className="rounded"
+                            />
+                          )}
+                        </td>
                         <td className="whitespace-nowrap px-2 py-2 font-mono text-xs font-medium tabular-nums text-[var(--text-muted)]">
                           {jobNumberById.get(job.id) ?? "—"}
                         </td>
@@ -1208,6 +1290,7 @@ export default function JobsManager({
               </tbody>
             </table>
           </div>
+          </>
           )}
         </>
       )}
