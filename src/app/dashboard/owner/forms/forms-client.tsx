@@ -245,6 +245,20 @@ export function FormsClient({ initialForms, templates, createFromTemplateAction,
             </div>
           ))}
         </div>
+
+        {/* Community Templates */}
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 mt-2">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Community Templates</h2>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Coming soon — submit your template and we&apos;ll add it for the community.
+          </p>
+          <a
+            href="mailto:hello@servlo.com.au?subject=Template Submission"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+          >
+            Submit a template
+          </a>
+        </div>
       </section>
     );
   }
@@ -288,7 +302,7 @@ export function FormsClient({ initialForms, templates, createFromTemplateAction,
           <p className="text-base font-semibold text-[var(--text-primary)]">No forms yet</p>
           <p className="mt-1 text-sm text-[var(--text-muted)]">Start from a template or create a blank form.</p>
           <button onClick={() => setView("templates")} className="mt-4 rounded-lg bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
-            Browse 10 starter templates
+            Browse 20 starter templates
           </button>
         </div>
       ) : (
