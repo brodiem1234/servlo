@@ -735,15 +735,14 @@ export function ImportExportTab() {
             <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold text-[var(--text-primary)]">
               <div className="flex items-center gap-2">
                 <span>Xero</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">Coming soon</span>
               </div>
               <span className="text-[var(--text-muted)]">▸</span>
             </summary>
             <div className="px-4 pb-4 pt-1">
-              <p className="text-sm text-[var(--text-secondary)]">Connect to Xero to import clients, invoices, and contacts.</p>
-              <button type="button" disabled className="mt-3 rounded-md border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-muted)] cursor-not-allowed opacity-60">
+              <p className="text-sm text-[var(--text-secondary)]">Connect Xero to export invoices and sync client contacts. Requires XERO_CLIENT_ID and XERO_CLIENT_SECRET env vars.</p>
+              <a href="/api/xero/connect" className="mt-3 inline-block rounded-md bg-[#1AB4D3] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
                 Connect Xero
-              </button>
+              </a>
             </div>
           </details>
 
@@ -752,15 +751,14 @@ export function ImportExportTab() {
             <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold text-[var(--text-primary)]">
               <div className="flex items-center gap-2">
                 <span>MYOB</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">Coming soon</span>
               </div>
               <span className="text-[var(--text-muted)]">▸</span>
             </summary>
             <div className="px-4 pb-4 pt-1">
-              <p className="text-sm text-[var(--text-secondary)]">Sync financial data from MYOB AccountRight or Essentials.</p>
-              <button type="button" disabled className="mt-3 rounded-md border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-muted)] cursor-not-allowed opacity-60">
+              <p className="text-sm text-[var(--text-secondary)]">Connect MYOB AccountRight to export invoices and sync client contacts. Requires MYOB_CLIENT_ID and MYOB_CLIENT_SECRET env vars.</p>
+              <a href="/api/myob/connect" className="mt-3 inline-block rounded-md bg-[#7B2D8B] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
                 Connect MYOB
-              </button>
+              </a>
             </div>
           </details>
 
@@ -902,8 +900,8 @@ const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
   {
     label: "Accounting",
     cards: [
-      { name: "Xero", bg: "#1AB4D3", initial: "X", description: "Import invoices & contacts", status: "Coming soon", siIcon: siXero },
-      { name: "MYOB", bg: "#7B2D8B", initial: "M", description: "Sync financial data", status: "Coming soon" },
+      { name: "Xero", bg: "#1AB4D3", initial: "X", description: "Export invoices & contacts", status: "Connect", siIcon: siXero },
+      { name: "MYOB", bg: "#7B2D8B", initial: "M", description: "Export invoices & contacts", status: "Connect" },
       { name: "QuickBooks", bg: "#2CA01C", initial: "Q", description: "Two-way sync", status: "Coming soon", siIcon: siQuickbooks },
     ],
   },
