@@ -91,6 +91,27 @@ export async function POST(req: Request) {
       }
     }
 
+    // Referral program — mark referral as subscribed when a new subscription is created
+    if (event.type === "customer.subscription.created") {
+      const subForReferral = event.data.object;
+      const customerIdForReferral = typeof subForReferral.customer === "string" ? subForReferral.customer : null;
+      if (customerIdForReferral) {
+        try {
+          const { data: profileForReferral } = await admin
+            .from("profiles")
+            .select("id")
+            .eq("stripe_customer_id", customerIdForReferral)
+            .maybeSingle();
+          if (profileForReferral?.id) {
+            const { markReferralSubscribed } = await import("@/lib/referral");
+            await markReferralSubscribed(profileForReferral.id);
+          }
+        } catch (err) {
+          console.error("[webhook] referral mark error:", err);
+        }
+      }
+    }
+
     // Founding Member 100 check — on first subscription, assign founder number if < 100 slots filled
     if (event.type === "customer.subscription.created") {
       const subscription = event.data.object;

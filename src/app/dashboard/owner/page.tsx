@@ -12,6 +12,8 @@ import WeeklyRevenueChart from "@/components/dashboard/weekly-revenue-chart";
 import OwnerSidebarTodos from "@/components/dashboard/owner-sidebar-todos";
 import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
 import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
+import { ReferralWidget } from "@/components/dashboard/referral-widget";
+import { ensureReferralCode } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
 
@@ -110,6 +112,15 @@ export default async function OwnerDashboardPage() {
   const onboardingCompleted = (profile as { onboarding_completed?: boolean | null } | null)?.onboarding_completed ?? false;
 
   const { metrics, chaseInvoices, recentActivity, jobsScheduledThisWeek } = dashboardData;
+
+  // Referral URL (non-blocking — fallback on error)
+  let referralUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}`;
+  try {
+    const refCode = await ensureReferralCode(user.id);
+    referralUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}?ref=${refCode}`;
+  } catch {
+    // Non-blocking — referral widget just won't show the code
+  }
 
   // Weekly revenue chart data: Mon–Sun for current week
   const now = new Date();
@@ -553,6 +564,9 @@ export default async function OwnerDashboardPage() {
         </div>
         <WeeklyRevenueChart data={weeklyRevenueData} />
       </article>
+
+      {/* Referral widget — collapsed by default */}
+      <ReferralWidget referralUrl={referralUrl} />
     </section>
   );
 }
