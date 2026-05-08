@@ -24,10 +24,18 @@ function timeAgo(iso: string) {
 }
 
 function notifIcon(type: string): string {
-  if (type === "invoice_paid") return "💰";
-  if (type === "quote_accepted") return "✅";
-  if (type === "job_completed") return "🔧";
-  if (type === "new_lead") return "⭐";
+  if (type === "payment_received" || type === "invoice_paid") return "💰";
+  if (type === "quote_accepted") return "📋";
+  if (type === "quote_declined") return "📋";
+  if (type === "job_scheduled" || type === "job_completed") return "📅";
+  if (type === "new_lead") return "🔔";
+  if (type === "payment_failed") return "⚠️";
+  if (type === "founding_member") return "🎉";
+  if (type === "weekly_summary") return "📊";
+  if (type === "info") return "ℹ️";
+  if (type === "success") return "✅";
+  if (type === "warning") return "⚠️";
+  if (type === "error") return "❌";
   return "🔔";
 }
 
@@ -157,6 +165,17 @@ export function NotificationBell() {
               </button>
             ))}
           </div>
+          {notifications.length > 0 && (
+            <div className="border-t border-[var(--border)] px-4 py-2">
+              <a
+                href="/dashboard/owner/notifications"
+                onClick={() => setOpen(false)}
+                className="block text-center text-xs text-[var(--accent-color)] hover:underline"
+              >
+                View all notifications →
+              </a>
+            </div>
+          )}
         </div>
       )}
     </div>
