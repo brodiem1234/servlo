@@ -590,6 +590,57 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </Card>
 
           <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Online booking widget</h2>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  Give clients a public booking page and embeddable widget for your website.
+                </p>
+              </div>
+              <a
+                href="/dashboard/owner/settings/booking"
+                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                Configure
+              </a>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Job stage automations</h2>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  Automatically send email or SMS messages to clients when a job reaches a certain status.
+                </p>
+              </div>
+              <a
+                href="/dashboard/owner/settings/automations"
+                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                Configure
+              </a>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">SMS notifications</h2>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  Configure automated SMS reminders for jobs, invoices and quotes using Twilio.
+                </p>
+              </div>
+              <a
+                href="/dashboard/owner/settings/sms"
+                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                Configure
+              </a>
+            </div>
+          </Card>
+
+          <Card>
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">Workspace features</h2>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">
               Turn modules on or off for your workspace. The sidebar and dashboard update immediately after you save. Features marked{" "}
