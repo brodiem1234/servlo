@@ -21,21 +21,24 @@ export function VoiceNote({ context, onResult, className }: Props) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supported, setSupported] = useState(true);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    const SpeechRecognition = typeof window !== "undefined"
-      ? (window.SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition)
-      : null;
-    if (!SpeechRecognition) {
+    if (typeof window === "undefined") { setSupported(false); return; }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
       setSupported(false);
       return;
     }
-    const recognition = new SpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition: any = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-AU";
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
       let full = "";
       for (let i = 0; i < event.results.length; i++) {
         full += event.results[i][0].transcript + " ";

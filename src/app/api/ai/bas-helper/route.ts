@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     checkPerMinuteRateLimit(user.id),
   ]);
   if (!rateOk) return NextResponse.json({ error: "rate_limited", message: "Too many requests." }, { status: 429 });
-  if (!limitCheck.allowed) return NextResponse.json({ error: "quota_exceeded", message: limitCheck.message }, { status: 429 });
+  if (!limitCheck.allowed) return NextResponse.json({ error: "quota_exceeded", message: `AI quota exceeded (${limitCheck.used}/${limitCheck.limit} calls used this month)` }, { status: 429 });
 
   const body = await req.json().catch(() => ({})) as {
     quarter_start?: string; // YYYY-MM-DD
@@ -132,10 +132,9 @@ Important: Always remind users to consult a registered BAS agent or accountant. 
     const aiResult = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: "", tips: [] };
 
     await logAICall(user.id, null, "ai/bas-helper", "claude-3-5-haiku-20241022", {
-      inputTokens: data.usage?.input_tokens ?? 0,
-      outputTokens: data.usage?.output_tokens ?? 0,
-      cached: false,
-    });
+      prompt: data.usage?.input_tokens ?? 0,
+      completion: data.usage?.output_tokens ?? 0,
+    }, 0);
 
     return NextResponse.json({ ...financials, ...aiResult });
   } catch (err) {
