@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
 
     // Send invite email
     const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/accept-invite?token=${token}`;
+    if (!resend) throw new Error("Email service not configured");
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
       to: email,
