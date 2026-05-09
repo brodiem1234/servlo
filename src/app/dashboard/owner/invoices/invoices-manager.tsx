@@ -99,6 +99,12 @@ export default function InvoicesManager({
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [markingPaid, setMarkingPaid] = useState<string | null>(null);
+  const [partialPaymentInvoice, setPartialPaymentInvoice] = useState<Invoice | null>(null);
+  const [partialAmount, setPartialAmount] = useState("");
+  const [partialMethod, setPartialMethod] = useState("bank_transfer");
+  const [partialRef, setPartialRef] = useState("");
+  const [partialDate, setPartialDate] = useState(new Date().toISOString().slice(0, 10));
+  const [recordingPayment, setRecordingPayment] = useState(false);
 
   // Local client list — gets new clients appended without a page reload
   const [localClients, setLocalClients] = useState<ClientRef[]>(clients);
@@ -235,6 +241,38 @@ export default function InvoicesManager({
       }),
     [invoices]
   );
+
+  const handleRecordPartialPayment = async () => {
+    if (!partialPaymentInvoice) return;
+    const amt = parseFloat(partialAmount);
+    if (isNaN(amt) || amt <= 0) {
+      setToast({ type: "error", message: "Enter a valid payment amount" });
+      return;
+    }
+    setRecordingPayment(true);
+    try {
+      const res = await fetch(`/api/invoices/${partialPaymentInvoice.id}/payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: amt,
+          payment_date: partialDate,
+          payment_method: partialMethod,
+          reference: partialRef.trim() || null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to record payment");
+      setToast({ type: "success", message: `Payment of ${new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(amt)} recorded` });
+      setPartialPaymentInvoice(null);
+      setPartialAmount("");
+      setPartialRef("");
+    } catch (err) {
+      setToast({ type: "error", message: err instanceof Error ? err.message : "Payment failed" });
+    } finally {
+      setRecordingPayment(false);
+    }
+  };
 
   const downloadPdf = (invoice: Invoice) => {
     if (invoice.is_demo) return;
@@ -471,14 +509,24 @@ export default function InvoicesManager({
                             PDF
                           </button>
                           {(invoice.status ?? "").toLowerCase() !== "paid" ? (
-                            <button
-                              type="button"
-                              onClick={() => handleMarkPaid(invoice)}
-                              disabled={markingPaid === invoice.id}
-                              className="rounded border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-200 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
-                            >
-                              {markingPaid === invoice.id ? "…" : "Mark Paid"}
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleMarkPaid(invoice)}
+                                disabled={markingPaid === invoice.id}
+                                className="rounded border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-200 disabled:opacity-60 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
+                              >
+                                {markingPaid === invoice.id ? "…" : "Mark Paid"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPartialPaymentInvoice(invoice)}
+                                className="rounded border border-sky-300 bg-sky-50 px-2 py-1 text-xs text-sky-700 hover:bg-sky-100 dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
+                                title="Record a partial payment"
+                              >
+                                Part Pay
+                              </button>
+                            </>
                           ) : null}
                           {invoice.client_id ? (
                             <button
@@ -807,6 +855,87 @@ export default function InvoicesManager({
                 className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60"
               >
                 {savingNewClient ? "Saving…" : "Add Client"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Partial payment modal */}
+      {partialPaymentInvoice ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Record partial payment">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Record Payment</h2>
+            <p className="mb-4 text-sm text-[var(--text-secondary)]">
+              Invoice {partialPaymentInvoice.invoice_number ?? ""} — Total:{" "}
+              <strong>{new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(partialPaymentInvoice.total ?? 0)}</strong>
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Amount Paid (AUD) *</label>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={partialAmount}
+                  onChange={(e) => setPartialAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Payment Date</label>
+                <input
+                  type="date"
+                  value={partialDate}
+                  onChange={(e) => setPartialDate(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Payment Method</label>
+                <select
+                  value={partialMethod}
+                  onChange={(e) => setPartialMethod(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                >
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="card">Card</option>
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="direct_debit">Direct Debit</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Reference (optional)</label>
+                <input
+                  type="text"
+                  value={partialRef}
+                  onChange={(e) => setPartialRef(e.target.value)}
+                  placeholder="BSB, transaction ID, etc."
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setPartialPaymentInvoice(null); setPartialAmount(""); setPartialRef(""); }}
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!partialAmount || recordingPayment}
+                onClick={handleRecordPartialPayment}
+                className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {recordingPayment ? "Recording…" : "Record Payment"}
               </button>
             </div>
           </div>

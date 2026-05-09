@@ -86,6 +86,7 @@ export default function QuotesManager({
   const [lineItems, setLineItems] = useState<LineItem[]>([{ ...emptyLine }]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
 
   // Local client list — appends newly quick-created clients without page reload
   const [localClients, setLocalClients] = useState<ClientRef[]>(clients);
@@ -193,6 +194,22 @@ export default function QuotesManager({
     } catch (error) {
       setToast({ type: "error", message: "Unable to save quote" });
       console.error(error);
+    }
+  };
+
+  const handleShareLink = async (quote: Quote) => {
+    if (quote.is_demo || sharingId) return;
+    setSharingId(quote.id);
+    try {
+      const res = await fetch(`/api/quotes/${quote.id}/token`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to generate link");
+      await navigator.clipboard.writeText(json.url);
+      setToast({ type: "success", message: "Share link copied to clipboard!" });
+    } catch {
+      setToast({ type: "error", message: "Could not copy share link" });
+    } finally {
+      setSharingId(null);
     }
   };
 
@@ -489,6 +506,15 @@ export default function QuotesManager({
                               {sendingEmail === quote.id ? "Sending…" : "Send"}
                             </button>
                           ) : null}
+                          <button
+                            type="button"
+                            onClick={() => handleShareLink(quote)}
+                            disabled={!!sharingId}
+                            title="Copy shareable quote link for client to review and sign"
+                            className="rounded border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs text-indigo-700 hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 disabled:opacity-60"
+                          >
+                            {sharingId === quote.id ? "Copying…" : "🔗 Share"}
+                          </button>
                           <button
                             type="button"
                             className="rounded border border-emerald-300 bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-200 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
