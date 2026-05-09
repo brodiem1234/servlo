@@ -23,6 +23,7 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
+import { EnterpriseModal } from "@/components/marketing/enterprise-modal";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
 import { formatIndustryLabels } from "@/lib/industries";
@@ -474,6 +475,7 @@ export function SignupForm() {
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [productTooltip, setProductTooltip] = useState<string | null>(null);
+  const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
 
   const onGoogleSignUp = useCallback(async () => {
     setOauthLoading("google");
@@ -989,6 +991,7 @@ export function SignupForm() {
   return (
     <>
       <ThemeToggleCorner />
+      <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
         className="auth-theme flex min-h-screen items-center justify-center px-6 py-16"
         style={{ backgroundColor: "#0a0f1e" }}
@@ -1590,6 +1593,31 @@ export function SignupForm() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {currentTiers.map((tier) => {
                   const on = selectedPlanTier === tier.id;
+                  const isEnterprise = tier.id === "enterprise";
+                  if (isEnterprise) {
+                    return (
+                      <button
+                        key={tier.id} type="button"
+                        onClick={() => setEnterpriseModalOpen(true)}
+                        className="relative flex flex-col items-start gap-2 rounded-lg border border-slate-600 p-4 text-left transition hover:border-slate-500"
+                      >
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-slate-100">{tier.price}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-200">{tier.name}</p>
+                        <p className="text-xs text-slate-400">{tier.description}</p>
+                        <ul className="mt-1 space-y-0.5">
+                          {tier.features.map((f) => (
+                            <li key={f} className="flex items-center gap-1.5 text-xs text-slate-300">
+                              <Check size={11} className="shrink-0 text-[#3B82F6]" strokeWidth={3} aria-hidden />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        <span className="mt-1 text-xs font-semibold text-blue-400">Contact us →</span>
+                      </button>
+                    );
+                  }
                   return (
                     <button
                       key={tier.id} type="button"

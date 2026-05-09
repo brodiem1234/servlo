@@ -20,7 +20,7 @@ import { LandingHeader } from "@/components/landing-header";
 import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
 import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
 import { LandingScrollReveal } from "@/components/landing-scroll-reveal";
-import { LandingPricing } from "@/components/landing-pricing";
+import { PricingWithEnterprise } from "@/components/marketing/pricing-with-enterprise";
 
 const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
 
@@ -309,7 +309,7 @@ export default function HomePage() {
       </section>
 
       <section id="pricing" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <LandingPricing />
+        <PricingWithEnterprise />
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
