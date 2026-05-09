@@ -27,8 +27,8 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 border-b border-t-2 border-teal-400 border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#1e3a5f]/95">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2" onClick={close}>
-          <Image src="/servlo-master-dark.svg" alt="SERVLO" width={36} height={36} unoptimized className="dark:hidden" />
-          <Image src="/servlo-master-white.svg" alt="SERVLO" width={36} height={36} unoptimized className="hidden dark:block" />
+          <Image src="/servlo-master-dark.svg" alt="SERVLO" width={36} height={36} unoptimized className="dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
+          <Image src="/servlo-master-white.svg" alt="SERVLO" width={36} height={36} unoptimized className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]" />
           <span className="text-lg font-bold tracking-wide text-[#1e3a5f] dark:text-white">SERVLO</span>
         </Link>
 

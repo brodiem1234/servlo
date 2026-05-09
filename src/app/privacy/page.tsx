@@ -243,8 +243,8 @@ export default function PrivacyPage() {
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 md:grid-cols-2 md:px-6">
           <div>
             <div className="flex items-center gap-2">
-              <Image src="/servlo-master-dark.svg" alt="SERVLO" width={28} height={28} unoptimized className="dark:hidden" />
-              <Image src="/servlo-master-white.svg" alt="SERVLO" width={28} height={28} unoptimized className="hidden dark:block" />
+              <Image src="/servlo-master-dark.svg" alt="SERVLO" width={28} height={28} unoptimized className="dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
+              <Image src="/servlo-master-white.svg" alt="SERVLO" width={28} height={28} unoptimized className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]" />
               <p className="font-bold text-[#1e3a5f] dark:text-white">SERVLO</p>
             </div>
             <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">

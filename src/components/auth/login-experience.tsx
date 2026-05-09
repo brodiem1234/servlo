@@ -151,7 +151,7 @@ export function LoginExperience({
             height={36}
             priority
             unoptimized
-            className="block dark:hidden drop-shadow-[0_0_12px_rgba(0,0,0,0.2)]"
+            className="block dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]"
           />
           <Image
             src="/servlo-master-white.svg"
@@ -160,7 +160,7 @@ export function LoginExperience({
             height={36}
             priority
             unoptimized
-            className="hidden dark:block drop-shadow-[0_0_24px_rgba(59,130,246,0.5)]"
+            className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
           />
         </div>
 

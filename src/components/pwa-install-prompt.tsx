@@ -145,7 +145,7 @@ export function PwaInstallPrompt() {
             width={100}
             height={28}
             unoptimized
-            className="drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+            className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
           />
         </div>
 

@@ -50,9 +50,11 @@ export default function ForgotPasswordPage({ searchParams }: Props) {
       <ThemeToggleCorner />
       <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
         <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <Image src="/servlo-master-dark.svg" alt="SERVLO" width={48} height={48} unoptimized />
-            <span className="text-lg font-bold tracking-wide text-[#1e3a5f] dark:text-white">SERVLO</span>
+          <div className="mb-6 flex justify-center">
+            <Image src="/servlo-master-dark.svg" alt="SERVLO" width={140} height={36} priority unoptimized
+              className="block dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
+            <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={36} priority unoptimized
+              className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Reset your password</h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">

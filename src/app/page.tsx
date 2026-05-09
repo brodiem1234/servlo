@@ -60,7 +60,7 @@ export default async function HomePage() {
               height={32}
               priority
               unoptimized
-              className="drop-shadow-[0_0_20px_rgba(59,130,246,0.45)]"
+              className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
             />
           </Link>
           <nav className="hidden items-center gap-7 text-sm font-medium text-slate-400 md:flex">
@@ -661,7 +661,7 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
-                  className="drop-shadow-[0_0_16px_rgba(59,130,246,0.4)]"
+                  className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
                 />
               </Link>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">
