@@ -84,11 +84,11 @@ export default function InsuranceShell({
         {/* Brand */}
         <div className="mb-4 flex flex-col items-center">
           <Image
-            src="/logo.png"
-            alt="SERVLO"
+            src="/insurance.png"
+            alt="SERVLO INSURANCE"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
+            style={{ height: "auto", maxWidth: "120px" }}
           />
           <div
             className="mt-3 h-[2px] w-full"

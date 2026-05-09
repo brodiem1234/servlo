@@ -3,17 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Star, Lock, TrendingUp, Zap, Check, X } from "lucide-react";
+import { PLANS as PRICING_PLANS_CONST, EARLY_ADOPTER_DISCOUNT } from "@/lib/pricing";
+
+type PricingPlanData = {
+  monthlyPrice: number | null;
+  annualPrice: number | null;
+  annualMonthlyEquiv: number | null;
+};
+const PRICING_PLANS = PRICING_PLANS_CONST as Record<string, PricingPlanData>;
 
 /* ─── Price data ─────────────────────────────────────────────────────────── */
 
-const MONTHLY: Record<PlanId, number> = {
-  solo: 49,
-  team: 119,
-  business: 249,
-  enterprise: 499,
-};
-
-type PlanId = "solo" | "team" | "business" | "enterprise";
+type PlanId = "free" | "solo" | "team" | "business" | "enterprise";
 
 const PLANS: Array<{
   id: PlanId;
@@ -22,62 +23,72 @@ const PLANS: Array<{
   badgeColor: string;
   desc: string;
 }> = [
-  { id: "solo",       name: "Solo",       badge: null,          badgeColor: "",                      desc: "For sole operators"        },
-  { id: "team",       name: "Team",       badge: "Most Popular",badgeColor: "bg-blue-500 text-white", desc: "The obvious choice"        },
-  { id: "business",   name: "Business",   badge: "Best Value",  badgeColor: "bg-emerald-600 text-white", desc: "For scaling businesses" },
-  { id: "enterprise", name: "Enterprise", badge: null,          badgeColor: "",                      desc: "For large teams"           },
+  { id: "free",       name: "Free",       badge: "Just browsing",  badgeColor: "bg-slate-500 text-white",       desc: "Try at no cost"            },
+  { id: "solo",       name: "Solo",       badge: null,             badgeColor: "",                              desc: "For sole operators"        },
+  { id: "team",       name: "Team",       badge: "Most Popular",   badgeColor: "bg-blue-500 text-white",        desc: "The obvious choice"        },
+  { id: "business",   name: "Business",   badge: "Best Value",     badgeColor: "bg-emerald-600 text-white",     desc: "For scaling businesses"    },
+  { id: "enterprise", name: "Enterprise", badge: null,             badgeColor: "",                              desc: "For large teams"           },
 ];
 
 /* ─── Feature matrix ─────────────────────────────────────────────────────── */
 
 type FVal = boolean | string;
-type FeatureRow = { label: string; values: [FVal, FVal, FVal, FVal] };
+type FeatureRow = { label: string; values: [FVal, FVal, FVal, FVal, FVal] };
 type FeatureSection = { section: string; rows: FeatureRow[] };
 
 const FEATURE_SECTIONS: FeatureSection[] = [
   {
     section: "Platform",
     rows: [
-      { label: "Users",              values: ["1", "Up to 5", "Up to 20", "Unlimited"] },
-      { label: "Jobs & scheduling",  values: [true, true, true, true] },
-      { label: "Clients & CRM",      values: [true, true, true, true] },
-      { label: "Invoices & quotes",  values: [true, true, true, true] },
-      { label: "PDF generation",     values: [true, true, true, true] },
-      { label: "Mobile app",         values: [true, true, true, true] },
+      { label: "Users",               values: ["1", "1", "Unlimited", "Unlimited", "Unlimited"] },
+      { label: "Jobs per month",       values: ["5", "Unlimited", "Unlimited", "Unlimited", "Unlimited"] },
+      { label: "Jobs & scheduling",    values: [true, true, true, true, true] },
+      { label: "Clients & CRM",        values: [true, true, true, true, true] },
+      { label: "Invoices & quotes",    values: [true, true, true, true, true] },
+      { label: "Invoice watermark",    values: [true, false, false, false, false] },
+      { label: "PDF generation",       values: [true, true, true, true, true] },
+      { label: "Mobile app",           values: [true, true, true, true, true] },
+    ],
+  },
+  {
+    section: "AI",
+    rows: [
+      { label: "AI generations/month", values: ["0", "50", "200", "500", "2,000"] },
     ],
   },
   {
     section: "Team",
     rows: [
-      { label: "Employee management", values: [false, true, true, true] },
-      { label: "GPS clock in / out",  values: [false, true, true, true] },
-      { label: "Job photos & proof",  values: [false, true, true, true] },
-      { label: "Timesheets",          values: [false, true, true, true] },
+      { label: "Employee management",  values: [false, false, true, true, true] },
+      { label: "GPS clock in / out",   values: [false, false, true, true, true] },
+      { label: "Job photos & proof",   values: [false, false, true, true, true] },
+      { label: "Timesheets",           values: [false, false, true, true, true] },
+      { label: "Team invitations",     values: [false, false, true, true, true] },
     ],
   },
   {
     section: "Advanced",
     rows: [
-      { label: "Contractor management", values: [false, false, true, true] },
-      { label: "Purchase orders",       values: [false, false, true, true] },
-      { label: "Advanced reporting",    values: [false, false, true, true] },
-      { label: "API access",            values: [false, false, true, true] },
+      { label: "Xero & MYOB integration", values: [false, false, false, true, true] },
+      { label: "BAS prep helper",          values: [false, false, false, true, true] },
+      { label: "Advanced reporting",       values: [false, false, false, true, true] },
+      { label: "Custom forms",             values: [false, false, false, true, true] },
     ],
   },
   {
     section: "Enterprise",
     rows: [
-      { label: "Custom branding",           values: [false, false, false, true] },
-      { label: "SSO / SAML",                values: [false, false, false, true] },
-      { label: "Dedicated account manager", values: [false, false, false, true] },
-      { label: "SLA guarantee",             values: [false, false, false, true] },
+      { label: "Custom integrations",       values: [false, false, false, false, true] },
+      { label: "Dedicated account manager", values: [false, false, false, false, true] },
+      { label: "SLA guarantee",             values: [false, false, false, false, true] },
+      { label: "White-glove onboarding",    values: [false, false, false, false, true] },
     ],
   },
   {
     section: "Support",
     rows: [
-      { label: "Support tier",      values: ["Email", "Priority", "Dedicated", "24/7"] },
-      { label: "30-day free trial", values: [true, true, true, true] },
+      { label: "Support tier",      values: ["Community", "Email", "Priority", "Dedicated", "24/7"] },
+      { label: "30-day free trial", values: [false, true, true, true, true] },
     ],
   },
 ];
@@ -96,9 +107,9 @@ type BundleCard = {
 };
 
 const BUNDLES: BundleCard[] = [
-  { name: "Core Solo",       tag: "Core · Solo",          price: 49,   desc: "1 user. Jobs, clients, invoices.",                       badge: null,           comingSoon: false, highlight: false, isEnterprise: false },
-  { name: "Core Team",       tag: "Core · Team",          price: 119,  desc: "Up to 5 users. Includes all team features.",             badge: "Most Popular", comingSoon: false, highlight: true,  isEnterprise: false },
-  { name: "Core Business",   tag: "Core · Business",      price: 249,  desc: "Up to 20 users. Advanced reporting + API.",              badge: null,           comingSoon: false, highlight: false, isEnterprise: false },
+  { name: "Core Solo",       tag: "Core · Solo",          price: 39,   desc: "1 user. Jobs, clients, invoices.",                       badge: null,           comingSoon: false, highlight: false, isEnterprise: false },
+  { name: "Core Team",       tag: "Core · Team",          price: 89,   desc: "Unlimited users. Includes all team features.",           badge: "Most Popular", comingSoon: false, highlight: true,  isEnterprise: false },
+  { name: "Core Business",   tag: "Core · Business",      price: 179,  desc: "Unlimited users. Advanced reporting + integrations.",    badge: null,           comingSoon: false, highlight: false, isEnterprise: false },
   { name: "Core Enterprise", tag: "Core · Enterprise",    price: null, desc: "Unlimited users. Dedicated support + SLA guarantee.",    badge: null,           comingSoon: false, highlight: false, isEnterprise: true  },
   { name: "Core + Grow",     tag: "Combo · Coming soon",  price: 149,  desc: "Team plan + Grow Starter. Manage and market together.",  badge: null,           comingSoon: true,  highlight: false, isEnterprise: false },
   { name: "Core + Leads",    tag: "Combo · Coming soon",  price: 149,  desc: "Team plan + 10 leads/mo. Run ops and fill your pipeline.",badge: null,          comingSoon: true,  highlight: false, isEnterprise: false },
@@ -121,7 +132,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is annual billing cheaper?",
-    a: "Annual billing saves you 20% compared to monthly. The exact saving is shown as a green badge on each plan card when you switch to Annual above.",
+    a: "Annual billing saves you ~17% compared to monthly. The exact saving is shown as a green badge on each plan card when you switch to Annual above.",
   },
   {
     q: "Is SERVLO built specifically for Australian businesses?",
@@ -135,23 +146,38 @@ const FAQ_ITEMS = [
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 
-function FeatureCell({ value, soloFalse }: { value: FVal; soloFalse: boolean }) {
+function FeatureCell({ value, freeFalse }: { value: FVal; freeFalse: boolean }) {
   if (value === true)  return <div className="flex justify-center"><Check size={15} className="text-emerald-500" /></div>;
-  if (value === false) return <div className="flex justify-center"><X    size={15} className={soloFalse ? "text-amber-400/70" : "text-slate-400"} /></div>;
+  if (value === false) return <div className="flex justify-center"><X    size={15} className={freeFalse ? "text-amber-400/70" : "text-slate-400"} /></div>;
   return <div className="text-center text-xs font-medium text-slate-600 dark:text-slate-300">{value}</div>;
 }
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
 
-export function LandingPricing() {
+interface LandingPricingProps {
+  onEnterpriseContact?: () => void;
+}
+
+export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const priceFor  = (id: PlanId) => billing === "annual" ? Math.round(MONTHLY[id] * 0.8) : MONTHLY[id];
-  const savingsFor = (id: PlanId) => (MONTHLY[id] - Math.round(MONTHLY[id] * 0.8)) * 12;
+  function priceFor(id: PlanId): number | null {
+    const plan = PRICING_PLANS[id];
+    if (plan.monthlyPrice === null) return null;
+    if (plan.monthlyPrice === 0) return 0;
+    if (billing === "annual") return Math.round((plan.annualMonthlyEquiv ?? plan.monthlyPrice) * 100) / 100;
+    return plan.monthlyPrice;
+  }
+
+  function annualSavingsFor(id: PlanId): number {
+    const plan = PRICING_PLANS[id];
+    if (plan.monthlyPrice === null || plan.monthlyPrice === 0) return 0;
+    return (plan.monthlyPrice - (plan.annualMonthlyEquiv ?? plan.monthlyPrice)) * 12;
+  }
 
   // Mobile: show Team first so the "obvious choice" is front-and-centre
-  const MOBILE_ORDER: PlanId[] = ["team", "solo", "business", "enterprise"];
+  const MOBILE_ORDER: PlanId[] = ["team", "solo", "free", "business", "enterprise"];
 
   return (
     <div>
@@ -159,7 +185,7 @@ export function LandingPricing() {
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Simple pricing, no surprises</h2>
         <p className="text-[#475569] dark:text-slate-300">
-          Start with Core. Add Grow and Leads when you&apos;re ready.
+          Start free. Add a plan when you&apos;re ready to grow.
         </p>
         <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-[#111827]">
           <button
@@ -182,9 +208,35 @@ export function LandingPricing() {
           >
             Annual
             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
-              Save 20%
+              Save 17%
             </span>
           </button>
+        </div>
+      </div>
+
+      {/* ── Early Adopter Banner ────────────────────────────────────────── */}
+      <div className="mb-8 rounded-xl border border-amber-300/50 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-900/10">
+        <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div>
+            <p className="font-semibold text-amber-800 dark:text-amber-300">
+              Early adopter offer — use code{" "}
+              <span className="rounded bg-amber-200 px-1.5 py-0.5 font-mono text-sm dark:bg-amber-800/50">
+                {EARLY_ADOPTER_DISCOUNT.code}
+              </span>
+            </p>
+            <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-400">
+              Get {EARLY_ADOPTER_DISCOUNT.discountPercent}% off for the first {EARLY_ADOPTER_DISCOUNT.months} months —{" "}
+              Solo from ${EARLY_ADOPTER_DISCOUNT.plans.solo.discountedMonthly}/mo,{" "}
+              Team from ${EARLY_ADOPTER_DISCOUNT.plans.team.discountedMonthly}/mo,{" "}
+              Business from ${EARLY_ADOPTER_DISCOUNT.plans.business.discountedMonthly}/mo
+            </p>
+          </div>
+          <Link
+            href="/auth/signup"
+            className="shrink-0 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600"
+          >
+            Claim offer →
+          </Link>
         </div>
       </div>
 
@@ -193,8 +245,9 @@ export function LandingPricing() {
         {MOBILE_ORDER.map((id) => {
           const plan = PLANS.find((p) => p.id === id)!;
           const p = priceFor(id);
-          const s = savingsFor(id);
+          const s = annualSavingsFor(id);
           const isTeam = id === "team";
+          const isFree = id === "free";
           return (
             <div
               key={id}
@@ -213,31 +266,41 @@ export function LandingPricing() {
                 )}
               </div>
               <p className="mb-3 text-sm text-[#475569] dark:text-slate-400">{plan.desc}</p>
-              <p className="text-3xl font-extrabold text-[#1e3a5f] dark:text-white">
-                ${p}<span className="text-base font-normal text-slate-500">/mo</span>
-              </p>
-              {billing === "annual" && (
-                <span className="mt-1 inline-flex w-fit rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
-                  Save ${s}/year
-                </span>
+              {p === null ? (
+                <p className="text-3xl font-extrabold text-[#1e3a5f] dark:text-white">Custom</p>
+              ) : p === 0 ? (
+                <p className="text-3xl font-extrabold text-[#1e3a5f] dark:text-white">Free</p>
+              ) : (
+                <>
+                  <p className="text-3xl font-extrabold text-[#1e3a5f] dark:text-white">
+                    ${p}<span className="text-base font-normal text-slate-500">/mo</span>
+                  </p>
+                  {billing === "annual" && s > 0 && (
+                    <span className="mt-1 inline-flex w-fit rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      Save ${Math.round(s)}/year
+                    </span>
+                  )}
+                </>
               )}
               {id === "enterprise" ? (
-                <a
-                  href="mailto:hello@servlo.com.au?subject=Enterprise%20Enquiry"
+                <button
+                  onClick={onEnterpriseContact}
                   className="mt-4 block rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-50 dark:border-slate-600 dark:text-white dark:hover:bg-slate-800"
                 >
-                  Contact Sales
-                </a>
+                  Contact us
+                </button>
               ) : (
                 <Link
                   href="/auth/signup"
                   className={`mt-4 block rounded-lg px-4 py-2.5 text-center text-sm font-semibold ${
                     isTeam
                       ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : isFree
+                      ? "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200"
                       : "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
                   }`}
                 >
-                  Start Free Trial
+                  {isFree ? "Start free" : "Start Free Trial"}
                 </Link>
               )}
             </div>
@@ -248,11 +311,11 @@ export function LandingPricing() {
       {/* ── Desktop feature comparison (div-based grid, not <table>) ──────── */}
       <div className="hidden overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 md:block">
         {/* Header */}
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] bg-slate-50 dark:bg-[#111827]">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] bg-slate-50 dark:bg-[#111827]">
           <div className="p-4" />
           {PLANS.map((plan) => {
             const p = priceFor(plan.id);
-            const s = savingsFor(plan.id);
+            const s = annualSavingsFor(plan.id);
             const isTeam = plan.id === "team";
             return (
               <div key={plan.id} className={`p-4 text-center ${isTeam ? "bg-blue-50 dark:bg-[#10283a]" : ""}`}>
@@ -265,12 +328,18 @@ export function LandingPricing() {
                 )}
                 <h3 className="font-bold text-[#1e3a5f] dark:text-white">{plan.name}</h3>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{plan.desc}</p>
-                <p className="mt-2 text-2xl font-extrabold text-[#1e3a5f] dark:text-white">
-                  ${p}<span className="text-xs font-normal text-slate-500">/mo</span>
-                </p>
-                {billing === "annual" ? (
+                {p === null ? (
+                  <p className="mt-2 text-2xl font-extrabold text-[#1e3a5f] dark:text-white">Custom</p>
+                ) : p === 0 ? (
+                  <p className="mt-2 text-2xl font-extrabold text-[#1e3a5f] dark:text-white">Free</p>
+                ) : (
+                  <p className="mt-2 text-2xl font-extrabold text-[#1e3a5f] dark:text-white">
+                    ${p}<span className="text-xs font-normal text-slate-500">/mo</span>
+                  </p>
+                )}
+                {billing === "annual" && s > 0 ? (
                   <span className="mt-1 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
-                    Save ${s}/yr
+                    Save ${Math.round(s)}/yr
                   </span>
                 ) : (
                   <div className="mt-1 h-5" />
@@ -289,12 +358,12 @@ export function LandingPricing() {
               </div>
             </div>
             {sec.rows.map((row) => {
-              const soloFalse = row.values[0] === false;
+              const freeFalse = row.values[0] === false;
               return (
                 <div
                   key={row.label}
-                  className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr] border-t border-slate-100 dark:border-slate-800 ${
-                    soloFalse ? "bg-amber-50/40 dark:bg-amber-900/10" : ""
+                  className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] border-t border-slate-100 dark:border-slate-800 ${
+                    freeFalse ? "bg-amber-50/40 dark:bg-amber-900/10" : ""
                   }`}
                 >
                   <div className="p-3 text-sm text-[#334155] dark:text-slate-300">{row.label}</div>
@@ -305,7 +374,7 @@ export function LandingPricing() {
                         PLANS[i].id === "team" ? "bg-blue-50/40 dark:bg-blue-900/10" : ""
                       }`}
                     >
-                      <FeatureCell value={val} soloFalse={soloFalse} />
+                      <FeatureCell value={val} freeFalse={freeFalse} />
                     </div>
                   ))}
                 </div>
@@ -315,29 +384,32 @@ export function LandingPricing() {
         ))}
 
         {/* CTA row */}
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] border-t border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-[#111827]">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] border-t border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-[#111827]">
           <div />
           {PLANS.map((plan) => {
             const isTeam = plan.id === "team";
+            const isFree = plan.id === "free";
             return (
               <div key={plan.id} className="px-2">
                 {plan.id === "enterprise" ? (
-                  <a
-                    href="mailto:hello@servlo.com.au?subject=Enterprise%20Enquiry"
-                    className="block rounded-lg border border-slate-300 py-2 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-100 dark:border-slate-600 dark:text-white dark:hover:bg-slate-800"
+                  <button
+                    onClick={onEnterpriseContact}
+                    className="block w-full rounded-lg border border-slate-300 py-2 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-100 dark:border-slate-600 dark:text-white dark:hover:bg-slate-800"
                   >
-                    Contact Sales
-                  </a>
+                    Contact us
+                  </button>
                 ) : (
                   <Link
                     href="/auth/signup"
                     className={`block rounded-lg py-2 text-center text-sm font-semibold ${
                       isTeam
                         ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : isFree
+                        ? "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200"
                         : "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
                     }`}
                   >
-                    Start Free Trial
+                    {isFree ? "Start free" : "Start Free Trial"}
                   </Link>
                 )}
               </div>
@@ -347,7 +419,7 @@ export function LandingPricing() {
       </div>
 
       <p className="mt-3 text-center text-sm text-[#64748b] dark:text-slate-400">
-        All Core plans include a 30-day free trial. No credit card required.
+        All paid plans include a 30-day free trial. No credit card required.
       </p>
 
       {/* ── Why upgrade from Solo? ───────────────────────────────────────── */}
@@ -359,7 +431,7 @@ export function LandingPricing() {
             {
               icon: "👥",
               title: "Bring your team",
-              points: ["Employee management", "GPS clock in / out", "Timesheets & rosters"],
+              points: ["Unlimited team members", "GPS clock in / out", "Timesheets & rosters"],
             },
             {
               icon: "📸",
@@ -391,7 +463,7 @@ export function LandingPricing() {
             href="/auth/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-3.5 text-base font-semibold text-white hover:bg-blue-600"
           >
-            Upgrade to Team — $119/mo
+            Upgrade to Team — $89/mo
           </Link>
         </div>
       </div>
@@ -454,12 +526,12 @@ export function LandingPricing() {
                   Coming soon
                 </button>
               ) : b.isEnterprise ? (
-                <a
-                  href="mailto:hello@servlo.com.au?subject=Enterprise%20Enquiry"
-                  className="mt-3 block rounded-lg border border-slate-300 py-2 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-50 dark:border-slate-600 dark:text-white dark:hover:bg-slate-800"
+                <button
+                  onClick={onEnterpriseContact}
+                  className="mt-3 block w-full rounded-lg border border-slate-300 py-2 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-50 dark:border-slate-600 dark:text-white dark:hover:bg-slate-800"
                 >
-                  Contact Sales
-                </a>
+                  Contact us
+                </button>
               ) : (
                 <Link
                   href="/auth/signup"
@@ -596,18 +668,6 @@ export function LandingPricing() {
           <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
             AI-powered marketing for service businesses — ads, social content, review automation and referral tracking.
           </p>
-          <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-            {[
-              { label: "Starter", price: "$79/mo" },
-              { label: "Pro",     price: "$149/mo" },
-              { label: "Agency",  price: "$299/mo" },
-            ].map((t) => (
-              <div key={t.label} className="rounded-lg border border-purple-200 bg-white p-2 dark:border-purple-500/20 dark:bg-purple-900/20">
-                <p className="text-xs text-slate-500 dark:text-slate-400">{t.label}</p>
-                <p className="font-bold text-[#1e3a5f] dark:text-white">{t.price}</p>
-              </div>
-            ))}
-          </div>
           <a
             href="mailto:hello@servlo.com.au?subject=Waitlist%3A%20SERVLO%20Grow"
             className="block rounded-lg border border-purple-300 bg-purple-100 px-4 py-2.5 text-center text-sm font-semibold text-purple-700 hover:bg-purple-200 dark:border-purple-500/40 dark:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-500/20"
@@ -630,18 +690,6 @@ export function LandingPricing() {
           <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
             Qualified leads matched to your industry and location — pay per lead or subscribe for a monthly bundle.
           </p>
-          <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-            {[
-              { label: "Pay-as-you-go", price: "$12/lead" },
-              { label: "Bundle",        price: "$99/mo"   },
-              { label: "Pro",           price: "$249/mo"  },
-            ].map((t) => (
-              <div key={t.label} className="rounded-lg border border-amber-200 bg-white p-2 dark:border-amber-500/20 dark:bg-amber-900/20">
-                <p className="text-xs text-slate-500 dark:text-slate-400">{t.label}</p>
-                <p className="font-bold text-[#1e3a5f] dark:text-white">{t.price}</p>
-              </div>
-            ))}
-          </div>
           <a
             href="mailto:hello@servlo.com.au?subject=Waitlist%3A%20SERVLO%20Leads"
             className="block rounded-lg border border-amber-300 bg-amber-100 px-4 py-2.5 text-center text-sm font-semibold text-amber-700 hover:bg-amber-200 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"

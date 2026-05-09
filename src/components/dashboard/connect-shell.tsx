@@ -55,11 +55,11 @@ export default function ConnectShell({ children }: { children: React.ReactNode }
         {/* Brand */}
         <div className="mb-4 flex flex-col items-center">
           <Image
-            src="/logo.png"
-            alt="SERVLO"
+            src="/connect.png"
+            alt="SERVLO CONNECT"
             width={120}
             height={120}
-            style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
+            style={{ height: "auto", maxWidth: "120px" }}
           />
           <div className="mt-3 h-[2px] w-full" style={{ background: "var(--product-accent)" }} aria-hidden />
         </div>

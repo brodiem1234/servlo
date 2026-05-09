@@ -1,20 +1,43 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import EmployeesManager from "./employees-manager";
 import { filterDemoEntities } from "@/lib/demo/visibility";
+import { getUserPlan } from "@/lib/plan-limits";
 
 export default async function OwnerEmployeesPage() {
   const { user, enabled, supabase } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "employee_management");
 
+  const userPlan = await getUserPlan(user.id);
+
   const { data: employees } = await supabase
     .from("employees")
     .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role, is_demo")
     .eq("owner_id", user.id)
+    .is("deleted_at", null)
     .order("full_name", { ascending: true });
+
+  // Fetch pending/expired invitations for this business
+  const admin = createAdminClient();
+  const { data: businessRow } = await admin
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  const pendingInvitations = businessRow
+    ? (await admin
+        .from("team_invitations")
+        .select("id, invited_email, role, status, created_at, expires_at")
+        .eq("business_id", businessRow.id)
+        .in("status", ["pending", "expired"])
+        .order("created_at", { ascending: false }))
+        .data ?? []
+    : [];
 
   async function createEmployeeAction(formData: FormData) {
     "use server";
@@ -62,6 +85,7 @@ export default async function OwnerEmployeesPage() {
   }
 
   const visibleEmployees = filterDemoEntities(employees ?? []);
+  const businessId = (businessRow as { id?: string } | null)?.id ?? null;
 
   return (
     <section className="space-y-5">
@@ -72,9 +96,18 @@ export default async function OwnerEmployeesPage() {
         employees={visibleEmployees}
         createEmployeeAction={createEmployeeAction}
         updateEmployeeAction={updateEmployeeAction}
+        userPlan={userPlan}
+        pendingInvitations={pendingInvitations as Array<{
+          id: string;
+          invited_email: string;
+          role: string;
+          status: string;
+          created_at: string;
+          expires_at: string;
+        }>}
+        businessId={businessId}
+        currentUserId={user.id}
       />
     </section>
   );
 }
-
-

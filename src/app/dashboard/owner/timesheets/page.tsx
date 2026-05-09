@@ -48,6 +48,7 @@ export default async function OwnerTimesheetsPage({ searchParams }: TimesheetsPr
     .from("employees")
     .select("id, full_name, email, role, is_demo")
     .eq("owner_id", user.id)
+    .is("deleted_at", null)
     .order("full_name", { ascending: true });
 
   const allVisible = filterDemoEntities(employees ?? []).filter((e: { role?: string | null }) => {

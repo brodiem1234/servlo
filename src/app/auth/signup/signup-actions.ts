@@ -168,5 +168,5 @@ export async function signUpAction(_prevState: SignupFormState, formData: FormDa
     redirect("/dashboard/client" as Parameters<typeof redirect>[0]);
   }
 
-  redirect("/dashboard" as Parameters<typeof redirect>[0]);
+  redirect("/dashboard/owner" as Parameters<typeof redirect>[0]);
 }

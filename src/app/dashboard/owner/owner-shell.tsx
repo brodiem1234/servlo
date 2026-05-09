@@ -25,6 +25,7 @@ import { QuickActionFab } from "@/components/dashboard/quick-action-fab";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
+import { OnlineMembersIndicator } from "@/components/dashboard/online-members-indicator";
 
 const CORE_COLOR = "#3B82F6";
 
@@ -81,6 +82,14 @@ type Props = {
   initialOnboardingDismissed?: boolean;
   /** Onboarding tour: whether the guided tour has been completed (from DB). */
   initialTourCompleted?: boolean;
+  /** Presence: business UUID for realtime channel. */
+  businessId?: string | null;
+  /** Presence: the current user's auth UUID. */
+  currentUserId?: string;
+  /** Presence: the current user's display name. */
+  currentUserName?: string;
+  /** Presence: the current user's plan slug. */
+  plan?: string;
   children: React.ReactNode;
 };
 
@@ -93,6 +102,10 @@ export default function OwnerShell({
   shortcutTargets,
   initialOnboardingDismissed = false,
   initialTourCompleted = false,
+  businessId,
+  currentUserId,
+  currentUserName,
+  plan = "free",
   children
 }: Props) {
   const pathname = usePathname();
@@ -168,11 +181,11 @@ export default function OwnerShell({
         >
           <div className="mb-6 flex flex-col items-center">
             <Image
-              src="/logo.png"
-              alt="SERVLO"
+              src="/core.png"
+              alt="SERVLO CORE"
               width={120}
               height={120}
-              style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
+              style={{ height: "auto", maxWidth: "120px" }}
             />
             <div className="mt-3 h-[2px] w-full bg-[var(--product-accent)]" aria-hidden />
           </div>
@@ -207,6 +220,14 @@ export default function OwnerShell({
             </div>
             <div className="flex items-center gap-2">
               <DarkModeToggle />
+              {businessId && currentUserId && currentUserName && (
+                <OnlineMembersIndicator
+                  businessId={businessId}
+                  currentUserId={currentUserId}
+                  currentUserName={currentUserName}
+                  plan={plan}
+                />
+              )}
               <NotificationBell />
               <form action={signOutAction}>
                 <button type="submit" className="dashboard-primary rounded-md px-4 py-2 text-sm font-semibold text-white">

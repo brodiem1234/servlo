@@ -23,6 +23,7 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
+import { EnterpriseModal } from "@/components/marketing/enterprise-modal";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
 import { formatIndustryLabels } from "@/lib/industries";
@@ -188,7 +189,7 @@ const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
     gradient: "linear-gradient(135deg, #0d1b36 0%, #1a3a6b 100%)",
     glow: "rgba(59,130,246,0.2)",
     desc: "Job management, invoicing, scheduling",
-    price: "From $49/mo", badge: "Available now", available: true,
+    price: "From $39/mo", badge: "Available now", available: true,
   },
   {
     id: "grow", name: "SERVLO Grow", color: "#8B5CF6",
@@ -308,27 +309,27 @@ function tiersForCombo(combo: string): PlanTier[] {
   if (combo === "grow") return GROW_TIERS;
 
   const priceMap: Record<string, [number, number, number, number]> = {
-    "core":             [49,  119, 249, 499],
-    "core+grow":        [149, 199, 299, 499],
-    "core+leads":       [99,  179, 279, 499],
-    "grow+leads":       [199, 279, 379, 499],
-    "core+grow+leads":  [249, 329, 429, 499],
+    "core":             [39,  89, 179, 0],
+    "core+grow":        [99, 149, 249, 0],
+    "core+leads":       [79, 129, 219, 0],
+    "grow+leads":       [149, 199, 299, 0],
+    "core+grow+leads":  [199, 249, 349, 0],
   };
-  const [p0, p1, p2, p3] = priceMap[combo] ?? [49, 119, 249, 499];
+  const [p0, p1, p2] = priceMap[combo] ?? [39, 89, 179];
   return [
     {
       id: "solo",
       name: "Solo",
       price: `$${p0}`,
-      description: "Perfect for soloists",
-      features: ["1 user", "All Core features", "Unlimited clients & invoices"],
+      description: "Perfect for sole traders",
+      features: ["1 user", "Unlimited jobs", "50 AI generations/mo"],
     },
     {
       id: "team",
       name: "Team",
       price: `$${p1}`,
       description: "For growing businesses",
-      features: ["Up to 10 users", "Team timesheets & scheduling", "Priority support"],
+      features: ["Unlimited team members", "Team timesheets & scheduling", "200 AI generations/mo"],
       recommended: true,
     },
     {
@@ -336,12 +337,12 @@ function tiersForCombo(combo: string): PlanTier[] {
       name: "Business",
       price: `$${p2}`,
       description: "Scaling operations",
-      features: ["Unlimited users", "Advanced reporting", "Dedicated account manager"],
+      features: ["Unlimited users", "Xero & MYOB integration", "500 AI generations/mo"],
     },
     {
       id: "enterprise",
       name: "Enterprise",
-      price: `$${p3}`,
+      price: "Custom",
       description: "Custom solutions",
       features: ["Custom integrations", "White-glove onboarding", "SLA guarantee"],
     },
@@ -474,6 +475,7 @@ export function SignupForm() {
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [productTooltip, setProductTooltip] = useState<string | null>(null);
+  const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
 
   const onGoogleSignUp = useCallback(async () => {
     setOauthLoading("google");
@@ -989,6 +991,7 @@ export function SignupForm() {
   return (
     <>
       <ThemeToggleCorner />
+      <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
         className="auth-theme flex min-h-screen items-center justify-center px-6 py-16"
         style={{ backgroundColor: "#0a0f1e" }}
@@ -998,7 +1001,7 @@ export function SignupForm() {
           style={{ backgroundColor: "#111827", borderColor: "#1e293b" }}
         >
           <div className="mb-4 flex justify-center">
-            <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
+            <Image src="/servlo-master-white.svg" alt="SERVLO" width={64} height={64} unoptimized />
           </div>
           <h1 className="text-3xl font-bold" style={{ color: "#f8fafc" }}>
             Create your account
@@ -1590,6 +1593,31 @@ export function SignupForm() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {currentTiers.map((tier) => {
                   const on = selectedPlanTier === tier.id;
+                  const isEnterprise = tier.id === "enterprise";
+                  if (isEnterprise) {
+                    return (
+                      <button
+                        key={tier.id} type="button"
+                        onClick={() => setEnterpriseModalOpen(true)}
+                        className="relative flex flex-col items-start gap-2 rounded-lg border border-slate-600 p-4 text-left transition hover:border-slate-500"
+                      >
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-slate-100">{tier.price}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-200">{tier.name}</p>
+                        <p className="text-xs text-slate-400">{tier.description}</p>
+                        <ul className="mt-1 space-y-0.5">
+                          {tier.features.map((f) => (
+                            <li key={f} className="flex items-center gap-1.5 text-xs text-slate-300">
+                              <Check size={11} className="shrink-0 text-[#3B82F6]" strokeWidth={3} aria-hidden />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        <span className="mt-1 text-xs font-semibold text-blue-400">Contact us →</span>
+                      </button>
+                    );
+                  }
                   return (
                     <button
                       key={tier.id} type="button"

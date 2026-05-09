@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
       <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
         <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-4 flex items-center justify-center gap-3">
-            <Image src="/logo.png" alt="SERVLO" width={48} height={48} />
+            <Image src="/servlo-master-dark.svg" alt="SERVLO" width={48} height={48} unoptimized />
             <span className="text-lg font-bold tracking-wide text-[#1e3a5f] dark:text-white">SERVLO</span>
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Set a new password</h1>

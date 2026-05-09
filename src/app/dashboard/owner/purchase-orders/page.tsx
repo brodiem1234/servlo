@@ -45,8 +45,9 @@ export default async function PurchaseOrdersPage() {
       .from("clients")
       .select("id, full_name, email, client_type, is_demo")
       .eq("owner_id", user.id)
+      .is("deleted_at", null)
       .order("full_name"),
-    sb.from("jobs").select("id, title, job_number, is_demo").eq("owner_id", user.id).order("scheduled_date", { ascending: false })
+    sb.from("jobs").select("id, title, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("scheduled_date", { ascending: false })
   ]);
 
   const pos = posResult.data ?? [];
@@ -290,9 +291,9 @@ export default async function PurchaseOrdersPage() {
     <PurchaseOrdersManager
       pos={rows}
       suppliers={supplierRows.map((s: { id: string; full_name: string | null; email?: string | null }) => ({ id: s.id, label: s.full_name ?? s.id, email: s.email ?? null }))}
-      jobs={jobRows.map((j: { id: string; title: string | null; job_number?: string | null }) => ({
+      jobs={jobRows.map((j: { id: string; title: string | null }) => ({
         id: j.id,
-        label: j.job_number ? `${j.job_number} — ${j.title ?? j.id}` : (j.title ?? j.id)
+        label: j.title ?? j.id
       }))}
       createPurchaseOrderAction={createPurchaseOrderAction}
       updatePurchaseOrderAction={updatePurchaseOrderAction}

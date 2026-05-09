@@ -9,7 +9,7 @@ export default function OfflinePage() {
       <button onClick={() => window.location.reload()} style={{ background: "#3B82F6", color: "white", border: "none", borderRadius: "8px", padding: "12px 24px", fontSize: "14px", fontWeight: 600, cursor: "pointer", marginBottom: "12px" }}>
         Try again
       </button>
-      <a href="/dashboard" style={{ color: "#94a3b8", fontSize: "14px" }}>Back to dashboard</a>
+      <a href="/dashboard/owner" style={{ color: "#94a3b8", fontSize: "14px" }}>Back to dashboard</a>
     </div>
   );
 }

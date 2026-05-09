@@ -20,7 +20,7 @@ import { LandingHeader } from "@/components/landing-header";
 import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
 import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
 import { LandingScrollReveal } from "@/components/landing-scroll-reveal";
-import { LandingPricing } from "@/components/landing-pricing";
+import { PricingWithEnterprise } from "@/components/marketing/pricing-with-enterprise";
 
 const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
 
@@ -309,7 +309,7 @@ export default function HomePage() {
       </section>
 
       <section id="pricing" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <LandingPricing />
+        <PricingWithEnterprise />
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
@@ -417,7 +417,8 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 md:grid-cols-2 md:px-6">
           <div>
             <div className="flex items-center gap-2">
-              <Image src="/logo.png" alt="SERVLO" width={28} height={28} />
+              <Image src="/servlo-master-dark.svg" alt="SERVLO" width={28} height={28} unoptimized className="dark:hidden" />
+              <Image src="/servlo-master-white.svg" alt="SERVLO" width={28} height={28} unoptimized className="hidden dark:block" />
               <p className="font-bold text-[#1e3a5f] dark:text-white">SERVLO</p>
             </div>
             <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">

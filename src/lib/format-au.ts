@@ -3,6 +3,34 @@
  */
 
 /**
+ * Format a date/timestamp as a relative time string.
+ * Returns: "just now", "2 minutes ago", "1 hour ago", "3 days ago", etc.
+ */
+export function formatRelativeTime(date: Date | string | null | undefined): string {
+  if (!date) return "never";
+  try {
+    const d = typeof date === "string" ? new Date(date) : date;
+    if (isNaN(d.getTime())) return "unknown";
+    const diffMs = Date.now() - d.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 30) return "just now";
+    if (diffSec < 60) return `${diffSec} seconds ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return diffMin === 1 ? "1 minute ago" : `${diffMin} minutes ago`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return diffHour === 1 ? "1 hour ago" : `${diffHour} hours ago`;
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay < 7) return diffDay === 1 ? "yesterday" : `${diffDay} days ago`;
+    const diffWeek = Math.floor(diffDay / 7);
+    if (diffWeek < 5) return diffWeek === 1 ? "1 week ago" : `${diffWeek} weeks ago`;
+    const diffMonth = Math.floor(diffDay / 30);
+    return diffMonth === 1 ? "1 month ago" : `${diffMonth} months ago`;
+  } catch {
+    return "unknown";
+  }
+}
+
+/**
  * Format a date as DD/MM/YYYY (Australian standard).
  */
 export function formatDateAU(date: string | Date | null | undefined): string {

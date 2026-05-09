@@ -8,6 +8,7 @@ import { employeeAssignmentEmailTemplate, sendEmail } from "@/lib/email";
 import { createNotification } from "@/lib/notifications";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
+import { canCreateJob } from "@/lib/plan-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -122,6 +123,17 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       data: { user: owner }
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
+
+    // Plan enforcement: free plan is limited to 5 jobs per month
+    const jobCheck = await canCreateJob(owner.id);
+    if (!jobCheck.allowed) {
+      throw new Error(
+        jobCheck.reason === 'free_job_limit'
+          ? `Free plan limit reached: you've used 5 jobs this month. Upgrade to create unlimited jobs.`
+          : 'Unable to create job at this time.'
+      );
+    }
+
     const { data: inserted, error } = await sb
       .from("jobs")
       .insert({

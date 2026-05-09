@@ -1,7 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { DemoBadge } from "@/components/demo-badge";
+import { UpgradePromptModal } from "@/components/dashboard/upgrade-prompt-modal";
+import { InviteModal } from "@/components/dashboard/invite-modal";
+import { useRouter } from "next/navigation";
+import { usePresence } from "@/lib/presence";
 
 type Employee = {
   id: string;
@@ -15,10 +19,23 @@ type Employee = {
   is_demo?: boolean | null;
 };
 
+type PendingInvitation = {
+  id: string;
+  invited_email: string;
+  role: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+};
+
 type Props = {
   employees: Employee[];
   createEmployeeAction: (formData: FormData) => Promise<void>;
   updateEmployeeAction: (formData: FormData) => Promise<void>;
+  userPlan?: string;
+  pendingInvitations?: PendingInvitation[];
+  businessId?: string | null;
+  currentUserId?: string;
 };
 
 const LICENCE_CATEGORIES: Array<{ label: string; items: string[] }> = [
@@ -218,12 +235,27 @@ function LicenceSelect({
 export default function EmployeesManager({
   employees,
   createEmployeeAction,
-  updateEmployeeAction
+  updateEmployeeAction,
+  userPlan = 'free',
+  pendingInvitations = [],
+  businessId,
+  currentUserId,
 }: Props) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+
+  // Presence — only active when businessId is set
+  const onlineUsers = usePresence(businessId ?? null, currentUserId ? { id: currentUserId, name: "Owner" } : null);
+  // Map by normalised full name for matching against employees
+  const onlineByName = new Map(onlineUsers.map((u) => [u.name.trim().toLowerCase(), u]));
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [selectedLicences, setSelectedLicences] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>(pendingInvitations);
   const [values, setValues] = useState({
     id: "",
     full_name: "",
@@ -233,11 +265,69 @@ export default function EmployeesManager({
     hourly_rate: ""
   });
 
+  const canInvite = userPlan === 'team' || userPlan === 'business' || userPlan === 'enterprise';
+
   function startAdd() {
     setEditing(false);
     setValues({ id: "", full_name: "", email: "", phone: "", trade_type: "", hourly_rate: "" });
     setSelectedLicences([]);
     setOpen(true);
+  }
+
+  function handleInviteClick() {
+    if (!canInvite) {
+      setUpgradeOpen(true);
+    } else {
+      setInviteOpen(true);
+    }
+  }
+
+  async function handleResendInvite(invitationId: string) {
+    setActionLoading(invitationId + '-resend');
+    try {
+      const res = await fetch('/api/team/invite/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId }),
+      });
+      if (res.ok) {
+        setToast({ type: 'success', message: 'Invitation resent' });
+        // Update expires_at locally
+        setInvitations((prev) => prev.map((inv) =>
+          inv.id === invitationId
+            ? { ...inv, status: 'pending', expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }
+            : inv
+        ));
+      } else {
+        setToast({ type: 'error', message: 'Failed to resend invitation' });
+      }
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleCancelInvite(invitationId: string) {
+    setActionLoading(invitationId + '-cancel');
+    try {
+      const res = await fetch('/api/team/invite/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId }),
+      });
+      if (res.ok) {
+        setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+        setToast({ type: 'success', message: 'Invitation cancelled' });
+      } else {
+        setToast({ type: 'error', message: 'Failed to cancel invitation' });
+      }
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleCopyInviteLink(invitationId: string) {
+    // We don't have the token on the client — just show a toast that they need to resend
+    setToast({ type: 'success', message: 'Resend the invite to generate a fresh link' });
   }
 
   function startEdit(employee: Employee) {
@@ -269,6 +359,25 @@ export default function EmployeesManager({
 
   return (
     <div className="space-y-4">
+      <UpgradePromptModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        feature="Team members"
+        currentPlan={userPlan === 'free' ? 'Free' : 'Solo'}
+        currentPlanPrice={userPlan === 'free' ? 'Free' : '$39/mo'}
+        currentPlanNote={userPlan === 'free' ? '5 jobs/mo, 1 user' : '1 user only'}
+        requiredPlan="Team"
+        requiredPlanPrice="$89/mo"
+        requiredPlanNote="Unlimited team members"
+        description="Add employees and contractors to your team. Assign them to jobs and track timesheets."
+      />
+      <InviteModal
+        isOpen={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        onSuccess={() => {
+          startTransition(() => router.refresh());
+        }}
+      />
       {toast ? (
         <div
           className={`rounded-md px-4 py-3 text-sm font-medium ${
@@ -281,18 +390,81 @@ export default function EmployeesManager({
         </div>
       ) : null}
 
-      <button
-        onClick={startAdd}
-        className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-      >
-        Add Employee
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={startAdd}
+          className="rounded-md bg-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+        >
+          Add Employee
+        </button>
+        <button
+          onClick={handleInviteClick}
+          className="rounded-md border border-[var(--accent-color)] px-4 py-2 text-sm font-semibold text-[var(--accent-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_10%,transparent)]"
+        >
+          Invite team member
+        </button>
+      </div>
+
+      {/* Pending Invitations */}
+      {invitations.length > 0 && (
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4">
+          <h3 className="mb-3 text-sm font-semibold text-[var(--text-primary)]">
+            Pending Invitations ({invitations.length})
+          </h3>
+          <div className="space-y-2">
+            {invitations.map((inv) => {
+              const isExpired = inv.status === 'expired' || new Date(inv.expires_at) < new Date();
+              const sentDate = new Date(inv.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+              const expiresDate = new Date(inv.expires_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+              return (
+                <div
+                  key={inv.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2.5"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[var(--text-primary)]">{inv.invited_email}</p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {inv.role} · Sent {sentDate} · Expires {expiresDate}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      isExpired
+                        ? 'bg-red-500/10 text-red-400'
+                        : 'bg-emerald-500/10 text-emerald-400'
+                    }`}>
+                      {isExpired ? 'Expired' : 'Pending'}
+                    </span>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleResendInvite(inv.id)}
+                      disabled={actionLoading === inv.id + '-resend'}
+                      className="rounded px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] disabled:opacity-50"
+                    >
+                      {actionLoading === inv.id + '-resend' ? '...' : 'Resend'}
+                    </button>
+                    <button
+                      onClick={() => handleCancelInvite(inv.id)}
+                      disabled={actionLoading === inv.id + '-cancel'}
+                      className="rounded px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                    >
+                      {actionLoading === inv.id + '-cancel' ? '...' : 'Cancel'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <article className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
         <table className="w-full min-w-[760px] text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               <th className="px-2 py-2">Name</th>
+              <th className="px-2 py-2">Status</th>
               <th className="px-2 py-2">Email</th>
               <th className="px-2 py-2">Phone</th>
               <th className="px-2 py-2">Trade</th>
@@ -304,7 +476,7 @@ export default function EmployeesManager({
           <tbody>
             {employees.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-2 py-10 text-center text-sm text-[var(--text-muted)]">
+                <td colSpan={8} className="px-2 py-10 text-center text-sm text-[var(--text-muted)]">
                   No employees yet. Add your first team member above.
                 </td>
               </tr>
@@ -312,6 +484,9 @@ export default function EmployeesManager({
               employees.map((employee) => {
                 const demo = Boolean(employee.is_demo);
                 const licences = employee.licences ?? [];
+                const nameKey = (employee.full_name ?? "").trim().toLowerCase();
+                const onlineUser = nameKey ? onlineByName.get(nameKey) : undefined;
+                const isOnline = Boolean(onlineUser);
                 return (
                   <tr key={employee.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-primary)]">
                     <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
@@ -319,6 +494,21 @@ export default function EmployeesManager({
                         <span>{employee.full_name ?? "-"}</span>
                         {demo ? <DemoBadge /> : null}
                       </div>
+                    </td>
+                    <td className="px-2 py-2">
+                      {isOnline ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                            {onlineUser!.currentPage}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-2 w-2 shrink-0 rounded-full bg-[var(--border)]" />
+                          <span className="text-xs text-[var(--text-muted)]">Offline</span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.email ?? "-"}</td>
                     <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.phone ?? "-"}</td>

@@ -17,7 +17,7 @@ export default async function ClientLayout({ children }: { children: React.React
   if (!user) redirect("/auth/login");
 
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "client") redirect("/dashboard");
+  if (profile?.role !== "client") redirect("/dashboard/owner");
 
   return (
     <div className="dashboard-theme min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
