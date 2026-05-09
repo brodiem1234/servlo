@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import EmployeesManager from "./employees-manager";
@@ -18,6 +19,24 @@ export default async function OwnerEmployeesPage() {
     .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role, is_demo")
     .eq("owner_id", user.id)
     .order("full_name", { ascending: true });
+
+  // Fetch pending/expired invitations for this business
+  const admin = createAdminClient();
+  const { data: businessRow } = await admin
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  const pendingInvitations = businessRow
+    ? (await admin
+        .from("team_invitations")
+        .select("id, invited_email, role, status, created_at, expires_at")
+        .eq("business_id", businessRow.id)
+        .in("status", ["pending", "expired"])
+        .order("created_at", { ascending: false }))
+        .data ?? []
+    : [];
 
   async function createEmployeeAction(formData: FormData) {
     "use server";
@@ -76,9 +95,15 @@ export default async function OwnerEmployeesPage() {
         createEmployeeAction={createEmployeeAction}
         updateEmployeeAction={updateEmployeeAction}
         userPlan={userPlan}
+        pendingInvitations={pendingInvitations as Array<{
+          id: string;
+          invited_email: string;
+          role: string;
+          status: string;
+          created_at: string;
+          expires_at: string;
+        }>}
       />
     </section>
   );
 }
-
-
