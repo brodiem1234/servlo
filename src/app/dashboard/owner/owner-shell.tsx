@@ -181,11 +181,11 @@ export default function OwnerShell({
         >
           <div className="mb-6 flex flex-col items-center">
             <Image
-              src="/logo.png"
-              alt="SERVLO"
+              src="/core.png"
+              alt="SERVLO CORE"
               width={120}
               height={120}
-              style={{ height: "auto", maxWidth: "120px", filter: "var(--logo-filter)" }}
+              style={{ height: "auto", maxWidth: "120px" }}
             />
             <div className="mt-3 h-[2px] w-full bg-[var(--product-accent)]" aria-hidden />
           </div>

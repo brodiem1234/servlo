@@ -1001,7 +1001,7 @@ export function SignupForm() {
           style={{ backgroundColor: "#111827", borderColor: "#1e293b" }}
         >
           <div className="mb-4 flex justify-center">
-            <Image src="/logo.png" alt="SERVLO" width={64} height={64} />
+            <Image src="/servlo-master-white.svg" alt="SERVLO" width={64} height={64} unoptimized />
           </div>
           <h1 className="text-3xl font-bold" style={{ color: "#f8fafc" }}>
             Create your account
