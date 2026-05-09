@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { Search, Briefcase, Users, FileText, Zap } from "lucide-react";
 
-type ResultIcon = "job" | "client" | "invoice" | "quote" | "nav";
+type ResultIcon = "job" | "client" | "invoice" | "quote" | "nav" | "pricebook" | "employee";
 
 type Result = {
   id: string;
@@ -23,7 +23,10 @@ const QUICK_ACTIONS: Result[] = [
   { id: "nav-finance",     label: "Finance",     sub: "Invoices & revenue", href: "/dashboard/owner/finance", icon: "nav" },
   { id: "nav-reports",     label: "Reports",     sub: "Analytics & reports", href: "/dashboard/owner/reports", icon: "nav" },
   { id: "nav-team",        label: "Team",        sub: "Manage employees",  href: "/dashboard/owner/team",     icon: "nav" },
-  { id: "nav-settings",    label: "Settings",    sub: "Account & billing", href: "/dashboard/owner/settings", icon: "nav" },
+  { id: "nav-settings",    label: "Settings",    sub: "Account & billing",    href: "/dashboard/owner/settings",  icon: "nav" },
+  { id: "nav-pricebook",   label: "Pricebook",   sub: "Products & services",  href: "/dashboard/owner/pricebook", icon: "nav" },
+  { id: "nav-compliance",  label: "Compliance",  sub: "Documents & certs",    href: "/dashboard/owner/compliance", icon: "nav" },
+  { id: "nav-hire",        label: "Hire",        sub: "Recruiting & onboarding", href: "/dashboard/hire",         icon: "nav" },
 ];
 
 export function CommandPalette() {
@@ -61,24 +64,32 @@ export function CommandPalette() {
     if (!q.trim()) { setResults([]); return; }
     setLoading(true);
     const sb = createSupabaseBrowser();
-    const [jobsRes, clientsRes, invoicesRes, quotesRes] = await Promise.all([
-      sb.from("jobs").select("id,title,status").ilike("title", `%${q}%`).is("deleted_at", null).limit(5),
-      sb.from("clients").select("id,full_name,company_name").ilike("full_name", `%${q}%`).is("deleted_at", null).limit(5),
-      sb.from("invoices").select("id,invoice_number,total").ilike("invoice_number", `%${q}%`).is("deleted_at", null).limit(5),
-      sb.from("quotes").select("id,quote_number,total").ilike("quote_number", `%${q}%`).is("deleted_at", null).limit(5),
+    const [jobsRes, clientsRes, invoicesRes, quotesRes, priceRes, empRes] = await Promise.all([
+      sb.from("jobs").select("id,title,status").ilike("title", `%${q}%`).is("deleted_at", null).limit(4),
+      sb.from("clients").select("id,full_name,company_name").or(`full_name.ilike.%${q}%,company_name.ilike.%${q}%`).is("deleted_at", null).limit(4),
+      sb.from("invoices").select("id,invoice_number,total").ilike("invoice_number", `%${q}%`).is("deleted_at", null).limit(3),
+      sb.from("quotes").select("id,quote_number,total").ilike("quote_number", `%${q}%`).is("deleted_at", null).limit(3),
+      sb.from("pricebook_items").select("id,name,unit_price,type").ilike("name", `%${q}%`).is("deleted_at", null).limit(3),
+      sb.from("employees").select("id,full_name,role").ilike("full_name", `%${q}%`).is("deleted_at", null).limit(3),
     ]);
     const out: Result[] = [];
     for (const j of jobsRes.data ?? []) {
-      out.push({ id: j.id, label: j.title ?? "Untitled job", sub: j.status ?? "pending", href: `/dashboard/owner/jobs`, icon: "job" });
+      out.push({ id: `job-${j.id}`, label: j.title ?? "Untitled job", sub: j.status ?? "pending", href: `/dashboard/owner/jobs`, icon: "job" });
     }
     for (const c of clientsRes.data ?? []) {
-      out.push({ id: c.id, label: c.full_name ?? "Client", sub: c.company_name ?? "", href: `/dashboard/owner/clients/${c.id}`, icon: "client" });
+      out.push({ id: `client-${c.id}`, label: c.full_name ?? "Client", sub: c.company_name ?? "Client", href: `/dashboard/owner/clients/${c.id}`, icon: "client" });
     }
     for (const inv of invoicesRes.data ?? []) {
-      out.push({ id: inv.id, label: inv.invoice_number ?? "Invoice", sub: `$${inv.total ?? 0}`, href: `/dashboard/owner/finance?tab=invoices`, icon: "invoice" });
+      out.push({ id: `inv-${inv.id}`, label: inv.invoice_number ?? "Invoice", sub: new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(inv.total ?? 0), href: `/dashboard/owner/invoices`, icon: "invoice" });
     }
     for (const qt of quotesRes.data ?? []) {
-      out.push({ id: qt.id, label: qt.quote_number ?? "Quote", sub: `$${qt.total ?? 0}`, href: `/dashboard/owner/quotes`, icon: "quote" });
+      out.push({ id: `quote-${qt.id}`, label: qt.quote_number ?? "Quote", sub: new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(qt.total ?? 0), href: `/dashboard/owner/quotes`, icon: "quote" });
+    }
+    for (const p of priceRes.data ?? []) {
+      out.push({ id: `price-${p.id}`, label: p.name ?? "Item", sub: `${p.type ?? "item"} · ${new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(p.unit_price ?? 0)}`, href: `/dashboard/owner/pricebook`, icon: "pricebook" });
+    }
+    for (const e of empRes.data ?? []) {
+      out.push({ id: `emp-${e.id}`, label: e.full_name ?? "Employee", sub: e.role ?? "team member", href: `/dashboard/owner/team`, icon: "employee" });
     }
     setResults(out);
     setSelectedIdx(0);
@@ -107,7 +118,9 @@ export function CommandPalette() {
     if (type === "client")  return <Users     size={14} className="shrink-0 text-emerald-400" />;
     if (type === "invoice") return <FileText  size={14} className="shrink-0 text-amber-400" />;
     if (type === "quote")   return <FileText  size={14} className="shrink-0 text-purple-400" />;
-    if (type === "nav")     return <Zap       size={14} className="shrink-0 text-[var(--accent-color)]" />;
+    if (type === "nav")       return <Zap       size={14} className="shrink-0 text-[var(--accent-color)]" />;
+    if (type === "pricebook") return <FileText  size={14} className="shrink-0 text-teal-400" />;
+    if (type === "employee")  return <Users     size={14} className="shrink-0 text-sky-400" />;
     return null;
   }
 
