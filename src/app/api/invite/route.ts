@@ -3,7 +3,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const INVITE_ROLES = new Set(["employee", "contractor", "client"]);
 
 function escapeHtml(value: string) {
@@ -56,6 +55,9 @@ export async function POST(req: NextRequest) {
     if (inviteError) throw inviteError;
 
     // Send invite email
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) throw new Error("Missing RESEND_API_KEY");
+    const resend = new Resend(resendApiKey);
     const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/accept-invite?token=${token}`;
     const safeInviterName = escapeHtml(String(inviterName || user.email || "A SERVLO user"));
     const safeBusinessName = escapeHtml(String(business.business_name || businessName || "your business"));
