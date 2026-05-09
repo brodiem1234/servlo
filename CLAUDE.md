@@ -34,7 +34,7 @@ Path alias: `@/*` → `src/*`. Next.js has `experimental.typedRoutes` enabled, s
 
 Supabase migrations live in `supabase/migrations/`. The most recent name pattern is timestamped (`YYYYMMDDHHMMSS_*.sql`); the earliest are `0001_…`–`0005_…`. Apply them in order against the Supabase project. `supabase/sql/` holds ad-hoc helper scripts that aren't part of the migration sequence.
 
-Required env (see `.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`.
+Required env (see `.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CRON_SECRET`.
 
 ## Architecture
 
