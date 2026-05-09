@@ -22,8 +22,9 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   }
 
   const supabase = await createClient();
-  const [{ data: profileRow }, invRes, quoteRes, tasksRes, notifRes] = await Promise.all([
-    supabase.from("profiles").select("industry_tags, onboarding_dismissed, onboarding_completed, tour_completed").eq("id", user.id).maybeSingle(),
+  const [{ data: profileRow }, { data: businessRow }, invRes, quoteRes, tasksRes, notifRes] = await Promise.all([
+    supabase.from("profiles").select("industry_tags, onboarding_dismissed, onboarding_completed, tour_completed, plan, full_name").eq("id", user.id).maybeSingle(),
+    supabase.from("businesses").select("id").eq("owner_id", user.id).maybeSingle(),
     supabase
       .from("invoices")
       .select("id, invoice_number, due_date")
@@ -105,6 +106,10 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       }))
   ].slice(0, 8);
 
+  const businessId = (businessRow as { id?: string } | null)?.id ?? null;
+  const userPlan = (profileRow as { plan?: string } | null)?.plan ?? "free";
+  const currentUserName = (profileRow as { full_name?: string } | null)?.full_name ?? user.email ?? "You";
+
   return (
     <OwnerShell
       businessName={businessName}
@@ -119,6 +124,10 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       shortcutTargets={shortcutTargets}
       initialOnboardingDismissed={onboardingDismissed}
       initialTourCompleted={tourCompleted}
+      businessId={businessId}
+      currentUserId={user.id}
+      currentUserName={currentUserName}
+      plan={userPlan}
     >
       {children}
     </OwnerShell>

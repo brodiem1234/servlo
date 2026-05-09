@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Star, Lock, TrendingUp, Zap, Check, X } from "lucide-react";
-import { PLANS as PRICING_PLANS, EARLY_ADOPTER_DISCOUNT } from "@/lib/pricing";
+import { PLANS as PRICING_PLANS_CONST, EARLY_ADOPTER_DISCOUNT } from "@/lib/pricing";
+
+type PricingPlanData = {
+  monthlyPrice: number | null;
+  annualPrice: number | null;
+  annualMonthlyEquiv: number | null;
+};
+const PRICING_PLANS = PRICING_PLANS_CONST as Record<string, PricingPlanData>;
 
 /* ─── Price data ─────────────────────────────────────────────────────────── */
 

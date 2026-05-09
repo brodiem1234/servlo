@@ -5,6 +5,7 @@ import { DemoBadge } from "@/components/demo-badge";
 import { UpgradePromptModal } from "@/components/dashboard/upgrade-prompt-modal";
 import { InviteModal } from "@/components/dashboard/invite-modal";
 import { useRouter } from "next/navigation";
+import { usePresence } from "@/lib/presence";
 
 type Employee = {
   id: string;
@@ -33,6 +34,8 @@ type Props = {
   updateEmployeeAction: (formData: FormData) => Promise<void>;
   userPlan?: string;
   pendingInvitations?: PendingInvitation[];
+  businessId?: string | null;
+  currentUserId?: string;
 };
 
 const LICENCE_CATEGORIES: Array<{ label: string; items: string[] }> = [
@@ -235,9 +238,16 @@ export default function EmployeesManager({
   updateEmployeeAction,
   userPlan = 'free',
   pendingInvitations = [],
+  businessId,
+  currentUserId,
 }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
+
+  // Presence — only active when businessId is set
+  const onlineUsers = usePresence(businessId ?? null, currentUserId ? { id: currentUserId, name: "Owner" } : null);
+  // Map by normalised full name for matching against employees
+  const onlineByName = new Map(onlineUsers.map((u) => [u.name.trim().toLowerCase(), u]));
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [selectedLicences, setSelectedLicences] = useState<string[]>([]);
@@ -454,6 +464,7 @@ export default function EmployeesManager({
           <thead>
             <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               <th className="px-2 py-2">Name</th>
+              <th className="px-2 py-2">Status</th>
               <th className="px-2 py-2">Email</th>
               <th className="px-2 py-2">Phone</th>
               <th className="px-2 py-2">Trade</th>
@@ -465,7 +476,7 @@ export default function EmployeesManager({
           <tbody>
             {employees.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-2 py-10 text-center text-sm text-[var(--text-muted)]">
+                <td colSpan={8} className="px-2 py-10 text-center text-sm text-[var(--text-muted)]">
                   No employees yet. Add your first team member above.
                 </td>
               </tr>
@@ -473,6 +484,9 @@ export default function EmployeesManager({
               employees.map((employee) => {
                 const demo = Boolean(employee.is_demo);
                 const licences = employee.licences ?? [];
+                const nameKey = (employee.full_name ?? "").trim().toLowerCase();
+                const onlineUser = nameKey ? onlineByName.get(nameKey) : undefined;
+                const isOnline = Boolean(onlineUser);
                 return (
                   <tr key={employee.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-primary)]">
                     <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
@@ -480,6 +494,21 @@ export default function EmployeesManager({
                         <span>{employee.full_name ?? "-"}</span>
                         {demo ? <DemoBadge /> : null}
                       </div>
+                    </td>
+                    <td className="px-2 py-2">
+                      {isOnline ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                            {onlineUser!.currentPage}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-2 w-2 shrink-0 rounded-full bg-[var(--border)]" />
+                          <span className="text-xs text-[var(--text-muted)]">Offline</span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.email ?? "-"}</td>
                     <td className="px-2 py-2 text-[var(--text-secondary)]">{employee.phone ?? "-"}</td>

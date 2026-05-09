@@ -84,6 +84,7 @@ export default async function OwnerEmployeesPage() {
   }
 
   const visibleEmployees = filterDemoEntities(employees ?? []);
+  const businessId = (businessRow as { id?: string } | null)?.id ?? null;
 
   return (
     <section className="space-y-5">
@@ -103,6 +104,8 @@ export default async function OwnerEmployeesPage() {
           created_at: string;
           expires_at: string;
         }>}
+        businessId={businessId}
+        currentUserId={user.id}
       />
     </section>
   );
