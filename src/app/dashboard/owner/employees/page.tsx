@@ -5,10 +5,13 @@ import { requireOwnerWorkspaceFeatures } from "@/lib/owner-workspace-context";
 import { guardWorkspaceNav } from "@/lib/workspace-feature-guard";
 import EmployeesManager from "./employees-manager";
 import { filterDemoEntities } from "@/lib/demo/visibility";
+import { getUserPlan } from "@/lib/plan-limits";
 
 export default async function OwnerEmployeesPage() {
   const { user, enabled, supabase } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "employee_management");
+
+  const userPlan = await getUserPlan(user.id);
 
   const { data: employees } = await supabase
     .from("employees")
@@ -72,6 +75,7 @@ export default async function OwnerEmployeesPage() {
         employees={visibleEmployees}
         createEmployeeAction={createEmployeeAction}
         updateEmployeeAction={updateEmployeeAction}
+        userPlan={userPlan}
       />
     </section>
   );

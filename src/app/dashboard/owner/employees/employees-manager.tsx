@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { DemoBadge } from "@/components/demo-badge";
+import { UpgradePromptModal } from "@/components/dashboard/upgrade-prompt-modal";
 
 type Employee = {
   id: string;
@@ -19,6 +20,7 @@ type Props = {
   employees: Employee[];
   createEmployeeAction: (formData: FormData) => Promise<void>;
   updateEmployeeAction: (formData: FormData) => Promise<void>;
+  userPlan?: string;
 };
 
 const LICENCE_CATEGORIES: Array<{ label: string; items: string[] }> = [
@@ -218,12 +220,14 @@ function LicenceSelect({
 export default function EmployeesManager({
   employees,
   createEmployeeAction,
-  updateEmployeeAction
+  updateEmployeeAction,
+  userPlan = 'free',
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [selectedLicences, setSelectedLicences] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [values, setValues] = useState({
     id: "",
     full_name: "",
@@ -233,7 +237,13 @@ export default function EmployeesManager({
     hourly_rate: ""
   });
 
+  const canInvite = userPlan === 'team' || userPlan === 'business' || userPlan === 'enterprise';
+
   function startAdd() {
+    if (!canInvite) {
+      setUpgradeOpen(true);
+      return;
+    }
     setEditing(false);
     setValues({ id: "", full_name: "", email: "", phone: "", trade_type: "", hourly_rate: "" });
     setSelectedLicences([]);
@@ -269,6 +279,18 @@ export default function EmployeesManager({
 
   return (
     <div className="space-y-4">
+      <UpgradePromptModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        feature="Team members"
+        currentPlan={userPlan === 'free' ? 'Free' : 'Solo'}
+        currentPlanPrice={userPlan === 'free' ? 'Free' : '$39/mo'}
+        currentPlanNote={userPlan === 'free' ? '5 jobs/mo, 1 user' : '1 user only'}
+        requiredPlan="Team"
+        requiredPlanPrice="$89/mo"
+        requiredPlanNote="Unlimited team members"
+        description="Add employees and contractors to your team. Assign them to jobs and track timesheets."
+      />
       {toast ? (
         <div
           className={`rounded-md px-4 py-3 text-sm font-medium ${
