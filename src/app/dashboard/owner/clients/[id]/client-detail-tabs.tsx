@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import ClientNotesTab from "./client-notes-tab";
+import ClientPropertiesTab from "./client-properties-tab";
 
 type ClientInfo = {
   id: string;
@@ -65,7 +67,7 @@ type Props = {
   declineQuoteAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
 };
 
-type TabKey = "overview" | "jobs" | "invoices" | "quotes" | "activity";
+type TabKey = "overview" | "jobs" | "invoices" | "quotes" | "notes" | "properties" | "activity";
 
 function fmt(n: number) {
   return n.toLocaleString("en-AU", { style: "currency", currency: "AUD", minimumFractionDigits: 2 });
@@ -272,7 +274,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes, stats
 
       {/* ── Tab bar ─────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-1 w-fit shadow-sm">
-        {(["overview", "jobs", "invoices", "quotes", "activity"] as TabKey[]).map((t) => (
+        {(["overview", "jobs", "invoices", "quotes", "notes", "properties", "activity"] as TabKey[]).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)} className={tabClass(t)}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
@@ -553,6 +555,12 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes, stats
           )}
         </article>
       ) : null}
+
+      {/* ── Notes tab ───────────────────────────────────────────────────── */}
+      {tab === "notes" ? <ClientNotesTab clientId={client.id} /> : null}
+
+      {/* ── Properties tab ──────────────────────────────────────────────── */}
+      {tab === "properties" ? <ClientPropertiesTab clientId={client.id} /> : null}
 
       {/* ── Activity tab ────────────────────────────────────────────────── */}
       {tab === "activity" ? (
