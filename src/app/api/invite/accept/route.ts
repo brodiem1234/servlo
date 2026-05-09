@@ -4,6 +4,13 @@ import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+type ProfileRole = 'employee' | 'owner' | 'client';
+
+function profileRoleForInvitation() {
+  // Team invite roles (employee/contractor/manager) all land on the employee dashboard today.
+  return 'employee' satisfies ProfileRole;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as {
@@ -75,21 +82,61 @@ export async function POST(req: NextRequest) {
       userId = newUser.user.id;
     }
 
-    // Update profile: set role and business_id
-    await admin
+    const { data: currentProfile, error: currentProfileError } = await admin
       .from('profiles')
-      .update({
-        role: inv.role === 'manager' ? 'employee' : inv.role, // map manager → employee role for now
-        business_id: inv.business_id,
-        ...(name && !existingUser ? { full_name: name } : {}),
-      })
-      .eq('id', userId);
+      .select('role, business_id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (currentProfileError) {
+      console.error('[invite/accept] profile lookup error:', currentProfileError);
+      return NextResponse.json({ error: 'Failed to verify account profile' }, { status: 500 });
+    }
+
+    const profile = currentProfile as { role?: ProfileRole | null; business_id?: string | null } | null;
+    if (profile?.role === 'owner') {
+      return NextResponse.json(
+        { error: 'Owner accounts cannot accept team invitations. Use a different email address.' },
+        { status: 409 }
+      );
+    }
+
+    if (profile?.business_id && profile.business_id !== inv.business_id) {
+      return NextResponse.json(
+        { error: 'This account already belongs to another workspace. Use a different email address.' },
+        { status: 409 }
+      );
+    }
+
+    const profilePayload: Record<string, unknown> = {
+      id: userId,
+      role: profileRoleForInvitation(),
+      business_id: inv.business_id,
+    };
+    if (name && !existingUser) {
+      profilePayload.full_name = name;
+    }
+
+    const { error: profileError } = await admin
+      .from('profiles')
+      .upsert(profilePayload, { onConflict: 'id' });
+
+    if (profileError) {
+      console.error('[invite/accept] profile upsert error:', profileError);
+      return NextResponse.json({ error: 'Failed to update account profile' }, { status: 500 });
+    }
 
     // Mark invitation accepted
-    await admin
+    const { error: acceptError } = await admin
       .from('team_invitations')
       .update({ status: 'accepted', accepted_at: new Date().toISOString() })
-      .eq('id', inv.id);
+      .eq('id', inv.id)
+      .eq('status', 'pending');
+
+    if (acceptError) {
+      console.error('[invite/accept] invitation update error:', acceptError);
+      return NextResponse.json({ error: 'Failed to accept invitation' }, { status: 500 });
+    }
 
     // Get display name for notification
     const { data: acceptedProfile } = await admin
