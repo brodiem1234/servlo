@@ -1,452 +1,624 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
-import {
-  CalendarDays,
-  Users,
-  FileText,
-  UserCog,
-  LayoutDashboard,
-  Camera,
-  CircleDollarSign,
-  MessagesSquare,
-  Inbox,
-  TrendingUp,
-  Zap,
-  Briefcase,
-  Lock,
-  type LucideIcon
-} from "lucide-react";
-import { LandingHeader } from "@/components/landing-header";
-import { LandingIndustryTiles } from "@/components/landing-industry-tiles";
-import { LandingIndustryDeepSections } from "@/components/landing-industry-deep-sections";
-import { LandingScrollReveal } from "@/components/landing-scroll-reveal";
-import { PricingWithEnterprise } from "@/components/marketing/pricing-with-enterprise";
+import { Check, Zap, Shield, ArrowRight, Star, Wrench, Sparkles, Phone, CreditCard, Users } from "lucide-react";
+import { LandingFaq } from "@/components/landing/landing-faq";
+import { LandingPricing } from "@/components/landing/landing-pricing";
 
-const tealIcon = "text-[var(--accent-color)] dark:text-cyan-400";
-
-const painPoints: Array<{ Icon: LucideIcon; title: string; copy: string }> = [
-  {
-    Icon: CircleDollarSign,
-    title: "Chasing unpaid invoices at midnight",
-    copy: "Cashflow suffers when follow-ups fall behind."
-  },
-  {
-    Icon: MessagesSquare,
-    title: "Texting job details to employees one by one",
-    copy: "Manual updates waste time and create mistakes."
-  },
-  {
-    Icon: Inbox,
-    title: "Losing quotes in your email inbox",
-    copy: "Missed follow-up means missed revenue."
+async function getFounderCount(): Promise<number> {
+  try {
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const res = await fetch(`${base}/api/founders/count`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) return 0;
+    const json = await res.json();
+    return Number(json.count ?? json.total ?? 0);
+  } catch {
+    return 0;
   }
-];
-
-const features: Array<{ Icon: LucideIcon; title: string; description: string }> = [
-  {
-    Icon: CalendarDays,
-    title: "Jobs & Scheduling",
-    description: "Shared calendars, assignments and statuses everyone can see in real time"
-  },
-  {
-    Icon: Users,
-    title: "Client Management",
-    description: "Central CRM with history, portals and reminders so nothing slips through"
-  },
-  {
-    Icon: FileText,
-    title: "Invoices & Quotes",
-    description: "GST-ready PDFs, email delivery and faster approvals — no generic templates"
-  },
-  {
-    Icon: UserCog,
-    title: "Team & Rosters",
-    description: "Clock in/out, timesheets and clear ownership on every booking"
-  },
-  {
-    Icon: LayoutDashboard,
-    title: "Business Dashboard",
-    description: "Revenue, margins and aged debt at a glance — built for operators, not analysts"
-  },
-  {
-    Icon: Camera,
-    title: "Proof & Photos",
-    description: "Before/after and on-site evidence attached to every job for disputes and QA"
-  }
-];
-
-
-
-function HeroAppMock() {
-  return (
-    <div className="relative mx-auto w-full max-w-lg md:max-w-none">
-      <div
-        aria-hidden
-        className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[color-mix(in_srgb,var(--accent-color)_25%,transparent)] via-cyan-400/10 to-[#1e3a5f]/20 blur-2xl dark:from-cyan-400/20 dark:via-teal-500/10 dark:to-[#0f172a]/40"
-      />
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_80px_-12px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 dark:border-cyan-400/25 dark:bg-[#0c1525] dark:shadow-[0_28px_90px_-16px_rgba(0,0,0,0.65)] dark:ring-white/10">
-        <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/90 px-4 py-3 dark:border-white/10 dark:bg-[#111f36]/90">
-          <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-          <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-          <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-          <span className="ml-3 truncate text-xs font-medium text-slate-500 dark:text-slate-400">servlo.app · Jobs</span>
-        </div>
-
-        <div className="bg-gradient-to-b from-slate-50 to-white p-5 dark:from-[#0f172a] dark:to-[#0c1525]">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Today</p>
-              <p className="text-lg font-bold text-[#1e3a5f] dark:text-white">Wed 7 May</p>
-            </div>
-            <div className="rounded-lg bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)] px-3 py-1.5 text-right dark:bg-cyan-400/15">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-color)] dark:text-cyan-200">This week</p>
-              <p className="text-sm font-bold tabular-nums text-[#1e3a5f] dark:text-white">12 jobs</p>
-            </div>
-          </div>
-
-          <article className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-8px_rgba(30,58,95,0.25)] dark:border-white/10 dark:bg-[#152238] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.5)]">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-[#1a2d47]/80">
-              <div className="min-w-0 flex-1">
-                <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-800 ring-1 ring-inset ring-blue-200 dark:bg-blue-500/20 dark:text-blue-100 dark:ring-blue-400/30">
-                  In progress
-                </span>
-                <h3 className="mt-2 truncate text-base font-bold text-[#1e3a5f] dark:text-white">Switchboard upgrade</h3>
-                <p className="truncate text-sm font-medium text-slate-600 dark:text-slate-300">Norwood Community Centre</p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-2xl font-extrabold tabular-nums tracking-tight text-[var(--accent-color)] dark:text-cyan-300">$4,850</p>
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Inc. GST · Approved</p>
-              </div>
-            </div>
-            <div className="grid gap-3 px-4 py-3 text-sm">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-slate-500 dark:text-slate-400">Client</span>
-                <span className="truncate font-semibold text-[#1e3a5f] dark:text-white">Brightspark Electrical Pty Ltd</span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-slate-500 dark:text-slate-400">Scheduled</span>
-                <span className="font-medium text-slate-700 dark:text-slate-200">9:00 AM – 3:00 PM</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="inline-flex rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-900 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-100 dark:ring-emerald-500/30">
-                  Paid deposit
-                </span>
-                <span className="inline-flex rounded-md bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-500/30">
-                  Materials on site
-                </span>
-              </div>
-            </div>
-          </article>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm dark:border-white/10 dark:bg-[#152238]/90">
-              <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">Outstanding</p>
-              <p className="text-lg font-bold tabular-nums text-[#1e3a5f] dark:text-white">$12,450</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm dark:border-white/10 dark:bg-[#152238]/90">
-              <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">This month</p>
-              <p className="text-lg font-bold tabular-nums text-[var(--accent-color)] dark:text-cyan-300">$48.2k</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
-export default function HomePage() {
-  return (
-    <main className="min-h-screen scroll-smooth bg-slate-50 text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0a0f1e] dark:text-white">
-      <LandingScrollReveal />
-      <LandingHeader />
+export default async function HomePage() {
+  const founderCount = await getFounderCount();
 
-      <section className="reveal-item bg-[#f1f5f9] dark:bg-[#0d1b36]" data-reveal>
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:px-6 md:py-24">
+  return (
+    <div className="min-h-screen bg-[#050914] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
+
+      {/* ── NAV ──────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050914]/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <Image
+              src="/servlo-master-white.svg"
+              alt="SERVLO"
+              width={120}
+              height={32}
+              priority
+              unoptimized
+            />
+          </Link>
+
+          {/* Nav links (desktop) */}
+          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-400 md:flex">
+            <a href="#pricing" className="transition hover:text-white">Pricing</a>
+            <a href="#platform" className="transition hover:text-white">Compare</a>
+            <a href="#roadmap" className="transition hover:text-white">Roadmap</a>
+            <Link href="/status" className="transition hover:text-white">Status</Link>
+          </nav>
+
+          {/* CTAs */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/auth/login"
+              className="hidden text-sm font-medium text-slate-300 transition hover:text-white md:block"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+            >
+              Start free trial
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden px-4 pb-24 pt-20 md:px-6 md:pb-32 md:pt-28">
+        {/* Background glow */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[120px]" />
+          <div className="absolute -right-32 top-32 h-[400px] w-[400px] rounded-full bg-indigo-700/10 blur-[100px]" />
+        </div>
+
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 md:grid-cols-2 md:gap-10">
+          {/* Left */}
           <div>
-            <h1 className="text-4xl font-extrabold leading-tight text-[#1e3a5f] dark:text-white md:text-6xl">
-              The Complete Platform for Australian Service Businesses
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold text-blue-300">
+              <Zap size={12} className="fill-blue-400 text-blue-400" />
+              Built for Australian service businesses
+            </div>
+            <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white md:text-[72px]">
+              Run your trade business like a pro.
             </h1>
-            <p className="mt-4 max-w-xl text-lg text-[#475569] dark:text-cyan-100">
-              Manage your work, grow your marketing, and fill your pipeline — three products, one platform.
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-400">
+              Jobs, invoices, scheduling, clients and team — all in one place.
+              No spreadsheets, no WhatsApp groups, no missed payments.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/auth/signup"
-                className="rounded-lg bg-[var(--accent-color)] px-6 py-3 text-base font-semibold text-white shadow-md shadow-[color-mix(in_srgb,var(--accent-color)_25%,transparent)] hover:bg-[var(--accent-hover)] dark:text-[#0f172a] dark:bg-cyan-400 dark:shadow-cyan-400/20 dark:hover:bg-cyan-300"
+                className="flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:bg-blue-400"
               >
-                Start 30-Day Free Trial
+                Start free — 30 days
+                <ArrowRight size={16} />
               </Link>
               <a
-                href="#features"
-                className="rounded-lg border-2 border-[var(--accent-color)] bg-white px-6 py-3 text-base font-semibold text-[#1e3a5f] shadow-sm hover:bg-slate-50 dark:border-cyan-300/60 dark:bg-[#1e3a5f]/80 dark:text-white dark:shadow-none dark:hover:bg-[#256090]"
+                href="#platform"
+                className="flex items-center gap-2 rounded-xl border border-white/15 px-6 py-3.5 text-base font-semibold text-white transition hover:border-white/30 hover:bg-white/5"
               >
-                See How It Works
+                See the platform
               </a>
             </div>
-            <p className="mt-4 text-sm text-[#64748b] dark:text-cyan-100/90">
-              No credit card required • Cancel anytime • Australian owned
-            </p>
+            <p className="mt-4 text-sm text-slate-500">No credit card · Cancel anytime · Australian owned &amp; operated</p>
+
+            {/* Stat row */}
+            <div className="mt-10 flex flex-wrap gap-8 border-t border-white/10 pt-8">
+              {[
+                { value: "10 min", label: "to set up your account" },
+                { value: "100%", label: "GST-ready invoicing" },
+                { value: "1 login", label: "for your whole team" },
+              ].map(({ value, label }) => (
+                <div key={label}>
+                  <p className="text-2xl font-bold text-white">{value}</p>
+                  <p className="mt-0.5 text-xs text-slate-400">{label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <HeroAppMock />
+
+          {/* Right — dashboard mockup */}
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-2xl"
+            />
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0c1525] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.7)]">
+              {/* Chrome bar */}
+              <div className="flex items-center gap-2 border-b border-white/10 bg-[#111f36]/90 px-4 py-3">
+                <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+                <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+                <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                <span className="ml-3 truncate text-xs font-medium text-slate-400">servlo.app · Jobs</span>
+              </div>
+              <div className="p-5">
+                {/* Header row */}
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Today</p>
+                    <p className="text-lg font-bold text-white">Wed 7 May</p>
+                  </div>
+                  <div className="rounded-lg bg-blue-500/15 px-3 py-1.5 text-right">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-blue-300">This week</p>
+                    <p className="text-sm font-bold tabular-nums text-white">12 jobs</p>
+                  </div>
+                </div>
+                {/* Job card */}
+                <div className="overflow-hidden rounded-xl border border-white/10 bg-[#152238]">
+                  <div className="flex items-start justify-between gap-3 border-b border-white/10 bg-[#1a2d47]/80 px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-flex items-center rounded-full bg-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-200 ring-1 ring-inset ring-blue-400/30">
+                        In progress
+                      </span>
+                      <h3 className="mt-2 truncate text-base font-bold text-white">Switchboard upgrade</h3>
+                      <p className="truncate text-sm text-slate-300">Norwood Community Centre</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-2xl font-extrabold tabular-nums tracking-tight text-blue-300">$4,850</p>
+                      <p className="text-[11px] text-slate-400">Inc. GST · Approved</p>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 px-4 py-3 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-slate-400">Scheduled</span>
+                      <span className="font-medium text-slate-200">9:00 AM – 3:00 PM</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-md bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-200 ring-1 ring-emerald-500/30">Paid deposit</span>
+                      <span className="rounded-md bg-amber-500/15 px-2 py-1 text-[11px] font-semibold text-amber-200 ring-1 ring-amber-500/30">Materials on site</span>
+                    </div>
+                  </div>
+                </div>
+                {/* Mini stats */}
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-white/10 bg-[#152238]/90 px-3 py-2.5">
+                    <p className="text-[10px] font-semibold uppercase text-slate-400">Outstanding</p>
+                    <p className="text-lg font-bold tabular-nums text-white">$12,450</p>
+                  </div>
+                  <div className="rounded-lg border border-white/10 bg-[#152238]/90 px-3 py-2.5">
+                    <p className="text-[10px] font-semibold uppercase text-slate-400">This month</p>
+                    <p className="text-lg font-bold tabular-nums text-blue-300">$48.2k</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── The complete platform ───────────────────────────────────────────── */}
-      <section id="platform" className="reveal-item mx-auto max-w-7xl px-4 py-16 md:px-6" data-reveal>
-        <div className="mb-2 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
-            Twelve products, one platform
-          </span>
+      {/* ── SOCIAL PROOF STRIP ───────────────────────────────────────────── */}
+      <section className="border-y border-white/[0.06] bg-white/[0.02] py-5">
+        <div className="mx-auto max-w-5xl px-4 md:px-6">
+          <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">
+            Built for every trade
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            {[
+              { icon: "⚡", label: "Electricians" },
+              { icon: "🔧", label: "Plumbers" },
+              { icon: "❄️", label: "HVAC" },
+              { icon: "🏗️", label: "Builders" },
+              { icon: "🧹", label: "Cleaners" },
+              { icon: "🌿", label: "Landscapers" },
+            ].map(({ icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-sm font-medium text-slate-400">
+                <span className="text-base">{icon}</span>
+                {label}
+              </div>
+            ))}
+          </div>
         </div>
-        <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">
-          The complete SERVLO platform
+      </section>
+
+      {/* ── PROBLEM ──────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div className="mb-4 text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">The problem</span>
+        </div>
+        <h2 className="mx-auto max-w-2xl text-center text-3xl font-bold leading-tight text-white md:text-4xl">
+          Still running your business on paper and WhatsApp?
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {[
+            {
+              emoji: "💸",
+              title: "Chasing unpaid invoices at midnight",
+              copy: "Cashflow suffers when follow-ups fall behind. SERVLO sends automated reminders so you get paid faster."
+            },
+            {
+              emoji: "📲",
+              title: "Texting job details to employees one by one",
+              copy: "Manual updates waste time and create mistakes. Assign jobs in seconds — your team sees it instantly on mobile."
+            },
+            {
+              emoji: "📬",
+              title: "Losing quotes in your email inbox",
+              copy: "Missed follow-up means missed revenue. Every quote lives in SERVLO with status tracking and one-click send."
+            }
+          ].map(({ emoji, title, copy }) => (
+            <div
+              key={title}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+            >
+              <span className="text-3xl">{emoji}</span>
+              <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{copy}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
+      <section className="border-y border-white/[0.06] bg-white/[0.015] py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="mb-4 text-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">How it works</span>
+          </div>
+          <h2 className="text-center text-3xl font-bold text-white md:text-4xl">Up and running in minutes</h2>
+          <div className="relative mt-14 grid gap-10 md:grid-cols-3">
+            {/* Connecting line on desktop */}
+            <div aria-hidden className="absolute left-[calc(33%+1rem)] right-[calc(33%+1rem)] top-8 hidden h-px bg-gradient-to-r from-blue-500/40 via-blue-500/60 to-blue-500/40 md:block" />
+            {[
+              { step: "01", title: "Sign up & pick your industry", copy: "Tell us your trade — we personalise your dashboard instantly. No generic setup wizard." },
+              { step: "02", title: "Add your clients, jobs & team", copy: "Import from a spreadsheet or start fresh. Invite employees with a single link." },
+              { step: "03", title: "Run your business from one screen", copy: "Schedule jobs, send invoices, track hours and follow up clients — all without switching apps." }
+            ].map(({ step, title, copy }) => (
+              <div key={step} className="relative flex flex-col items-center text-center">
+                <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-blue-500/40 bg-blue-500/15 text-lg font-bold text-blue-300">
+                  {step}
+                </div>
+                <h3 className="text-base font-bold text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── THREE PRODUCTS ───────────────────────────────────────────────── */}
+      <section id="platform" className="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div className="mb-4 text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">The platform</span>
+        </div>
+        <h2 className="text-center text-3xl font-bold text-white md:text-4xl">Three products, one login</h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-400">
           Start with Core to run your business. Add Grow to market it. Use Leads to fill your pipeline.
         </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Row 1 — Active products */}
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
           {[
-            { name: "SERVLO Core",  color: "#3B82F6", desc: "Job management, invoicing, scheduling",          badge: "Available now",   badgeClass: "bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30", available: true  },
-            { name: "SERVLO Grow",  color: "#8B5CF6", desc: "AI ads, reviews and social content",             badge: "Coming Q3 2026",  badgeClass: "bg-purple-100 text-purple-700 ring-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:ring-purple-500/30", available: false },
-            { name: "SERVLO Leads", color: "#F59E0B", desc: "Verified job leads marketplace",                 badge: "Coming Q4 2026",  badgeClass: "bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/30", available: false },
-            /* Row 2 */
-            { name: "SERVLO Answer",   color: "#14B8A6", desc: "AI phone agent — answers calls, books jobs",  badge: "Q3 2026",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            { name: "SERVLO Pay",      color: "#22C55E", desc: "Integrated payment processing for every job", badge: "Q4 2026",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            { name: "SERVLO Hire",     color: "#F97316", desc: "Find tradies or find work — trade job board", badge: "Q1 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            /* Row 3 */
-            { name: "SERVLO Fleet",    color: "#0EA5E9", desc: "GPS tracking for vehicles and equipment",     badge: "Q2 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            { name: "SERVLO Finance",  color: "#6366F1", desc: "Business loans and invoice financing",         badge: "Q3 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            { name: "SERVLO Insurance",color: "#F43F5E", desc: "Embedded tradie insurance, quoted instantly",  badge: "Q4 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            /* Row 4 */
-            { name: "SERVLO Safe",     color: "#EF4444", desc: "Safety compliance, incidents and toolbox talks", badge: "Q2 2027", badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            { name: "SERVLO Books",    color: "#10B981", desc: "Bookkeeping, BAS lodgement and expenses",     badge: "Q3 2027",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-            { name: "SERVLO Academy",  color: "#EAB308", desc: "Trade training, compliance and licences",     badge: "Q1 2028",  badgeClass: "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700", available: false },
-          ].map(({ name, color, desc, badge, badgeClass, available }) => (
-            <article
+            {
+              logo: "/core.png",
+              name: "SERVLO Core",
+              color: "#3B82F6",
+              badge: "Available now",
+              badgeStyle: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
+              desc: "The complete job management platform — scheduling, invoicing, quoting, clients, timesheets and more.",
+              features: ["Jobs & scheduling", "GST invoices & quotes", "Client CRM & portals", "Team timesheets", "Business dashboard"]
+            },
+            {
+              logo: "/grow.png",
+              name: "SERVLO Grow",
+              color: "#8B5CF6",
+              badge: "Coming Q3 2026",
+              badgeStyle: "bg-purple-500/20 text-purple-300 ring-purple-500/30",
+              desc: "AI-powered marketing — ads, review automation and social content so your phone keeps ringing.",
+              features: ["AI Google/Meta ads", "Review request automation", "Social content generator", "Lead tracking", "Competitor insights"]
+            },
+            {
+              logo: "/leads.png",
+              name: "SERVLO Leads",
+              color: "#F59E0B",
+              badge: "Coming Q4 2026",
+              badgeStyle: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
+              desc: "Verified local job leads sent directly to you — only pay for leads that match your trade and area.",
+              features: ["Verified homeowner leads", "Trade & area filters", "No subscription required", "Instant job alerts", "Lead quality guarantee"]
+            }
+          ].map(({ logo, name, color, badge, badgeStyle, desc, features }) => (
+            <div
               key={name}
-              className={`flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition dark:bg-[#111827] ${available ? "border-slate-200 dark:border-slate-600" : "border-slate-200 opacity-70 dark:border-slate-700"}`}
+              className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20"
             >
               <div className="h-1 w-full" style={{ backgroundColor: color }} />
-              <div className="flex flex-1 flex-col p-5">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeClass}`}>
-                    {!available && <Lock size={9} className="mr-0.5 inline-block align-middle" />}
+              <div className="flex flex-1 flex-col p-6">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="relative h-8 w-8">
+                    <Image src={logo} alt={name} fill className="object-contain" unoptimized />
+                  </div>
+                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
                     {badge}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
-                {available && (
-                  <Link href="/auth/signup" className="mt-4 block rounded-lg bg-[var(--accent-color)] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]">
-                    Start free trial
-                  </Link>
-                )}
+                <h3 className="text-base font-bold text-white">{name}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
+                <ul className="mt-5 flex-1 space-y-2">
+                  {features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-slate-300">
+                      <Check size={13} className="shrink-0 text-blue-400" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </article>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="reveal-item mx-auto max-w-7xl px-4 py-14 md:px-6" data-reveal>
-        <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">Built for your industry</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
-          Choose your sector to jump to tailored workflows — new accounts default to trades, and you can pick multiple
-          industries when you sign up.
-        </p>
-        <div className="mt-10">
-          <LandingIndustryTiles />
-        </div>
-      </section>
-
-      <LandingIndustryDeepSections />
-
-      <section
-        className="border-y border-slate-200 bg-white py-4 dark:border-slate-700 dark:bg-[#152238]/80"
-        aria-label="About"
-      >
-        <div className="mx-auto max-w-5xl px-4 text-center sm:px-6">
-          <p className="text-sm font-medium text-[#64748b] dark:text-slate-400">
-            Built in Adelaide SA · ABN 88 688 301 684 · By a tradie, for tradies.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">
-          Still running your business on paper and WhatsApp?
-        </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {painPoints.map(({ Icon, title, copy }) => (
-            <article
-              key={title}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#0f1929]"
-            >
-              <Icon className={`h-9 w-9 ${tealIcon}`} strokeWidth={1.75} aria-hidden />
-              <h3 className="mt-3 text-lg font-semibold text-[#1e3a5f] dark:text-white">{title}</h3>
-              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="features" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">
-          Everything your business needs, nothing it doesn&apos;t
-        </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ Icon, title, description }) => (
-            <article
-              key={title}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#111827]"
-            >
-              <Icon className={`h-9 w-9 ${tealIcon}`} strokeWidth={1.75} aria-hidden />
-              <h3 className="mt-3 text-lg font-semibold text-[#1e3a5f] dark:text-white">{title}</h3>
-              <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="pricing" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <PricingWithEnterprise />
-      </section>
-
-      <section id="about" className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <h2 className="text-3xl font-bold text-[#1e3a5f] dark:text-white">Built in Australia for service operators</h2>
-        <p className="mt-4 max-w-3xl text-[#475569] dark:text-slate-300">
-          SERVLO began with trades teams on tools and grew into the workspace Australian cleaners, field crews, events teams,
-          agencies and clinics reach for daily. Every workflow stays fast on mobile, sharp on desktop and honest about cash
-          flow.
-        </p>
-      </section>
-
-      {/* ── Full platform section ──────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
-        <div className="mb-2 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[var(--accent-color)] dark:text-cyan-400">
-            The complete SERVLO platform
-          </span>
-        </div>
-        <h2 className="text-center text-3xl font-bold text-[#1e3a5f] dark:text-white">
-          Built for Australian service businesses
-        </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-base text-[#475569] dark:text-slate-300">
-          Start with what you need today. Unlock the full platform as it launches.
-        </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Active products */}
-          {[
-            { name: "SERVLO Core",  color: "#3B82F6", desc: "Job management, invoicing, scheduling and clients", badge: "Available now", available: true  },
-            { name: "SERVLO Grow",  color: "#8B5CF6", desc: "AI ads, review automation and social content",      badge: "Coming Q3 2026", available: false },
-            { name: "SERVLO Leads", color: "#F59E0B", desc: "Verified job leads marketplace",                    badge: "Coming Q4 2026", available: false },
-            { name: "SERVLO Answer",   color: "#14B8A6", desc: "AI phone agent — answers calls and books jobs",   badge: "Q3 2026" , available: false },
-            { name: "SERVLO Pay",      color: "#22C55E", desc: "Integrated payment processing for every job",    badge: "Q4 2026",  available: false },
-            { name: "SERVLO Hire",     color: "#F97316", desc: "Find tradies or find work — the trade job board",badge: "Q1 2027",  available: false },
-            { name: "SERVLO Fleet",    color: "#0EA5E9", desc: "GPS tracking for vehicles and equipment",        badge: "Q2 2027",  available: false },
-            { name: "SERVLO Finance",  color: "#6366F1", desc: "Business loans and invoice financing",            badge: "Q3 2027",  available: false },
-            { name: "SERVLO Insurance",color: "#F43F5E", desc: "Embedded tradie insurance, quoted instantly",    badge: "Q4 2027",  available: false },
-            { name: "SERVLO Safe",     color: "#EF4444", desc: "Safety compliance, incidents and toolbox talks", badge: "Q2 2027",  available: false },
-            { name: "SERVLO Books",    color: "#10B981", desc: "Bookkeeping, BAS lodgement and expenses",        badge: "Q3 2027",  available: false },
-            { name: "SERVLO Academy",  color: "#EAB308", desc: "Trade training, compliance and licences",        badge: "Q1 2028",  available: false },
-          ].map(({ name, color, desc, badge, available }) =>
-            available ? (
-              <article key={name} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111827]">
-                <div className="h-1 w-full" style={{ backgroundColor: color }} />
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
-                    <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
-                      {badge}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
-                </div>
-              </article>
-            ) : (
-              <a
+      {/* ── COMING NEXT STRIP ────────────────────────────────────────────── */}
+      <section id="roadmap" className="border-y border-white/[0.06] bg-white/[0.015] py-8">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">Coming next</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {[
+              { logo: "/answer.png", name: "Answer", desc: "AI phone agent", date: "Q3 2026" },
+              { logo: "/pay.png",    name: "Pay",    desc: "Integrated payments", date: "Q4 2026" },
+              { logo: "/hire.png",   name: "Hire",   desc: "Trade job board", date: "Q1 2027" },
+              { logo: "/fleet.png",  name: "Fleet",  desc: "GPS tracking", date: "Q2 2027" },
+              { logo: "/finance.png",name: "Finance",desc: "Business loans", date: "Q3 2027" },
+            ].map(({ logo, name, desc, date }) => (
+              <div
                 key={name}
-                href={`mailto:hello@servlo.com.au?subject=SERVLO ${encodeURIComponent(name.replace("SERVLO ", ""))} Early Access`}
-                className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white opacity-65 shadow-sm transition hover:opacity-85 dark:border-slate-700 dark:bg-[#111827]"
-                title={`Register interest in ${name}`}
+                className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm"
               >
-                <div className="h-1 w-full" style={{ backgroundColor: color }} />
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-bold text-[#1e3a5f] dark:text-white">{name}</h3>
-                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700">
-                      <Lock size={9} />
-                      {badge}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">{desc}</p>
-                  <p className="mt-2 text-xs font-semibold text-[var(--accent-color)] opacity-0 transition group-hover:opacity-100 dark:text-cyan-400">
-                    Register interest →
-                  </p>
+                <div className="relative h-5 w-5 shrink-0">
+                  <Image src={logo} alt={name} fill className="object-contain" unoptimized />
                 </div>
-              </a>
-            )
-          )}
+                <span className="font-semibold text-white">{name}</span>
+                <span className="text-slate-400">{desc}</span>
+                <span className="rounded-full bg-slate-700/60 px-2 py-0.5 text-[10px] font-semibold text-slate-300">{date}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <p className="mt-8 text-center text-sm text-[#475569] dark:text-slate-400">
-          All 12 products included in one login &nbsp;·&nbsp; Add products as your business grows &nbsp;·&nbsp; Cancel anytime
-        </p>
       </section>
 
-      <section className="bg-[#1e3a5f] px-4 py-16 dark:bg-[#0b1628]" aria-labelledby="cta-heading">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 id="cta-heading" className="text-3xl font-bold text-white md:text-4xl">
+      {/* ── AI DIFFERENTIATOR ────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          <div>
+            <div className="mb-4">
+              <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">AI-powered</span>
+            </div>
+            <h2 className="text-3xl font-bold leading-tight text-white md:text-4xl">
+              Your AI business assistant, built in
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-slate-400">
+              SERVLO isn&apos;t just software — it uses AI to save you hours every week.
+              From drafting quotes to answering client calls, the smart features work behind the scenes.
+            </p>
+            <ul className="mt-8 space-y-4">
+              {[
+                { Icon: Sparkles, title: "Smart quote drafting", copy: "Describe the job, get a professional quote in seconds" },
+                { Icon: Phone, title: "AI phone agent (Answer)", copy: "Never miss a lead — AI answers calls and books jobs for you" },
+                { Icon: Star, title: "Review automation (Grow)", copy: "Auto-request reviews at job completion, boost your Google ranking" },
+                { Icon: CreditCard, title: "Cashflow forecasting", copy: "Predict your next 30/60/90 days based on job and invoice data" },
+              ].map(({ Icon, title, copy }) => (
+                <li key={title} className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/15">
+                    <Icon size={15} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="text-sm text-slate-400">{copy}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Mock AI card */}
+          <div className="relative">
+            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-blue-600/10 blur-2xl" />
+            <div className="relative rounded-2xl border border-white/10 bg-[#0c1525] p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <Sparkles size={16} className="text-blue-400" />
+                <span className="text-sm font-semibold text-white">AI Quote Assistant</span>
+                <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">Live</span>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-[#152238] p-4 text-sm text-slate-300">
+                <p className="text-slate-400 italic">&ldquo;Replace switchboard in commercial building, 3 phase, estimate 6 hours labour plus materials&rdquo;</p>
+              </div>
+              <div className="mt-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">Generated quote</p>
+                <div className="mt-3 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">Labour (6 hrs @ $95/hr)</span>
+                    <span className="font-semibold text-white">$570.00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">3-phase switchboard (Clipsal)</span>
+                    <span className="font-semibold text-white">$1,240.00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">Misc. materials</span>
+                    <span className="font-semibold text-white">$180.00</span>
+                  </div>
+                  <div className="mt-2 border-t border-white/10 pt-2 flex justify-between font-bold">
+                    <span className="text-white">Total inc. GST</span>
+                    <span className="text-blue-300">$2,189.00</span>
+                  </div>
+                </div>
+              </div>
+              <button className="mt-3 w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400">
+                Send to client →
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ──────────────────────────────────────────────────────── */}
+      <section id="pricing" className="border-y border-white/[0.06] bg-white/[0.015] py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="mb-4 text-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">Pricing</span>
+          </div>
+          <h2 className="text-center text-3xl font-bold text-white md:text-4xl">
+            Simple pricing. No surprises.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-400">
+            Early adopters lock in the founding rate — price never increases while your subscription is active.
+          </p>
+          <div className="mt-12">
+            <LandingPricing />
+          </div>
+        </div>
+      </section>
+
+      {/* ── NO LOCK-IN ───────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div className="mb-4 text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">Our promise</span>
+        </div>
+        <h2 className="text-center text-3xl font-bold text-white md:text-4xl">Your data. Your business. Your call.</h2>
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {[
+            {
+              Icon: Shield,
+              title: "No lock-in contracts",
+              copy: "Month-to-month or annual — cancel from settings at any time with no exit fees, no questions asked."
+            },
+            {
+              Icon: Wrench,
+              title: "Export everything, anytime",
+              copy: "Your clients, jobs, invoices and data can be exported to CSV or PDF at any time. It&apos;s your data."
+            },
+            {
+              Icon: Users,
+              title: "Price locked for life",
+              copy: "Sign up today and your plan price is locked in forever. We reward early adopters — not punish them."
+            }
+          ].map(({ Icon, title, copy }) => (
+            <div
+              key={title}
+              className="flex flex-col items-start rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+            >
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15">
+                <Icon size={18} className="text-blue-400" />
+              </div>
+              <h3 className="text-base font-bold text-white">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400"
+                 dangerouslySetInnerHTML={{ __html: copy.replace(/&apos;/g, "'") }}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section className="border-y border-white/[0.06] bg-white/[0.015] py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="mb-4 text-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">FAQ</span>
+          </div>
+          <h2 className="mb-12 text-center text-3xl font-bold text-white md:text-4xl">Common questions</h2>
+          <LandingFaq />
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden px-4 py-24 md:px-6 md:py-32">
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[120px]" />
+        </div>
+        <div className="relative mx-auto max-w-2xl text-center">
+          {founderCount > 0 && (
+            <p className="mb-5 text-sm font-medium text-slate-400">
+              Join{" "}
+              <span className="font-bold text-white">{founderCount.toLocaleString()}</span>{" "}
+              Australian businesses already on SERVLO
+            </p>
+          )}
+          <h2 className="text-4xl font-extrabold leading-tight text-white md:text-5xl">
             Ready to run your business smarter?
           </h2>
-          <p className="mt-4 text-lg text-cyan-100/95 md:text-xl">
-            Start your 30-day free trial today.
+          <p className="mx-auto mt-5 max-w-lg text-lg text-slate-400">
+            Start your 30-day free trial. No credit card. No commitment.
+            Personalised to your trade from day one.
           </p>
-          <Link
-            href="/auth/signup"
-            className="mt-8 inline-flex min-w-[220px] items-center justify-center rounded-xl bg-[var(--accent-color)] px-10 py-4 text-lg font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
-          >
-            Start Free Trial
-          </Link>
-          <p className="mx-auto mt-5 max-w-lg text-sm text-cyan-100/80">
-            Tell us your industry on signup and we&apos;ll personalise your dashboard.
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/auth/signup"
+              className="flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:bg-blue-400"
+            >
+              Start free — 30 days
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-slate-500">
+            Built in Adelaide SA · Australian owned · ABN 88 688 301 684
           </p>
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-[#0b1220]">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 md:grid-cols-2 md:px-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <Image src="/servlo-master-dark.svg" alt="SERVLO" width={28} height={28} unoptimized className="dark:hidden" />
-              <Image src="/servlo-master-white.svg" alt="SERVLO" width={28} height={28} unoptimized className="hidden dark:block" />
-              <p className="font-bold text-[#1e3a5f] dark:text-white">SERVLO</p>
+      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      <footer className="border-t border-white/[0.06] bg-[#030711] py-14">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="grid gap-10 md:grid-cols-4">
+            {/* Brand */}
+            <div>
+              <Link href="/" className="inline-flex items-center gap-2">
+                <Image
+                  src="/servlo-master-white.svg"
+                  alt="SERVLO"
+                  width={100}
+                  height={28}
+                  unoptimized
+                />
+              </Link>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                The operating system for Australian service businesses.
+              </p>
+              <p className="mt-3 text-xs text-slate-500">ABN: 88 688 301 684</p>
             </div>
-            <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
-              The operating system for Australian service businesses
-            </p>
-            <p className="mt-2 text-sm text-[#475569] dark:text-slate-300">
-              Questions? We&apos;re based in Adelaide, South Australia. Email us at hello@servlo.com.au
-            </p>
+
+            {/* Product */}
+            <div>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">Product</p>
+              <ul className="space-y-2.5 text-sm text-slate-400">
+                <li><a href="#platform" className="transition hover:text-white">Platform overview</a></li>
+                <li><a href="#pricing" className="transition hover:text-white">Pricing</a></li>
+                <li><a href="#roadmap" className="transition hover:text-white">Roadmap</a></li>
+                <li><Link href="/status" className="transition hover:text-white">System status</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">Company</p>
+              <ul className="space-y-2.5 text-sm text-slate-400">
+                <li><a href="mailto:hello@servlo.com.au" className="transition hover:text-white">Contact us</a></li>
+                <li><Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="transition hover:text-white">Terms of Service</Link></li>
+              </ul>
+            </div>
+
+            {/* Get started */}
+            <div>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">Get started</p>
+              <ul className="space-y-2.5 text-sm text-slate-400">
+                <li><Link href="/auth/signup" className="transition hover:text-white">Start free trial</Link></li>
+                <li><Link href="/auth/login" className="transition hover:text-white">Log in</Link></li>
+              </ul>
+              <div className="mt-5">
+                <Link
+                  href="/auth/signup"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+                >
+                  Start free trial
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-[#475569] md:justify-end dark:text-slate-300">
-            <Link href="/privacy" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
-              Terms of Service
-            </Link>
-            <Link href="/contact" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
-              Contact
-            </Link>
-            <Link href="/status" className="hover:text-[var(--accent-color)] dark:hover:text-cyan-300">
-              System Status
-            </Link>
+
+          <div className="mt-12 border-t border-white/[0.06] pt-8 text-center text-xs text-slate-500">
+            © 2026 SERVLO Pty Ltd. All rights reserved. Built in Adelaide, South Australia.
           </div>
         </div>
-        <p className="pb-8 text-center text-xs text-[#64748b] dark:text-slate-400">
-          © 2026 SERVLO. All rights reserved. ABN: 88 688 301 684
-        </p>
       </footer>
-    </main>
+    </div>
   );
 }
