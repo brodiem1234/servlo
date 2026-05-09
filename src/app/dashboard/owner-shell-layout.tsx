@@ -23,7 +23,7 @@ export default async function DashboardOwnerShellLayout({ children }: { children
 
   const supabase = await createClient();
   const [{ data: profileRow }, invRes, quoteRes, tasksRes, notifRes] = await Promise.all([
-    supabase.from("profiles").select("industry_tags").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("industry_tags, onboarding_dismissed, onboarding_completed, tour_completed").eq("id", user.id).maybeSingle(),
     supabase
       .from("invoices")
       .select("id, invoice_number, due_date")
@@ -56,6 +56,14 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   const industryTags = Array.isArray((profileRow as { industry_tags?: unknown } | null)?.industry_tags)
     ? ((profileRow as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))
     : [];
+
+  // Onboarding tour state: treat old onboarding_completed as dismissed too (back-compat)
+  const onboardingDismissed =
+    Boolean((profileRow as { onboarding_dismissed?: boolean } | null)?.onboarding_dismissed) ||
+    Boolean((profileRow as { onboarding_completed?: boolean } | null)?.onboarding_completed);
+  const tourCompleted = Boolean(
+    (profileRow as { tour_completed?: boolean } | null)?.tour_completed
+  );
 
   const enabledFeatures = await loadWorkspaceFeatureSet(supabase, user.id, industryTags);
   const filteredNav = filterOwnerNavSections(OWNER_NAV_SECTIONS, enabledFeatures);
@@ -109,6 +117,8 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       }))}
       navSections={filteredNav}
       shortcutTargets={shortcutTargets}
+      initialOnboardingDismissed={onboardingDismissed}
+      initialTourCompleted={tourCompleted}
     >
       {children}
     </OwnerShell>

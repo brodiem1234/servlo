@@ -86,7 +86,18 @@ export default async function DashboardPage() {
   if (profile?.role === "employee") redirect("/dashboard/employee");
   if (profile?.role === "client") redirect("/dashboard/client");
 
-  // Owner sees the platform hub
+  // For owners: redirect directly to the owner dashboard if they already have a business set up.
+  // Only show the platform selector to brand-new users who haven't completed onboarding yet.
+  if (profile?.role === "owner") {
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("owner_id", user.id)
+      .maybeSingle();
+    if (business) redirect("/dashboard/owner");
+  }
+
+  // Fall-through: brand-new user with no business yet — show platform selector
   return (
     <div className="dashboard-theme min-h-screen" style={{ background: "var(--bg-primary)" }}>
       <div className="mx-auto max-w-5xl px-4 py-10 md:px-6 md:py-14">

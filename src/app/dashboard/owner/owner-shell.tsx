@@ -24,6 +24,7 @@ import { InstallBanner } from "@/components/pwa/install-banner";
 import { QuickActionFab } from "@/components/dashboard/quick-action-fab";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
+import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 
 const CORE_COLOR = "#3B82F6";
 
@@ -76,6 +77,10 @@ type Props = {
   initialTasks: OwnerTaskRow[];
   navSections: OwnerNavSection[];
   shortcutTargets?: ShortcutTargets;
+  /** Onboarding tour: whether the welcome modal has been dismissed (from DB). */
+  initialOnboardingDismissed?: boolean;
+  /** Onboarding tour: whether the guided tour has been completed (from DB). */
+  initialTourCompleted?: boolean;
   children: React.ReactNode;
 };
 
@@ -86,6 +91,8 @@ export default function OwnerShell({
   initialTasks,
   navSections,
   shortcutTargets,
+  initialOnboardingDismissed = false,
+  initialTourCompleted = false,
   children
 }: Props) {
   const pathname = usePathname();
@@ -275,6 +282,12 @@ export default function OwnerShell({
       <BackToTop />
       <QuickActionFab />
       <InstallBanner />
+      {/* Onboarding tour — rendered inside the stable client component so it
+          persists across page navigations without losing tour progress. */}
+      <OnboardingTour
+        initialDismissed={initialOnboardingDismissed}
+        initialTourCompleted={initialTourCompleted}
+      />
     </div>
     </ToastProvider>
   );
