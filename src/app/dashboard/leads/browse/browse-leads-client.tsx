@@ -20,10 +20,20 @@ import {
   Eye,
   SlidersHorizontal,
   Paintbrush,
+  Bot,
+  Loader2,
 } from "lucide-react";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+export type AiScore = {
+  score: number;
+  reason: string;
+  grade: "A" | "B" | "C" | "D";
+};
+
+export type AiScoreMap = Record<string, AiScore>;
 
 export type MarketplaceLead = {
   id: string;
@@ -312,6 +322,51 @@ function viewerCount(id: string): number {
   return n + 2; // 2–8
 }
 
+// AI score badge colours per grade
+function gradeStyle(grade: AiScore["grade"]): { bg: string; text: string; border: string } {
+  if (grade === "A")
+    return {
+      bg: "rgb(34 197 94 / 0.15)",
+      text: "rgb(34 197 94)",
+      border: "rgb(34 197 94 / 0.3)",
+    };
+  if (grade === "B")
+    return {
+      bg: "rgb(59 130 246 / 0.15)",
+      text: "rgb(96 165 250)",
+      border: "rgb(59 130 246 / 0.3)",
+    };
+  if (grade === "C")
+    return {
+      bg: "rgb(245 158 11 / 0.15)",
+      text: "rgb(251 191 36)",
+      border: "rgb(245 158 11 / 0.3)",
+    };
+  return {
+    bg: "rgb(239 68 68 / 0.15)",
+    text: "rgb(248 113 113)",
+    border: "rgb(239 68 68 / 0.3)",
+  };
+}
+
+function AiScoreBadge({ aiScore }: { aiScore: AiScore }) {
+  const style = gradeStyle(aiScore.grade);
+  return (
+    <span
+      title={aiScore.reason}
+      className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold cursor-default"
+      style={{
+        background: style.bg,
+        color: style.text,
+        border: `1px solid ${style.border}`,
+      }}
+    >
+      <Bot size={9} />
+      {aiScore.grade} · {aiScore.score}
+    </span>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function BrowseLeadsClient({
@@ -325,6 +380,46 @@ export default function BrowseLeadsClient({
     const extras = DEMO_LEADS.filter((d) => !serverIds.has(d.id));
     return [...serverLeads, ...extras];
   }, [serverLeads]);
+
+  // ── AI scoring state ────────────────────────────────────────────────────────
+  const [scores, setScores] = useState<AiScoreMap>({});
+  const [isScoringAll, setIsScoringAll] = useState(false);
+
+  async function scoreAllLeads() {
+    if (isScoringAll) return;
+    setIsScoringAll(true);
+    try {
+      const results = await Promise.allSettled(
+        filtered.map(async (lead) => {
+          const res = await fetch("/api/leads/score", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              lead: {
+                service_type: lead.service_type ?? "",
+                urgency: lead.urgency ?? "flexible",
+                estimated_budget: lead.estimated_budget ?? 0,
+                description: lead.description ?? "",
+                suburb: lead.suburb ?? "",
+              },
+            }),
+          });
+          if (!res.ok) return null;
+          const data: AiScore = await res.json();
+          return { id: lead.id, data };
+        })
+      );
+      const newScores: AiScoreMap = {};
+      for (const result of results) {
+        if (result.status === "fulfilled" && result.value) {
+          newScores[result.value.id] = result.value.data;
+        }
+      }
+      setScores((prev) => ({ ...prev, ...newScores }));
+    } finally {
+      setIsScoringAll(false);
+    }
+  }
 
   // ── Filter state ────────────────────────────────────────────────────────────
   const [pendingServices, setPendingServices] = useState<Set<string>>(
@@ -609,7 +704,7 @@ export default function BrowseLeadsClient({
 
       {/* ── Right content ────────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 space-y-6">
-        {/* Top bar — alert button */}
+        {/* Top bar — alert button + AI score button */}
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             Showing{" "}
@@ -621,18 +716,37 @@ export default function BrowseLeadsClient({
             </span>{" "}
             of {allLeads.length} demo leads — live marketplace launches Q4 2026
           </p>
-          <button
-            type="button"
-            onClick={() => setAlertModalOpen(true)}
-            className="flex shrink-0 items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-white/5"
-            style={{
-              borderColor: "var(--accent-color)",
-              color: "var(--accent-color)",
-            }}
-          >
-            <Bell size={14} />
-            Set up lead alerts
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={scoreAllLeads}
+              disabled={isScoringAll || filtered.length === 0}
+              className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{
+                borderColor: "rgb(139 92 246)",
+                color: "rgb(167 139 250)",
+              }}
+            >
+              {isScoringAll ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Bot size={14} />
+              )}
+              {isScoringAll ? "Scoring…" : "🤖 AI Score"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setAlertModalOpen(true)}
+              className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-white/5"
+              style={{
+                borderColor: "var(--accent-color)",
+                color: "var(--accent-color)",
+              }}
+            >
+              <Bell size={14} />
+              Set up lead alerts
+            </button>
+          </div>
         </div>
 
         {/* Featured leads */}
@@ -780,6 +894,7 @@ export default function BrowseLeadsClient({
                   lead={lead}
                   colors={colors}
                   price={price}
+                  aiScore={scores[lead.id] ?? null}
                   onView={() => setPanelLead(lead)}
                 />
               );
@@ -815,11 +930,13 @@ function LeadCard({
   lead,
   colors,
   price,
+  aiScore,
   onView,
 }: {
   lead: MarketplaceLead;
   colors: { bg: string; text: string; ring: string };
   price: number;
+  aiScore: AiScore | null;
   onView: () => void;
 }) {
   return (
@@ -864,6 +981,7 @@ function LeadCard({
               />
               {urgencyLabel(lead.urgency)}
             </span>
+            {aiScore && <AiScoreBadge aiScore={aiScore} />}
           </div>
           <div
             className="mt-0.5 flex items-center gap-1 text-xs"

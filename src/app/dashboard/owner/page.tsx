@@ -13,6 +13,7 @@ import OwnerSidebarTodos from "@/components/dashboard/owner-sidebar-todos";
 import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
 import { ReferralWidget } from "@/components/dashboard/referral-widget";
 import { ensureReferralCode } from "@/lib/referral";
+import { DayBriefingWidget } from "@/components/dashboard/day-briefing-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -355,6 +356,13 @@ export default async function OwnerDashboardPage() {
           )}
         </article>
       ) : null}
+
+      {/* Morning Briefing Widget */}
+      <DayBriefingWidget
+        todayJobCount={todayJobs.length}
+        overdueCount={overdueInvoices.length}
+        firstName={firstName}
+      />
 
       {/* Row 2: Four stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

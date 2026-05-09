@@ -19,13 +19,13 @@ export default async function CommsPage() {
   // Load clients for display names
   const { data: clients } = await supabase
     .from("clients")
-    .select("id, full_name, email")
+    .select("id, full_name, email, phone")
     .eq("owner_id", user.id)
     .order("full_name");
 
-  const clientMap: Record<string, { full_name: string | null; email: string | null }> = {};
+  const clientMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
   for (const c of clients ?? []) {
-    clientMap[c.id] = { full_name: c.full_name, email: c.email };
+    clientMap[c.id] = { full_name: c.full_name, email: c.email, phone: c.phone ?? null };
   }
 
   return (

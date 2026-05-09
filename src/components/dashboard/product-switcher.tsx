@@ -47,6 +47,41 @@ const ACTIVE_PRODUCTS: Array<{
     href: "/dashboard/leads",
     color: "#F59E0B",
   },
+  {
+    id: "answer",
+    label: "Answer",
+    sub: "AI Phone Agent",
+    href: "/dashboard/answer",
+    color: "#14B8A6",
+  },
+  {
+    id: "pay",
+    label: "Pay",
+    sub: "Payment Processing",
+    href: "/dashboard/pay",
+    color: "#22C55E",
+  },
+  {
+    id: "fleet",
+    label: "Fleet",
+    sub: "Vehicle & Assets",
+    href: "/dashboard/fleet",
+    color: "#F97316",
+  },
+  {
+    id: "finance-hub",
+    label: "Finance Hub",
+    sub: "Accounting & BAS",
+    href: "/dashboard/finance-hub",
+    color: "#059669",
+  },
+  {
+    id: "hire",
+    label: "Hire",
+    sub: "Recruitment & HR",
+    href: "/dashboard/hire",
+    color: "#6366F1",
+  },
 ];
 
 const COMING_SOON_PRODUCTS: Array<{
@@ -64,46 +99,6 @@ const COMING_SOON_PRODUCTS: Array<{
     href: "/dashboard/connect",
     color: "#6366F1",
     launch: "Q2 2026",
-  },
-  {
-    id: "answer",
-    label: "Answer",
-    sub: "AI Phone Agent",
-    href: "/dashboard/answer",
-    color: "#14B8A6",
-    launch: "Q3 2026",
-  },
-  {
-    id: "pay",
-    label: "Pay",
-    sub: "Payment Processing",
-    href: "/dashboard/pay",
-    color: "#22C55E",
-    launch: "Q4 2026",
-  },
-  {
-    id: "hire",
-    label: "Hire",
-    sub: "Trade Job Board",
-    href: "/dashboard/hire",
-    color: "#F97316",
-    launch: "Q1 2027",
-  },
-  {
-    id: "fleet",
-    label: "Fleet",
-    sub: "Vehicle Tracking",
-    href: "/dashboard/fleet",
-    color: "#0EA5E9",
-    launch: "Q2 2027",
-  },
-  {
-    id: "finance-hub",
-    label: "Finance",
-    sub: "Business Lending",
-    href: "/dashboard/finance-hub",
-    color: "#6366F1",
-    launch: "Q3 2027",
   },
   {
     id: "insurance",
@@ -178,7 +173,7 @@ export function ProductSwitcher({
           className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums"
           style={{ background: "rgb(59 130 246 / 0.2)", color: "#93C5FD" }}
         >
-          3 / 13
+          8 / 13
         </span>
       </button>
 

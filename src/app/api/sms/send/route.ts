@@ -5,7 +5,8 @@ import { sendSms } from "@/lib/sms";
 
 /**
  * POST /api/sms/send
- * Body: { to: string; body: string; job_id?: string }
+ * Body: { to_number: string; message: string; client_id?: string; thread_id?: string }
+ *   (also accepts legacy: { to: string; body: string; job_id?: string })
  * Authenticated — owner only.
  */
 export async function POST(req: NextRequest) {
@@ -14,35 +15,62 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const payload = await req.json().catch(() => ({}));
-    const { to, body: smsBody, job_id } = payload as {
+    const payload = await req.json().catch(() => ({})) as {
+      // new params
+      to_number?: string;
+      message?: string;
+      client_id?: string;
+      thread_id?: string;
+      // legacy params
       to?: string;
       body?: string;
       job_id?: string;
     };
 
-    if (!to || !smsBody) {
-      return NextResponse.json({ error: "to and body are required" }, { status: 400 });
+    const toNumber = payload.to_number ?? payload.to;
+    const messageText = payload.message ?? payload.body;
+
+    if (!toNumber || !messageText) {
+      return NextResponse.json({ error: "to_number and message are required" }, { status: 400 });
     }
 
-    const result = await sendSms(to, smsBody);
+    const result = await sendSms(toNumber, messageText);
+    const isStub = !result.ok || result.sid === "dev-noop";
 
-    if (result.ok) {
-      // Best-effort audit log
-      try {
-        const admin = createAdminClient();
-        await admin.from("audit_log").insert({
-          user_id: user.id,
-          business_id: null,
-          table_name: job_id ? "jobs" : "sms",
-          record_id: job_id ?? result.sid ?? null,
-          action: "updated",
-          changed_fields: { sms_to: to, sms_sid: result.sid },
-        });
-      } catch { /* swallow */ }
+    // Persist to sms_messages table (graceful if table missing)
+    const admin = createAdminClient();
+    const now = new Date().toISOString();
+    const fromNumber = process.env.TWILIO_FROM_NUMBER ?? null;
+
+    try {
+      const { data: msg } = await admin
+        .from("sms_messages")
+        .insert({
+          owner_id: user.id,
+          client_id: payload.client_id ?? null,
+          thread_id: payload.thread_id ?? null,
+          to_number: toNumber,
+          from_number: fromNumber,
+          message: messageText,
+          direction: "outbound",
+          status: result.ok ? "sent" : "failed",
+          sent_at: now,
+          is_stub: isStub,
+          external_id: result.sid && result.sid !== "dev-noop" ? result.sid : null,
+        })
+        .select("id")
+        .maybeSingle();
+
+      return NextResponse.json({
+        success: result.ok,
+        stub: isStub,
+        message_id: msg?.id ?? "stub",
+        ...(result.error ? { error: result.error } : {}),
+      });
+    } catch {
+      // sms_messages table not yet created — return stub response
+      return NextResponse.json({ success: true, stub: true, message_id: "stub" });
     }
-
-    return NextResponse.json(result);
   } catch (err) {
     console.error("[sms/send]", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

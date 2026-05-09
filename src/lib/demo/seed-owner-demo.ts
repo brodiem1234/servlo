@@ -328,6 +328,49 @@ export async function seedOwnerDemoData(
       }
     }
 
+    // ── SMS messages ─────────────────────────────────────────────────────────
+
+    try {
+      const smsRows = [
+        {
+          owner_id: ownerId,
+          client_id: c1Id,
+          to_number: "+61412345678",
+          from_number: "+61400000001",
+          message: "Hi Alex, just confirming your service call tomorrow at 9am. Let me know if anything changes.",
+          direction: "outbound",
+          status: "sent",
+          is_stub: true,
+          sent_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          owner_id: ownerId,
+          client_id: c1Id,
+          to_number: "+61400000001",
+          from_number: "+61412345678",
+          message: "Thanks, that works perfectly. See you then!",
+          direction: "inbound",
+          status: "received",
+          is_stub: true,
+          sent_at: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          owner_id: ownerId,
+          client_id: c3Id ?? c1Id,
+          to_number: "+61455987654",
+          from_number: "+61400000001",
+          message: "Hi Sarah, your quote is ready. Check your email or reply here with any questions.",
+          direction: "outbound",
+          status: "sent",
+          is_stub: true,
+          sent_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        },
+      ];
+      await sb.from("sms_messages").insert(smsRows);
+    } catch {
+      // Non-fatal — table may not exist yet in this environment
+    }
+
     console.log("[seed-owner-demo] finished OK for owner", ownerId);
     return { ok: true };
   } catch (e) {

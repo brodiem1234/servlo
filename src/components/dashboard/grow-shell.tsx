@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { LayoutDashboard, Megaphone, Settings2, Share2, Star, Users2 } from "lucide-react";
+import { Bot, LayoutDashboard, Mail, Megaphone, Palette, Search, Settings2, Share2, Star, Users2 } from "lucide-react";
 import React, { useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
@@ -20,6 +20,10 @@ const GROW_NAV: NavItem[] = [
   { href: "/dashboard/grow/social", label: "Social Content", Icon: Share2 },
   { href: "/dashboard/grow/reviews", label: "Google Reviews", Icon: Star },
   { href: "/dashboard/grow/referrals", label: "Referral Tracking", Icon: Users2 },
+  { href: "/dashboard/grow/email", label: "Email Marketing", Icon: Mail },
+  { href: "/dashboard/grow/seo", label: "Local SEO", Icon: Search },
+  { href: "/dashboard/grow/brand", label: "Brand Kit", Icon: Palette },
+  { href: "/dashboard/grow/coach", label: "AI Marketing Coach", Icon: Bot },
   { href: "/dashboard/grow/settings", label: "Settings", Icon: Settings2 },
 ];
 

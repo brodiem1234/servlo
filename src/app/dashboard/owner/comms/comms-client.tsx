@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { SmsThread } from "@/components/dashboard/sms-thread";
 
 type Thread = {
   id: string;
@@ -15,6 +16,7 @@ type Client = {
   id: string;
   full_name: string | null;
   email: string | null;
+  phone?: string | null;
 };
 
 type Message = {
@@ -34,10 +36,13 @@ type Message = {
 type Props = {
   threads: Thread[];
   clients: Client[];
-  clientMap: Record<string, { full_name: string | null; email: string | null }>;
+  clientMap: Record<string, { full_name: string | null; email: string | null; phone?: string | null }>;
 };
 
+type CommsTab = "email" | "sms";
+
 export function CommsClient({ threads, clients, clientMap }: Props) {
+  const [tab, setTab] = useState<CommsTab>("email");
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -48,6 +53,9 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
   const [localThreads, setLocalThreads] = useState<Thread[]>(threads);
   const [draftingReply, setDraftingReply] = useState(false);
   const replyBodyRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // SMS tab state
+  const [smsClientId, setSmsClientId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -131,8 +139,93 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
 
   const inputCls = "h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]";
 
+  const tabBtnCls = (active: boolean) =>
+    `flex-1 py-2 text-xs font-semibold transition-colors ${
+      active
+        ? "border-b-2 border-[var(--accent-color)] text-[var(--accent-color)]"
+        : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+    }`;
+
   return (
-    <section className="flex h-[calc(100vh-120px)] gap-0 overflow-hidden rounded-xl border border-[var(--border)]">
+    <section className="flex flex-col h-[calc(100vh-120px)] overflow-hidden rounded-xl border border-[var(--border)]">
+      {/* Tab bar */}
+      <div className="flex border-b border-[var(--border)] bg-[var(--bg-card)]">
+        <button className={tabBtnCls(tab === "email")} onClick={() => setTab("email")}>
+          ✉️ Email
+        </button>
+        <button className={tabBtnCls(tab === "sms")} onClick={() => setTab("sms")}>
+          📱 SMS
+        </button>
+      </div>
+
+      {tab === "sms" ? (
+        /* SMS panel */
+        <div className="flex flex-1 overflow-hidden">
+          {/* Client list for SMS */}
+          <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-card)]">
+            <div className="border-b border-[var(--border)] px-4 py-3">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Clients</h2>
+            </div>
+            <ul className="flex-1 overflow-y-auto">
+              {clients.length === 0 ? (
+                <li className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">No clients yet.</li>
+              ) : null}
+              {clients.map((client) => {
+                const isActive = smsClientId === client.id;
+                return (
+                  <li key={client.id}>
+                    <button
+                      onClick={() => setSmsClientId(client.id)}
+                      className={`w-full px-4 py-3 text-left hover:bg-[var(--bg-secondary)] ${isActive ? "bg-[var(--bg-secondary)]" : ""}`}
+                    >
+                      <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                        {client.full_name ?? "Unnamed client"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                        {client.phone ?? <span className="italic">No phone</span>}
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+
+          {/* SMS thread panel */}
+          <div className="flex flex-1 flex-col bg-[var(--bg-primary)] overflow-hidden">
+            {smsClientId ? (() => {
+              const client = clients.find((c) => c.id === smsClientId);
+              return (
+                <>
+                  <div className="border-b border-[var(--border)] px-6 py-3">
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">
+                      {client?.full_name ?? "Client"}
+                    </p>
+                    <p className="text-xs text-[var(--text-muted)]">{client?.phone ?? "No phone"}</p>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <SmsThread
+                      clientId={smsClientId}
+                      clientName={client?.full_name ?? "Client"}
+                      clientPhone={client?.phone}
+                    />
+                  </div>
+                </>
+              );
+            })() : (
+              <div className="flex flex-1 items-center justify-center">
+                <div className="text-center">
+                  <p className="text-4xl mb-3">📱</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">Select a client to SMS</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">Two-way SMS threads per client</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+      /* Email panel — original layout */
+      <div className="flex flex-1 overflow-hidden">
       {/* Thread list */}
       <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-card)]">
         <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
@@ -318,6 +411,8 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
           </div>
         )}
       </div>
+      </div>
+      )}
 
       {toast ? (
         <div className="fixed bottom-6 right-6 rounded-lg bg-gray-900 px-4 py-2 text-sm text-white shadow-lg">
