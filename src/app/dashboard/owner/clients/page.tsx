@@ -206,6 +206,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
           .select("id, client_id, scheduled_date")
           .in("client_id", clientIds)
           .eq("owner_id", ownerId)
+          .is("deleted_at", null)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; scheduled_date: string | null }> }),
     clientIds.length
           ? supabase
@@ -213,6 +214,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
               .select("id, client_id, total")
               .in("client_id", clientIds)
               .eq("owner_id", ownerId)
+              .is("deleted_at", null)
       : Promise.resolve({ data: [] as Array<{ id: string; client_id: string | null; total: number | null }> })
   ]);
 

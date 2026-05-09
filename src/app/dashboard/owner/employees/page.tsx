@@ -18,6 +18,7 @@ export default async function OwnerEmployeesPage() {
     .from("employees")
     .select("id, full_name, email, phone, trade_type, licences, hourly_rate, role, is_demo")
     .eq("owner_id", user.id)
+    .is("deleted_at", null)
     .order("full_name", { ascending: true });
 
   // Fetch pending/expired invitations for this business
