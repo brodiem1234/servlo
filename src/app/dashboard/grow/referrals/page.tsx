@@ -1,57 +1,41 @@
-import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import ReferralClient from "./referral-client";
+import ReferralManager from "./referral-manager";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "SERVLO GROW — Referral Tracking",
-};
-
-function generateReferralCode(ownerId: string): string {
-  // Deterministic short code from the owner UUID suffix
-  const hex = ownerId.replace(/-/g, "").slice(-8).toUpperCase();
-  return `SRV${hex}`;
-}
-
-export default async function GrowReferralsPage() {
-  const sb = await createClient();
+export default async function ReferralProgramPage() {
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await sb.auth.getUser();
-
+  } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // Fetch business (including referral_code)
-  const { data: business } = await sb
-    .from("businesses")
-    .select("referral_code, business_name")
-    .eq("owner_id", user.id)
-    .maybeSingle();
+  let referrals: any[] = [];
 
-  // Generate + save referral code if missing
-  let referralCode = business?.referral_code ?? null;
-  if (!referralCode) {
-    referralCode = generateReferralCode(user.id);
-    await sb
-      .from("businesses")
-      .update({ referral_code: referralCode })
-      .eq("owner_id", user.id);
+  try {
+    const { data, error } = await supabase
+      .from("grow_referrals")
+      .select(
+        "id, referred_name, referred_email, referred_phone, status, reward_type, reward_amount, referral_code, created_at"
+      )
+      .eq("owner_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error && error.code !== "42P01") throw error;
+    referrals = data ?? [];
+  } catch {
+    referrals = [];
   }
 
-  // Fetch referrals
-  const { data: referrals } = await sb
-    .from("grow_referrals")
-    .select("id, referred_email, status, reward_amount, created_at")
-    .eq("owner_id", user.id)
-    .order("created_at", { ascending: false });
+  const totalReferrals = referrals.length;
+  const convertedCount = referrals.filter((r: any) => r.status === "converted").length;
+  const pendingCount = referrals.filter((r: any) => r.status === "pending").length;
+  const totalRewardsValue = referrals
+    .filter((r: any) => r.status === "rewarded" && r.reward_amount)
+    .reduce((sum: number, r: any) => sum + Number(r.reward_amount), 0);
 
-  return (
-    <ReferralClient
-      referralCode={referralCode ?? ""}
-      referrals={referrals ?? []}
-      businessName={business?.business_name ?? "Your Business"}
-    />
-  );
+  const stats = { totalReferrals, convertedCount, pendingCount, totalRewardsValue };
+
+  return <ReferralManager referrals={referrals} stats={stats} />;
 }

@@ -14,6 +14,8 @@ import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
 import { ReferralWidget } from "@/components/dashboard/referral-widget";
 import { ensureReferralCode } from "@/lib/referral";
 import { DayBriefingWidget } from "@/components/dashboard/day-briefing-widget";
+import { ProfitabilityAlerts } from "@/components/dashboard/profitability-alerts";
+import { MaterialsReorderWidget } from "@/components/dashboard/materials-reorder-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +69,7 @@ export default async function OwnerDashboardPage() {
 
   const todayIso = isoLocal(new Date());
 
-  const [{ data: profile }, dashboardData, { data: todayJobsRaw }, { data: taskRows }] =
+  const [{ data: profile }, dashboardData, { data: todayJobsRaw }, { data: taskRows }, { data: profitJobsRaw }] =
     await Promise.all([
       sb
         .from("profiles")
@@ -86,7 +88,15 @@ export default async function OwnerDashboardPage() {
         .select("id, title, done")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: true })
-        .limit(80)
+        .limit(80),
+      sb
+        .from("jobs")
+        .select("id, title, revenue, materials_cost, labour_hours, hourly_rate, status, is_demo")
+        .eq("owner_id", user.id)
+        .eq("status", "completed")
+        .not("revenue", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(20)
     ]);
 
   const trialDaysRemaining = computeTrialDaysRemaining(
@@ -192,6 +202,19 @@ export default async function OwnerDashboardPage() {
     title: String(t.title ?? ""),
     done: Boolean(t.done)
   }));
+
+  // Profitability alerts: derive margin from completed jobs
+  const profitabilityAlerts = (profitJobsRaw ?? [])
+    .filter((j: any) => !j.is_demo && j.revenue != null)
+    .map((j: any) => {
+      const revenue = Number(j.revenue ?? 0);
+      const materialsCost = Number(j.materials_cost ?? 0);
+      const labourCost = Number(j.labour_hours ?? 0) * Number(j.hourly_rate ?? 0);
+      const cost = materialsCost + labourCost;
+      const margin = revenue > 0 ? ((revenue - cost) / revenue) * 100 : -100;
+      const flag = margin < 0 ? "loss" : margin < 20 ? "low_margin" : "ok";
+      return { id: j.id, title: j.title ?? "Untitled job", revenue, cost, margin, flag, completed_at: null };
+    });
 
   async function sendInvoiceReminderAction(formData: FormData) {
     "use server";
@@ -568,6 +591,12 @@ export default async function OwnerDashboardPage() {
         </div>
         <WeeklyRevenueChart data={weeklyRevenueData} />
       </article>
+
+      {/* Profitability alerts */}
+      <ProfitabilityAlerts alerts={profitabilityAlerts} />
+
+      {/* Materials reorder alerts */}
+      <MaterialsReorderWidget />
 
       {/* Referral widget — collapsed by default */}
       <ReferralWidget referralUrl={referralUrl} />
