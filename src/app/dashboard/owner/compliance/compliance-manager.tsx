@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 
 export type ComplianceDoc = {
   id: string;
@@ -12,422 +12,448 @@ export type ComplianceDoc = {
   expiry_date: string | null;
   job_id: string | null;
   created_at: string;
+  state?: string | null;
+  notes?: string | null;
 };
 
 interface Props {
   initialDocs: ComplianceDoc[];
 }
 
+// ─── 24 templates ─────────────────────────────────────────────────────────────
 const TEMPLATES = [
-  { key: "swms_general", label: "SWMS — General Construction", type: "SWMS", description: "Safe Work Method Statement for general construction activities" },
-  { key: "swms_height", label: "SWMS — Working at Heights", type: "SWMS", description: "Safe Work Method Statement for working at heights (>2m)" },
-  { key: "swms_electrical", label: "SWMS — Electrical Work", type: "SWMS", description: "Safe Work Method Statement for electrical installation and maintenance" },
-  { key: "swms_excavation", label: "SWMS — Excavation", type: "SWMS", description: "Safe Work Method Statement for excavation and trenching" },
-  { key: "jsa_plumbing", label: "JSA — Plumbing", type: "JSA", description: "Job Safety Analysis for plumbing work" },
-  { key: "jsa_hvac", label: "JSA — HVAC Installation", type: "JSA", description: "Job Safety Analysis for HVAC installation and maintenance" },
-  { key: "jsa_roofing", label: "JSA — Roofing", type: "JSA", description: "Job Safety Analysis for roofing and guttering" },
-  { key: "cert_induction", label: "Site Induction Record", type: "cert", description: "Worker site induction completion record" },
-  { key: "cert_toolbox", label: "Toolbox Talk Record", type: "cert", description: "Toolbox talk attendance and topic record" },
-  { key: "incident_report", label: "Incident Report", type: "incident", description: "Workplace incident / near-miss report form" },
-];
+  // SWMS
+  { key: "swms_general",      label: "SWMS — General Construction",        category: "SWMS",     description: "Safe Work Method Statement for general construction activities. Covers hazard identification, risk controls, PPE requirements.", states: ["ALL"] },
+  { key: "swms_height",       label: "SWMS — Working at Heights",           category: "SWMS",     description: "For work above 2m. Includes ladder, scaffold, EWP and harness controls. Required by WHS Regs 2011.", states: ["ALL"] },
+  { key: "swms_electrical",   label: "SWMS — Electrical Work",              category: "SWMS",     description: "Safe Work Method Statement for electrical installation, testing & maintenance. Includes isolation procedures.", states: ["ALL"] },
+  { key: "swms_excavation",   label: "SWMS — Excavation & Trenching",       category: "SWMS",     description: "Covers excavation deeper than 1.5m. Battering, benching, shoring requirements and underground services.", states: ["ALL"] },
+  { key: "swms_confined",     label: "SWMS — Confined Space Entry",         category: "SWMS",     description: "High-risk confined space entry permits, atmospheric testing, standby person requirements.", states: ["ALL"] },
+  { key: "swms_demolition",   label: "SWMS — Demolition Works",             category: "SWMS",     description: "Demolition SWMS covering asbestos identification, structural stability and disposal requirements.", states: ["ALL"] },
+  { key: "swms_hvac",         label: "SWMS — HVAC Installation",            category: "SWMS",     description: "HVAC installation and commissioning work — includes refrigerant handling, electrical connection.", states: ["ALL"] },
+  // JSA
+  { key: "jsa_plumbing",      label: "JSA — Plumbing & Drainage",           category: "JSA",      description: "Job Safety Analysis for plumbing including pipe work, drainage, hot water systems.", states: ["ALL"] },
+  { key: "jsa_roofing",       label: "JSA — Roofing & Guttering",           category: "JSA",      description: "Job Safety Analysis for roof restoration, guttering, fascia and soffit work.", states: ["ALL"] },
+  { key: "jsa_painting",      label: "JSA — Painting & Decorating",         category: "JSA",      description: "Covers interior/exterior painting including lead paint identification and solvent handling.", states: ["ALL"] },
+  { key: "jsa_flooring",      label: "JSA — Flooring & Tiling",             category: "JSA",      description: "Job Safety Analysis for floor laying, tiling, adhesive use and slab cutting.", states: ["ALL"] },
+  // Records
+  { key: "cert_induction",    label: "Site Induction Record",                category: "Record",   description: "Worker site induction record including safety briefing sign-off and emergency procedure acknowledgement.", states: ["ALL"] },
+  { key: "cert_toolbox",      label: "Toolbox Talk Register",                category: "Record",   description: "Toolbox talk attendance register with topic, presenter and attendee signatures.", states: ["ALL"] },
+  { key: "cert_plant",        label: "Plant & Equipment Register",           category: "Record",   description: "Register of plant and equipment, inspection dates, service records and operator certifications.", states: ["ALL"] },
+  { key: "cert_chemical",     label: "Hazardous Chemicals Register",         category: "Record",   description: "SDS register for hazardous chemicals on site. Includes storage, handling and disposal requirements.", states: ["ALL"] },
+  { key: "cert_training",     label: "Worker Training Records",              category: "Record",   description: "Record of inductions, tickets, white cards, licences and refresher training for all workers.", states: ["ALL"] },
+  // Incident
+  { key: "incident_report",   label: "Incident / Near-Miss Report",          category: "Incident", description: "Workplace incident, injury or near-miss report. Required to be submitted to SafeWork within 48 hours for serious incidents.", states: ["ALL"] },
+  { key: "injury_mgmt",       label: "Injury Management Plan",               category: "Incident", description: "Return-to-work plan and injury management register. Required by insurers in most states.", states: ["ALL"] },
+  // State-specific
+  { key: "vic_cpd",           label: "VIC — CPD Training Record",            category: "State",    description: "Victorian Building Authority CPD hours tracker for licence renewal.", states: ["VIC"] },
+  { key: "qld_bss",           label: "QLD — BSS Maintenance Record",         category: "State",    description: "Queensland Building and Safety Standards maintenance compliance record.", states: ["QLD"] },
+  { key: "nsw_owner_builder", label: "NSW — Owner-Builder Permit Log",       category: "State",    description: "NSW Fair Trading owner-builder permit works log and progress record.", states: ["NSW"] },
+  { key: "wa_contractor_reg", label: "WA — Contractor Registration Log",     category: "State",    description: "Western Australia Building Services Board contractor registration evidence record.", states: ["WA"] },
+  { key: "sa_plumbing_cert",  label: "SA — Plumbing Certificate of Work",    category: "State",    description: "South Australia plumbing certificate of compliance record.", states: ["SA"] },
+  // Environmental
+  { key: "env_waste",         label: "Waste Disposal Manifest",              category: "Environ",  description: "Controlled waste transport and disposal record required under environmental protection legislation.", states: ["ALL"] },
+  { key: "env_spill",         label: "Spill Response Record",                category: "Environ",  description: "Chemical or hazardous material spill response record including containment actions taken.", states: ["ALL"] },
+] as const;
 
-function docTypeStyle(type: string) {
-  switch (type) {
-    case "SWMS":
-      return "text-red-400 bg-red-500/10";
-    case "JSA":
-      return "text-orange-400 bg-orange-500/10";
-    case "cert":
-      return "text-blue-400 bg-blue-500/10";
-    case "incident":
-      return "text-amber-400 bg-amber-500/10";
-    default:
-      return "text-gray-400 bg-gray-500/10";
-  }
+type TemplateCategory = "SWMS" | "JSA" | "Record" | "Incident" | "State" | "Environ";
+
+const CATEGORY_COLORS: Record<TemplateCategory, string> = {
+  SWMS:     "bg-red-500/15 text-red-400 border-red-500/30",
+  JSA:      "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  Record:   "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  Incident: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  State:    "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  Environ:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+};
+
+function categoryColor(cat: string): string {
+  return CATEGORY_COLORS[cat as TemplateCategory] ?? "bg-slate-500/15 text-slate-400 border-slate-500/30";
 }
 
-function statusBadge(status: string) {
-  switch (status) {
-    case "complete":
-      return "text-green-400 bg-green-500/10";
-    case "expired":
-      return "text-red-400 bg-red-500/10";
-    default:
-      return "text-gray-400 bg-gray-500/10";
-  }
+const STATUS_STYLES: Record<string, string> = {
+  complete: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  draft:    "bg-slate-500/15 text-slate-400 border-slate-500/30",
+  expired:  "bg-red-500/15 text-red-400 border-red-500/30",
+  active:   "bg-blue-500/15 text-blue-400 border-blue-500/30",
+};
+
+function statusStyle(s: string): string { return STATUS_STYLES[s] ?? STATUS_STYLES.draft; }
+function formatDate(d: string | null | undefined): string {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
+}
+function isExpiringSoon(e: string | null | undefined): boolean {
+  if (!e) return false;
+  const d = new Date(e), w = new Date(); w.setDate(w.getDate() + 30);
+  return d <= w && d >= new Date();
+}
+function isExpired(e: string | null | undefined): boolean {
+  return !!e && new Date(e) < new Date();
 }
 
-function templateIcon(type: string) {
-  switch (type) {
-    case "SWMS":
-      return (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-        </svg>
-      );
-    case "JSA":
-      return (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
-        </svg>
-      );
-    case "cert":
-      return (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 3.741-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
-        </svg>
-      );
-    case "incident":
-      return (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10.5v3.75m-9.303 3.376C1.83 19.126 2.914 21 4.645 21h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 17.25h.007v.008H12v-.008Z" />
-        </svg>
-      );
-    default:
-      return (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-        </svg>
-      );
-  }
-}
-
-type ToastItem = { id: number; message: string; isError: boolean };
+const ALL_CATEGORIES: TemplateCategory[] = ["SWMS", "JSA", "Record", "Incident", "State", "Environ"];
 
 export default function ComplianceManager({ initialDocs }: Props) {
   const [docs, setDocs] = useState<ComplianceDoc[]>(initialDocs);
+  const [activeTab, setActiveTab] = useState<"documents" | "templates">("documents");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [stateFilter, setStateFilter] = useState("ALL");
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [creating, setCreating] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const toastCounter = useRef(0);
+  const [selectedTemplate, setSelectedTemplate] = useState<typeof TEMPLATES[number] | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  function addToast(message: string, isError = false) {
-    const id = ++toastCounter.current;
-    setToasts((prev) => [...prev, { id, message, isError }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+  const [newDocName, setNewDocName] = useState("");
+  const [newDocExpiry, setNewDocExpiry] = useState("");
+  const [newDocJobId, setNewDocJobId] = useState("");
+  const [newDocNotes, setNewDocNotes] = useState("");
+  const [newDocState, setNewDocState] = useState("ALL");
+  const [saving, setSaving] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  const showToast = (msg: string, ok = true) => {
+    setToast({ msg, ok });
+    timerRef.current = setTimeout(() => setToast(null), 4000);
+  };
+
+  const expiringSoon = docs.filter((d) => d.status !== "expired" && isExpiringSoon(d.expiry_date));
+  const expired = docs.filter((d) => isExpired(d.expiry_date));
+
+  const filteredDocs = useMemo(() =>
+    docs.filter((d) => {
+      if (statusFilter !== "all" && d.status !== statusFilter) return false;
+      if (categoryFilter !== "ALL" && d.doc_type !== categoryFilter) return false;
+      if (search && !(d.name ?? "").toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    }), [docs, statusFilter, categoryFilter, search]);
+
+  const filteredTemplates = useMemo(() =>
+    TEMPLATES.filter((t) => {
+      if (categoryFilter !== "ALL" && t.category !== categoryFilter) return false;
+      if (stateFilter !== "ALL" && !t.states.includes("ALL" as never) && !t.states.includes(stateFilter as never)) return false;
+      if (search && !t.label.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    }), [categoryFilter, stateFilter, search]);
+
+  function openTemplate(tmpl: typeof TEMPLATES[number]) {
+    setSelectedTemplate(tmpl);
+    setCreating(true);
+    setNewDocName(tmpl.label);
+    setNewDocExpiry(""); setNewDocJobId(""); setNewDocNotes(""); setNewDocState("ALL");
   }
 
-  const docTypes = ["all", ...Array.from(new Set(TEMPLATES.map((t) => t.type)))];
-
-  const filteredDocs = docs.filter((doc) => {
-    const matchesSearch =
-      search.trim() === "" ||
-      doc.name.toLowerCase().includes(search.toLowerCase()) ||
-      doc.doc_type.toLowerCase().includes(search.toLowerCase());
-    const matchesType = filterType === "all" || doc.doc_type === filterType;
-    return matchesSearch && matchesType;
-  });
-
-  async function handleUseTemplate(template: (typeof TEMPLATES)[number]) {
-    setCreating(template.key);
+  async function handleCreate() {
+    if (!selectedTemplate || !newDocName.trim()) return;
+    setSaving(true);
     try {
       const res = await fetch("/api/compliance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: template.label, doc_type: template.type, template_key: template.key }),
+        body: JSON.stringify({
+          name: newDocName.trim(),
+          doc_type: selectedTemplate.category,
+          template_key: selectedTemplate.key,
+          status: "draft",
+          expiry_date: newDocExpiry || null,
+          job_id: newDocJobId.trim() || null,
+          notes: newDocNotes.trim() || null,
+          state: newDocState,
+        }),
       });
       const json = await res.json();
-      if (!res.ok) {
-        addToast(json.error ?? "Failed to create document", true);
-      } else {
-        setDocs((prev) => [json.doc, ...prev]);
-        addToast(`"${template.label}" added to your documents`);
-      }
-    } catch {
-      addToast("Network error — please try again", true);
-    } finally {
-      setCreating(null);
-    }
+      if (!res.ok) throw new Error(json.error ?? "Failed");
+      const newDoc: ComplianceDoc = json.document ?? {
+        id: crypto.randomUUID(), name: newDocName.trim(),
+        doc_type: selectedTemplate.category, template_key: selectedTemplate.key,
+        status: "draft", signed_at: null, expiry_date: newDocExpiry || null,
+        job_id: newDocJobId.trim() || null, created_at: new Date().toISOString(),
+        state: newDocState, notes: newDocNotes.trim() || null,
+      };
+      setDocs((p) => [newDoc, ...p]);
+      setSelectedTemplate(null); setCreating(false);
+      setNewDocName(""); setNewDocExpiry(""); setNewDocJobId(""); setNewDocNotes("");
+      showToast(`"${newDocName.trim()}" created`);
+      setActiveTab("documents");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Error creating document", false);
+    } finally { setSaving(false); }
   }
 
-  async function handleDelete(id: string) {
-    setDeleting(id);
-    // Optimistic update
-    setDocs((prev) => prev.filter((d) => d.id !== id));
+  async function handleMarkComplete(doc: ComplianceDoc) {
+    const prev = docs;
+    setDocs((d) => d.map((x) => x.id === doc.id ? { ...x, status: "complete", signed_at: new Date().toISOString() } : x));
     try {
-      const res = await fetch(`/api/compliance/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+      const res = await fetch(`/api/compliance/${doc.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "complete", signed_at: new Date().toISOString() }),
       });
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        // Revert optimistic
-        setDocs((prev) => {
-          const original = initialDocs.find((d) => d.id === id);
-          return original ? [original, ...prev] : prev;
-        });
-        addToast(json.error ?? "Failed to delete document", true);
-      } else {
-        addToast("Document deleted");
-      }
-    } catch {
-      setDocs((prev) => {
-        const original = initialDocs.find((d) => d.id === id);
-        return original ? [original, ...prev] : prev;
-      });
-      addToast("Network error — please try again", true);
-    } finally {
-      setDeleting(null);
-    }
+      if (!res.ok) throw new Error();
+      showToast(`"${doc.name}" marked complete`);
+    } catch { setDocs(prev); showToast("Failed to update", false); }
   }
 
-  function formatDate(dateStr: string | null) {
-    if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
+  async function handleDelete(doc: ComplianceDoc) {
+    if (!confirm(`Delete "${doc.name}"?`)) return;
+    const prev = docs;
+    setDocs((d) => d.filter((x) => x.id !== doc.id));
+    try {
+      const res = await fetch(`/api/compliance/${doc.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      showToast(`"${doc.name}" deleted`);
+    } catch { setDocs(prev); showToast("Failed to delete", false); }
   }
 
   return (
-    <div className="space-y-8 p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
-          Compliance Documents
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
-          Manage your SWMS, JSAs, induction records, and incident reports.
-        </p>
-      </div>
+    <div className="space-y-5">
+      {/* Alerts */}
+      {expiringSoon.length > 0 && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 flex items-start gap-3" role="alert">
+          <span className="text-amber-400 text-lg flex-shrink-0">⚠️</span>
+          <div>
+            <p className="font-semibold text-amber-300 text-sm">{expiringSoon.length} document{expiringSoon.length > 1 ? "s" : ""} expiring within 30 days</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">{expiringSoon.map((d) => d.name).join(", ")}</p>
+          </div>
+        </div>
+      )}
+      {expired.length > 0 && (
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 flex items-start gap-3" role="alert">
+          <span className="text-red-400 text-lg flex-shrink-0">🚫</span>
+          <div>
+            <p className="font-semibold text-red-300 text-sm">{expired.length} document{expired.length > 1 ? "s" : ""} expired — renewal required</p>
+            <p className="text-xs text-red-400/80 mt-0.5">{expired.map((d) => d.name).join(", ")}</p>
+          </div>
+        </div>
+      )}
 
-      {/* Template Library */}
-      <section aria-labelledby="template-library-heading">
-        <h2 id="template-library-heading" className="text-lg font-medium mb-4" style={{ color: "var(--text-primary)" }}>
-          Template Library
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {TEMPLATES.map((template) => (
-            <div
-              key={template.key}
-              className="rounded-xl p-4 flex flex-col gap-3 border"
-              style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+      {/* Tab bar */}
+      <div className="flex items-center justify-between border-b border-[var(--border)]">
+        <div className="flex gap-1">
+          {(["documents", "templates"] as const).map((tab) => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? "border-blue-500 text-blue-400" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
             >
-              <div className="flex items-start gap-3">
-                <span className={`rounded-lg p-2 ${docTypeStyle(template.type)}`}>
-                  {templateIcon(template.type)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium leading-tight" style={{ color: "var(--text-primary)" }}>
-                    {template.label}
-                  </p>
-                  <span className={`inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full ${docTypeStyle(template.type)}`}>
-                    {template.type}
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs flex-1" style={{ color: "var(--text-muted)" }}>
-                {template.description}
-              </p>
-              <button
-                onClick={() => handleUseTemplate(template)}
-                disabled={creating === template.key}
-                aria-label={`Use template: ${template.label}`}
-                className="mt-auto text-sm font-medium rounded-lg px-3 py-1.5 transition-opacity disabled:opacity-50"
-                style={{ background: "var(--accent-color)", color: "#fff" }}
-              >
-                {creating === template.key ? "Creating…" : "Use Template"}
-              </button>
-            </div>
+              {tab === "documents" ? `My Documents (${docs.length})` : `Templates (${TEMPLATES.length})`}
+            </button>
           ))}
         </div>
-      </section>
+        {activeTab === "documents" && (
+          <button onClick={() => setActiveTab("templates")}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 mb-0.5">
+            + New Document
+          </button>
+        )}
+      </div>
 
-      {/* My Documents */}
-      <section aria-labelledby="my-documents-heading">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-          <h2 id="my-documents-heading" className="text-lg font-medium flex-1" style={{ color: "var(--text-primary)" }}>
-            My Documents
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <label className="sr-only" htmlFor="doc-search">
-              Search documents
-            </label>
-            <input
-              id="doc-search"
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search documents…"
-              className="text-sm rounded-lg px-3 py-1.5 border w-full sm:w-48"
-              style={{
-                background: "var(--bg-card)",
-                borderColor: "var(--border)",
-                color: "var(--text-primary)",
-              }}
-            />
-            <label className="sr-only" htmlFor="doc-type-filter">
-              Filter by type
-            </label>
-            <select
-              id="doc-type-filter"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="text-sm rounded-lg px-3 py-1.5 border"
-              style={{
-                background: "var(--bg-card)",
-                borderColor: "var(--border)",
-                color: "var(--text-primary)",
-              }}
-            >
-              {docTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t === "all" ? "All types" : t}
-                </option>
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <input type="search" placeholder={activeTab === "documents" ? "Search documents…" : "Search templates…"}
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          className="h-9 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Search" />
+        <div className="flex flex-wrap gap-1.5">
+          {["ALL", ...ALL_CATEGORIES].map((cat) => (
+            <button key={cat} onClick={() => setCategoryFilter(cat === categoryFilter && cat !== "ALL" ? "ALL" : cat)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors ${
+                categoryFilter === cat
+                  ? cat === "ALL" ? "bg-blue-600 text-white border-blue-600" : `border ${categoryColor(cat)}`
+                  : "border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              }`}
+            >{cat === "ALL" ? "All Types" : cat}</button>
+          ))}
+        </div>
+        {activeTab === "documents" && (
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none">
+            <option value="all">All Statuses</option>
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="complete">Complete</option>
+            <option value="expired">Expired</option>
+          </select>
+        )}
+        {activeTab === "templates" && (
+          <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)}
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none">
+            <option value="ALL">All States</option>
+            {["NSW","VIC","QLD","WA","SA","TAS","ACT","NT"].map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        )}
+      </div>
+
+      {/* ── DOCUMENTS ── */}
+      {activeTab === "documents" && (
+        <div className="rounded-xl border border-[var(--border)] overflow-hidden">
+          <table className="w-full text-sm" aria-label="Compliance documents">
+            <thead>
+              <tr className="border-b border-[var(--border)] bg-[var(--bg-card)]">
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] font-medium">Document Name</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] font-medium hidden sm:table-cell">Type</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] font-medium hidden md:table-cell">Status</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] font-medium hidden lg:table-cell">Expiry</th>
+                <th className="text-left px-4 py-3 text-[var(--text-muted)] font-medium hidden lg:table-cell">Created</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDocs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-10 text-center">
+                    <div className="text-4xl mb-2">📋</div>
+                    <p className="text-[var(--text-secondary)] font-medium">No compliance documents yet</p>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">Choose a template to get started</p>
+                    <button onClick={() => setActiveTab("templates")}
+                      className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                      Browse Templates
+                    </button>
+                  </td>
+                </tr>
+              ) : filteredDocs.map((doc) => (
+                <tr key={doc.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-primary)] transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-[var(--text-primary)]">{doc.name}</div>
+                    {doc.notes && <div className="text-xs text-[var(--text-muted)] truncate max-w-xs mt-0.5">{doc.notes}</div>}
+                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className={`rounded border px-2 py-0.5 text-xs font-medium ${categoryColor(doc.doc_type)}`}>{doc.doc_type}</span>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <span className={`rounded border px-2 py-0.5 text-xs font-medium ${isExpired(doc.expiry_date) ? statusStyle("expired") : statusStyle(doc.status)}`}>
+                      {isExpired(doc.expiry_date) ? "Expired" : doc.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {doc.expiry_date ? (
+                      <span className={`text-xs ${isExpired(doc.expiry_date) ? "text-red-400 font-semibold" : isExpiringSoon(doc.expiry_date) ? "text-amber-400 font-semibold" : "text-[var(--text-muted)]"}`}>
+                        {formatDate(doc.expiry_date)}{isExpiringSoon(doc.expiry_date) && !isExpired(doc.expiry_date) && " ⚠️"}
+                      </span>
+                    ) : <span className="text-xs text-[var(--text-muted)]">No expiry</span>}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-[var(--text-muted)] hidden lg:table-cell">{formatDate(doc.created_at)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1.5 justify-end">
+                      {doc.status !== "complete" && (
+                        <button onClick={() => handleMarkComplete(doc)}
+                          className="rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                          ✓ Complete
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(doc)}
+                        className="rounded border border-red-500/30 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                        aria-label={`Delete ${doc.name}`}>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </select>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ── TEMPLATES ── */}
+      {activeTab === "templates" && !creating && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredTemplates.map((tmpl) => (
+            <button key={tmpl.key} onClick={() => openTemplate(tmpl)}
+              className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label={`Use template: ${tmpl.label}`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className={`rounded border px-2 py-0.5 text-xs font-semibold ${categoryColor(tmpl.category)}`}>{tmpl.category}</span>
+                {!tmpl.states.includes("ALL" as never) && (
+                  <span className="rounded bg-[var(--bg-primary)] border border-[var(--border)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]">{tmpl.states.join(" / ")}</span>
+                )}
+              </div>
+              <h3 className="font-semibold text-sm text-[var(--text-primary)] group-hover:text-blue-300 transition-colors leading-tight mb-1">{tmpl.label}</h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2">{tmpl.description}</p>
+              <div className="mt-3 flex items-center justify-end text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Use template →</div>
+            </button>
+          ))}
+          {filteredTemplates.length === 0 && (
+            <div className="col-span-full py-12 text-center text-[var(--text-muted)]">
+              <p>No templates match your filters</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── CREATE FORM ── */}
+      {creating && selectedTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Create compliance document">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-[var(--text-primary)]">Create Document</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`rounded border px-2 py-0.5 text-xs font-semibold ${categoryColor(selectedTemplate.category)}`}>{selectedTemplate.category}</span>
+                  <span className="text-xs text-[var(--text-muted)]">{selectedTemplate.label}</span>
+                </div>
+              </div>
+              <button onClick={() => { setSelectedTemplate(null); setCreating(false); }} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xl">×</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Document Name *</label>
+                <input type="text" value={newDocName} onChange={(e) => setNewDocName(e.target.value)} autoFocus
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              {selectedTemplate.category === "State" && (
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">State / Territory</label>
+                  <select value={newDocState} onChange={(e) => setNewDocState(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="ALL">All / National</option>
+                    {["NSW","VIC","QLD","WA","SA","TAS","ACT","NT"].map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Expiry Date</label>
+                  <input type="date" value={newDocExpiry} onChange={(e) => setNewDocExpiry(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Job Reference</label>
+                  <input type="text" value={newDocJobId} onChange={(e) => setNewDocJobId(e.target.value)} placeholder="Optional"
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Notes</label>
+                <textarea value={newDocNotes} onChange={(e) => setNewDocNotes(e.target.value)} rows={3}
+                  placeholder="Hazards, specific controls, reference numbers…"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] p-3">
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  <strong className="text-[var(--text-secondary)]">Template guidance:</strong> {selectedTemplate.description}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => { setSelectedTemplate(null); setCreating(false); }}
+                className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]">Cancel</button>
+              <button onClick={handleCreate} disabled={!newDocName.trim() || saving}
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+                {saving ? "Creating…" : "Create Document"}
+              </button>
+            </div>
           </div>
         </div>
+      )}
 
-        {filteredDocs.length === 0 ? (
-          <div
-            className="flex flex-col items-center justify-center rounded-xl border py-16 gap-4"
-            style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-          >
-            <svg
-              className="w-12 h-12"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-            </svg>
-            <div className="text-center">
-              <p className="font-medium" style={{ color: "var(--text-primary)" }}>
-                {search || filterType !== "all" ? "No documents match your search" : "No documents yet"}
-              </p>
-              <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-                {search || filterType !== "all"
-                  ? "Try adjusting your search or filter"
-                  : "Use a template above to create your first compliance document"}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="rounded-xl border overflow-hidden"
-            style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-          >
-            {/* Desktop table */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table role="table" className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                    {["Name", "Type", "Status", "Signed", "Expiry", "Actions"].map((col) => (
-                      <th
-                        key={col}
-                        scope="col"
-                        className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wide"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDocs.map((doc) => (
-                    <tr
-                      key={doc.id}
-                      role="row"
-                      className="transition-colors"
-                      style={{ borderBottom: "1px solid var(--border)" }}
-                    >
-                      <td className="px-4 py-3 font-medium" style={{ color: "var(--text-primary)" }}>
-                        {doc.name}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${docTypeStyle(doc.doc_type)}`}>
-                          {doc.doc_type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge(doc.status)}`}>
-                          {doc.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>
-                        {formatDate(doc.signed_at)}
-                      </td>
-                      <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>
-                        {formatDate(doc.expiry_date)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleDelete(doc.id)}
-                          disabled={deleting === doc.id}
-                          aria-label={`Delete document: ${doc.name}`}
-                          className="text-xs px-2 py-1 rounded-lg border transition-opacity disabled:opacity-50 hover:bg-red-500/10"
-                          style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
-                        >
-                          {deleting === doc.id ? "Deleting…" : "Delete"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile cards */}
-            <div className="sm:hidden divide-y" style={{ borderColor: "var(--border)" }}>
-              {filteredDocs.map((doc) => (
-                <div key={doc.id} className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>
-                      {doc.name}
-                    </p>
-                    <button
-                      onClick={() => handleDelete(doc.id)}
-                      disabled={deleting === doc.id}
-                      aria-label={`Delete document: ${doc.name}`}
-                      className="text-xs px-2 py-1 rounded-lg border flex-shrink-0 disabled:opacity-50"
-                      style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
-                    >
-                      {deleting === doc.id ? "Deleting…" : "Delete"}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${docTypeStyle(doc.doc_type)}`}>
-                      {doc.doc_type}
-                    </span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge(doc.status)}`}>
-                      {doc.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 text-xs" style={{ color: "var(--text-secondary)" }}>
-                    <span>Signed: {formatDate(doc.signed_at)}</span>
-                    <span>Expires: {formatDate(doc.expiry_date)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Toast notifications */}
-      <div
-        aria-live="polite"
-        aria-atomic="false"
-        className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"
-      >
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            role="status"
-            className={`pointer-events-auto text-sm px-4 py-3 rounded-xl shadow-lg border max-w-xs ${
-              toast.isError ? "border-red-500/30 bg-red-500/10 text-red-400" : "border-green-500/30 bg-green-500/10 text-green-400"
-            }`}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
+      {/* Toast */}
+      {toast && (
+        <div role="alert" aria-live="polite"
+          className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium text-white ${toast.ok ? "bg-emerald-600" : "bg-red-600"}`}>
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
