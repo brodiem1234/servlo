@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Check } from "lucide-react";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 interface Props {
   token: string;
@@ -53,6 +54,17 @@ export function InviteAcceptClient({
       const data = await res.json() as { ok?: boolean; error?: string; role?: string };
       if (!res.ok) {
         throw new Error(data.error ?? "Something went wrong.");
+      }
+
+      if (!isExistingAccount) {
+        const supabase = createSupabaseBrowser();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: invitedEmail,
+          password,
+        });
+        if (signInError) {
+          throw new Error("Your account was created, but sign-in failed. Please sign in with your new password.");
+        }
       }
 
       setSuccess(true);

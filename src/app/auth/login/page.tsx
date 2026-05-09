@@ -89,7 +89,7 @@ async function signIn(formData: FormData) {
     cookieStore.delete("servlo_remember_email");
   }
 
-  redirect("/dashboard/owner");
+  redirect("/dashboard");
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {

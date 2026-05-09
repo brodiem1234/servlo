@@ -128,7 +128,7 @@ export function LoginExperience({
         document.cookie = "servlo_remember_email=; path=/; max-age=0; samesite=lax";
         document.cookie = "servlo_persist_session=false; path=/; max-age=0; samesite=lax";
       }
-      router.push("/dashboard/owner");
+      router.push("/dashboard");
     } catch (err) {
       setInlineError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {

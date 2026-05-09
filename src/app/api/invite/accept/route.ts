@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+function normalizeEmail(email: string | null | undefined) {
+  return (email ?? '').trim().toLowerCase();
+}
+
+function profileRoleForInvite(role: string) {
+  // profiles.role only models app access; contractor/manager detail stays on the invitation/employee record.
+  return role === 'client' ? 'client' : 'employee';
+}
+
+async function findAuthUserByEmail(admin: AdminClient, email: string) {
+  const targetEmail = normalizeEmail(email);
+  const perPage = 1000;
+
+  for (let page = 1; page <= 100; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const user = data.users.find((candidate) => normalizeEmail(candidate.email) === targetEmail);
+    if (user || data.users.length < perPage) return user ?? null;
+  }
+
+  return null;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +44,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'token required' }, { status: 400 });
     }
 
+    const supabase = await createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
     const admin = createAdminClient();
 
     // Get invitation
@@ -49,13 +78,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 410 });
     }
 
+    const invitedEmail = normalizeEmail(inv.invited_email);
+    if (!invitedEmail) {
+      return NextResponse.json({ error: 'Invitation email is invalid' }, { status: 400 });
+    }
+
     let userId: string;
 
     // Check if a user already exists with this email
-    const { data: { users: existingUsers } } = await admin.auth.admin.listUsers();
-    const existingUser = existingUsers.find((u) => u.email === inv.invited_email);
+    const existingUser = await findAuthUserByEmail(admin, invitedEmail);
 
     if (existingUser) {
+      if (currentUser?.id !== existingUser.id) {
+        return NextResponse.json(
+          { error: `Please sign in as ${invitedEmail} before accepting this invitation.` },
+          { status: 409 }
+        );
+      }
       userId = existingUser.id;
     } else {
       // New signup — name and password required
@@ -75,15 +114,47 @@ export async function POST(req: NextRequest) {
       userId = newUser.user.id;
     }
 
-    // Update profile: set role and business_id
-    await admin
+    if (existingUser) {
+      const { data: existingProfile, error: profileLookupError } = await admin
+        .from('profiles')
+        .select('role, business_id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileLookupError) {
+        console.error('[invite/accept] profile lookup error:', profileLookupError);
+        return NextResponse.json({ error: 'Failed to verify account profile' }, { status: 500 });
+      }
+
+      const profile = existingProfile as { role?: string | null; business_id?: string | null } | null;
+      if (profile?.role === 'owner') {
+        return NextResponse.json(
+          { error: 'Owner accounts cannot accept team member invitations.' },
+          { status: 409 }
+        );
+      }
+      if (profile?.business_id && profile.business_id !== inv.business_id) {
+        return NextResponse.json(
+          { error: 'This account already belongs to another workspace.' },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Upsert profile before consuming the invitation so a failed profile write cannot orphan the accepted invite.
+    const { error: profileWriteError } = await admin
       .from('profiles')
-      .update({
-        role: inv.role === 'manager' ? 'employee' : inv.role, // map manager → employee role for now
+      .upsert({
+        id: userId,
+        role: profileRoleForInvite(inv.role),
         business_id: inv.business_id,
         ...(name && !existingUser ? { full_name: name } : {}),
-      })
-      .eq('id', userId);
+      }, { onConflict: 'id' });
+
+    if (profileWriteError) {
+      console.error('[invite/accept] profile upsert error:', profileWriteError);
+      return NextResponse.json({ error: 'Failed to update account profile' }, { status: 500 });
+    }
 
     // Mark invitation accepted
     await admin
