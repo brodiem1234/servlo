@@ -34,7 +34,7 @@ export default async function EmployeeDashboardPage() {
   if (!user) redirect("/auth/login");
 
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "employee") redirect("/dashboard");
+  if (profile?.role !== "employee") redirect("/dashboard/owner");
 
   const showGpsClock = await employeeWorkspaceHasGpsClock(supabase, user.id, user.email ?? undefined);
 

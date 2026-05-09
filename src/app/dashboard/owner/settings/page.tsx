@@ -260,7 +260,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     } = await sb.auth.getUser();
     if (!owner) redirect("/auth/login");
     const { data: prof } = await sb.from("profiles").select("role").eq("id", owner.id).maybeSingle();
-    if (prof?.role && prof.role !== "owner") redirect("/dashboard");
+    if (prof?.role && prof.role !== "owner") redirect("/dashboard/owner");
 
     const raw = formData.getAll("feature");
     const next = new Set<WorkspaceFeatureId>(CORE_FEATURE_IDS);

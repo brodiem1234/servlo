@@ -22,7 +22,7 @@ export async function requireOwnerWorkspaceFeatures(): Promise<{
     .maybeSingle();
 
   if (profile?.role && profile.role !== "owner") {
-    redirect("/dashboard");
+    redirect("/dashboard/owner");
   }
 
   const tags = Array.isArray((profile as { industry_tags?: unknown } | null)?.industry_tags)

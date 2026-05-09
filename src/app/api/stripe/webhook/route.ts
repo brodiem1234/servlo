@@ -274,7 +274,7 @@ export async function POST(req: Request) {
               <h2 style="color:#16a34a">Payment received ✓</h2>
               <p>Hi ${profile.full_name || "there"},</p>
               <p>We have successfully processed your SERVLO subscription payment. Your account is fully active.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/owner" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`
           );
