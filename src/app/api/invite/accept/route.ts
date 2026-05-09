@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+function normalizeEmail(email: string | null | undefined) {
+  return email?.trim().toLowerCase() ?? '';
+}
+
+function profileRoleForInvitation() {
+  // profiles.role is owner|employee|client; team-specific roles live on team records.
+  return 'employee';
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient();
+    const supabase = await createServerClient();
 
     // Get invitation
     const { data: invitation } = await admin
@@ -50,40 +61,58 @@ export async function POST(req: NextRequest) {
     }
 
     let userId: string;
+    let createdUser = false;
 
-    // Check if a user already exists with this email
-    const { data: { users: existingUsers } } = await admin.auth.admin.listUsers();
-    const existingUser = existingUsers.find((u) => u.email === inv.invited_email);
+    const { data: { user: sessionUser } } = await supabase.auth.getUser();
+    const invitedEmail = normalizeEmail(inv.invited_email);
+    const sessionEmail = normalizeEmail(sessionUser?.email);
 
-    if (existingUser) {
-      userId = existingUser.id;
+    if (sessionUser) {
+      if (sessionEmail !== invitedEmail) {
+        return NextResponse.json({ error: 'Sign in with the invited email to accept this invitation' }, { status: 403 });
+      }
+      userId = sessionUser.id;
     } else {
-      // New signup — name and password required
+      // New signup — name and password required. Existing accounts must sign in first so
+      // a leaked invite token cannot move another user's profile into this business.
       if (!name || !password) {
-        return NextResponse.json({ error: 'name and password required for new accounts' }, { status: 400 });
+        return NextResponse.json({ error: 'Sign in with the invited email to accept this invitation' }, { status: 401 });
       }
       const { data: newUser, error: createError } = await admin.auth.admin.createUser({
-        email: inv.invited_email,
+        email: invitedEmail,
         password,
         email_confirm: true,
-        user_metadata: { name, full_name: name, role: inv.role },
+        user_metadata: { name, full_name: name, role: profileRoleForInvitation() },
       });
       if (createError || !newUser.user) {
         console.error('[invite/accept] createUser error:', createError);
+        const message = createError?.message?.toLowerCase() ?? '';
+        if (message.includes('already') || message.includes('registered')) {
+          return NextResponse.json(
+            { error: 'An account already exists for this email. Sign in first, then accept the invitation.' },
+            { status: 409 }
+          );
+        }
         return NextResponse.json({ error: createError?.message ?? 'Failed to create account' }, { status: 500 });
       }
       userId = newUser.user.id;
+      createdUser = true;
     }
 
     // Update profile: set role and business_id
-    await admin
+    const { error: profileError } = await admin
       .from('profiles')
       .update({
-        role: inv.role === 'manager' ? 'employee' : inv.role, // map manager → employee role for now
+        role: profileRoleForInvitation(),
         business_id: inv.business_id,
-        ...(name && !existingUser ? { full_name: name } : {}),
+        ...(name && createdUser ? { full_name: name } : {}),
       })
       .eq('id', userId);
+
+    if (profileError) {
+      console.error('[invite/accept] profile update error:', profileError);
+      return NextResponse.json({ error: 'Failed to join the invited business' }, { status: 500 });
+    }
 
     // Mark invitation accepted
     await admin

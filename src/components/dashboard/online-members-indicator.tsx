@@ -31,18 +31,14 @@ function colorForUser(userId: string): string {
 export function OnlineMembersIndicator({ businessId, currentUserId, currentUserName, plan }: Props) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const canShowPresence = ["team", "business", "enterprise"].includes(plan);
 
-  // Only show for paid team plans
-  if (!["team", "business", "enterprise"].includes(plan)) return null;
-
-  const allOnline = usePresence(businessId, { id: currentUserId, name: currentUserName });
+  const allOnline = usePresence(
+    canShowPresence ? businessId : null,
+    canShowPresence ? { id: currentUserId, name: currentUserName } : null
+  );
   // Filter out the current user
   const others = allOnline.filter((u) => u.userId !== currentUserId);
-
-  if (others.length === 0) return null;
-
-  const visible = others.slice(0, 3);
-  const overflow = others.length - 3;
 
   // Close popover when clicking outside
   useEffect(() => {
@@ -55,6 +51,13 @@ export function OnlineMembersIndicator({ businessId, currentUserId, currentUserN
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [popoverOpen]);
+
+  // Only show for paid team plans
+  if (!canShowPresence) return null;
+  if (others.length === 0) return null;
+
+  const visible = others.slice(0, 3);
+  const overflow = others.length - 3;
 
   return (
     <div className="relative" ref={popoverRef}>

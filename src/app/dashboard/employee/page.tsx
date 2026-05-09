@@ -34,7 +34,7 @@ export default async function EmployeeDashboardPage() {
   if (!user) redirect("/auth/login");
 
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "employee") redirect("/dashboard/owner");
+  if (profile?.role !== "employee" && profile?.role !== "contractor") redirect("/dashboard/owner");
 
   const showGpsClock = await employeeWorkspaceHasGpsClock(supabase, user.id, user.email ?? undefined);
 
@@ -52,12 +52,14 @@ export default async function EmployeeDashboardPage() {
       .from("jobs")
       .select("id, title, status, scheduled_date, scheduled_start")
       .eq("employee_id", user.id)
+      .is("deleted_at", null)
       .eq("scheduled_date", todayKey)
       .order("scheduled_start", { ascending: true }),
     supabase
       .from("jobs")
       .select("id, title, status, scheduled_date, scheduled_start")
       .eq("employee_id", user.id)
+      .is("deleted_at", null)
       .gte("scheduled_date", weekStart.toISOString().slice(0, 10))
       .lt("scheduled_date", weekEnd.toISOString().slice(0, 10))
       .order("scheduled_date", { ascending: true }),
