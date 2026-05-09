@@ -3,11 +3,17 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const PLAN_PRICE_IDS = {
+  solo: process.env.STRIPE_SOLO_PRICE_ID || "price_1TTiL8K1tzStyRcJQAfbuJ5n",
+  team: process.env.STRIPE_TEAM_PRICE_ID || "price_1TTiLaK1tzStyRcJNOgCeg0X",
+  business: process.env.STRIPE_BUSINESS_PRICE_ID || "price_1TTiLyK1tzStyRcJ4BVJz0o8",
+} as const;
+
 function getPlanFromPriceId(priceId: string | null | undefined) {
   if (!priceId) return "trial";
-  if (priceId === process.env.STRIPE_SOLO_PRICE_ID) return "solo";
-  if (priceId === process.env.STRIPE_TEAM_PRICE_ID) return "team";
-  if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) return "business";
+  const plan = (Object.entries(PLAN_PRICE_IDS) as Array<[keyof typeof PLAN_PRICE_IDS, string]>)
+    .find(([, planPriceId]) => planPriceId === priceId)?.[0];
+  if (plan) return plan;
   return "trial";
 }
 
@@ -64,6 +70,7 @@ export async function POST(req: Request) {
           .update({
             subscription_status: "active",
             stripe_customer_id: customerId,
+            ...(subscriptionId ? { stripe_subscription_id: subscriptionId } : {}),
             plan,
             subscription_tier: plan
           })
@@ -84,6 +91,7 @@ export async function POST(req: Request) {
           .update({
             subscription_status: status,
             stripe_customer_id: customerId,
+            stripe_subscription_id: subscription.id,
             plan,
             subscription_tier: plan
           })
