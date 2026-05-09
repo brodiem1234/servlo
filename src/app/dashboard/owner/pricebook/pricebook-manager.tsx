@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Package, Plus, Search, Tag, Edit2, Trash2, Wrench, ShoppingCart, X, Check, AlertCircle, AlertTriangle } from "lucide-react";
+import { PricebookImport } from "./pricebook-import";
 
 type PricebookItem = {
   id: string;
@@ -196,10 +197,13 @@ export default function PricebookManager({ initialItems, categories }: Props) {
             )}
           </p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-[var(--accent-color)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:ring-offset-2" aria-label="Add pricebook item">
-          <Plus size={16} aria-hidden />
-          Add Item
-        </button>
+        <div className="flex items-center gap-2">
+          <PricebookImport />
+          <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-[var(--accent-color)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:ring-offset-2" aria-label="Add pricebook item">
+            <Plus size={16} aria-hidden />
+            Add Item
+          </button>
+        </div>
       </div>
 
       {lowStockCount > 0 && (
