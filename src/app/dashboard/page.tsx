@@ -14,5 +14,7 @@ export default async function DashboardPage() {
     redirect('/dashboard/employee')
   if (profile?.role === 'client')
     redirect('/dashboard/client')
-  redirect('/dashboard/owner')
+  if (profile?.role === 'owner')
+    redirect('/dashboard/owner')
+  redirect('/onboarding/complete-profile')
 }

@@ -23,7 +23,7 @@ export default async function DashboardOwnerShellLayout({ children }: { children
 
   const supabase = await createClient();
   const [{ data: profileRow }, { data: businessRow }, invRes, quoteRes, tasksRes, notifRes] = await Promise.all([
-    supabase.from("profiles").select("industry_tags, onboarding_dismissed, onboarding_completed, tour_completed, plan, full_name").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("role, industry_tags, onboarding_dismissed, onboarding_completed, tour_completed, plan, full_name").eq("id", user.id).maybeSingle(),
     supabase.from("businesses").select("id").eq("owner_id", user.id).maybeSingle(),
     supabase
       .from("invoices")
@@ -53,6 +53,17 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       .order("created_at", { ascending: false })
       .limit(5)
   ]);
+
+  const role = String((profileRow as { role?: string } | null)?.role ?? "").toLowerCase();
+  if (role === "employee" || role === "contractor") {
+    redirect("/dashboard/employee");
+  }
+  if (role === "client") {
+    redirect("/dashboard/client");
+  }
+  if (role !== "owner") {
+    redirect("/onboarding/complete-profile");
+  }
 
   const industryTags = Array.isArray((profileRow as { industry_tags?: unknown } | null)?.industry_tags)
     ? ((profileRow as { industry_tags: string[] }).industry_tags ?? []).filter((t): t is IndustrySlug => isIndustrySlug(t))

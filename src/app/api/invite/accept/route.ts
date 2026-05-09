@@ -1,8 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function employeeRosterRole(inviteRole: string) {
+  return inviteRole === 'contractor' ? 'contractor' : 'employee';
+}
+
+async function findAuthUserByEmail(admin: AdminClient, email: string) {
+  const perPage = 1000;
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const user = data.users.find((u) => normalizeEmail(u.email ?? '') === email);
+    if (user) return user;
+    if (data.users.length < perPage) return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +41,10 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient();
+    const supabase = await createClient();
+    const {
+      data: { user: sessionUser },
+    } = await supabase.auth.getUser();
 
     // Get invitation
     const { data: invitation } = await admin
@@ -39,6 +66,7 @@ export async function POST(req: NextRequest) {
       expires_at: string;
       invited_by_user_id: string;
     };
+    const invitedEmail = normalizeEmail(inv.invited_email);
 
     if (inv.status !== 'pending') {
       return NextResponse.json({ error: 'Invitation is no longer valid' }, { status: 410 });
@@ -52,10 +80,19 @@ export async function POST(req: NextRequest) {
     let userId: string;
 
     // Check if a user already exists with this email
-    const { data: { users: existingUsers } } = await admin.auth.admin.listUsers();
-    const existingUser = existingUsers.find((u) => u.email === inv.invited_email);
+    const existingUser = await findAuthUserByEmail(admin, invitedEmail);
 
     if (existingUser) {
+      if (
+        !sessionUser ||
+        sessionUser.id !== existingUser.id ||
+        normalizeEmail(sessionUser.email ?? '') !== invitedEmail
+      ) {
+        return NextResponse.json(
+          { error: 'Sign in with the invited email before accepting this invitation.' },
+          { status: 403 }
+        );
+      }
       userId = existingUser.id;
     } else {
       // New signup — name and password required
@@ -63,7 +100,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'name and password required for new accounts' }, { status: 400 });
       }
       const { data: newUser, error: createError } = await admin.auth.admin.createUser({
-        email: inv.invited_email,
+        email: invitedEmail,
         password,
         email_confirm: true,
         user_metadata: { name, full_name: name, role: inv.role },
@@ -75,21 +112,95 @@ export async function POST(req: NextRequest) {
       userId = newUser.user.id;
     }
 
-    // Update profile: set role and business_id
-    await admin
+    const { data: business, error: businessError } = await admin
+      .from('businesses')
+      .select('owner_id')
+      .eq('id', inv.business_id)
+      .maybeSingle();
+
+    if (businessError || !business) {
+      console.error('[invite/accept] business lookup failed:', businessError);
+      return NextResponse.json({ error: 'Invitation business not found' }, { status: 404 });
+    }
+
+    const ownerId = (business as { owner_id: string }).owner_id;
+    const displayNameSeed =
+      name?.trim() ||
+      String(existingUser?.user_metadata?.full_name ?? existingUser?.user_metadata?.name ?? '').trim() ||
+      invitedEmail.split('@')[0];
+
+    const { data: currentProfile } = await admin
       .from('profiles')
-      .update({
-        role: inv.role === 'manager' ? 'employee' : inv.role, // map manager → employee role for now
+      .select('role')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if ((currentProfile as { role?: string } | null)?.role === 'owner') {
+      return NextResponse.json(
+        { error: 'Owner accounts cannot be converted into team member accounts.' },
+        { status: 409 }
+      );
+    }
+
+    // Profiles only support owner/client/employee; contractor is stored on the roster row.
+    const { error: profileError } = await admin
+      .from('profiles')
+      .upsert({
+        id: userId,
+        email: invitedEmail,
+        full_name: displayNameSeed,
+        role: 'employee',
         business_id: inv.business_id,
-        ...(name && !existingUser ? { full_name: name } : {}),
-      })
-      .eq('id', userId);
+      }, { onConflict: 'id' });
+
+    if (profileError) {
+      console.error('[invite/accept] profile upsert error:', profileError);
+      return NextResponse.json({ error: 'Failed to update account profile' }, { status: 500 });
+    }
+
+    const rosterRole = employeeRosterRole(inv.role);
+    const { data: existingEmployee, error: employeeLookupError } = await admin
+      .from('employees')
+      .select('id')
+      .eq('owner_id', ownerId)
+      .ilike('email', invitedEmail)
+      .limit(1)
+      .maybeSingle();
+
+    if (employeeLookupError) {
+      console.error('[invite/accept] employee lookup error:', employeeLookupError);
+      return NextResponse.json({ error: 'Failed to update team roster' }, { status: 500 });
+    }
+
+    const employeePayload = {
+      owner_id: ownerId,
+      full_name: displayNameSeed,
+      email: invitedEmail,
+      role: rosterRole,
+    };
+
+    const employeeWrite = existingEmployee
+      ? await admin
+          .from('employees')
+          .update(employeePayload)
+          .eq('id', (existingEmployee as { id: string }).id)
+      : await admin.from('employees').insert(employeePayload);
+
+    if (employeeWrite.error) {
+      console.error('[invite/accept] employee write error:', employeeWrite.error);
+      return NextResponse.json({ error: 'Failed to update team roster' }, { status: 500 });
+    }
 
     // Mark invitation accepted
-    await admin
+    const { error: invitationUpdateError } = await admin
       .from('team_invitations')
       .update({ status: 'accepted', accepted_at: new Date().toISOString() })
       .eq('id', inv.id);
+
+    if (invitationUpdateError) {
+      console.error('[invite/accept] invitation update error:', invitationUpdateError);
+      return NextResponse.json({ error: 'Failed to mark invitation accepted' }, { status: 500 });
+    }
 
     // Get display name for notification
     const { data: acceptedProfile } = await admin
@@ -100,16 +211,16 @@ export async function POST(req: NextRequest) {
 
     const displayName = (acceptedProfile as { full_name?: string | null } | null)?.full_name
       ?? name
-      ?? inv.invited_email;
+      ?? invitedEmail;
 
     // Get owner info for notification
     const { data: ownerProfile } = await admin
       .from('profiles')
       .select('full_name')
-      .eq('id', inv.invited_by_user_id)
+      .eq('id', ownerId)
       .maybeSingle();
 
-    const ownerEmail = (await admin.auth.admin.getUserById(inv.invited_by_user_id)).data.user?.email;
+    const ownerEmail = (await admin.auth.admin.getUserById(ownerId)).data.user?.email;
 
     // Send owner notification email
     if (resend && ownerEmail) {
@@ -138,7 +249,7 @@ export async function POST(req: NextRequest) {
     // Insert in-app notification for owner
     try {
       await admin.from('notifications').insert({
-        owner_id: inv.invited_by_user_id,
+        owner_id: ownerId,
         type: 'system',
         title: `${displayName} joined your team`,
         body: `${displayName} accepted your invitation as ${inv.role}.`,

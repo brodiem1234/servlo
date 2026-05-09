@@ -12,6 +12,15 @@ import { industryTagsFromUserMeta } from "@/lib/industries";
 
 import type { CompleteProfileState } from "./state";
 
+const TEAM_MEMBER_METADATA_ROLES = new Set(["employee", "contractor", "manager"]);
+
+function signupRoleFromMetadata(meta: Record<string, unknown>): "owner" | "client" | "employee" {
+  const roleRaw = String(meta.role ?? meta.signup_intent ?? "owner").trim().toLowerCase();
+  if (roleRaw === "client") return "client";
+  if (TEAM_MEMBER_METADATA_ROLES.has(roleRaw)) return "employee";
+  return "owner";
+}
+
 export async function retryCompleteProfileSetup(
   _prev: CompleteProfileState,
   _formData?: FormData
@@ -48,8 +57,7 @@ export async function retryCompleteProfileSetup(
   const accentColourRaw = String(meta.accent_colour ?? "").trim();
   const abn = String(meta.abn ?? "").trim();
   const phoneNumber = String(meta.phone_number ?? "").trim();
-  const roleRaw = String(meta.role ?? "owner").trim();
-  const role = roleRaw === "client" ? ("client" as const) : ("owner" as const);
+  const role = signupRoleFromMetadata(meta);
 
   const industry_tags = role === "owner" ? industryTagsFromUserMeta(meta) : [];
   const otherNote =
@@ -66,8 +74,17 @@ export async function retryCompleteProfileSetup(
   console.info("[onboarding] session present before bootstrap", Boolean(sessionProbe.session));
 
   const { data: profileRow } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const existingRole = String((profileRow as { role?: string } | null)?.role ?? "").toLowerCase();
 
-  if (profileRow?.role === "owner") {
+  if (existingRole === "employee" || existingRole === "contractor") {
+    redirect("/dashboard/employee" as Parameters<typeof redirect>[0]);
+  }
+
+  if (existingRole === "client") {
+    redirect("/dashboard/client" as Parameters<typeof redirect>[0]);
+  }
+
+  if (existingRole === "owner") {
     const bizRetry = await upsertOwnerBusinessRow(admin, user.id, accentColourRaw);
     if (bizRetry.ok) {
       await seedOwnerDemoNonFatal(admin, user.id);
@@ -109,8 +126,10 @@ export async function retryCompleteProfileSetup(
   }
 
   redirect(
-    (bootstrap.role === "client" ? "/dashboard/client" : "/dashboard/owner") as Parameters<
-      typeof redirect
-    >[0]
+    (bootstrap.role === "client"
+      ? "/dashboard/client"
+      : bootstrap.role === "employee"
+        ? "/dashboard/employee"
+        : "/dashboard/owner") as Parameters<typeof redirect>[0]
   );
 }
