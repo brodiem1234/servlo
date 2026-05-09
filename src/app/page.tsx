@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingPricing } from "@/components/landing/landing-pricing";
+import { ThemeTogglePublic } from "@/components/theme-toggle-public";
 
 async function getFounderCount(): Promise<number> {
   try {
@@ -70,6 +71,7 @@ export default async function HomePage() {
             <Link href="/status" className="transition hover:text-white">Status</Link>
           </nav>
           <div className="flex items-center gap-3">
+            <ThemeTogglePublic />
             <Link href="/auth/login" className="hidden text-sm font-medium text-slate-300 transition hover:text-white md:block">
               Log in
             </Link>
