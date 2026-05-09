@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         .order("scheduled_start", { ascending: true }),
       admin
         .from("invoices")
-        .select("invoice_number, amount, due_date")
+        .select("invoice_number, total, due_date")
         .eq("owner_id", ownerId)
         .eq("status", "unpaid")
         .order("due_date", { ascending: true })
@@ -64,8 +64,8 @@ export async function GET(request: Request) {
       unpaid && unpaid.length > 0
         ? `<ul style="margin:0;padding-left:18px;color:#334155;">${unpaid
             .map(
-              (i: { invoice_number?: string | null; amount?: number | null; due_date?: string | null }) =>
-                `<li>${i.invoice_number ?? "Invoice"} · $${Number(i.amount ?? 0).toFixed(2)} · due ${i.due_date ?? "—"}</li>`
+              (i: { invoice_number?: string | null; total?: number | null; due_date?: string | null }) =>
+                `<li>${i.invoice_number ?? "Invoice"} · $${Number(i.total ?? 0).toFixed(2)} · due ${i.due_date ?? "—"}</li>`
             )
             .join("")}</ul>`
         : `<p style="color:#64748b;">No unpaid invoices right now.</p>`;

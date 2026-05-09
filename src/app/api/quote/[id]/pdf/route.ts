@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { data: quote } = await supabase
       .from("quotes")
-      .select("*, clients(name, email, address)")
+      .select("*, clients(full_name, email, address)")
       .eq("id", id)
       .eq("owner_id", user.id)
       .single();
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 <div class="grid">
   <div>
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#666;margin-bottom:8px">Quote For</div>
-    <div style="font-weight:600">${(quote.clients as { name?: string } | null)?.name || quote.client_name || "Client"}</div>
+    <div style="font-weight:600">${(quote.clients as { full_name?: string } | null)?.full_name || "Client"}</div>
     ${(quote.clients as { email?: string } | null)?.email ? `<div style="color:#666;font-size:13px">${(quote.clients as { email?: string }).email}</div>` : ""}
     ${(quote.clients as { address?: string } | null)?.address ? `<div style="color:#666;font-size:13px">${(quote.clients as { address?: string }).address}</div>` : ""}
   </div>

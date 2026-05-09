@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { PortalClient } from "./portal-client";
@@ -10,9 +9,9 @@ type Props = {
 
 export default async function ClientPortalPage({ params }: Props) {
   const { token } = await params;
-  const supabase = await createClient();
+  const admin = createAdminClient();
 
-  const { data: client } = await supabase
+  const { data: client } = await admin
     .from("clients")
     .select("id, full_name, email, owner_id")
     .eq("portal_token", token)
@@ -26,24 +25,27 @@ export default async function ClientPortalPage({ params }: Props) {
     { data: invoices },
     { data: business },
   ] = await Promise.all([
-    supabase
+    admin
       .from("jobs")
       .select(
         "id, title, status, scheduled_date, address, suburb, notes"
       )
       .eq("client_id", client.id)
+      .eq("owner_id", client.owner_id)
       .order("scheduled_date", { ascending: false }),
-    supabase
+    admin
       .from("quotes")
       .select("id, quote_number, total, status, created_at")
       .eq("client_id", client.id)
+      .eq("owner_id", client.owner_id)
       .order("created_at", { ascending: false }),
-    supabase
+    admin
       .from("invoices")
       .select("id, invoice_number, total, status, due_date, stripe_payment_link")
       .eq("client_id", client.id)
+      .eq("owner_id", client.owner_id)
       .order("due_date", { ascending: true }),
-    supabase
+    admin
       .from("businesses")
       .select("business_name, phone, email, accent_colour, google_review_url, logo_url")
       .eq("owner_id", client.owner_id)
@@ -54,18 +56,19 @@ export default async function ClientPortalPage({ params }: Props) {
     "use server";
     const quoteId = String(formData.get("quote_id") ?? "");
     const token = String(formData.get("token") ?? "");
-    const sb = await createClient();
-    const { data: tokenClient } = await sb
+    const admin = createAdminClient();
+    const { data: tokenClient } = await admin
       .from("clients")
-      .select("id")
+      .select("id, owner_id")
       .eq("portal_token", token)
       .maybeSingle();
     if (!tokenClient) return;
-    await sb
+    await admin
       .from("quotes")
       .update({ status: "accepted" })
       .eq("id", quoteId)
-      .eq("client_id", tokenClient.id);
+      .eq("client_id", tokenClient.id)
+      .eq("owner_id", tokenClient.owner_id);
     revalidatePath(`/portal/${token}`);
   }
 
@@ -73,18 +76,19 @@ export default async function ClientPortalPage({ params }: Props) {
     "use server";
     const quoteId = String(formData.get("quote_id") ?? "");
     const token = String(formData.get("token") ?? "");
-    const sb = await createClient();
-    const { data: tokenClient } = await sb
+    const admin = createAdminClient();
+    const { data: tokenClient } = await admin
       .from("clients")
-      .select("id")
+      .select("id, owner_id")
       .eq("portal_token", token)
       .maybeSingle();
     if (!tokenClient) return;
-    await sb
+    await admin
       .from("quotes")
       .update({ status: "declined" })
       .eq("id", quoteId)
-      .eq("client_id", tokenClient.id);
+      .eq("client_id", tokenClient.id)
+      .eq("owner_id", tokenClient.owner_id);
     revalidatePath(`/portal/${token}`);
   }
 
@@ -93,15 +97,14 @@ export default async function ClientPortalPage({ params }: Props) {
   ): Promise<{ ok: boolean }> {
     "use server";
     const token = String(formData.get("token") ?? "");
-    const sb = await createClient();
-    const { data: tokenClient } = await sb
+    const admin = createAdminClient();
+    const { data: tokenClient } = await admin
       .from("clients")
       .select("id, owner_id")
       .eq("portal_token", token)
       .maybeSingle();
     if (!tokenClient) return { ok: false };
 
-    const admin = createAdminClient();
     const { error } = await admin.from("client_enquiries").insert({
       client_id: tokenClient.id,
       owner_id: tokenClient.owner_id,
