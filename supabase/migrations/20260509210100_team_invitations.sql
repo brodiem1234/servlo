@@ -22,6 +22,3 @@ CREATE POLICY team_invitations_owner ON team_invitations
   FOR ALL USING (
     business_id IN (SELECT id FROM businesses WHERE owner_id = auth.uid())
   );
-
-CREATE POLICY team_invitations_accept ON team_invitations
-  FOR SELECT USING (true); -- anyone can read by token to accept

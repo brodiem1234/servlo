@@ -1,8 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const USER_LOOKUP_PAGE_SIZE = 1000;
+
+async function findAuthUserByEmail(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string
+) {
+  const targetEmail = email.trim().toLowerCase();
+
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({
+      page,
+      perPage: USER_LOOKUP_PAGE_SIZE,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const match = data.users.find((user) => user.email?.toLowerCase() === targetEmail);
+    if (match) {
+      return match;
+    }
+
+    if (data.users.length < USER_LOOKUP_PAGE_SIZE) {
+      return null;
+    }
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +47,8 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient();
+    const supabase = await createClient();
+    const { data: { user: sessionUser } } = await supabase.auth.getUser();
 
     // Get invitation
     const { data: invitation } = await admin
@@ -50,12 +81,19 @@ export async function POST(req: NextRequest) {
     }
 
     let userId: string;
+    const invitedEmail = inv.invited_email.trim().toLowerCase();
 
     // Check if a user already exists with this email
-    const { data: { users: existingUsers } } = await admin.auth.admin.listUsers();
-    const existingUser = existingUsers.find((u) => u.email === inv.invited_email);
+    const existingUser = await findAuthUserByEmail(admin, invitedEmail);
 
     if (existingUser) {
+      const sessionEmail = sessionUser?.email?.trim().toLowerCase();
+      if (!sessionUser || sessionEmail !== invitedEmail || sessionUser.id !== existingUser.id) {
+        return NextResponse.json(
+          { error: `Sign in as ${inv.invited_email} to accept this invitation` },
+          { status: 401 }
+        );
+      }
       userId = existingUser.id;
     } else {
       // New signup — name and password required
@@ -76,7 +114,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Update profile: set role and business_id
-    await admin
+    const { error: profileError } = await admin
       .from('profiles')
       .update({
         role: inv.role === 'manager' ? 'employee' : inv.role, // map manager → employee role for now
@@ -84,12 +122,21 @@ export async function POST(req: NextRequest) {
         ...(name && !existingUser ? { full_name: name } : {}),
       })
       .eq('id', userId);
+    if (profileError) {
+      console.error('[invite/accept] profile update error:', profileError);
+      return NextResponse.json({ error: 'Failed to update team membership' }, { status: 500 });
+    }
 
     // Mark invitation accepted
-    await admin
+    const { error: invitationUpdateError } = await admin
       .from('team_invitations')
       .update({ status: 'accepted', accepted_at: new Date().toISOString() })
-      .eq('id', inv.id);
+      .eq('id', inv.id)
+      .eq('status', 'pending');
+    if (invitationUpdateError) {
+      console.error('[invite/accept] invitation update error:', invitationUpdateError);
+      return NextResponse.json({ error: 'Failed to accept invitation' }, { status: 500 });
+    }
 
     // Get display name for notification
     const { data: acceptedProfile } = await admin

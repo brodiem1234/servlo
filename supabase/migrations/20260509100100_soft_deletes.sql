@@ -8,7 +8,6 @@ alter table clients     add column if not exists deleted_at timestamptz null;
 alter table invoices    add column if not exists deleted_at timestamptz null;
 alter table quotes      add column if not exists deleted_at timestamptz null;
 alter table employees   add column if not exists deleted_at timestamptz null;
-alter table contractors add column if not exists deleted_at timestamptz null;
 alter table timesheets  add column if not exists deleted_at timestamptz null;
 
 -- Indexes for efficient filtering of non-deleted rows
