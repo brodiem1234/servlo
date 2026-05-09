@@ -37,9 +37,7 @@ function checkEnvVars(): AutoCheck[] {
   return required.map(([key, label]) => {
     const val = process.env[key];
     const pass = Boolean(val && val.length > 0);
-    const detail = pass
-      ? `${val!.slice(0, 4)}${"*".repeat(Math.max(0, val!.length - 4))}`
-      : "Not set";
+    const detail = pass ? "Set" : "Not set";
     return { id: `env_${key}`, label, pass, detail };
   });
 }
