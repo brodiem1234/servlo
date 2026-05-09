@@ -188,7 +188,7 @@ const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
     gradient: "linear-gradient(135deg, #0d1b36 0%, #1a3a6b 100%)",
     glow: "rgba(59,130,246,0.2)",
     desc: "Job management, invoicing, scheduling",
-    price: "From $49/mo", badge: "Available now", available: true,
+    price: "From $39/mo", badge: "Available now", available: true,
   },
   {
     id: "grow", name: "SERVLO Grow", color: "#8B5CF6",
@@ -308,27 +308,27 @@ function tiersForCombo(combo: string): PlanTier[] {
   if (combo === "grow") return GROW_TIERS;
 
   const priceMap: Record<string, [number, number, number, number]> = {
-    "core":             [49,  119, 249, 499],
-    "core+grow":        [149, 199, 299, 499],
-    "core+leads":       [99,  179, 279, 499],
-    "grow+leads":       [199, 279, 379, 499],
-    "core+grow+leads":  [249, 329, 429, 499],
+    "core":             [39,  89, 179, 0],
+    "core+grow":        [99, 149, 249, 0],
+    "core+leads":       [79, 129, 219, 0],
+    "grow+leads":       [149, 199, 299, 0],
+    "core+grow+leads":  [199, 249, 349, 0],
   };
-  const [p0, p1, p2, p3] = priceMap[combo] ?? [49, 119, 249, 499];
+  const [p0, p1, p2] = priceMap[combo] ?? [39, 89, 179];
   return [
     {
       id: "solo",
       name: "Solo",
       price: `$${p0}`,
-      description: "Perfect for soloists",
-      features: ["1 user", "All Core features", "Unlimited clients & invoices"],
+      description: "Perfect for sole traders",
+      features: ["1 user", "Unlimited jobs", "50 AI generations/mo"],
     },
     {
       id: "team",
       name: "Team",
       price: `$${p1}`,
       description: "For growing businesses",
-      features: ["Up to 10 users", "Team timesheets & scheduling", "Priority support"],
+      features: ["Unlimited team members", "Team timesheets & scheduling", "200 AI generations/mo"],
       recommended: true,
     },
     {
@@ -336,12 +336,12 @@ function tiersForCombo(combo: string): PlanTier[] {
       name: "Business",
       price: `$${p2}`,
       description: "Scaling operations",
-      features: ["Unlimited users", "Advanced reporting", "Dedicated account manager"],
+      features: ["Unlimited users", "Xero & MYOB integration", "500 AI generations/mo"],
     },
     {
       id: "enterprise",
       name: "Enterprise",
-      price: `$${p3}`,
+      price: "Custom",
       description: "Custom solutions",
       features: ["Custom integrations", "White-glove onboarding", "SLA guarantee"],
     },
