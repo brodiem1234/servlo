@@ -4,7 +4,7 @@
  * No flexbox, no CSS classes.
  */
 
-const DEFAULT_ACCENT = "#0891B2";
+const DEFAULT_ACCENT = "#3B82F6";
 
 function fmt(n: number): string {
   return `$${n.toFixed(2)}`;

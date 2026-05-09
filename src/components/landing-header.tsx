@@ -21,10 +21,10 @@ export function LandingHeader() {
   const close = () => setOpen(false);
 
   const navLinkClass =
-    "rounded-md px-2 py-2 text-[#334155] hover:bg-slate-100 hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-cyan-300 md:py-0 md:hover:bg-transparent";
+    "rounded-md px-2 py-2 text-[#334155] hover:bg-slate-100 hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-blue-400 md:py-0 md:hover:bg-transparent";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-t-2 border-teal-400 border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#1e3a5f]/95">
+    <header className="sticky top-0 z-50 border-b border-t-2 border-blue-500 border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#0A0A0A]/95">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2" onClick={close}>
           <Image src="/servlo-master-dark.svg" alt="SERVLO" width={36} height={36} unoptimized className="dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
@@ -33,13 +33,13 @@ export function LandingHeader() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm md:flex">
-          <a href="#features" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-cyan-300">
+          <a href="#features" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-blue-400">
             Features
           </a>
-          <a href="#pricing" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-cyan-300">
+          <a href="#pricing" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-blue-400">
             Pricing
           </a>
-          <a href="#about" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-cyan-300">
+          <a href="#about" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-blue-400">
             About
           </a>
         </nav>
@@ -49,13 +49,13 @@ export function LandingHeader() {
           <div className="hidden items-center gap-2 md:flex">
             <Link
               href="/auth/login"
-              className="rounded-md border border-[var(--accent-color)]/45 px-3 py-2 text-sm text-[#1e3a5f] hover:bg-slate-100 dark:border-cyan-300/40 dark:text-white dark:hover:bg-white/10"
+              className="rounded-md border border-[var(--accent-color)]/45 px-3 py-2 text-sm text-[#1e3a5f] hover:bg-slate-100 dark:border-blue-500/40 dark:text-white dark:hover:bg-white/10"
             >
               Sign In
             </Link>
             <Link
               href="/auth/signup"
-              className="rounded-md bg-[var(--accent-color)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
+              className="rounded-md bg-[var(--accent-color)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-blue-500 dark:text-white dark:hover:bg-blue-400"
             >
               Start Free Trial
             </Link>
@@ -77,7 +77,7 @@ export function LandingHeader() {
       {open ? (
         <div
           id="landing-mobile-nav"
-          className="border-t border-slate-200 bg-white px-4 py-4 shadow-lg md:hidden dark:border-white/10 dark:bg-[#1e3a5f]"
+          className="border-t border-slate-200 bg-white px-4 py-4 shadow-lg md:hidden dark:border-white/10 dark:bg-[#0A0A0A]"
         >
           <nav className="flex flex-col gap-1 text-sm font-medium">
             <a href="#features" className={navLinkClass} onClick={close}>
@@ -93,14 +93,14 @@ export function LandingHeader() {
           <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-white/10">
             <Link
               href="/auth/login"
-              className="rounded-md border border-[var(--accent-color)]/45 px-3 py-2.5 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-50 dark:border-cyan-300/40 dark:text-white dark:hover:bg-white/10"
+              className="rounded-md border border-[var(--accent-color)]/45 px-3 py-2.5 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-50 dark:border-blue-500/40 dark:text-white dark:hover:bg-white/10"
               onClick={close}
             >
               Sign In
             </Link>
             <Link
               href="/auth/signup"
-              className="rounded-md bg-[var(--accent-color)] px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a] dark:hover:bg-cyan-300"
+              className="rounded-md bg-[var(--accent-color)] px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-blue-500 dark:text-white dark:hover:bg-blue-400"
               onClick={close}
             >
               Start Free Trial

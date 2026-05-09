@@ -680,7 +680,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">Workspace features</h2>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">
               Turn modules on or off for your workspace. The sidebar and dashboard update immediately after you save. Features marked{" "}
-              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-900 dark:bg-teal-950 dark:text-teal-100">
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-900 dark:bg-blue-950/50 dark:text-blue-300">
                 Recommended
               </span>{" "}
               match your industry defaults.
@@ -703,7 +703,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{FEATURE_LABELS[id]}</span>
                             {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-900 dark:bg-blue-950/50 dark:text-blue-300">Recommended</span>
                             ) : null}
                           </span>
                         }
@@ -730,7 +730,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{FEATURE_LABELS[id]}</span>
                             {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-900 dark:bg-blue-950/50 dark:text-blue-300">Recommended</span>
                             ) : null}
                           </span>
                         }
@@ -757,7 +757,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{FEATURE_LABELS[id]}</span>
                             {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-900 dark:bg-blue-950/50 dark:text-blue-300">Recommended</span>
                             ) : null}
                           </span>
                         }
@@ -784,7 +784,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{FEATURE_LABELS[id]}</span>
                             {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-900 dark:bg-blue-950/50 dark:text-blue-300">Recommended</span>
                             ) : null}
                           </span>
                         }
@@ -811,7 +811,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{FEATURE_LABELS[id]}</span>
                             {isRecommendedFeatureForIndustry(id, primaryIndustry) ? (
-                              <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900 dark:bg-teal-950 dark:text-teal-100">Recommended</span>
+                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-900 dark:bg-blue-950/50 dark:text-blue-300">Recommended</span>
                             ) : null}
                           </span>
                         }

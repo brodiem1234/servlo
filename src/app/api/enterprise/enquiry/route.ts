@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
               <tr>
                 <td style="padding:8px 0;color:#64748b;font-size:14px">Email</td>
                 <td style="padding:8px 0;color:#0f172a;font-size:14px">
-                  <a href="mailto:${email}" style="color:#0891b2">${email}</a>
+                  <a href="mailto:${email}" style="color:#3B82F6">${email}</a>
                 </td>
               </tr>
               <tr>
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
             <div style="margin-top:24px;padding-top:24px;border-top:1px solid #e2e8f0">
               <a href="mailto:${email}?subject=Re: Enterprise enquiry — SERVLO"
-                style="display:inline-block;background:#0891b2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+                style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
                 Reply to ${name}
               </a>
             </div>

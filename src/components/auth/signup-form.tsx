@@ -993,12 +993,10 @@ export function SignupForm() {
       <ThemeToggleCorner />
       <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
-        className="auth-theme flex min-h-screen items-center justify-center px-6 py-16"
-        style={{ backgroundColor: "#0a0f1e" }}
+        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-6 py-16 dark:bg-[#0A0A0A]"
       >
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border p-8 shadow-sm"
-          style={{ backgroundColor: "#111827", borderColor: "#1e293b" }}
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl"
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={120} height={32} unoptimized

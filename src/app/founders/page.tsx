@@ -29,7 +29,7 @@ export default async function FoundersPage() {
   return (
     <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
       <div style={{ marginBottom: 32 }}>
-        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#0891b2", textDecoration: "none" }}>SERVLO</a>
+        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
       <h1 style={{ fontSize: 36, fontWeight: 900, color: "#0f172a", marginBottom: 8 }}>
@@ -106,7 +106,7 @@ export default async function FoundersPage() {
 
       <footer style={{ borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
         <p style={{ color: "#94a3b8", fontSize: 13 }}>
-          <a href="/" style={{ color: "#0891b2" }}>Back to SERVLO</a>
+          <a href="/" style={{ color: "#3B82F6" }}>Back to SERVLO</a>
         </p>
       </footer>
     </main>

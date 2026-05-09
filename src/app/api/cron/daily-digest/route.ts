@@ -128,7 +128,7 @@ export async function GET(request: Request) {
         email,
         "3 things to do in SERVLO this week",
         `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
-          <h2 style="color:#0891B2">Hi ${name} — here are 3 quick wins for your first week</h2>
+          <h2 style="color:#3B82F6">Hi ${name} — here are 3 quick wins for your first week</h2>
           <p>You signed up 3 days ago. Here are the three things that make the biggest difference for service businesses like yours:</p>
           <ol style="color:#334155;line-height:1.8">
             <li><strong>Create your first quote</strong> — send it in under 2 minutes. <a href="${baseUrl}/dashboard/owner/quotes">Go to Quotes →</a></li>
@@ -148,7 +148,7 @@ export async function GET(request: Request) {
         email,
         "How is SERVLO working for you?",
         `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
-          <h2 style="color:#0891B2">One week in — how is it going?</h2>
+          <h2 style="color:#3B82F6">One week in — how is it going?</h2>
           <p>Hi ${name},</p>
           <p>It has been a week since you joined SERVLO. We hope it is already saving you time.</p>
           <p>A few features worth exploring if you haven't yet:</p>
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
             <li><strong>Job automations</strong> — send automatic emails when jobs change status</li>
           </ul>
           <p>Your trial has ${30 - daysSince} days left. If you have any questions or feedback, reply to this email — we'd love to hear from you.</p>
-          <p><a href="${baseUrl}/dashboard/owner" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Open my dashboard</a></p>
+          <p><a href="${baseUrl}/dashboard/owner" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Open my dashboard</a></p>
           <p style="color:#64748b">— The SERVLO team</p>
         </div>`
       );

@@ -8,7 +8,7 @@
     --foreground: 210 52% 25%;
     --card: 0 0% 100%;
     --card-foreground: 210 52% 25%;
-    --primary: 186 87% 42%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 210 52% 25%;
@@ -20,7 +20,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 186 87% 42%;
+    --ring: 217 91% 60%;
     --radius: 0.75rem;
   }
 
@@ -81,7 +81,7 @@
 
 /* globals.css — public/light page defaults */
 :root {
-  --brand-accent: #0891b2;
+  --brand-accent: #3B82F6;
   --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
   /* Alias for public/landing pages only — dashboard components use var(--product-accent) */
   --accent-color: var(--brand-accent);
@@ -106,7 +106,7 @@
 }
 
 html.dark {
-  --brand-accent: #0891b2;
+  --brand-accent: #3B82F6;
   --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
   --bg-primary: #080d18;
   --bg-secondary: #0f1623;

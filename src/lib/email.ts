@@ -28,7 +28,7 @@ function escHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function wrapEmail(content: string, accentHex = "#0891B2", options?: { businessName?: string }) {
+function wrapEmail(content: string, accentHex = "#3B82F6", options?: { businessName?: string }) {
   const businessNameCell = options?.businessName
     ? `<td style="font-family:Arial,sans-serif;font-size:13px;color:rgba(255,255,255,0.85);text-align:right;vertical-align:bottom;">${escHtml(options.businessName)}</td>`
     : "";
@@ -96,7 +96,7 @@ export function invoiceSentEmailTemplate(args: {
   /** Stripe Payment Link URL — when present, a prominent Pay Now button is shown. */
   payNowUrl?: string | null;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
   const issueDateCol = args.issueDate
     ? `<td width="33%" style="padding:12px 16px;border-right:1px solid #e2e8f0;">
@@ -177,7 +177,7 @@ export function quoteSentEmailTemplate(args: {
   accentHex?: string;
   appUrl?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
   const colCount = args.issueDate && args.expiryDate ? 3 : args.issueDate ? 2 : 1;
   const colWidth = colCount === 3 ? "33%" : colCount === 2 ? "50%" : "100%";
@@ -251,7 +251,7 @@ export function invoiceReminderEmailTemplate(args: {
   payNowUrl: string;
   accentHex?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const payBlock = `
     <table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px;">
       <tr>
@@ -307,7 +307,7 @@ export function employeeAssignmentEmailTemplate(args: {
   notes?: string | null;
   accentHex?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const addressRow = args.address
     ? `<tr>
         <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Location</td>
@@ -343,7 +343,7 @@ export function portalShareEmailTemplate(args: {
   businessName?: string;
   accentHex?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   return wrapEmail(`
     <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Your Client Portal</h1>
     <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Hi ${escHtml(args.clientName)},</p>
@@ -387,7 +387,7 @@ export function welcomeOwnerEmailTemplate(args: {
         <td style="padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;vertical-align:top;">
           <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0f172a;">1. Add your first client</p>
           <p style="margin:0 0 10px;font-size:13px;color:#64748b;">Store contact details and track job history</p>
-          <a href="${clientsUrl}" style="font-size:12px;font-weight:600;color:#0891B2;text-decoration:none;">Go to Clients →</a>
+          <a href="${clientsUrl}" style="font-size:12px;font-weight:600;color:#3B82F6;text-decoration:none;">Go to Clients →</a>
         </td>
       </tr>
       <tr><td style="padding:4px 0;"></td></tr>
@@ -395,7 +395,7 @@ export function welcomeOwnerEmailTemplate(args: {
         <td style="padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;vertical-align:top;">
           <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0f172a;">2. Create your first job</p>
           <p style="margin:0 0 10px;font-size:13px;color:#64748b;">Schedule, assign, and track every job</p>
-          <a href="${jobsUrl}" style="font-size:12px;font-weight:600;color:#0891B2;text-decoration:none;">Go to Jobs →</a>
+          <a href="${jobsUrl}" style="font-size:12px;font-weight:600;color:#3B82F6;text-decoration:none;">Go to Jobs →</a>
         </td>
       </tr>
       <tr><td style="padding:4px 0;"></td></tr>
@@ -403,17 +403,17 @@ export function welcomeOwnerEmailTemplate(args: {
         <td style="padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;vertical-align:top;">
           <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0f172a;">3. Send your first invoice</p>
           <p style="margin:0 0 10px;font-size:13px;color:#64748b;">Get paid faster with professional invoices</p>
-          <a href="${financeUrl}" style="font-size:12px;font-weight:600;color:#0891B2;text-decoration:none;">Go to Finance →</a>
+          <a href="${financeUrl}" style="font-size:12px;font-weight:600;color:#3B82F6;text-decoration:none;">Go to Finance →</a>
         </td>
       </tr>
     </table>
 
     <p style="text-align:center;margin:24px 0 8px;">
-      <a href="${dashboardUrl}" style="display:inline-block;background:#0891B2;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.01em;">Go to your dashboard →</a>
+      <a href="${dashboardUrl}" style="display:inline-block;background:#3B82F6;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.01em;">Go to your dashboard →</a>
     </p>
 
     <p style="margin-top:20px;color:#64748b;font-size:13px;">You can turn modules on or off anytime under Settings → Features.</p>
-    <p style="color:#64748b;font-size:13px;">Questions? <a href="${args.supportUrl}" style="color:#0891B2;font-weight:600;">Contact support</a>.</p>
+    <p style="color:#64748b;font-size:13px;">Questions? <a href="${args.supportUrl}" style="color:#3B82F6;font-weight:600;">Contact support</a>.</p>
   `);
 }
 
@@ -426,7 +426,7 @@ export function purchaseOrderEmailTemplate(args: {
   notes?: string | null;
   accentHex?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const rows = args.items
     .map(
       (item) =>
@@ -476,7 +476,7 @@ export function ownerDailyDigestEmailTemplate(args: {
   dashboardUrl: string;
   accentHex?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   return wrapEmail(`
     <h1 style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Your morning snapshot</h1>
     <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:14px;color:#475569;">Here is what needs attention today.</p>
@@ -509,7 +509,7 @@ export function jobCompletionEmailTemplate(args: {
   accentHex?: string;
   businessPhone?: string | null;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const signoffRow = args.signoffName
     ? `<tr>
         <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Signed off by</td>
@@ -557,7 +557,7 @@ export function trialEndingEmailTemplate(args: {
   upgradeUrl: string;
   accentHex?: string;
 }) {
-  const accent = args.accentHex ?? "#0891B2";
+  const accent = args.accentHex ?? "#3B82F6";
   const d = args.daysRemaining;
   let urgencyBanner = "";
   let heading = "";

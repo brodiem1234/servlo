@@ -44,7 +44,7 @@ export default async function StatusPage() {
   return (
     <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 700, margin: "0 auto", padding: "48px 24px" }}>
       <div style={{ marginBottom: 40 }}>
-        <a href="/" style={{ fontSize: 20, fontWeight: 700, color: "#0891b2", textDecoration: "none" }}>
+        <a href="/" style={{ fontSize: 20, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>
           SERVLO
         </a>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0f172a", marginTop: 24, marginBottom: 8 }}>
@@ -134,7 +134,7 @@ export default async function StatusPage() {
       <footer style={{ marginTop: 60, borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
         <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>
           &copy; {new Date().getFullYear()} SERVLO &mdash; Business management software for Australian service businesses.
-          {" "}<a href="/" style={{ color: "#0891b2" }}>Back to SERVLO</a>
+          {" "}<a href="/" style={{ color: "#3B82F6" }}>Back to SERVLO</a>
         </p>
       </footer>
     </main>

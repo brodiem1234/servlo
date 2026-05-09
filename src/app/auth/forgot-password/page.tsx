@@ -48,8 +48,8 @@ export default function ForgotPasswordPage({ searchParams }: Props) {
   return (
     <>
       <ThemeToggleCorner />
-      <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
-        <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-6 py-16 dark:bg-[#0A0A0A]">
+        <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl">
           <div className="mb-6 flex justify-center">
             <Image src="/servlo-master-dark.svg" alt="SERVLO" width={140} height={36} priority unoptimized
               className="block dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage({ searchParams }: Props) {
                 type="email"
                 defaultValue={emailValue}
                 required
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900"
+                className="h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 dark:focus:border-blue-500"
               />
             </div>
             <Button type="submit" className="w-full bg-[var(--accent-color)] text-white transition hover:bg-[var(--accent-hover)]">

@@ -9,7 +9,7 @@ export default function MigrateFromSimproPage() {
   return (
     <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 740, margin: "0 auto", padding: "48px 24px" }}>
       <div style={{ marginBottom: 32 }}>
-        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#0891b2", textDecoration: "none" }}>SERVLO</a>
+        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
       <h1 style={{ fontSize: 32, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>
@@ -83,7 +83,7 @@ export default function MigrateFromSimproPage() {
         </p>
         <a
           href="/auth/signup"
-          style={{ display: "inline-block", background: "#0891b2", color: "#fff", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
+          style={{ display: "inline-block", background: "#3B82F6", color: "#fff", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
         >
           Start free trial
         </a>
@@ -107,17 +107,17 @@ export default function MigrateFromSimproPage() {
         </h2>
         <p style={{ color: "#475569", fontSize: 14, margin: 0 }}>
           We&apos;ll help you migrate from simPRO at no cost. Email{" "}
-          <a href="mailto:hello@servlo.com.au" style={{ color: "#0891b2" }}>hello@servlo.com.au</a>{" "}
+          <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a>{" "}
           with your simPRO exports and we&apos;ll guide you through the transition.
         </p>
       </section>
 
       <p style={{ color: "#94a3b8", fontSize: 13 }}>
-        <a href="/migrate/from-servicem8" style={{ color: "#0891b2" }}>Switching from ServiceM8?</a>
+        <a href="/migrate/from-servicem8" style={{ color: "#3B82F6" }}>Switching from ServiceM8?</a>
         {" · "}
-        <a href="/migrate/from-tradify" style={{ color: "#0891b2" }}>Switching from Tradify?</a>
+        <a href="/migrate/from-tradify" style={{ color: "#3B82F6" }}>Switching from Tradify?</a>
         {" · "}
-        <a href="/migrate/from-jobber" style={{ color: "#0891b2" }}>Switching from Jobber?</a>
+        <a href="/migrate/from-jobber" style={{ color: "#3B82F6" }}>Switching from Jobber?</a>
       </p>
     </main>
   );

@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;background:#f8fafc">
             <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0">
               <div style="margin-bottom:24px">
-                <span style="font-size:28px;font-weight:900;letter-spacing:-1px;color:#0891b2">SERVLO</span>
+                <span style="font-size:28px;font-weight:900;letter-spacing:-1px;color:#3B82F6">SERVLO</span>
               </div>
 
               <h2 style="color:#0f172a;margin:0 0 12px;font-size:22px">You've been invited!</h2>
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
               </p>
 
               ${personalMessage ? `
-              <div style="margin:16px 0;padding:16px;background:#f1f5f9;border-radius:8px;border-left:4px solid #0891b2">
+              <div style="margin:16px 0;padding:16px;background:#f1f5f9;border-radius:8px;border-left:4px solid #3B82F6">
                 <p style="color:#475569;margin:0;font-style:italic">"${personalMessage}"</p>
               </div>
               ` : ''}
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
               </p>
 
               <a href="${inviteUrl}"
-                style="display:inline-block;background:#0891b2;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
+                style="display:inline-block;background:#3B82F6;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
                 Accept Invitation →
               </a>
 

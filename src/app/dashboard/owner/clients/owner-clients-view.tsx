@@ -62,7 +62,7 @@ function clientTypeBadgeClass(t: string | null | undefined) {
   const v = (t ?? "customer").toLowerCase();
   if (v === "supplier") return "bg-sky-100 text-sky-900 ring-1 ring-sky-200 dark:bg-sky-950 dark:text-sky-100 dark:ring-sky-800";
   if (v === "lead") return "bg-violet-100 text-violet-900 ring-1 ring-violet-200 dark:bg-violet-950 dark:text-violet-100 dark:ring-violet-800";
-  return "bg-teal-100 text-teal-900 ring-1 ring-teal-200 dark:bg-teal-950 dark:text-teal-100 dark:ring-teal-800";
+  return "bg-blue-100 text-blue-900 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:ring-blue-800/50";
 }
 
 function clientTypeLabel(t: string | null | undefined) {
@@ -237,7 +237,7 @@ export default function OwnerClientsView({
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[var(--accent-color)] px-5 text-sm font-bold text-white shadow-md shadow-teal-900/20 hover:bg-[var(--accent-hover)] dark:shadow-black/40"
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[var(--product-accent)] px-5 text-sm font-bold text-white shadow-md shadow-blue-900/20 hover:opacity-90 dark:shadow-black/40"
           >
             <Plus className="size-4" aria-hidden />
             Add Client

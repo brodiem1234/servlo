@@ -9,7 +9,7 @@ export default function MigrateFromJobberPage() {
   return (
     <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 740, margin: "0 auto", padding: "48px 24px" }}>
       <div style={{ marginBottom: 32 }}>
-        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#0891b2", textDecoration: "none" }}>SERVLO</a>
+        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
       <h1 style={{ fontSize: 32, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>
@@ -43,7 +43,7 @@ export default function MigrateFromJobberPage() {
             <tr style={{ background: "#f8fafc" }}>
               <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Feature</th>
               <th style={{ textAlign: "center", padding: "10px 12px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Jobber</th>
-              <th style={{ textAlign: "center", padding: "10px 12px", borderBottom: "2px solid #0891b2", color: "#0891b2" }}>SERVLO</th>
+              <th style={{ textAlign: "center", padding: "10px 12px", borderBottom: "2px solid #3B82F6", color: "#3B82F6" }}>SERVLO</th>
             </tr>
           </thead>
           <tbody>
@@ -64,7 +64,7 @@ export default function MigrateFromJobberPage() {
               <tr key={i} style={{ borderBottom: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
                 <td style={{ padding: "10px 12px", color: "#334155" }}>{feature}</td>
                 <td style={{ padding: "10px 12px", textAlign: "center", color: jobber === "—" ? "#94a3b8" : "#334155" }}>{jobber}</td>
-                <td style={{ padding: "10px 12px", textAlign: "center", color: "#0891b2", fontWeight: 600 }}>{servlo}</td>
+                <td style={{ padding: "10px 12px", textAlign: "center", color: "#3B82F6", fontWeight: 600 }}>{servlo}</td>
               </tr>
             ))}
           </tbody>
@@ -102,7 +102,7 @@ export default function MigrateFromJobberPage() {
         </p>
         <a
           href="/auth/signup"
-          style={{ display: "inline-block", background: "#0891b2", color: "#fff", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
+          style={{ display: "inline-block", background: "#3B82F6", color: "#fff", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
         >
           Start free trial
         </a>
@@ -115,17 +115,17 @@ export default function MigrateFromJobberPage() {
         </h2>
         <p style={{ color: "#475569", fontSize: 14, margin: 0 }}>
           Our team will help you migrate from Jobber for free. Email{" "}
-          <a href="mailto:hello@servlo.com.au" style={{ color: "#0891b2" }}>hello@servlo.com.au</a>{" "}
+          <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a>{" "}
           with your Jobber export and we&apos;ll get you set up.
         </p>
       </section>
 
       <p style={{ color: "#94a3b8", fontSize: 13 }}>
-        <a href="/migrate/from-servicem8" style={{ color: "#0891b2" }}>Switching from ServiceM8?</a>
+        <a href="/migrate/from-servicem8" style={{ color: "#3B82F6" }}>Switching from ServiceM8?</a>
         {" · "}
-        <a href="/migrate/from-tradify" style={{ color: "#0891b2" }}>Switching from Tradify?</a>
+        <a href="/migrate/from-tradify" style={{ color: "#3B82F6" }}>Switching from Tradify?</a>
         {" · "}
-        <a href="/migrate/from-simpro" style={{ color: "#0891b2" }}>Switching from simPRO?</a>
+        <a href="/migrate/from-simpro" style={{ color: "#3B82F6" }}>Switching from simPRO?</a>
       </p>
     </main>
   );

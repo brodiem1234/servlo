@@ -12,7 +12,7 @@ interface BrandState {
 }
 
 const PRESET_COLORS = [
-  "#0891B2", "#3B82F6", "#8B5CF6", "#EC4899",
+  "#3B82F6", "#0891B2", "#8B5CF6", "#EC4899",
   "#EF4444", "#F97316", "#EAB308", "#22C55E",
   "#14B8A6", "#6366F1", "#64748B", "#0F172A",
 ];
@@ -238,13 +238,13 @@ export default function BrandSettingsPage() {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={state.brand_color_primary || "#0891B2"}
+                value={state.brand_color_primary || "#3B82F6"}
                 onChange={(e) => setState((s) => ({ ...s, brand_color_primary: e.target.value }))}
                 className="h-10 w-12 cursor-pointer rounded border border-[var(--border)] p-0.5"
               />
               <input
                 className="h-10 w-40 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm font-mono text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
-                placeholder="#0891B2"
+                placeholder="#3B82F6"
                 value={state.brand_color_primary}
                 onChange={(e) => setState((s) => ({ ...s, brand_color_primary: e.target.value }))}
                 pattern="^#[0-9A-Fa-f]{6}$"

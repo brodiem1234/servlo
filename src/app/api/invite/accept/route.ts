@@ -120,13 +120,13 @@ export async function POST(req: NextRequest) {
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
             <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0">
-              <span style="font-size:24px;font-weight:900;letter-spacing:-1px;color:#0891b2">SERVLO</span>
+              <span style="font-size:24px;font-weight:900;letter-spacing:-1px;color:#3B82F6">SERVLO</span>
               <h2 style="color:#0f172a;margin:16px 0 8px">Team invitation accepted</h2>
               <p style="color:#475569">
                 <strong>${displayName}</strong> has accepted your invitation and joined your team as a <strong>${inv.role}</strong>.
               </p>
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/owner/team"
-                style="display:inline-block;background:#0891b2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px">
+                style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px">
                 View your team →
               </a>
             </div>

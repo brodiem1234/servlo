@@ -36,7 +36,7 @@ export default async function BookingPage({ params }: Props) {
   }
 
   const brand = await getBusinessBrand(resolvedBusiness.owner_id);
-  const accent = brand.colorPrimary || resolvedBusiness.accent_colour || "#0891B2";
+  const accent = brand.colorPrimary || resolvedBusiness.accent_colour || "#3B82F6";
   const displayName = brand.businessName || resolvedBusiness.business_name || "Book a service";
   const logoUrl = brand.logoUrl;
   const serviceTypes = (resolvedBusiness as { booking_service_types?: string[] | null }).booking_service_types ?? [];

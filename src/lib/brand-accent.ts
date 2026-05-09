@@ -1,6 +1,6 @@
 /** Safe preset accent colours (dashboard + onboarding only). */
 export const ACCENT_PRESETS = [
-  { label: "Teal", hex: "#0891B2" },
+  { label: "Teal", hex: "#3B82F6" },
   { label: "Blue", hex: "#2563EB" },
   { label: "Purple", hex: "#7C3AED" },
   { label: "Pink", hex: "#DB2777" },
@@ -12,7 +12,7 @@ export const ACCENT_PRESETS = [
 
 export type AccentPresetHex = (typeof ACCENT_PRESETS)[number]["hex"];
 
-export const DEFAULT_ACCENT_HEX: AccentPresetHex = "#0891B2";
+export const DEFAULT_ACCENT_HEX: AccentPresetHex = "#3B82F6";
 
 const HEX_SIX = /^#[0-9A-Fa-f]{6}$/;
 

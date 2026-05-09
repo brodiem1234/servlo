@@ -214,7 +214,7 @@ export async function POST(req: Request) {
               <p>We were unable to process your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong>.</p>
               <p>This sometimes happens when a card expires or has insufficient funds. Your access is still active while we retry.</p>
               <p><strong>What to do:</strong> Update your payment method in your billing portal to avoid any interruption to your service.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method</a></p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method</a></p>
               <p style="color:#64748b;font-size:13px">We will automatically retry in a few days. If the payment continues to fail, your subscription will be suspended.</p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`;
@@ -274,7 +274,7 @@ export async function POST(req: Request) {
               <h2 style="color:#16a34a">Payment received ✓</h2>
               <p>Hi ${profile.full_name || "there"},</p>
               <p>We have successfully processed your SERVLO subscription payment. Your account is fully active.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/owner" style="display:inline-block;background:#0891B2;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/owner" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`
           );

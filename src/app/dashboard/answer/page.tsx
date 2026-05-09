@@ -19,8 +19,8 @@ export default function AnswerDashboardPage() {
             <div key={label} className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-5">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10">
-                  <Icon size={15} className="text-teal-400" />
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
+                  <Icon size={15} className="text-blue-400" />
                 </span>
               </div>
               <p className="text-2xl font-bold tabular-nums text-white">—</p>

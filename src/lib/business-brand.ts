@@ -28,7 +28,7 @@ export async function getBusinessBrand(ownerId: string): Promise<BusinessBrand> 
     .maybeSingle();
 
   const businessName = (data as Record<string, string | null> | null)?.brand_company_name || (data as Record<string, string | null> | null)?.business_name || "SERVLO";
-  const accentColour = (data as Record<string, string | null> | null)?.accent_colour || "#0891B2";
+  const accentColour = (data as Record<string, string | null> | null)?.accent_colour || "#3B82F6";
   const colorPrimary = (data as Record<string, string | null> | null)?.brand_color_primary || accentColour;
 
   return {

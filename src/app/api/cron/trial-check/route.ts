@@ -122,7 +122,7 @@ function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr><td align="center" style="padding:32px 16px;">
       <table width="580" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;">
-        <tr><td style="background:#0891b2;padding:24px 32px;">
+        <tr><td style="background:#3B82F6;padding:24px 32px;">
           <span style="color:#fff;font-size:20px;font-weight:bold;">SERVLO</span>
         </td></tr>
         <tr><td style="padding:32px;">
@@ -130,11 +130,11 @@ function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
           <p style="color:#475569;line-height:1.6;">Your SERVLO free trial expires on <strong>${trialEndDate}</strong>. After that, you'll need a subscription to keep accessing your jobs, clients, invoices, and all your business data.</p>
           <p style="color:#475569;line-height:1.6;">Choose a plan and keep growing your business:</p>
           <div style="text-align:center;margin:24px 0;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/upgrade" style="background:#0891b2;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/upgrade" style="background:#3B82F6;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
               Choose a plan →
             </a>
           </div>
-          <p style="color:#94a3b8;font-size:13px;">Questions? Reply to this email or visit <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="color:#0891b2;">servlo.com.au</a></p>
+          <p style="color:#94a3b8;font-size:13px;">Questions? Reply to this email or visit <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="color:#3B82F6;">servlo.com.au</a></p>
         </td></tr>
       </table>
     </td></tr>

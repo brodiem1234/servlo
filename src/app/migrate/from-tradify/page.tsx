@@ -9,7 +9,7 @@ export default function MigrateFromTradifyPage() {
   return (
     <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 740, margin: "0 auto", padding: "48px 24px" }}>
       <div style={{ marginBottom: 32 }}>
-        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#0891b2", textDecoration: "none" }}>SERVLO</a>
+        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
       <h1 style={{ fontSize: 32, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>
@@ -50,7 +50,7 @@ export default function MigrateFromTradifyPage() {
         </ul>
         <p style={{ color: "#64748b", fontSize: 14, marginTop: 12 }}>
           <strong>Bulk Tradify import coming soon.</strong> Email{" "}
-          <a href="mailto:hello@servlo.com.au" style={{ color: "#0891b2" }}>hello@servlo.com.au</a> for early access.
+          <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a> for early access.
         </p>
       </section>
 
@@ -62,14 +62,14 @@ export default function MigrateFromTradifyPage() {
         <p style={{ color: "#334155", lineHeight: 1.7 }}>
           Understanding why you switched helps us build a better product. Reply to any of our emails
           or reach us at{" "}
-          <a href="mailto:hello@servlo.com.au" style={{ color: "#0891b2" }}>hello@servlo.com.au</a>.
+          <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a>.
           We read every response.
         </p>
       </section>
 
       {/* CTA */}
       <div style={{
-        background: "linear-gradient(135deg, #0891b2 0%, #0e7490 100%)",
+        background: "linear-gradient(135deg, #3B82F6 0%, #0e7490 100%)",
         borderRadius: 16, padding: "32px 40px", textAlign: "center"
       }}>
         <h3 style={{ color: "#fff", fontSize: 22, fontWeight: 700, margin: "0 0 8px" }}>
@@ -81,7 +81,7 @@ export default function MigrateFromTradifyPage() {
         <a
           href="/auth/signup"
           style={{
-            display: "inline-block", background: "#fff", color: "#0891b2",
+            display: "inline-block", background: "#fff", color: "#3B82F6",
             padding: "14px 32px", borderRadius: 8, fontWeight: 700,
             textDecoration: "none", fontSize: 16
           }}
@@ -93,13 +93,13 @@ export default function MigrateFromTradifyPage() {
       <div style={{ marginTop: 48, borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
         <p style={{ color: "#94a3b8", fontSize: 13 }}>
           Also switching from another tool?{" "}
-          <Link href="/migrate/from-servicem8" style={{ color: "#0891b2" }}>ServiceM8</Link>
+          <Link href="/migrate/from-servicem8" style={{ color: "#3B82F6" }}>ServiceM8</Link>
           {" "}&middot;{" "}
-          <Link href="/migrate/from-jobber" style={{ color: "#0891b2" }}>Jobber</Link>
+          <Link href="/migrate/from-jobber" style={{ color: "#3B82F6" }}>Jobber</Link>
           {" "}&middot;{" "}
-          <Link href="/migrate/from-simpro" style={{ color: "#0891b2" }}>simPRO</Link>
+          <Link href="/migrate/from-simpro" style={{ color: "#3B82F6" }}>simPRO</Link>
           {" "}&middot;{" "}
-          <a href="/" style={{ color: "#0891b2" }}>Back to SERVLO</a>
+          <a href="/" style={{ color: "#3B82F6" }}>Back to SERVLO</a>
         </p>
       </div>
     </main>

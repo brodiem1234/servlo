@@ -10,7 +10,7 @@ const PLANS = [
     price: "$39/mo",
     priceId: "price_1TTiL8K1tzStyRcJQAfbuJ5n",
     features: ["1 user", "500 clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"],
-    accent: "#0891b2",
+    accent: "#3B82F6",
   },
   {
     name: "Team",

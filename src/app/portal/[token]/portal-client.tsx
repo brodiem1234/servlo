@@ -195,7 +195,7 @@ export function PortalClient({
   declineQuoteAction,
   requestServiceAction,
 }: Props) {
-  const accent = business?.accent_colour ?? "#0891B2";
+  const accent = business?.accent_colour ?? "#3B82F6";
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
