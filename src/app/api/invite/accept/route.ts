@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Resend } from 'resend';
 
@@ -18,6 +19,8 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient();
+    const supabase = await createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
 
     // Get invitation
     const { data: invitation } = await admin
@@ -53,9 +56,16 @@ export async function POST(req: NextRequest) {
 
     // Check if a user already exists with this email
     const { data: { users: existingUsers } } = await admin.auth.admin.listUsers();
-    const existingUser = existingUsers.find((u) => u.email === inv.invited_email);
+    const invitedEmail = inv.invited_email.toLowerCase();
+    const existingUser = existingUsers.find((u) => u.email?.toLowerCase() === invitedEmail);
 
     if (existingUser) {
+      if (!currentUser) {
+        return NextResponse.json({ error: 'Please sign in with the invited account to accept this invitation' }, { status: 401 });
+      }
+      if (currentUser.id !== existingUser.id) {
+        return NextResponse.json({ error: 'This invitation is for a different account' }, { status: 403 });
+      }
       userId = existingUser.id;
     } else {
       // New signup — name and password required
