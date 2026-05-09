@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import { ThemeScript } from "@/components/theme-script";
 import { SwRegister } from "@/components/pwa/sw-register";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import "./globals.css";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-sans" });
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeScript />
         {children}
         <SwRegister />
+        <PwaInstallPrompt />
       </body>
     </html>
   );

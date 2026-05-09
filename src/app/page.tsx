@@ -60,6 +60,7 @@ export default async function HomePage() {
               height={32}
               priority
               unoptimized
+              className="drop-shadow-[0_0_20px_rgba(59,130,246,0.45)]"
             />
           </Link>
           <nav className="hidden items-center gap-7 text-sm font-medium text-slate-400 md:flex">
@@ -247,17 +248,17 @@ export default async function HomePage() {
             {
               emoji: "💬",
               title: "Texting quotes to clients at 10pm",
-              copy: "Clients reply with changes, you lose track, you underquote. SERVLO sends professional quotes clients can approve online."
+              copy: "Send professional quotes clients approve online. No more chasing approvals over WhatsApp."
             },
             {
               emoji: "📄",
-              title: "Invoicing from a spreadsheet or scraps of paper",
-              copy: "You forget to invoice. Clients dispute amounts. Cash sits uncollected for weeks. SERVLO invoices on job completion automatically."
+              title: "Invoicing from a spreadsheet",
+              copy: "Invoice automatically on job completion. Get paid faster with Stripe payment links sent directly to clients."
             },
             {
               emoji: "📱",
               title: "Coordinating your crew on WhatsApp",
-              copy: "Who’s going where? What job? SERVLO schedules your whole team with one tap and shows who’s online and where."
+              copy: "Schedule your team with one tap. Everyone knows where to be and what job they’re on."
             }
           ].map(({ emoji, title, copy }) => (
             <div
@@ -323,6 +324,7 @@ export default async function HomePage() {
           {[
             {
               logo: "/core.png",
+              logoGlow: "drop-shadow-[0_0_16px_rgba(59,130,246,0.4)]",
               name: "SERVLO Core",
               color: "#3B82F6",
               badge: "Available now",
@@ -342,6 +344,7 @@ export default async function HomePage() {
             },
             {
               logo: "/grow.png",
+              logoGlow: "drop-shadow-[0_0_16px_rgba(139,92,246,0.4)]",
               name: "SERVLO Grow",
               color: "#8B5CF6",
               badge: "Coming Q3 2026",
@@ -358,6 +361,7 @@ export default async function HomePage() {
             },
             {
               logo: "/leads.png",
+              logoGlow: "drop-shadow-[0_0_16px_rgba(245,158,11,0.4)]",
               name: "SERVLO Leads",
               color: "#F59E0B",
               badge: "Coming Q4 2026",
@@ -372,7 +376,7 @@ export default async function HomePage() {
                 "Lead quality guarantee"
               ]
             }
-          ].map(({ logo, name, color, badge, badgeStyle, perfectFor, desc, features }) => (
+          ].map(({ logo, logoGlow, name, color, badge, badgeStyle, perfectFor, desc, features }) => (
             <div
               key={name}
               className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20"
@@ -381,7 +385,7 @@ export default async function HomePage() {
               <div className="flex flex-1 flex-col p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="relative h-8 w-8 shrink-0">
-                    <Image src={logo} alt={name} fill sizes="32px" className="object-contain" unoptimized />
+                    <Image src={logo} alt={name} fill sizes="32px" className={`object-contain ${logoGlow ?? ""}`} unoptimized />
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
                     {badge}
@@ -657,6 +661,7 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
+                  className="drop-shadow-[0_0_16px_rgba(59,130,246,0.4)]"
                 />
               </Link>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">

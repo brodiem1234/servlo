@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git check-ignore *)",
+      "Bash(gh pr *)",
+      "PowerShell($env:GITHUB_TOKEN; $env:GH_TOKEN)",
+      "PowerShell($env:GITHUB_TOKEN)",
+      "PowerShell($env:GH_TOKEN)"
+    ]
+  }
+}
