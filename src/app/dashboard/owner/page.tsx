@@ -11,7 +11,6 @@ import LiveClock from "@/components/dashboard/live-clock";
 import WeeklyRevenueChart from "@/components/dashboard/weekly-revenue-chart";
 import OwnerSidebarTodos from "@/components/dashboard/owner-sidebar-todos";
 import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
-import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 import { ReferralWidget } from "@/components/dashboard/referral-widget";
 import { ensureReferralCode } from "@/lib/referral";
 
@@ -108,8 +107,6 @@ export default async function OwnerDashboardPage() {
     (profile as { full_name?: string | null } | null)?.full_name ?? null,
     user.email ?? null
   );
-
-  const onboardingCompleted = (profile as { onboarding_completed?: boolean | null } | null)?.onboarding_completed ?? false;
 
   const { metrics, chaseInvoices, recentActivity, jobsScheduledThisWeek } = dashboardData;
 
@@ -242,7 +239,6 @@ export default async function OwnerDashboardPage() {
 
   return (
     <section className="space-y-6">
-      <OnboardingTour initialCompleted={onboardingCompleted} />
       <OnboardingChecklist />
       {/* Trial banner */}
       {trialDaysRemaining > 0 ? (
