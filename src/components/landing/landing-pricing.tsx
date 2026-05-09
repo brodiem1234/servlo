@@ -2,22 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 
 const TIERS = [
   {
     name: "Solo",
     desc: "Perfect for sole traders",
-    monthly: 49,
-    annual: 39,
+    monthly: 39,
+    annual: 32.5,
+    annualTotal: 390,
     href: "/auth/signup?plan=solo",
     highlight: false,
     badge: null,
+    earlyAdopter: 9.75,
     features: [
       "Unlimited jobs & invoices",
       "Client management (CRM)",
       "Quote builder with PDF",
       "Basic scheduling",
+      "AI receipt scanning for materials",
+      "Digital signatures on site",
+      "Client portal for quotes + payments",
       "Mobile app",
       "Email support"
     ]
@@ -25,14 +30,16 @@ const TIERS = [
   {
     name: "Team",
     desc: "For growing trade businesses",
-    monthly: 99,
-    annual: 79,
+    monthly: 89,
+    annual: 74,
+    annualTotal: 888,
     href: "/auth/signup?plan=team",
     highlight: true,
     badge: "Most popular",
+    earlyAdopter: 22.25,
     features: [
       "Everything in Solo",
-      "Up to 10 team members",
+      "Unlimited team members",
       "Timesheets & clock in/out",
       "Purchase orders",
       "Business dashboard & reports",
@@ -42,27 +49,52 @@ const TIERS = [
   {
     name: "Business",
     desc: "For established operations",
-    monthly: 199,
-    annual: 159,
+    monthly: 179,
+    annual: 149,
+    annualTotal: 1788,
     href: "/auth/signup?plan=business",
     highlight: false,
     badge: "Early adopter price locked",
+    earlyAdopter: 44.75,
     features: [
       "Everything in Team",
-      "Unlimited team members",
       "Advanced analytics",
       "Multi-location support",
       "API access",
-      "Dedicated onboarding"
+      "Dedicated onboarding",
+      "Phone support"
     ]
   }
 ];
+
+const SPOTS_REMAINING = 47;
 
 export function LandingPricing() {
   const [annual, setAnnual] = useState(false);
 
   return (
     <div>
+      {/* Early adopter callout */}
+      <div className="mb-10 rounded-xl border border-amber-500/40 bg-amber-500/10 p-5">
+        <div className="flex items-start gap-3">
+          <Zap size={18} className="mt-0.5 shrink-0 fill-amber-400 text-amber-400" />
+          <div>
+            <p className="font-bold text-amber-300">
+              Founding 100 offer &mdash; 75% off your first 3 months
+            </p>
+            <p className="mt-1 text-sm text-amber-200/80">
+              Use code <span className="font-mono font-bold text-amber-300">EARLYACCESS</span> at checkout.{" "}
+              <span className="font-bold text-white">{SPOTS_REMAINING} of 50 spots remaining.</span>
+            </p>
+            <p className="mt-2 text-sm text-amber-200/70">
+              Solo from <strong className="text-amber-200">$9.75/mo</strong> &nbsp;&middot;&nbsp;
+              Team from <strong className="text-amber-200">$22.25/mo</strong> &nbsp;&middot;&nbsp;
+              Business from <strong className="text-amber-200">$44.75/mo</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Toggle */}
       <div className="mb-10 flex items-center justify-center gap-3">
         <span className={`text-sm font-medium ${!annual ? "text-white" : "text-slate-400"}`}>Monthly</span>
@@ -78,7 +110,7 @@ export function LandingPricing() {
         <span className={`text-sm font-medium ${annual ? "text-white" : "text-slate-400"}`}>
           Annual{" "}
           <span className="ml-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
-            Save 20%
+            Save 17%
           </span>
         </span>
       </div>
@@ -87,6 +119,7 @@ export function LandingPricing() {
       <div className="grid gap-6 md:grid-cols-3">
         {TIERS.map((tier) => {
           const price = annual ? tier.annual : tier.monthly;
+          const displayPrice = Number.isInteger(price) ? price : price.toFixed(2);
           return (
             <div
               key={tier.name}
@@ -98,10 +131,10 @@ export function LandingPricing() {
             >
               {tier.badge && (
                 <div
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[11px] font-semibold ${
+                  className={`absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold ${
                     tier.highlight
                       ? "bg-blue-500 text-white"
-                      : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                      : "border border-amber-500/30 bg-amber-500/20 text-amber-300"
                   }`}
                 >
                   {tier.badge}
@@ -112,11 +145,11 @@ export function LandingPricing() {
                 <p className="mt-1 text-sm text-slate-400">{tier.desc}</p>
               </div>
               <div className="mb-6">
-                <span className="text-4xl font-extrabold tabular-nums text-white">${price}</span>
+                <span className="text-4xl font-extrabold tabular-nums text-white">${displayPrice}</span>
                 <span className="ml-1 text-sm text-slate-400">/mo</span>
                 {annual && (
                   <p className="mt-1 text-xs text-slate-500">
-                    Billed ${price * 12}/yr
+                    Billed ${tier.annualTotal}/yr
                   </p>
                 )}
               </div>
@@ -143,8 +176,22 @@ export function LandingPricing() {
         })}
       </div>
 
-      <p className="mt-8 text-center text-sm text-slate-400">
-        All plans include a 30-day free trial · No credit card required · Cancel anytime
+      {/* Comparison note */}
+      <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center">
+        <p className="text-sm text-slate-300">
+          If you do 50+ jobs a month, SERVLO Solo ($39) beats ServiceM8 Growing ($79).{" "}
+          <strong className="text-white">You save $480/year.</strong>
+        </p>
+        <Link
+          href="/compare/servicem8"
+          className="mt-1 inline-block text-xs font-semibold text-blue-400 transition hover:text-blue-300"
+        >
+          See full pricing comparison →
+        </Link>
+      </div>
+
+      <p className="mt-6 text-center text-sm text-slate-400">
+        All plans include a 30-day free trial &nbsp;&middot;&nbsp; No credit card required &nbsp;&middot;&nbsp; Cancel anytime
       </p>
     </div>
   );

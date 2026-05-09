@@ -5,28 +5,28 @@ import { ChevronDown } from "lucide-react";
 
 const FAQS = [
   {
-    q: "Is there a free trial?",
-    a: "Yes — every plan starts with a 30-day free trial, no credit card required. You get full access to all features in your chosen plan so you can see real value before paying anything."
+    q: "Is there really no lock-in?",
+    a: "No contracts, no minimum terms. Cancel any time from Settings → Billing in one click. Your data exports as a full ZIP file whenever you want it. We even have migration guides to competing platforms — we’re that confident you’ll stay."
   },
   {
-    q: "Can I import my existing clients and jobs?",
-    a: "Absolutely. You can import clients via CSV on any plan. If you need help migrating from another platform (ServiceM8, Tradify, simPRO, etc.) our team can assist during onboarding."
+    q: "What’s the difference between the 30-day trial and early adopter pricing?",
+    a: "30-day trial: start free, card charged on day 31 at full price. Early adopter: pay $9.75/mo now (75% off), that rate is locked for 3 months then goes to $39/mo. If you want to try first, do the trial. If you’re ready to commit and want the cheapest total cost, do early adopter."
   },
   {
-    q: "Does SERVLO handle GST invoicing?",
-    a: "Yes. All invoices are GST-ready with Australian tax settings built in. You can toggle GST on or off per line item, and PDFs are formatted to ATO requirements."
+    q: "Does it work on mobile?",
+    a: "Yes — open servlo.com.au in your phone browser and add it to your home screen. It works like an app. Native iOS App Store and Android Play Store apps are coming Q3 2026."
   },
   {
-    q: "How do my employees access the platform?",
-    a: "Employees get their own login and see only what they need — assigned jobs, schedules, and timesheets. You control permissions. They can clock in/out from any device."
+    q: "Can I connect Xero?",
+    a: "Yes — connect Xero in Settings → Integrations. Invoices, clients, and payments sync automatically. MYOB integration is in beta."
   },
   {
-    q: "What happens when new SERVLO products launch?",
-    a: "All new products (Grow, Leads, Answer, Pay, etc.) are available to existing subscribers at no extra charge for the first 90 days after launch. Your plan price is locked in at signup."
+    q: "How does my team access it?",
+    a: "You invite team members by email from the Team page. They create their own account, get linked to your business, and see only what they need. Solo plan is owner-only. Team plan ($89/mo) adds unlimited team members."
   },
   {
-    q: "Can I cancel anytime?",
-    a: "Yes — no lock-in, no cancellation fees. Cancel from your account settings at any time and you keep access until the end of your billing period. Your data is exportable at any point."
+    q: "Is SERVLO Australian?",
+    a: "Built in Adelaide, South Australia by Brodie McDonald. ABN: 88 688 301 684. Prices in AUD. GST handled correctly. BAS-ready exports. Compliance forms for AU trades included."
   }
 ];
 
