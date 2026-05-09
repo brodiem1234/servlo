@@ -20,7 +20,9 @@ LANGUAGE plpgsql
 SET search_path = public
 AS $$
 BEGIN
-  IF coalesce(auth.role(), '') <> 'service_role' THEN
+  IF coalesce(auth.role(), '') <> 'service_role'
+    AND current_user NOT IN ('postgres', 'supabase_admin')
+  THEN
     IF TG_OP = 'INSERT' AND NEW.role <> 'employee' THEN
       RAISE EXCEPTION 'profile role can only be assigned by the service role'
         USING ERRCODE = '42501';
