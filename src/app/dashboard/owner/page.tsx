@@ -18,6 +18,8 @@ import { ProfitabilityAlerts } from "@/components/dashboard/profitability-alerts
 import { MaterialsReorderWidget } from "@/components/dashboard/materials-reorder-widget";
 import { ChurnRiskWidget } from "@/components/dashboard/churn-risk-widget";
 import VoiceToJobButton from "@/components/dashboard/voice-to-job-button";
+import TodayJobsMapCollapsible from "@/components/dashboard/today-jobs-map-collapsible";
+import type { MapJobPin } from "@/components/dashboard/today-jobs-map";
 import PhotoToQuoteButton from "@/components/dashboard/photo-to-quote-button";
 
 export const dynamic = "force-dynamic";
@@ -387,6 +389,19 @@ export default async function OwnerDashboardPage() {
             </div>
           )}
         </article>
+      ) : null}
+
+      {/* Today's Jobs Map */}
+      {showScheduling && todayJobs.filter((j) => j.address || j.suburb).length > 0 ? (
+        <TodayJobsMapCollapsible
+          jobs={todayJobs
+            .filter((j) => j.address || j.suburb)
+            .map<MapJobPin>((j) => ({
+              id: j.id,
+              title: j.title,
+              addressLine: [j.address, j.suburb, j.state].filter(Boolean).join(", "),
+            }))}
+        />
       ) : null}
 
       {/* Morning Briefing Widget */}
