@@ -999,16 +999,16 @@ export function SignupForm() {
       <ThemeToggleCorner />
       <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
-        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-6 py-16 dark:bg-[#0A0A0A]"
+        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16"
       >
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl"
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={120} height={32} unoptimized
               className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </div>
-          <h1 className="text-3xl font-bold" style={{ color: "#f8fafc" }}>
+          <h1 className="text-xl font-bold sm:text-3xl" style={{ color: "#f8fafc" }}>
             Create your account
           </h1>
           <p className="mt-2 text-sm text-slate-400">

@@ -139,8 +139,8 @@ export function LoginExperience({
   const anyOauthLoading = oauthLoading !== null;
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-16 dark:bg-[#0A0A0A]">
-      <div className="mx-auto w-full max-w-[480px] rounded-2xl border border-zinc-200 bg-white p-10 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl">
+    <main className="relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16">
+      <div className="mx-auto w-full max-w-[480px] rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-10">
 
         {/* Logo with glow */}
         <div className="mb-8 flex justify-center">
@@ -164,7 +164,7 @@ export function LoginExperience({
           />
         </div>
 
-        <h1 className="text-[32px] font-bold leading-tight text-zinc-900 dark:text-white">Welcome back</h1>
+        <h1 className="text-2xl font-bold leading-tight text-zinc-900 dark:text-white sm:text-[32px]">Welcome back</h1>
         <p className="mt-2 text-sm text-zinc-500">Continue your business from where you left off.</p>
 
         {flashSuccess && (
@@ -326,7 +326,7 @@ export function LoginExperience({
           </div>
         )}
 
-        <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
           New to SERVLO?{" "}
           <Link href="/auth/signup" className="font-semibold text-blue-500 hover:text-blue-400">
             Create an account
