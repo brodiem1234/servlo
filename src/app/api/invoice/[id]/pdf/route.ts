@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { data: invoice } = await supabase
       .from("invoices")
-      .select("*, clients(name, email, address)")
+      .select("*, clients(full_name, email, address)")
       .eq("id", id)
       .eq("owner_id", user.id)
       .single();
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 <div class="grid">
   <div>
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#666;margin-bottom:8px">Bill To</div>
-    <div style="font-weight:600">${(invoice.clients as { name?: string } | null)?.name || invoice.client_name || "Client"}</div>
+    <div style="font-weight:600">${(invoice.clients as { full_name?: string } | null)?.full_name || "Client"}</div>
     ${(invoice.clients as { email?: string } | null)?.email ? `<div style="color:#666;font-size:13px">${(invoice.clients as { email?: string }).email}</div>` : ""}
     ${(invoice.clients as { address?: string } | null)?.address ? `<div style="color:#666;font-size:13px">${(invoice.clients as { address?: string }).address}</div>` : ""}
   </div>
