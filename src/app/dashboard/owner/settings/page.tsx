@@ -370,8 +370,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
         </div>
       </div>
 
-      {/* Tab navigation */}
-      <div className="flex flex-wrap gap-0 border-b border-[var(--border)]">
+      {/* Tab navigation — horizontal scroll on mobile */}
+      <div className="-mx-4 flex overflow-x-auto border-b border-[var(--border)] px-4 md:mx-0 md:px-0">
         {TABS.map((tab) => (
           <a
             key={tab.id}

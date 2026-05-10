@@ -411,29 +411,29 @@ export default async function OwnerDashboardPage() {
         firstName={firstName}
       />
 
-      {/* Row 2: Four stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Revenue This Month</p>
-          <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{formatCurrency(metrics.revenueThisMonth)}</p>
-          <p className="mt-1 text-[10px] text-[var(--text-muted)]">Paid invoices</p>
+      {/* Row 2: Four stat cards — 2-col mobile, 4-col desktop */}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <article className="rounded-xl border border-l-4 border-[var(--border)] border-l-[var(--accent-color)] bg-[var(--bg-card)] p-3 shadow-sm md:p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Revenue</p>
+          <p className="mt-1.5 text-lg font-bold text-[var(--text-primary)] md:mt-2 md:text-3xl">{formatCurrency(metrics.revenueThisMonth)}</p>
+          <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">This month</p>
         </article>
-        <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
+        <article className="rounded-xl border border-l-4 border-[var(--border)] border-l-[var(--accent-color)] bg-[var(--bg-card)] p-3 shadow-sm md:p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Outstanding</p>
-          <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{formatCurrency(metrics.outstandingAmount)}</p>
-          <p className="mt-1 text-[10px] text-[var(--text-muted)]">Unpaid invoices</p>
+          <p className="mt-1.5 text-lg font-bold text-[var(--text-primary)] md:mt-2 md:text-3xl">{formatCurrency(metrics.outstandingAmount)}</p>
+          <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">Unpaid invoices</p>
         </article>
         {showScheduling ? (
-          <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Jobs This Week</p>
-            <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{jobsScheduledThisWeek}</p>
-            <p className="mt-1 text-[10px] text-[var(--text-muted)]">Scheduled Mon–Sun</p>
+          <article className="rounded-xl border border-l-4 border-[var(--border)] border-l-[var(--accent-color)] bg-[var(--bg-card)] p-3 shadow-sm md:p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Jobs</p>
+            <p className="mt-1.5 text-lg font-bold text-[var(--text-primary)] md:mt-2 md:text-3xl">{jobsScheduledThisWeek}</p>
+            <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">This week</p>
           </article>
         ) : null}
-        <article className="rounded-xl border-l-4 border-l-[var(--accent-color)] border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Active Clients</p>
-          <p className="mt-2 text-3xl font-bold text-[var(--text-primary)]">{metrics.activeClientsCount}</p>
-          <p className="mt-1 text-[10px] text-[var(--text-muted)]">Non-inactive clients</p>
+        <article className="rounded-xl border border-l-4 border-[var(--border)] border-l-[var(--accent-color)] bg-[var(--bg-card)] p-3 shadow-sm md:p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Clients</p>
+          <p className="mt-1.5 text-lg font-bold text-[var(--text-primary)] md:mt-2 md:text-3xl">{metrics.activeClientsCount}</p>
+          <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">Active</p>
         </article>
       </div>
 

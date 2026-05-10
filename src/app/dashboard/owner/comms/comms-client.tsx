@@ -56,6 +56,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
 
   // SMS tab state
   const [smsClientId, setSmsClientId] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<"list" | "conversation">("list");
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -63,6 +64,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
   };
 
   const openThread = async (thread: Thread) => {
+    setMobileView("conversation");
     setSelectedThread(thread);
     setLoadingMessages(true);
     try {
@@ -150,10 +152,10 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
     <section className="flex flex-col h-[calc(100vh-120px)] overflow-hidden rounded-xl border border-[var(--border)]">
       {/* Tab bar */}
       <div className="flex border-b border-[var(--border)] bg-[var(--bg-card)]">
-        <button className={tabBtnCls(tab === "email")} onClick={() => setTab("email")}>
+        <button className={tabBtnCls(tab === "email")} onClick={() => { setTab("email"); setMobileView("list"); }}>
           ✉️ Email
         </button>
-        <button className={tabBtnCls(tab === "sms")} onClick={() => setTab("sms")}>
+        <button className={tabBtnCls(tab === "sms")} onClick={() => { setTab("sms"); setMobileView("list"); }}>
           📱 SMS
         </button>
       </div>
@@ -162,7 +164,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
         /* SMS panel */
         <div className="flex flex-1 overflow-hidden">
           {/* Client list for SMS */}
-          <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-card)]">
+          <aside className={`flex-col border-r border-[var(--border)] bg-[var(--bg-card)] ${mobileView === "conversation" ? "hidden md:flex md:w-72 md:shrink-0" : "flex flex-1 md:w-72 md:flex-none md:shrink-0"}`}>
             <div className="border-b border-[var(--border)] px-4 py-3">
               <h2 className="text-sm font-semibold text-[var(--text-primary)]">Clients</h2>
             </div>
@@ -175,7 +177,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
                 return (
                   <li key={client.id}>
                     <button
-                      onClick={() => setSmsClientId(client.id)}
+                      onClick={() => { setSmsClientId(client.id); setMobileView("conversation"); }}
                       className={`w-full px-4 py-3 text-left hover:bg-[var(--bg-secondary)] ${isActive ? "bg-[var(--bg-secondary)]" : ""}`}
                     >
                       <p className="truncate text-sm font-medium text-[var(--text-primary)]">
@@ -192,15 +194,24 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
           </aside>
 
           {/* SMS thread panel */}
-          <div className="flex flex-1 flex-col bg-[var(--bg-primary)] overflow-hidden">
+          <div className={`flex-col overflow-hidden bg-[var(--bg-primary)] ${mobileView === "list" ? "hidden md:flex md:flex-1" : "flex flex-1"}`}>
             {smsClientId ? (() => {
               const client = clients.find((c) => c.id === smsClientId);
               return (
                 <>
-                  <div className="border-b border-[var(--border)] px-6 py-3">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">
-                      {client?.full_name ?? "Client"}
-                    </p>
+                  <div className="border-b border-[var(--border)] px-4 py-3 md:px-6">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setMobileView("list"); setSmsClientId(null); }}
+                        className="shrink-0 text-sm font-semibold text-[var(--accent-color)] md:hidden"
+                      >
+                        ← Back
+                      </button>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
+                        {client?.full_name ?? "Client"}
+                      </p>
+                    </div>
                     <p className="text-xs text-[var(--text-muted)]">{client?.phone ?? "No phone"}</p>
                   </div>
                   <div className="flex-1 overflow-hidden">
@@ -227,11 +238,11 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
       /* Email panel — original layout */
       <div className="flex flex-1 overflow-hidden">
       {/* Thread list */}
-      <aside className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-card)]">
+      <aside className={`flex-col border-r border-[var(--border)] bg-[var(--bg-card)] ${mobileView === "conversation" ? "hidden md:flex md:w-72 md:shrink-0" : "flex flex-1 md:w-72 md:flex-none md:shrink-0"}`}>
         <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Messages</h2>
           <button
-            onClick={() => { setComposing(true); setSelectedThread(null); }}
+            onClick={() => { setComposing(true); setSelectedThread(null); setMobileView("conversation"); }}
             className="rounded bg-[var(--accent-color)] px-2 py-1 text-xs font-medium text-white hover:opacity-90"
           >
             + New
@@ -266,9 +277,16 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
       </aside>
 
       {/* Main panel */}
-      <div className="flex flex-1 flex-col bg-[var(--bg-primary)]">
+      <div className={`flex-col bg-[var(--bg-primary)] ${mobileView === "list" ? "hidden md:flex md:flex-1" : "flex flex-1"}`}>
         {composing ? (
-          <div className="flex flex-1 flex-col p-6">
+          <div className="flex flex-1 flex-col p-4 md:p-6">
+            <button
+              type="button"
+              onClick={() => { setComposing(false); setMobileView("list"); }}
+              className="mb-3 text-sm font-semibold text-[var(--accent-color)] md:hidden"
+            >
+              ← Back
+            </button>
             <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">New Message</h3>
             <form onSubmit={sendReply} className="flex flex-col gap-3">
               <div>
@@ -319,8 +337,17 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
         ) : selectedThread ? (
           <div className="flex flex-1 flex-col">
             {/* Thread header */}
-            <div className="border-b border-[var(--border)] px-6 py-3">
-              <p className="text-base font-semibold text-[var(--text-primary)]">{selectedThread.subject}</p>
+            <div className="border-b border-[var(--border)] px-4 py-3 md:px-6">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMobileView("list")}
+                  className="shrink-0 text-sm font-semibold text-[var(--accent-color)] md:hidden"
+                >
+                  ← Back
+                </button>
+                <p className="truncate text-base font-semibold text-[var(--text-primary)]">{selectedThread.subject}</p>
+              </div>
               {selectedThread.client_id && clientMap[selectedThread.client_id] ? (
                 <p className="text-xs text-[var(--text-muted)]">
                   {clientMap[selectedThread.client_id].full_name} · {clientMap[selectedThread.client_id].email}
