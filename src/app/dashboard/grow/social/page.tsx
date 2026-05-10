@@ -33,6 +33,12 @@ export default async function SocialCalendarPage() {
 
   if (!user) redirect("/auth/login");
 
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("business_name, suburb, state")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
   let posts: SocialPost[] = [];
 
   const { data, error } = await supabase
@@ -61,5 +67,13 @@ export default async function SocialCalendarPage() {
     totalReach: publishedPosts.reduce((sum, p) => sum + (p.reach ?? 0), 0),
   };
 
-  return <SocialCalendarManager posts={posts} stats={stats} />;
+  return (
+    <SocialCalendarManager
+      posts={posts}
+      stats={stats}
+      businessName={biz?.business_name ?? undefined}
+      suburb={biz?.suburb ?? undefined}
+      state={biz?.state ?? undefined}
+    />
+  );
 }

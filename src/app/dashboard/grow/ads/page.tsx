@@ -11,6 +11,12 @@ export default async function AdStudioPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("business_name, suburb")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
   // Fetch campaigns
   let campaigns: AdCampaign[] = [];
   const { data, error } = await supabase
@@ -47,5 +53,12 @@ export default async function AdStudioPage() {
     avgCTR,
   };
 
-  return <AdStudioManager campaigns={campaigns} stats={stats} />;
+  return (
+    <AdStudioManager
+      campaigns={campaigns}
+      stats={stats}
+      businessName={biz?.business_name ?? undefined}
+      suburb={biz?.suburb ?? undefined}
+    />
+  );
 }

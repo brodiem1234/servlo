@@ -131,18 +131,49 @@ interface CreatePostModalProps {
   onClose: () => void;
   onCreated: (post: SocialPost) => void;
   showToast: (message: string, type: "success" | "error") => void;
+  businessName?: string;
+  suburb?: string;
+  bizState?: string;
 }
 
 const PLATFORMS = ["Facebook", "Instagram", "Google Business"] as const;
 type PlatformType = (typeof PLATFORMS)[number];
 
-function CreatePostModal({ onClose, onCreated, showToast }: CreatePostModalProps) {
+function CreatePostModal({ onClose, onCreated, showToast, businessName, suburb, bizState }: CreatePostModalProps) {
   const [platform, setPlatform] = useState<PlatformType>("Facebook");
   const [caption, setCaption] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [saving, setSaving] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [generatingCaption, setGeneratingCaption] = useState(false);
+
+  const handleGenerateCaption = async () => {
+    setGeneratingCaption(true);
+    try {
+      const res = await fetch("/api/grow/generate-caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "recent_jobs",
+          businessName: businessName ?? "our business",
+          suburb: suburb ?? "your area",
+          state: bizState ?? "Australia",
+          platform,
+        }),
+      });
+      const data = await res.json() as { captions?: string[] };
+      const captions = data.captions ?? [];
+      if (captions.length > 0) {
+        setCaption(captions[0]!.slice(0, 500));
+        showToast("Caption generated!", "success");
+      }
+    } catch {
+      showToast("Could not generate caption", "error");
+    } finally {
+      setGeneratingCaption(false);
+    }
+  };
 
   const captionLen = caption.length;
 
@@ -256,9 +287,20 @@ function CreatePostModal({ onClose, onCreated, showToast }: CreatePostModalProps
                 <label htmlFor="caption" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                   Caption <span aria-hidden="true" style={{ color: "#F87171" }}>*</span>
                 </label>
-                <span className="text-xs" style={{ color: captionLen > 480 ? "#F87171" : "var(--text-muted)" }}>
-                  {captionLen}/500
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleGenerateCaption}
+                    disabled={generatingCaption}
+                    className="rounded px-2 py-0.5 text-xs font-medium disabled:opacity-50"
+                    style={{ background: "rgb(99 102 241 / 0.12)", color: "#818CF8" }}
+                  >
+                    {generatingCaption ? "Generating…" : "✨ AI Generate"}
+                  </button>
+                  <span className="text-xs" style={{ color: captionLen > 480 ? "#F87171" : "var(--text-muted)" }}>
+                    {captionLen}/500
+                  </span>
+                </div>
               </div>
               <textarea
                 id="caption"
@@ -359,9 +401,15 @@ type View = "list" | "calendar";
 export default function SocialCalendarManager({
   posts: initialPosts,
   stats,
+  businessName,
+  suburb,
+  state: bizState,
 }: {
   posts: SocialPost[];
   stats: SocialStats;
+  businessName?: string;
+  suburb?: string;
+  state?: string;
 }) {
   const today = new Date();
   const [view, setView] = useState<View>("list");
@@ -821,6 +869,9 @@ export default function SocialCalendarManager({
           onClose={() => setShowModal(false)}
           onCreated={handleCreated}
           showToast={showToast}
+          businessName={businessName}
+          suburb={suburb}
+          bizState={bizState}
         />
       )}
 

@@ -51,6 +51,8 @@ export interface AdStudioStats {
 interface Props {
   campaigns: AdCampaign[];
   stats: AdStudioStats;
+  businessName?: string;
+  suburb?: string;
 }
 
 // ─── Wizard step types ─────────────────────────────────────────────────────────
@@ -155,7 +157,7 @@ function StatCard({ label, value, icon: Icon }: { label: string; value: string; 
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-export default function AdStudioManager({ campaigns: initialCampaigns, stats }: Props) {
+export default function AdStudioManager({ campaigns: initialCampaigns, stats, businessName, suburb }: Props) {
   const [campaigns, setCampaigns] = useState<AdCampaign[]>(initialCampaigns);
   const [activeTab, setActiveTab] = useState<"campaigns" | "create" | "performance">("campaigns");
   const [wizardStep, setWizardStep] = useState(1);
@@ -179,6 +181,17 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats }: 
 
   const updateWizard = (patch: Partial<WizardData>) =>
     setWizard((w) => ({ ...w, ...patch }));
+
+  // Prefill ad copy with business name/location when switching to create tab
+  const handleOpenCreate = () => {
+    setActiveTab("create");
+    setWizardStep(1);
+    setWizard((w) => ({
+      ...w,
+      headline: w.headline || (businessName ? businessName.slice(0, 30) : ""),
+      description: w.description || (businessName && suburb ? `${businessName} — trusted local service in ${suburb}. Call for a free quote today!`.slice(0, 90) : ""),
+    }));
+  };
 
   // Auto-generate campaign name when platform + objective are chosen
   const autoName = wizard.platform && wizard.objective
@@ -347,7 +360,7 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats }: 
             <button
               key={t.key}
               type="button"
-              onClick={() => setActiveTab(t.key)}
+  onClick={() => t.key === "create" ? handleOpenCreate() : setActiveTab(t.key)}
               className="px-5 py-3 text-sm font-semibold transition-colors"
               style={{
                 borderBottom: activeTab === t.key ? "2px solid #8B5CF6" : "2px solid transparent",
@@ -366,7 +379,7 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats }: 
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setActiveTab("create")}
+                  onClick={handleOpenCreate}
                   className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white"
                   style={{ background: "#8B5CF6" }}
                 >
@@ -383,7 +396,7 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats }: 
                   <p className="text-sm" style={{ color: "var(--text-muted)" }}>Create your first ad campaign.</p>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("create")}
+                    onClick={handleOpenCreate}
                     className="mt-2 rounded-lg px-4 py-2 text-sm font-semibold text-white"
                     style={{ background: "#8B5CF6" }}
                   >
