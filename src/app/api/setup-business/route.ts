@@ -4,6 +4,7 @@ import { normalizeAccentColour, DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
 import type { IndustrySlug } from "@/lib/industries";
 import { isIndustrySlug, parseIndustryTagsJson } from "@/lib/industries";
 import { bootstrapSignupProfiles } from "@/lib/signup/bootstrap-writes";
+import { processReferral } from "@/lib/referral";
 import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { sendEmail, welcomeOwnerEmailTemplate } from "@/lib/email";
 import {
@@ -380,14 +381,31 @@ export async function POST(request: Request) {
     console.warn("[setup-business] welcome email failed (non-fatal)", welcomeErr);
   }
 
-  // Mark referral as signed_up if a referral code was provided
+  // Process referral code if provided — try user_referrals first, then grow_referrals
   if (referralCode) {
     try {
-      await supabaseAdmin
-        .from("grow_referrals")
-        .update({ status: "signed_up", referred_user_id: userId })
-        .eq("referral_code", referralCode)
-        .eq("status", "pending");
+      // Check if this is a user-to-user referral (profiles.referral_code)
+      const { data: referrerProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("referral_code", referralCode.toUpperCase())
+        .maybeSingle();
+
+      if (referrerProfile) {
+        // Owner-to-owner referral — record in user_referrals
+        const { data: authU } = await supabaseAdmin.auth.admin.getUserById(userId);
+        const referredEmail = authU?.user?.email ?? "";
+        if (referredEmail) {
+          await processReferral(referredEmail, referralCode);
+        }
+      } else {
+        // Client referral program — update grow_referrals row
+        await supabaseAdmin
+          .from("grow_referrals")
+          .update({ status: "signed_up", referred_user_id: userId })
+          .eq("referral_code", referralCode)
+          .eq("status", "pending");
+      }
     } catch (refErr) {
       console.warn("[setup-business] referral update failed (non-fatal)", refErr);
     }

@@ -135,7 +135,7 @@ export async function getReferralStats(userId: string): Promise<{
 
   const code = await ensureReferralCode(userId);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
-  const referralUrl = `${appUrl}?ref=${code}`;
+  const referralUrl = `${appUrl}/auth/signup?ref=${code}`;
 
   const { data: stats } = await admin
     .from("user_referrals")
