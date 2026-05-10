@@ -18,14 +18,13 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: [
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/logo.png", sizes: "192x192", type: "image/png" }
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }
     ]
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#3B82F6"
+  themeColor: "#0A0A0A"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -33,10 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#3B82F6" />
+        <meta name="theme-color" content="#0A0A0A" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+        <meta name="apple-mobile-web-app-title" content="SERVLO" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
       </head>
       <body className={montserrat.className}>
         <ThemeScript />

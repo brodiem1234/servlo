@@ -33,7 +33,8 @@ export function LandingNav() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-white/[0.06] bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:gap-4 md:px-6 md:py-4">
+      <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4 md:px-6">
+        {/* Logo */}
         <Link href="/" className="shrink-0" onClick={close}>
           <Image
             src="/servlo-master-white.svg"
@@ -55,7 +56,7 @@ export function LandingNav() {
           />
         </Link>
 
-        {/* Desktop nav */}
+        {/* Desktop nav links — hidden on mobile */}
         <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 dark:text-slate-400 md:flex">
           <a href="#pricing" className="transition hover:text-gray-900 dark:hover:text-white">Pricing</a>
           <a href="#platform" className="transition hover:text-gray-900 dark:hover:text-white">Compare</a>
@@ -63,18 +64,24 @@ export function LandingNav() {
           <Link href="/status" className="transition hover:text-gray-900 dark:hover:text-white">Status</Link>
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-2 md:gap-3">
-          <ThemeTogglePublic />
+        {/* Right side
+            Mobile order: ThemeToggle | Log in | Start free trial | Hamburger
+            Desktop order: Log in | Start free trial | ThemeToggle
+            ThemeToggle wrapper uses order-first (mobile) / md:order-last (desktop)
+        */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Log in — always visible */}
           <Link
             href="/auth/login"
-            className="hidden text-sm font-medium text-gray-600 dark:text-slate-300 transition hover:text-gray-900 dark:hover:text-white md:block"
+            className="text-sm font-medium text-gray-600 dark:text-white/80 transition hover:text-gray-900 dark:hover:text-white"
           >
             Log in
           </Link>
+
+          {/* Start free trial — compact on mobile, full on desktop */}
           <Link
             href="/auth/signup"
-            className="hidden rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 md:inline-flex"
+            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 md:px-4 md:py-2 md:text-sm"
           >
             Start free trial
           </Link>
@@ -86,20 +93,25 @@ export function LandingNav() {
             aria-expanded={open}
             aria-controls="landing-mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-gray-200 text-gray-700 transition hover:bg-gray-100 dark:border-white/10 dark:text-white dark:hover:bg-white/5 md:hidden"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-700 transition hover:bg-gray-100 dark:border-white/10 dark:text-white dark:hover:bg-white/5 md:hidden"
           >
-            {open ? <X size={20} aria-hidden /> : <Menu size={20} aria-hidden />}
+            {open ? <X size={18} aria-hidden /> : <Menu size={18} aria-hidden />}
           </button>
+
+          {/* Theme toggle — first on mobile (order-first), last on desktop (md:order-last) */}
+          <div className="order-first md:order-last">
+            <ThemeTogglePublic />
+          </div>
         </div>
       </div>
 
-      {/* Mobile dropdown */}
+      {/* Mobile dropdown — nav links ONLY (Log in + Start free trial stay in top bar) */}
       {open ? (
         <div
           id="landing-mobile-menu"
-          className="border-t border-gray-200 bg-white px-4 py-4 shadow-lg dark:border-white/[0.06] dark:bg-[#0A0A0A] md:hidden"
+          className="border-t border-gray-200 bg-white px-4 py-3 shadow-lg dark:border-white/[0.06] dark:bg-[#0A0A0A] md:hidden"
         >
-          <nav className="flex flex-col gap-1 text-base font-medium text-gray-700 dark:text-slate-200">
+          <nav className="flex flex-col gap-0.5 text-base font-medium text-gray-700 dark:text-slate-200">
             <a
               href="#pricing"
               onClick={close}
@@ -129,22 +141,6 @@ export function LandingNav() {
               Status
             </Link>
           </nav>
-          <div className="mt-3 flex flex-col gap-2 border-t border-gray-200 pt-3 dark:border-white/10">
-            <Link
-              href="/auth/login"
-              onClick={close}
-              className="flex h-12 items-center justify-center rounded-lg border border-gray-300 px-4 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 dark:border-white/15 dark:text-white dark:hover:bg-white/5"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/auth/signup"
-              onClick={close}
-              className="flex h-12 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
-            >
-              Start free trial
-            </Link>
-          </div>
         </div>
       ) : null}
     </header>
