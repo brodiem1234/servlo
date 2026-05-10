@@ -32,13 +32,31 @@ export async function POST(req: Request) {
       const invoiceId = session.metadata?.invoice_id;
       if (invoiceId && session.payment_link) {
         const amountTotal = session.amount_total ?? 0;
-        await admin
+        const { data: updatedInvoice } = await admin
           .from("invoices")
           .update({
             status: "paid",
-            amount_paid: amountTotal / 100
+            amount_paid: amountTotal / 100,
+            paid_at: new Date().toISOString(),
           })
-          .eq("id", invoiceId);
+          .eq("id", invoiceId)
+          .select("owner_id, invoice_number, total")
+          .maybeSingle();
+
+        // Notify owner
+        if (updatedInvoice?.owner_id) {
+          const num = updatedInvoice.invoice_number ?? invoiceId.slice(0, 8);
+          const amt = Number(updatedInvoice.total ?? amountTotal / 100);
+          void admin.from("owner_notifications").insert({
+            owner_id: updatedInvoice.owner_id,
+            type: "invoice_paid",
+            title: `Invoice ${num} paid`,
+            body: `$${amt.toFixed(2)} received via payment link`,
+            link: `/dashboard/owner/invoices`,
+            read: false,
+          });
+        }
+
         // Early return — this is an invoice payment, not a subscription checkout.
         return NextResponse.json({ received: true });
       }
