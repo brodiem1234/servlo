@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isIndustrySlug, type IndustrySlug } from "@/lib/industries";
+import { fireJobAutomations } from "@/lib/job-automations";
 import { loadWorkspaceFeatureSet } from "@/lib/workspace-features";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { EmployeeDashboardClient } from "./employee-dashboard-client";
@@ -127,11 +128,17 @@ export default async function EmployeeDashboardPage() {
     const jobId = String(formData.get("job_id") ?? "");
     const newStatus = String(formData.get("status") ?? "");
     if (!jobId || !newStatus) return;
-    await sbA
+    const { data: updatedJob } = await sbA
       .from("jobs")
       .update({ status: newStatus })
       .eq("id", jobId)
-      .eq("employee_id", emp.id);
+      .eq("employee_id", emp.id)
+      .select("owner_id")
+      .maybeSingle();
+    // Fire owner automations (fire-and-forget)
+    if ((updatedJob as any)?.owner_id) {
+      fireJobAutomations((updatedJob as any).owner_id, jobId, newStatus).catch(() => {});
+    }
     revalidatePath("/dashboard/employee");
   }
 
