@@ -6,11 +6,11 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "Is there really no lock-in?",
-    a: "No contracts, no minimum terms. Cancel any time from Settings → Billing in one click. Your data exports as a full ZIP file whenever you want it. We even have migration guides to competing platforms — we’re that confident you’ll stay."
+    a: "No contracts, no minimum terms. Cancel any time from Settings → Billing in one click. Your data exports as a full ZIP file whenever you want it. We even have migration guides to competing platforms — we're that confident you'll stay."
   },
   {
-    q: "What’s the difference between the 30-day trial and early adopter pricing?",
-    a: "30-day trial: start free, card charged on day 31 at full price. Early adopter: pay $9.75/mo now (75% off), that rate is locked for 3 months then goes to $39/mo. If you want to try first, do the trial. If you’re ready to commit and want the cheapest total cost, do early adopter."
+    q: "What's the difference between the 30-day trial and early adopter pricing?",
+    a: "30-day trial: start free, card charged on day 31 at full price. Early adopter: pay $9.75/mo now (75% off), that rate is locked for 3 months then goes to $39/mo. If you want to try first, do the trial. If you're ready to commit and want the cheapest total cost, do early adopter."
   },
   {
     q: "Does it work on mobile?",
@@ -27,6 +27,22 @@ const FAQS = [
   {
     q: "Is SERVLO Australian?",
     a: "Built in Adelaide, South Australia by Brodie McDonald. ABN: 88 688 301 684. Prices in AUD. GST handled correctly. BAS-ready exports. Compliance forms for AU trades included."
+  },
+  {
+    q: "What trades does SERVLO work for?",
+    a: "Any service business that does job-based work: plumbers, electricians, cleaners, landscapers, HVAC, pest control, handymen, builders, and more. If you quote jobs, schedule crew, and invoice clients — SERVLO is built for you."
+  },
+  {
+    q: "Do I need to sign a contract?",
+    a: "No. SERVLO is month-to-month. Cancel any time from Settings in under 10 seconds. No notice period, no cancellation fee, no phone call required."
+  },
+  {
+    q: "Can my team use it?",
+    a: "Yes. The Solo plan is 1 user. Team and Business plans include unlimited users. Each team member gets their own login with role-based permissions — employees see jobs and timesheets; only you see financials and reports."
+  },
+  {
+    q: "Is my data stored in Australia?",
+    a: "Yes. SERVLO uses Supabase with Australian data residency. Your data never leaves AU. We comply with the Australian Privacy Act and the Privacy (Enhancing Online Safety) Act."
   }
 ];
 
@@ -34,7 +50,7 @@ export function LandingFaq() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <div className="mx-auto max-w-2xl divide-y divide-white/10">
+    <div className="mx-auto max-w-2xl divide-y divide-gray-200 dark:divide-white/10">
       {FAQS.map((faq, i) => (
         <div key={i}>
           <button
@@ -42,14 +58,14 @@ export function LandingFaq() {
             className="flex w-full items-center justify-between gap-4 py-5 text-left"
             aria-expanded={open === i}
           >
-            <span className="text-base font-semibold text-white">{faq.q}</span>
+            <span className="text-base font-semibold text-gray-900 dark:text-white">{faq.q}</span>
             <ChevronDown
               size={18}
-              className={`shrink-0 text-slate-400 transition-transform duration-200 ${open === i ? "rotate-180" : ""}`}
+              className={`shrink-0 text-gray-400 dark:text-slate-400 transition-transform duration-200 ${open === i ? "rotate-180" : ""}`}
             />
           </button>
           {open === i && (
-            <p className="pb-5 text-sm leading-relaxed text-slate-300">{faq.a}</p>
+            <p className="pb-5 text-sm leading-relaxed text-gray-600 dark:text-slate-300">{faq.a}</p>
           )}
         </div>
       ))}

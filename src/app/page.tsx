@@ -4,13 +4,18 @@ import {
   Check,
   ArrowRight,
   Shield,
-  Wrench,
+  Download,
   Users,
   Star,
   Megaphone,
   Mic,
   Receipt,
   Lightbulb,
+  Phone,
+  CreditCard,
+  Briefcase,
+  Truck,
+  BarChart2,
 } from "lucide-react";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingPricing } from "@/components/landing/landing-pricing";
@@ -48,10 +53,10 @@ export default async function HomePage() {
   const spotsRemaining = Math.max(0, 50 - founderCount);
 
   return (
-    <div className="min-h-screen bg-[#050914] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
+    <div className="min-h-screen bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050914]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-white/[0.06] bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-6">
           <Link href="/" className="shrink-0">
             <Image
@@ -61,18 +66,27 @@ export default async function HomePage() {
               height={32}
               priority
               unoptimized
-              className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+              className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+            />
+            <Image
+              src="/servlo-master-dark.svg"
+              alt="SERVLO"
+              width={120}
+              height={32}
+              priority
+              unoptimized
+              className="block dark:hidden"
             />
           </Link>
-          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-400 md:flex">
-            <a href="#pricing" className="transition hover:text-white">Pricing</a>
-            <a href="#platform" className="transition hover:text-white">Compare</a>
-            <a href="#roadmap" className="transition hover:text-white">Roadmap</a>
-            <Link href="/status" className="transition hover:text-white">Status</Link>
+          <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 dark:text-slate-400 md:flex">
+            <a href="#pricing" className="transition hover:text-gray-900 dark:hover:text-white">Pricing</a>
+            <a href="#platform" className="transition hover:text-gray-900 dark:hover:text-white">Compare</a>
+            <a href="#roadmap" className="transition hover:text-gray-900 dark:hover:text-white">Roadmap</a>
+            <Link href="/status" className="transition hover:text-gray-900 dark:hover:text-white">Status</Link>
           </nav>
           <div className="flex items-center gap-3">
             <ThemeTogglePublic />
-            <Link href="/auth/login" className="hidden text-sm font-medium text-slate-300 transition hover:text-white md:block">
+            <Link href="/auth/login" className="hidden text-sm font-medium text-gray-600 dark:text-slate-300 transition hover:text-gray-900 dark:hover:text-white md:block">
               Log in
             </Link>
             <Link
@@ -94,13 +108,13 @@ export default async function HomePage() {
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 md:grid-cols-2 md:gap-12">
           {/* Left */}
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold text-blue-300">
-              &#9889; Built for Australian service businesses
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-300">
+              Built for Australian service businesses
             </div>
-            <h1 className="text-5xl font-extrabold leading-[1.06] tracking-tight text-white md:text-[68px]">
+            <h1 className="text-5xl font-extrabold leading-[1.06] tracking-tight text-gray-900 dark:text-white md:text-[68px]">
               Run your trade business like a pro.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-400">
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-500 dark:text-slate-400">
               Jobs. Quotes. Invoices. Team. Marketing. Leads. All in one place &mdash; built for Australian tradies,
               cleaners, landscapers, and field service businesses.
             </p>
@@ -114,7 +128,7 @@ export default async function HomePage() {
               </Link>
               <a
                 href="#platform"
-                className="flex items-center gap-2 rounded-xl border border-white/15 px-6 py-3.5 text-base font-semibold text-white transition hover:border-white/30 hover:bg-white/5"
+                className="flex items-center gap-2 rounded-xl border border-gray-300 dark:border-white/15 px-6 py-3.5 text-base font-semibold text-gray-700 dark:text-white transition hover:border-gray-400 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5"
               >
                 See the platform
               </a>
@@ -122,22 +136,22 @@ export default async function HomePage() {
             <div className="mt-3">
               <a
                 href="#how-it-works"
-                className="text-sm font-medium text-slate-400 transition hover:text-white"
+                className="text-sm font-medium text-gray-500 dark:text-slate-400 transition hover:text-gray-900 dark:hover:text-white"
               >
                 Watch 2-min demo &rarr;
               </a>
             </div>
-            <p className="mt-4 text-sm text-slate-500">No credit card &nbsp;&middot;&nbsp; Cancel anytime &nbsp;&middot;&nbsp; Australian owned &amp; operated</p>
+            <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">No credit card &nbsp;&middot;&nbsp; Cancel anytime &nbsp;&middot;&nbsp; Australian owned &amp; operated</p>
 
             {/* Stat row */}
-            <div className="mt-10 flex flex-wrap gap-6 border-t border-white/10 pt-8 text-sm">
+            <div className="mt-10 flex flex-wrap gap-6 border-t border-gray-200 dark:border-white/10 pt-8 text-sm">
               {[
                 "No lock-in contracts",
                 "Cheaper than ServiceM8 at 50+ jobs/mo",
-                "AI tools competitors don’t have",
+                "AI tools competitors don't have",
                 "Built in Adelaide SA",
               ].map((s) => (
-                <div key={s} className="flex items-center gap-1.5 text-slate-400">
+                <div key={s} className="flex items-center gap-1.5 text-gray-500 dark:text-slate-400">
                   <Check size={13} className="text-blue-400" />
                   <span>{s}</span>
                 </div>
@@ -169,7 +183,7 @@ export default async function HomePage() {
                   <div className="rounded-xl border border-white/10 bg-[#152238] px-4 py-3">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Jobs this week</p>
                     <p className="mt-1 text-xl font-bold tabular-nums text-white">14</p>
-                    <p className="mt-1 text-xs text-emerald-400">&#9650; 3 vs last week</p>
+                    <p className="mt-1 text-xs text-emerald-400">+3 vs last week</p>
                   </div>
                 </div>
 
@@ -214,22 +228,14 @@ export default async function HomePage() {
       </section>
 
       {/* ── SOCIAL PROOF STRIP ───────────────────────────────────────────── */}
-      <section className="border-y border-white/[0.06] bg-white/[0.02] py-5">
+      <section className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] py-5">
         <div className="mx-auto max-w-5xl px-4 md:px-6">
-          <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
             Built for every trade
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
-            {[
-              { icon: "⚡", label: "Electricians" },
-              { icon: "🔧", label: "Plumbers" },
-              { icon: "❄️", label: "HVAC" },
-              { icon: "🏗️", label: "Builders" },
-              { icon: "🧹", label: "Cleaners" },
-              { icon: "🌿", label: "Landscapers" },
-            ].map(({ icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-sm font-medium text-slate-400">
-                <span className="text-base">{icon}</span>
+            {["Electricians", "Plumbers", "HVAC", "Builders", "Cleaners", "Landscapers"].map((label) => (
+              <div key={label} className="text-sm font-medium text-gray-500 dark:text-slate-400">
                 {label}
               </div>
             ))}
@@ -240,48 +246,44 @@ export default async function HomePage() {
       {/* ── PROBLEM ──────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 py-32 md:px-6">
         <div className="mb-4 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">The problem</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">The problem</span>
         </div>
-        <h2 className="mx-auto max-w-2xl text-center text-4xl font-bold leading-tight text-white md:text-[52px] md:leading-[1.1]">
+        <h2 className="mx-auto max-w-2xl text-center text-4xl font-bold leading-tight text-gray-900 dark:text-white md:text-[52px] md:leading-[1.1]">
           Still running your business on paper and WhatsApp?
         </h2>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {[
             {
-              emoji: "💬",
               title: "Texting quotes to clients at 10pm",
               copy: "Send professional quotes clients approve online. No more chasing approvals over WhatsApp."
             },
             {
-              emoji: "📄",
               title: "Invoicing from a spreadsheet",
               copy: "Invoice automatically on job completion. Get paid faster with Stripe payment links sent directly to clients."
             },
             {
-              emoji: "📱",
               title: "Coordinating your crew on WhatsApp",
-              copy: "Schedule your team with one tap. Everyone knows where to be and what job they’re on."
+              copy: "Schedule your team with one tap. Everyone knows where to be and what job they're on."
             }
-          ].map(({ emoji, title, copy }) => (
+          ].map(({ title, copy }) => (
             <div
               key={title}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 transition hover:border-white/20 hover:bg-white/[0.05]"
+              className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.03] p-7 transition hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/[0.05]"
             >
-              <span className="text-3xl">{emoji}</span>
-              <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">{copy}</p>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{copy}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="border-y border-white/[0.06] bg-white/[0.015] py-32">
+      <section id="how-it-works" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">How it works</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">How it works</span>
           </div>
-          <h2 className="text-center text-4xl font-bold text-white md:text-[52px]">Up and running in minutes</h2>
+          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Up and running in minutes</h2>
           <div className="relative mt-16 grid gap-10 md:grid-cols-3">
             <div aria-hidden className="absolute left-[calc(33%+1rem)] right-[calc(33%+1rem)] top-8 hidden h-px bg-gradient-to-r from-blue-500/40 via-blue-500/60 to-blue-500/40 md:block" />
             {[
@@ -302,11 +304,11 @@ export default async function HomePage() {
               }
             ].map(({ step, title, copy }) => (
               <div key={step} className="relative flex flex-col items-center text-center">
-                <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-blue-500/40 bg-blue-500/15 text-lg font-bold text-blue-300">
+                <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-blue-500/40 bg-blue-500/15 text-lg font-bold text-blue-600 dark:text-blue-300">
                   {step}
                 </div>
-                <h3 className="text-lg font-bold text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{copy}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{copy}</p>
               </div>
             ))}
           </div>
@@ -316,10 +318,10 @@ export default async function HomePage() {
       {/* ── THREE PRODUCTS ───────────────────────────────────────────────── */}
       <section id="platform" className="mx-auto max-w-7xl px-4 py-32 md:px-6">
         <div className="mb-4 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">The platform</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">The platform</span>
         </div>
-        <h2 className="text-center text-4xl font-bold text-white md:text-[52px]">Three products, one login</h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-400">
+        <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Three products, one login</h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
           Start with Core to run your business. Add Grow to market it. Use Leads to fill your pipeline.
         </p>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -330,7 +332,7 @@ export default async function HomePage() {
               name: "SERVLO Core",
               color: "#3B82F6",
               badge: "Available now",
-              badgeStyle: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
+              badgeStyle: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-emerald-500/30",
               perfectFor: "Sole traders, small crews, growing trade businesses",
               desc: "The complete job management platform — scheduling, invoicing, quoting, clients, timesheets and more.",
               features: [
@@ -350,7 +352,7 @@ export default async function HomePage() {
               name: "SERVLO Grow",
               color: "#8B5CF6",
               badge: "Coming Q3 2026",
-              badgeStyle: "bg-purple-500/20 text-purple-300 ring-purple-500/30",
+              badgeStyle: "bg-purple-500/20 text-purple-700 dark:text-purple-300 ring-purple-500/30",
               perfectFor: "Businesses wanting more jobs without paying for ads manually",
               desc: "AI-powered marketing — ads, review automation and social content so your phone keeps ringing.",
               features: [
@@ -367,7 +369,7 @@ export default async function HomePage() {
               name: "SERVLO Leads",
               color: "#F59E0B",
               badge: "Coming Q4 2026",
-              badgeStyle: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
+              badgeStyle: "bg-amber-500/20 text-amber-700 dark:text-amber-300 ring-amber-500/30",
               perfectFor: "Tradies who want a steady flow of qualified work",
               desc: "Verified local job leads sent directly to you — only pay for leads that match your trade and area.",
               features: [
@@ -381,7 +383,7 @@ export default async function HomePage() {
           ].map(({ logo, logoGlow, name, color, badge, badgeStyle, perfectFor, desc, features }) => (
             <div
               key={name}
-              className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20"
+              className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
             >
               <div className="h-1 w-full" style={{ backgroundColor: color }} />
               <div className="flex flex-1 flex-col p-6">
@@ -393,14 +395,14 @@ export default async function HomePage() {
                     {badge}
                   </span>
                 </div>
-                <h3 className="text-base font-bold text-white">{name}</h3>
-                <p className="mt-1 text-xs font-semibold text-slate-500">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">{name}</h3>
+                <p className="mt-1 text-xs font-semibold text-gray-400 dark:text-slate-500">
                   Perfect for: {perfectFor}
                 </p>
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">{desc}</p>
+                <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{desc}</p>
                 <ul className="mt-5 flex-1 space-y-2">
                   {features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-slate-300">
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                       <Check size={13} className="shrink-0 text-blue-400" />
                       {f}
                     </li>
@@ -412,28 +414,133 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── COMING NEXT STRIP ────────────────────────────────────────────── */}
-      <section id="roadmap" className="border-y border-white/[0.06] bg-white/[0.015] py-10">
+      {/* ── FULL PLATFORM (5 COMING PRODUCTS) ────────────────────────────── */}
+      <section id="roadmap" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-zinc-500">Coming next</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="mb-4 text-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Roadmap</span>
+          </div>
+          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">The full platform</h2>
+          <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
+            Start with Core. Add products as you grow. One login, one bill.
+          </p>
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { logo: "/answer.png", name: "Answer", desc: "AI phone agent", date: "Q3 2026" },
-              { logo: "/pay.png",    name: "Pay",    desc: "Integrated payments", date: "Q4 2026" },
-              { logo: "/hire.png",   name: "Hire",   desc: "Trade job board", date: "Q1 2027" },
-              { logo: "/fleet.png",  name: "Fleet",  desc: "GPS tracking", date: "Q2 2027" },
-              { logo: "/finance.png",name: "Finance",desc: "Business loans", date: "Q3 2027" },
-            ].map(({ logo, name, desc, date }) => (
+              {
+                Icon: Phone,
+                name: "ANSWER",
+                tagline: "AI Phone Receptionist",
+                color: "#14B8A6",
+                badge: "Coming Q3 2026",
+                badgeStyle: "bg-teal-500/20 text-teal-700 dark:text-teal-300 ring-teal-500/30",
+                desc: "Never miss a call again. ANSWER picks up every call, books jobs into your calendar, quotes from your pricebook, and texts you a summary — all in your business name.",
+                features: [
+                  "Books jobs while you're on the tools",
+                  "Answers in your business voice",
+                  "Two-way SMS conversations",
+                  "After-hours and holiday modes",
+                  "Call transcripts and recordings",
+                  "Missed call revenue tracking"
+                ]
+              },
+              {
+                Icon: CreditCard,
+                name: "PAY",
+                tagline: "Payments Built for Tradies",
+                color: "#10B981",
+                badge: "Coming Q4 2026",
+                badgeStyle: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-emerald-500/30",
+                desc: "Get paid faster with tap-to-pay, PayID, payment links via SMS, and buy now pay later for bigger jobs. No separate terminal needed.",
+                features: [
+                  "Tap to pay on any Android phone",
+                  "PayID instant bank transfers",
+                  "SMS payment links in one tap",
+                  "Afterpay for jobs over $1,000",
+                  "Auto payment reminders",
+                  "Surcharging built in (AU compliant)"
+                ]
+              },
+              {
+                Icon: Briefcase,
+                name: "HIRE",
+                tagline: "Recruit and Onboard Tradies",
+                color: "#7C3AED",
+                badge: "Coming Q1 2027",
+                badgeStyle: "bg-violet-500/20 text-violet-700 dark:text-violet-300 ring-violet-500/30",
+                desc: "Post jobs, screen applicants with AI phone interviews, send digital contracts, and onboard new starters — without touching paper.",
+                features: [
+                  "AI phone screening of applicants",
+                  "Post to Seek and Indeed in one click",
+                  "Digital employment contracts",
+                  "Super and TFN declaration flow",
+                  "Award rate calculator",
+                  "Training compliance tracker"
+                ]
+              },
+              {
+                Icon: Truck,
+                name: "FLEET",
+                tagline: "Vehicle and Asset Management",
+                color: "#F97316",
+                badge: "Coming Q2 2027",
+                badgeStyle: "bg-orange-500/20 text-orange-700 dark:text-orange-300 ring-orange-500/30",
+                desc: "Every van, every tool, every service interval — tracked in one place. Get rego reminders, fuel reports, and asset health scores before things break.",
+                features: [
+                  "Rego and insurance renewal alerts",
+                  "Fuel tracking and cost-per-km",
+                  "QR code tool tracking",
+                  "Service history per vehicle",
+                  "Asset health score",
+                  "GPS tracking ready"
+                ]
+              },
+              {
+                Icon: BarChart2,
+                name: "FINANCE HUB",
+                tagline: "Accounting Built for Tradies",
+                color: "#06B6D4",
+                badge: "Coming Q3 2027",
+                badgeStyle: "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 ring-cyan-500/30",
+                desc: "Cash flow forecasting, BAS prep, bank reconciliation, and Xero sync — without paying an accountant $4,000 a year to do what software can.",
+                features: [
+                  "90-day cash flow forecast",
+                  "BAS prep in one click",
+                  "Bank feed reconciliation",
+                  "Xero and MYOB two-way sync",
+                  "Tax estimator",
+                  "Year-end accountant pack"
+                ]
+              }
+            ].map(({ Icon, name, tagline, color, badge, badgeStyle, desc, features }) => (
               <div
                 key={name}
-                className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm"
+                className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
               >
-                <div className="relative h-5 w-5 shrink-0">
-                  <Image src={logo} alt={name} fill sizes="20px" className="object-contain" unoptimized />
+                <div className="h-1 w-full" style={{ backgroundColor: color }} />
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                      style={{ background: `${color}20` }}
+                    >
+                      <Icon size={16} style={{ color }} />
+                    </div>
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
+                      {badge}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">{name}</h3>
+                  <p className="mt-0.5 text-xs font-semibold text-gray-400 dark:text-slate-500">{tagline}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{desc}</p>
+                  <ul className="mt-5 flex-1 space-y-2">
+                    {features.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                        <Check size={13} className="shrink-0 text-blue-400" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <span className="font-semibold text-white">{name}</span>
-                <span className="text-slate-400">{desc}</span>
-                <span className="rounded-full bg-slate-700/60 px-2 py-0.5 text-[10px] font-semibold text-slate-300">{date}</span>
               </div>
             ))}
           </div>
@@ -445,12 +552,12 @@ export default async function HomePage() {
         <div className="grid items-center gap-14 md:grid-cols-2">
           <div>
             <div className="mb-4">
-              <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Your edge</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Your edge</span>
             </div>
-            <h2 className="text-4xl font-bold leading-tight text-white md:text-[52px] md:leading-[1.1]">
+            <h2 className="text-4xl font-bold leading-tight text-gray-900 dark:text-white md:text-[52px] md:leading-[1.1]">
               The only Australian trade platform with built-in AI.
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-slate-400">
+            <p className="mt-5 text-base leading-relaxed text-gray-500 dark:text-slate-400">
               SERVLO isn&apos;t just software &mdash; it uses AI to save you hours every week.
               Smart features that work behind the scenes so you can stay on the tools.
             </p>
@@ -478,7 +585,7 @@ export default async function HomePage() {
                 },
                 {
                   Icon: Lightbulb,
-                  title: "AI spots clients who haven’t booked in 90 days",
+                  title: "AI spots clients who haven't booked in 90 days",
                   copy: "And drafts a follow-up message for you to send with one tap."
                 },
               ].map(({ Icon, title, copy }) => (
@@ -487,20 +594,19 @@ export default async function HomePage() {
                     <Icon size={16} className="text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{title}</p>
-                    <p className="mt-0.5 text-sm text-slate-400">{copy}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{title}</p>
+                    <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">{copy}</p>
                   </div>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Mock AI card */}
+          {/* Mock AI card — stays dark as it shows app UI */}
           <div className="relative">
             <div aria-hidden className="absolute -inset-4 rounded-3xl bg-blue-600/10 blur-2xl" />
             <div className="relative rounded-2xl border border-white/10 bg-[#0c1525] p-6">
               <div className="mb-4 flex items-center gap-2">
-                <span className="text-base">&#10024;</span>
                 <span className="text-sm font-semibold text-white">AI Quote Assistant</span>
                 <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">Live</span>
               </div>
@@ -537,15 +643,15 @@ export default async function HomePage() {
       </section>
 
       {/* ── PRICING ──────────────────────────────────────────────────────── */}
-      <section id="pricing" className="border-y border-white/[0.06] bg-white/[0.015] py-32">
+      <section id="pricing" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Pricing</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Pricing</span>
           </div>
-          <h2 className="text-center text-4xl font-bold text-white md:text-[52px]">
+          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">
             Simple pricing. No surprises.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-base text-slate-400">
+          <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
             Early adopters lock in the founding rate &mdash; your price never increases while your subscription is active.
           </p>
           <div className="mt-12">
@@ -557,48 +663,52 @@ export default async function HomePage() {
       {/* ── NO LOCK-IN ───────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 py-32 md:px-6">
         <div className="mb-4 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Our promise</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Our promise</span>
         </div>
-        <h2 className="text-center text-4xl font-bold text-white md:text-[52px]">Your data. Your business. Your call.</h2>
+        <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Your data. Your business. Your call.</h2>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {[
             {
               Icon: Shield,
               title: "Cancel in one click",
-              copy: "From Settings → Billing. No phone calls. No retention team. No waiting period. Just cancelled."
+              copy: "From Settings → Billing. No phone calls. No retention team. No waiting period. Just cancelled.",
+              proof: "No 30-day notice. No phone call. Just cancelled."
             },
             {
-              Icon: Wrench,
+              Icon: Download,
               title: "Export everything, anytime",
-              copy: "One button downloads every client, job, invoice, and photo as a ZIP file you own forever."
+              copy: "One button downloads every client, job, invoice, and photo as a ZIP file you own forever.",
+              proof: "ZIP file downloads in under 60 seconds."
             },
             {
               Icon: Users,
-              title: "We’ll even help you leave",
-              copy: "We have step-by-step migration guides to ServiceM8, Tradify, Jobber, and simPRO. We’re that confident."
+              title: "We'll even help you leave",
+              copy: "We have step-by-step migration guides to ServiceM8, Tradify, Jobber, and simPRO. We're that confident.",
+              proof: "Migration guides for ServiceM8, Tradify, Jobber, simPRO."
             }
-          ].map(({ Icon, title, copy }) => (
+          ].map(({ Icon, title, copy, proof }) => (
             <div
               key={title}
-              className="flex flex-col items-start rounded-2xl border border-white/10 bg-white/[0.03] p-7"
+              className="flex flex-col items-start rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] border-l-4 border-l-blue-500/50 p-7"
             >
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15">
                 <Icon size={18} className="text-blue-400" />
               </div>
-              <h3 className="text-base font-bold text-white">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">{copy}</p>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{copy}</p>
+              <p className="mt-3 text-xs font-semibold text-blue-600 dark:text-blue-400">{proof}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section className="border-y border-white/[0.06] bg-white/[0.015] py-32">
+      <section className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">FAQ</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">FAQ</span>
           </div>
-          <h2 className="mb-14 text-center text-4xl font-bold text-white md:text-[52px]">Common questions</h2>
+          <h2 className="mb-14 text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Common questions</h2>
           <LandingFaq />
         </div>
       </section>
@@ -610,16 +720,16 @@ export default async function HomePage() {
         </div>
         <div className="relative mx-auto max-w-2xl text-center">
           {founderCount > 0 && (
-            <p className="mb-5 text-sm font-medium text-slate-400">
+            <p className="mb-5 text-sm font-medium text-gray-500 dark:text-slate-400">
               Join{" "}
-              <span className="font-bold text-white">{founderCount.toLocaleString()}</span>{" "}
+              <span className="font-bold text-gray-900 dark:text-white">{founderCount.toLocaleString()}</span>{" "}
               Australian businesses already on SERVLO
             </p>
           )}
-          <h2 className="text-4xl font-extrabold leading-tight text-white md:text-[56px] md:leading-[1.06]">
+          <h2 className="text-4xl font-extrabold leading-tight text-gray-900 dark:text-white md:text-[56px] md:leading-[1.06]">
             Stop leaving money on the table.
           </h2>
-          <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-slate-400">
+          <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-gray-500 dark:text-slate-400">
             Every week you spend on admin instead of SERVLO is a week of missed invoices,
             lost quotes, and jobs you forgot to follow up on.
           </p>
@@ -633,25 +743,25 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/auth/signup?plan=solo&code=EARLYACCESS"
-              className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-8 py-4 text-base font-semibold text-amber-300 transition hover:bg-amber-500/20"
+              className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-8 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20"
             >
               Claim 75% off &mdash; Founding 100
             </Link>
           </div>
           {spotsRemaining > 0 && (
-            <p className="mt-5 text-sm font-medium text-slate-400">
-              <span className="font-bold text-amber-300">{spotsRemaining} of 50</span> founding spots remain.
+            <p className="mt-5 text-sm font-medium text-gray-500 dark:text-slate-400">
+              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 50</span> founding spots remain.
               After that, full price only.
             </p>
           )}
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
             Built in Adelaide SA &nbsp;&middot;&nbsp; ABN 88 688 301 684
           </p>
         </div>
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/[0.06] bg-[#030711] py-16">
+      <footer className="border-t border-gray-200 dark:border-white/[0.06] bg-gray-100 dark:bg-[#050505] py-16">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="grid gap-10 md:grid-cols-4">
             {/* Brand */}
@@ -663,42 +773,50 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
-                  className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+                  className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+                />
+                <Image
+                  src="/servlo-master-dark.svg"
+                  alt="SERVLO"
+                  width={100}
+                  height={28}
+                  unoptimized
+                  className="block dark:hidden"
                 />
               </Link>
-              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
                 The operating system for Australian service businesses.
               </p>
-              <p className="mt-3 text-xs text-slate-500">ABN: 88 688 301 684</p>
+              <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">ABN: 88 688 301 684</p>
             </div>
 
             {/* Product */}
             <div>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">Product</p>
-              <ul className="space-y-2.5 text-sm text-slate-400">
-                <li><a href="#platform" className="transition hover:text-white">Platform overview</a></li>
-                <li><a href="#pricing" className="transition hover:text-white">Pricing</a></li>
-                <li><a href="#roadmap" className="transition hover:text-white">Roadmap</a></li>
-                <li><Link href="/status" className="transition hover:text-white">System status</Link></li>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Product</p>
+              <ul className="space-y-2.5 text-sm text-gray-500 dark:text-slate-400">
+                <li><a href="#platform" className="transition hover:text-gray-900 dark:hover:text-white">Platform overview</a></li>
+                <li><a href="#pricing" className="transition hover:text-gray-900 dark:hover:text-white">Pricing</a></li>
+                <li><a href="#roadmap" className="transition hover:text-gray-900 dark:hover:text-white">Roadmap</a></li>
+                <li><Link href="/status" className="transition hover:text-gray-900 dark:hover:text-white">System status</Link></li>
               </ul>
             </div>
 
             {/* Company */}
             <div>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">Company</p>
-              <ul className="space-y-2.5 text-sm text-slate-400">
-                <li><a href="mailto:hello@servlo.com.au" className="transition hover:text-white">Contact us</a></li>
-                <li><Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="transition hover:text-white">Terms of Service</Link></li>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Company</p>
+              <ul className="space-y-2.5 text-sm text-gray-500 dark:text-slate-400">
+                <li><a href="mailto:hello@servlo.com.au" className="transition hover:text-gray-900 dark:hover:text-white">Contact us</a></li>
+                <li><Link href="/privacy" className="transition hover:text-gray-900 dark:hover:text-white">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="transition hover:text-gray-900 dark:hover:text-white">Terms of Service</Link></li>
               </ul>
             </div>
 
             {/* Get started */}
             <div>
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">Get started</p>
-              <ul className="space-y-2.5 text-sm text-slate-400">
-                <li><Link href="/auth/signup" className="transition hover:text-white">Start free trial</Link></li>
-                <li><Link href="/auth/login" className="transition hover:text-white">Log in</Link></li>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Get started</p>
+              <ul className="space-y-2.5 text-sm text-gray-500 dark:text-slate-400">
+                <li><Link href="/auth/signup" className="transition hover:text-gray-900 dark:hover:text-white">Start free trial</Link></li>
+                <li><Link href="/auth/login" className="transition hover:text-gray-900 dark:hover:text-white">Log in</Link></li>
               </ul>
               <div className="mt-5">
                 <Link
@@ -712,7 +830,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-12 border-t border-white/[0.06] pt-8 text-center text-xs text-slate-500">
+          <div className="mt-12 border-t border-gray-200 dark:border-white/[0.06] pt-8 text-center text-xs text-gray-400 dark:text-slate-500">
             &copy; 2026 SERVLO Pty Ltd. All rights reserved. Built in Adelaide, South Australia.
           </div>
         </div>
