@@ -44,6 +44,7 @@ export default async function SchedulePage({ searchParams }: { searchParams?: Sc
     .eq("owner_id", user.id)
     .gte("scheduled_date", view === "week" ? weekStartKey : dateKey)
     .lte("scheduled_date", view === "week" ? weekEndKey : dateKey)
+    .is("deleted_at", null)
     .order("scheduled_start", { ascending: true });
 
   const jobs = jobsResult.data ?? [];
