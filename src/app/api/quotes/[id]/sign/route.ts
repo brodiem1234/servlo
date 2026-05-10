@@ -22,7 +22,7 @@ export async function POST(
   // Verify token matches quote (also fetch owner info for notification)
   const { data: quote } = await supabase
     .from("quotes")
-    .select("id, status, public_token, expiry_date, signed_at, quote_number, total, owner_id, client_name")
+    .select("id, status, public_token, expiry_date, signed_at, quote_number, total, owner_id, client_id")
     .eq("id", id)
     .eq("public_token", token)
     .is("deleted_at", null)
@@ -74,7 +74,17 @@ export async function POST(
         .maybeSingle();
       if (ownerProfile?.email) {
         const quoteNum = (quote as any).quote_number ?? "Quote";
-        const clientName = (quote as any).client_name ?? signed_by_name.trim();
+        // client_name column was dropped — resolve name from clients table or fall back to signer name
+        let clientName = signed_by_name.trim();
+        const clientId = (quote as any).client_id;
+        if (clientId) {
+          const { data: clientRow } = await supabase
+            .from("clients")
+            .select("full_name")
+            .eq("id", clientId)
+            .maybeSingle();
+          if (clientRow?.full_name) clientName = clientRow.full_name;
+        }
         const total = (quote as any).total;
         const totalStr = total != null ? ` for $${Number(total).toFixed(2)}` : "";
         await sendEmail(
