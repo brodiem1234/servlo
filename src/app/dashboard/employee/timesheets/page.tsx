@@ -1,97 +1,116 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-function padDate(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+export const dynamic = "force-dynamic";
+
+function fmtTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" });
 }
 
-function startOfWeekMonday(d: Date) {
-  const copy = new Date(d);
-  copy.setHours(0, 0, 0, 0);
-  const day = copy.getDay();
-  const diff = (day + 6) % 7;
-  copy.setDate(copy.getDate() - diff);
-  return copy;
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" });
 }
 
 export default async function EmployeeTimesheetsPage() {
   const sb = await createClient();
-  const {
-    data: { user }
-  } = await sb.auth.getUser();
-  if (!user?.email) redirect("/auth/login");
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) redirect("/auth/login");
 
-  const today = new Date();
-  const monday = startOfWeekMonday(today);
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return padDate(d);
-  });
+  // Last 4 weeks
+  const from = new Date();
+  from.setDate(from.getDate() - 28);
 
-  const start = weekDates[0]!;
-  const end = weekDates[6]!;
+  const { data: rows } = await sb
+    .from("timesheets")
+    .select("id, clock_in, clock_out, worked_hours, created_at")
+    .eq("employee_id", user.id)
+    .gte("created_at", from.toISOString())
+    .order("clock_in", { ascending: false });
 
-  const { data: rows, error } = await sb
-    .from("timesheet_entries")
-    .select("work_date, hours, notes")
-    .gte("work_date", start)
-    .lte("work_date", end)
-    .order("work_date", { ascending: true });
+  const entries = (rows ?? []) as Array<{
+    id: string;
+    clock_in: string;
+    clock_out: string | null;
+    worked_hours: number | null;
+    created_at: string;
+  }>;
 
-  const byDate = new Map((rows ?? []).map((r) => [r.work_date as string, r]));
-
-  const weekLabel = `${start} → ${end}`;
-  const totalHours = (rows ?? []).reduce((acc, r) => acc + Number(r.hours ?? 0), 0);
+  const totalHours = entries.reduce((s, e) => s + Number(e.worked_hours ?? 0), 0);
+  const completedEntries = entries.filter((e) => e.clock_out != null);
 
   return (
     <section className="space-y-4">
       <div>
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">My timesheets</h1>
-        <p className="text-[var(--text-muted)]">
-          Hours recorded for you this week ({weekLabel}). Totals: <strong className="text-[var(--text-primary)]">{totalHours.toFixed(2)}</strong> h.
+        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>My Hours</h1>
+        <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
+          Last 4 weeks · {completedEntries.length} shifts · {totalHours.toFixed(1)} hrs total
         </p>
       </div>
 
-      {error ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          Could not load timesheets ({error.message}). If this persists, the database may still be updating.
+      <div
+        className="rounded-xl p-4"
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+      >
+        <div className="flex justify-around text-center">
+          <div>
+            <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{totalHours.toFixed(1)}</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Total hours</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{completedEntries.length}</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Shifts</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+              {completedEntries.length > 0 ? (totalHours / completedEntries.length).toFixed(1) : "—"}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Avg/shift</p>
+          </div>
         </div>
-      ) : null}
-
-      <div className="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-2 shadow-sm">
-        <table className="w-full min-w-[520px] text-sm">
-          <thead>
-            <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
-              <th className="px-3 py-2 font-medium">Day</th>
-              <th className="px-3 py-2 font-medium">Date</th>
-              <th className="px-3 py-2 font-medium">Hours</th>
-              <th className="px-3 py-2 font-medium">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {weekDates.map((iso) => {
-              const d = new Date(`${iso}T12:00:00`);
-              const row = byDate.get(iso);
-              const label = d.toLocaleDateString("en-AU", { weekday: "short" });
-              return (
-                <tr key={iso} className="border-b border-[var(--border)]">
-                  <td className="px-3 py-2 font-medium text-[var(--text-primary)]">{label}</td>
-                  <td className="px-3 py-2 text-[var(--text-secondary)]">{iso}</td>
-                  <td className="px-3 py-2 text-[var(--text-secondary)]">{row ? Number(row.hours).toFixed(2) : "—"}</td>
-                  <td className="px-3 py-2 text-[var(--text-muted)]">{row?.notes?.trim() ? row.notes : "—"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
       </div>
 
-      <p className="text-xs text-[var(--text-muted)]">
-        Entries are read-only here and scoped by your login email. Ask your business owner to correct mistakes.
+      {entries.length === 0 ? (
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+        >
+          <p className="text-3xl mb-2">⏱️</p>
+          <p className="font-medium" style={{ color: "var(--text-primary)" }}>No entries yet</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Use the Home tab to clock in and out</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {entries.map((e) => (
+            <div
+              key={e.id}
+              className="rounded-xl px-4 py-3 flex items-center justify-between"
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
+            >
+              <div>
+                <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                  {fmtDate(e.clock_in)}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                  {fmtTime(e.clock_in)}
+                  {e.clock_out ? ` – ${fmtTime(e.clock_out)}` : " · clocked in"}
+                </p>
+              </div>
+              <div className="text-right">
+                {e.worked_hours != null ? (
+                  <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                    {Number(e.worked_hours).toFixed(2)}h
+                  </p>
+                ) : (
+                  <span className="text-xs font-medium text-emerald-600 px-2 py-1 rounded-full bg-emerald-50">Active</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-center pb-2" style={{ color: "var(--text-muted)" }}>
+        Contact your manager to correct any errors.
       </p>
     </section>
   );
