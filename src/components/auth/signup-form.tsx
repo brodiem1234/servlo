@@ -836,6 +836,11 @@ export function SignupForm() {
       );
       const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, optionalChosen);
 
+      // Capture referral code from URL query param (e.g. /auth/signup?ref=ABC123)
+      const referralCode = typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("ref") ?? undefined
+        : undefined;
+
       const setupBody = {
         userId,
         fullName: nameInput.trim(),
@@ -848,6 +853,7 @@ export function SignupForm() {
         selectedPlan: selectedPlanTier,
         selectedProducts: selectedProductCombo,
         entityName: entityName || undefined,
+        referralCode: referralCode || undefined,
       };
 
       let res = await fetch("/api/setup-business", {
