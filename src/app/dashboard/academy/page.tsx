@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { Clock, Award } from "lucide-react";
 
 const COURSES = [
@@ -39,7 +38,7 @@ export default function AcademyDashboardPage() {
           ))}
         </div>
       </div>
-      <LockedOverlay productName="SERVLO ACADEMY" launchDate="Q1 2028" accentColor="#EAB308" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

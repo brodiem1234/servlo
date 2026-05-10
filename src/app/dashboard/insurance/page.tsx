@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { Shield, Wrench, Truck, HeartPulse } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -39,7 +38,7 @@ export default function InsuranceDashboardPage() {
           ))}
         </div>
       </div>
-      <LockedOverlay productName="SERVLO INSURANCE" launchDate="Q4 2027" accentColor="#F43F5E" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { ShoppingBag, TrendingUp, DollarSign, Zap } from "lucide-react";
 
 export default function LeadsDashboardPage() {
@@ -33,7 +32,7 @@ export default function LeadsDashboardPage() {
           ))}
         </div>
       </div>
-      <LockedOverlay productName="SERVLO LEADS" launchDate="Q4 2026" accentColor="#F59E0B" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

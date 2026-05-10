@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 
 const DEMO_CONVOS = [
   { name: "Mike's Plumbing Co", last: "Hey mate, do you do commercial work?", time: "2m", unread: 2, color: "#3B82F6", initials: "MP" },
@@ -58,7 +57,7 @@ export default function MessagesPage() {
           </div>
         </div>
       </div>
-      <LockedOverlay productName="SERVLO CONNECT" launchDate="Q2 2026" accentColor="#6366F1" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

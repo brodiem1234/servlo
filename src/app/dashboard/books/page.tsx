@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { TrendingUp, TrendingDown, Receipt, DollarSign } from "lucide-react";
 
 export default function BooksDashboardPage() {
@@ -33,7 +32,7 @@ export default function BooksDashboardPage() {
           ))}
         </div>
       </div>
-      <LockedOverlay productName="SERVLO BOOKS" launchDate="Q3 2027" accentColor="#10B981" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

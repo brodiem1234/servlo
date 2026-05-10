@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 
 const DEMO_POSTS = [
@@ -134,7 +133,7 @@ export default function ConnectFeedPage() {
           </div>
         ))}
       </div>
-      <LockedOverlay productName="SERVLO CONNECT" launchDate="Q2 2026" accentColor="#6366F1" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

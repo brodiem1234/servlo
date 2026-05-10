@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { ShieldCheck, AlertTriangle, BookOpen, ClipboardCheck } from "lucide-react";
 
 export default function SafeDashboardPage() {
@@ -33,7 +32,7 @@ export default function SafeDashboardPage() {
           ))}
         </div>
       </div>
-      <LockedOverlay productName="SERVLO SAFE" launchDate="Q2 2027" accentColor="#EF4444" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

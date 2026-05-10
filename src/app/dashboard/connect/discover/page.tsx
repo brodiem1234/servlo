@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { MapPin, Star, Wrench } from "lucide-react";
 
 const DEMO_BUSINESSES = [
@@ -38,7 +37,7 @@ export default function DiscoverPage() {
           ))}
         </div>
       </div>
-      <LockedOverlay productName="SERVLO CONNECT" launchDate="Q2 2026" accentColor="#6366F1" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }

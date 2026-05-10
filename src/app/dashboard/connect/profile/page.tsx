@@ -1,4 +1,3 @@
-import { LockedOverlay } from "@/components/locked-overlay";
 import { MapPin, Star, Wrench } from "lucide-react";
 
 export default function ConnectProfilePage() {
@@ -37,7 +36,7 @@ export default function ConnectProfilePage() {
           <p className="text-sm text-slate-500 italic">No posts yet.</p>
         </div>
       </div>
-      <LockedOverlay productName="SERVLO CONNECT" launchDate="Q2 2026" accentColor="#6366F1" />
+      {/* LockedOverlay removed for testing — reinstate before release */}
     </div>
   );
 }
