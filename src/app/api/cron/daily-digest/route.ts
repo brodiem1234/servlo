@@ -36,12 +36,15 @@ export async function GET(request: Request) {
         .select("title, scheduled_start")
         .eq("owner_id", ownerId)
         .eq("scheduled_date", todayKey)
+        .is("deleted_at", null)
         .order("scheduled_start", { ascending: true }),
       admin
         .from("invoices")
-        .select("invoice_number, amount, due_date")
+        .select("invoice_number, total, due_date")
         .eq("owner_id", ownerId)
         .eq("status", "unpaid")
+        .eq("is_demo", false)
+        .is("deleted_at", null)
         .order("due_date", { ascending: true })
         .limit(10),
       admin
@@ -49,6 +52,8 @@ export async function GET(request: Request) {
         .select("quote_number, status, created_at, total")
         .eq("owner_id", ownerId)
         .in("status", ["sent", "pending"])
+        .eq("is_demo", false)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(25)
     ]);
@@ -64,8 +69,8 @@ export async function GET(request: Request) {
       unpaid && unpaid.length > 0
         ? `<ul style="margin:0;padding-left:18px;color:#334155;">${unpaid
             .map(
-              (i: { invoice_number?: string | null; amount?: number | null; due_date?: string | null }) =>
-                `<li>${i.invoice_number ?? "Invoice"} · $${Number(i.amount ?? 0).toFixed(2)} · due ${i.due_date ?? "—"}</li>`
+              (i: { invoice_number?: string | null; total?: number | null; due_date?: string | null }) =>
+                `<li>${i.invoice_number ?? "Invoice"} · $${Number(i.total ?? 0).toFixed(2)} · due ${i.due_date ?? "—"}</li>`
             )
             .join("")}</ul>`
         : `<p style="color:#64748b;">No unpaid invoices right now.</p>`;

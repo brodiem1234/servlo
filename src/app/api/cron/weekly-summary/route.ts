@@ -35,18 +35,21 @@ export async function GET(req: NextRequest) {
           .select("id", { count: "exact", head: true })
           .eq("owner_id", owner.id)
           .eq("status", "completed")
+          .is("deleted_at", null)
           .gte("updated_at", sevenDaysAgo),
         admin
           .from("invoices")
           .select("total", { count: "exact" })
           .eq("owner_id", owner.id)
           .eq("status", "paid")
-          .gte("updated_at", sevenDaysAgo)
-          .eq("is_demo", false),
+          .eq("is_demo", false)
+          .is("deleted_at", null)
+          .gte("updated_at", sevenDaysAgo),
         admin
           .from("clients")
           .select("id", { count: "exact", head: true })
           .eq("owner_id", owner.id)
+          .is("deleted_at", null)
           .gte("created_at", sevenDaysAgo),
       ]);
 

@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     .select("total, gst_rate, status")
     .eq("owner_id", user.id)
     .eq("is_demo", false)
+    .is("deleted_at", null)
     .gte("created_at", qStart)
     .lte("created_at", qEnd + "T23:59:59Z")
     .in("status", ["paid", "sent", "overdue", "partial"]);
