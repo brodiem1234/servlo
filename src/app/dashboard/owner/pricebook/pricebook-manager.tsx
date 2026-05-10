@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback } from "react";
 import { Package, Plus, Search, Tag, Edit2, Trash2, Wrench, ShoppingCart, X, Check, AlertCircle, AlertTriangle } from "lucide-react";
 import { PricebookImport } from "./pricebook-import";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { useUndoToast } from "@/hooks/useUndoToast";
 
 type PricebookItem = {
   id: string;
@@ -54,7 +56,9 @@ export default function PricebookManager({ initialItems, categories }: Props) {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<ToastState>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PricebookItem | null>(null);
   const [saving, setSaving] = useState(false);
+  const { showUndo: showPbUndo } = useUndoToast();
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
@@ -141,20 +145,31 @@ export default function PricebookManager({ initialItems, categories }: Props) {
   };
 
   const handleDelete = useCallback(async (id: string, name: string) => {
-    if (!confirm(`Remove "${name}" from your pricebook?`)) return;
     setDeleting(id);
+    // Optimistic remove
     setItems(prev => prev.filter(i => i.id !== id));
     try {
       const res = await fetch(`/api/pricebook/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
-      showToast("success", "Item removed");
+      showPbUndo({
+        message: `"${name}" removed.`,
+        onUndo: async () => {
+          // Re-fetch to restore (simplest approach)
+          const r = await fetch(`/api/pricebook/${id}`);
+          if (r.ok) {
+            const { item } = await r.json();
+            if (item) setItems(prev => [item, ...prev]);
+          }
+        },
+      });
     } catch {
       setItems(initialItems);
       showToast("error", "Could not remove item");
     } finally {
       setDeleting(null);
+      setDeleteTarget(null);
     }
-  }, [initialItems]);
+  }, [initialItems, showPbUndo]);
 
   const filtered = items.filter(item => {
     const q = search.toLowerCase();
@@ -177,6 +192,14 @@ export default function PricebookManager({ initialItems, categories }: Props) {
 
   return (
     <div className="space-y-6">
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget.id, deleteTarget.name)}
+        entityName={deleteTarget?.name ?? "this item"}
+        entityType="pricebook item"
+        loading={!!deleting}
+      />
       {toast && (
         <div role="alert" className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"}`}>
           {toast.type === "success" ? <Check size={16} aria-hidden /> : <AlertCircle size={16} aria-hidden />}
@@ -309,7 +332,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
                           <button onClick={() => openEdit(item)} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-white/10 hover:text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]" aria-label={`Edit ${item.name}`}>
                             <Edit2 size={13} aria-hidden />
                           </button>
-                          <button onClick={() => handleDelete(item.id, item.name)} disabled={deleting === item.id} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-red-500/10 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50" aria-label={`Delete ${item.name}`}>
+                          <button onClick={() => setDeleteTarget(item)} disabled={deleting === item.id} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-red-500/10 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50" aria-label={`Delete ${item.name}`}>
                             <Trash2 size={13} aria-hidden />
                           </button>
                         </div>

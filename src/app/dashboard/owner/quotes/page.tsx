@@ -425,6 +425,30 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     return (data ?? []) as Array<{ description: string; quantity: number; unit_price: number; gst_applicable: boolean }>;
   }
 
+  async function deleteQuoteAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb.from("quotes").update({ deleted_at: new Date().toISOString() }).eq("id", id).eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath("/dashboard/owner/quotes");
+    return { ok: true };
+  }
+
+  async function restoreQuoteAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb.from("quotes").update({ deleted_at: null }).eq("id", id).eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath("/dashboard/owner/quotes");
+    return { ok: true };
+  }
+
   const visibleQuotes = filterDemoEntities(quotesWithClientName ?? []);
   const visibleClients = filterDemoEntities(clients ?? []);
 
@@ -444,6 +468,8 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
         quickCreateClientForQuoteAction={quickCreateClientForQuoteAction}
         initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
         businessProfile={businessProfile ? { businessName: businessProfile.business_name ?? null, abn: businessProfile.abn ?? null } : null}
+        deleteQuoteAction={deleteQuoteAction}
+        restoreQuoteAction={restoreQuoteAction}
       />
     </section>
   );

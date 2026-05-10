@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import jsPDF from "jspdf";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { DemoBadge } from "@/components/demo-badge";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { useUndoToast } from "@/hooks/useUndoToast";
 
 type Invoice = {
   id: string;
@@ -45,9 +48,39 @@ type Props = {
     address: string | null;
   } | null;
   appOrigin?: string;
+  deleteInvoiceAction?: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  restoreInvoiceAction?: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
+
+function InvoiceRowMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }} className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Row actions">
+        <MoreVertical size={16} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-8 z-30 min-w-[140px] rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]">
+            <Pencil size={14} />Edit
+          </button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
+            <Trash2 size={14} />Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function classifyInvoiceBucket(invoice: Invoice): "draft" | "unpaid" | "overdue" | "paid" {
   const status = (invoice.status ?? "").toLowerCase();
@@ -88,6 +121,8 @@ export default function InvoicesManager({
   initialBucket,
   businessProfile,
   appOrigin,
+  deleteInvoiceAction,
+  restoreInvoiceAction,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -107,6 +142,11 @@ export default function InvoicesManager({
   const [partialRef, setPartialRef] = useState("");
   const [partialDate, setPartialDate] = useState(new Date().toISOString().slice(0, 10));
   const [recordingPayment, setRecordingPayment] = useState(false);
+
+  const [deleteInvoiceTarget, setDeleteInvoiceTarget] = useState<Invoice | null>(null);
+  const [deletingInvoice, setDeletingInvoice] = useState(false);
+  const [removedInvoiceIds, setRemovedInvoiceIds] = useState<Set<string>>(new Set());
+  const { showUndo: showInvoiceUndo } = useUndoToast();
 
   // Local client list — gets new clients appended without a page reload
   const [localClients, setLocalClients] = useState<ClientRef[]>(clients);
@@ -231,9 +271,10 @@ export default function InvoicesManager({
 
   const filteredInvoices = useMemo(() => {
     const key = (initialBucket ?? "").toLowerCase().trim();
-    if (!key || !["draft", "unpaid", "overdue", "paid"].includes(key)) return invoices;
-    return invoices.filter((inv) => classifyInvoiceBucket(inv) === key);
-  }, [invoices, initialBucket]);
+    const base = invoices.filter((inv) => !removedInvoiceIds.has(inv.id));
+    if (!key || !["draft", "unpaid", "overdue", "paid"].includes(key)) return base;
+    return base.filter((inv) => classifyInvoiceBucket(inv) === key);
+  }, [invoices, initialBucket, removedInvoiceIds]);
 
   const overdue = useMemo(
     () =>
@@ -406,8 +447,38 @@ export default function InvoicesManager({
     }
   };
 
+  async function handleDeleteInvoiceConfirm() {
+    if (!deleteInvoiceTarget || !deleteInvoiceAction) return;
+    setDeletingInvoice(true);
+    const fd = new FormData(); fd.set("id", deleteInvoiceTarget.id);
+    const result = await deleteInvoiceAction(fd);
+    setDeletingInvoice(false);
+    if (!result.ok) { setDeleteInvoiceTarget(null); return; }
+    const deletedId = deleteInvoiceTarget.id;
+    const deletedNum = deleteInvoiceTarget.invoice_number ?? "Invoice";
+    setRemovedInvoiceIds((prev) => new Set([...prev, deletedId]));
+    setDeleteInvoiceTarget(null);
+    showInvoiceUndo({
+      message: `${deletedNum} deleted.`,
+      onUndo: async () => {
+        if (!restoreInvoiceAction) return;
+        const rfd = new FormData(); rfd.set("id", deletedId);
+        await restoreInvoiceAction(rfd);
+        setRemovedInvoiceIds((prev) => { const n = new Set(prev); n.delete(deletedId); return n; });
+      },
+    });
+  }
+
   return (
     <div className="space-y-4">
+      <DeleteConfirmModal
+        isOpen={!!deleteInvoiceTarget}
+        onClose={() => setDeleteInvoiceTarget(null)}
+        onConfirm={handleDeleteInvoiceConfirm}
+        entityName={deleteInvoiceTarget?.invoice_number ?? "this invoice"}
+        entityType="invoice"
+        loading={deletingInvoice}
+      />
       {toast ? (
         <div
           className={`rounded-md px-4 py-3 text-sm font-medium ${
@@ -469,6 +540,7 @@ export default function InvoicesManager({
               <th className="px-2 py-3">Due</th>
               <th className="px-2 py-3">Status</th>
               <th className="px-2 py-3">Actions</th>
+              <th className="px-2 py-3 w-8" />
             </tr>
           </thead>
           <tbody>
@@ -568,6 +640,14 @@ export default function InvoicesManager({
                       ) : (
                         <span className="text-xs text-[var(--text-muted)]">Demo</span>
                       )}
+                    </td>
+                    <td className="px-2 py-3 w-8" onClick={(e) => e.stopPropagation()}>
+                      {!demo && deleteInvoiceAction ? (
+                        <InvoiceRowMenu
+                          onEdit={() => startEdit(invoice)}
+                          onDelete={() => setDeleteInvoiceTarget(invoice)}
+                        />
+                      ) : null}
                     </td>
                   </tr>
                 );

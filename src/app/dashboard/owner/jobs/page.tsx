@@ -704,6 +704,30 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     }
   }
 
+  async function deleteJobAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb.from("jobs").update({ deleted_at: new Date().toISOString() }).eq("id", id).eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidateOwnerWorkspaceRoutes();
+    return { ok: true };
+  }
+
+  async function restoreJobAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb.from("jobs").update({ deleted_at: null }).eq("id", id).eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidateOwnerWorkspaceRoutes();
+    return { ok: true };
+  }
+
   const jobsMapped = jobs.map((job) => ({
     ...job,
     client_name: job.client_id ? clientNameById.get(job.client_id) ?? null : null,
@@ -751,6 +775,8 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         saveJobSignoffAction={saveJobSignoffAction}
         clearJobSignoffAction={clearJobSignoffAction}
         sendJobToClientAction={sendJobToClientAction}
+        deleteJobAction={deleteJobAction}
+        restoreJobAction={restoreJobAction}
       />
     </section>
   );

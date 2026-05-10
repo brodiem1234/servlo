@@ -1,12 +1,23 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, LayoutList, Plus, Search, Users } from "lucide-react";
+import {
+  LayoutGrid,
+  LayoutList,
+  Plus,
+  Search,
+  Users,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import ClientFormSheet from "./client-form-sheet";
 import PortalShareButton from "./portal-share-button";
 import { DemoBadge } from "@/components/demo-badge";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { useUndoToast } from "@/hooks/useUndoToast";
 
 export type ClientMetric = {
   totalJobs: number;
@@ -36,7 +47,6 @@ export type ClientRow = {
 };
 
 export type SortKey = "newest" | "oldest" | "name_asc" | "name_desc" | "most_jobs";
-
 export type ClientTypeTab = "all" | "customer" | "supplier" | "lead";
 
 type Props = {
@@ -47,6 +57,8 @@ type Props = {
   initialClientTypeTab: ClientTypeTab;
   createClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   updateClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  deleteClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  restoreClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   sendPortalEmailAction: (formData: FormData) => Promise<void>;
   appOrigin: string;
 };
@@ -72,6 +84,60 @@ function clientTypeLabel(t: string | null | undefined) {
   return "Customer";
 }
 
+/** Three-dot row menu */
+function RowMenu({
+  onEdit,
+  onDelete,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors"
+        aria-label="Row actions"
+      >
+        <MoreVertical size={16} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-8 z-30 min-w-[140px] rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+          >
+            <Pencil size={14} className="shrink-0" />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+          >
+            <Trash2 size={14} className="shrink-0" />
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OwnerClientsView({
   clients,
   metrics,
@@ -80,12 +146,15 @@ export default function OwnerClientsView({
   initialClientTypeTab,
   createClientAction,
   updateClientAction,
+  deleteClientAction,
+  restoreClientAction,
   sendPortalEmailAction,
-  appOrigin
+  appOrigin,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { showUndo } = useUndoToast();
 
   const viewQs = searchParams.get("view");
   const effectiveView: "card" | "list" = viewQs === "list" ? "list" : viewQs === "card" ? "card" : initialView;
@@ -107,6 +176,15 @@ export default function OwnerClientsView({
   const [banner, setBanner] = useState<{ type: "success"; message: string } | null>(null);
   const [search, setSearch] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete state
+  const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  // Optimistic removed IDs (shown hidden until undo expires or page reloads)
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     searchInputRef.current?.focus();
@@ -137,6 +215,7 @@ export default function OwnerClientsView({
   const filteredClients = useMemo(() => {
     const q = search.trim().toLowerCase();
     return clients.filter((c) => {
+      if (removedIds.has(c.id)) return false;
       if (clientTypeTab !== "all" && (c.client_type ?? "customer") !== clientTypeTab) return false;
       if (!q) return true;
       const blob = [c.full_name, c.email, c.phone, c.company_name, c.suburb, clientTypeLabel(c.client_type)]
@@ -144,7 +223,28 @@ export default function OwnerClientsView({
         .join(" ");
       return blob.includes(q);
     });
-  }, [clients, search, clientTypeTab]);
+  }, [clients, search, clientTypeTab, removedIds]);
+
+  const allFilteredIds = useMemo(() => filteredClients.map((c) => c.id), [filteredClients]);
+  const allSelected = allFilteredIds.length > 0 && allFilteredIds.every((id) => selected.has(id));
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(allFilteredIds));
+    }
+  }
+
+  function toggleSelect(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   function openCreate() {
     setSheetClient(null);
@@ -156,21 +256,76 @@ export default function OwnerClientsView({
     setSheetOpen(true);
   }
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const fd = new FormData();
+    fd.set("id", deleteTarget.id);
+    const result = await deleteClientAction(fd);
+    setDeleting(false);
+    if (!result.ok) {
+      setBanner({ type: "success", message: result.message ?? "Failed to delete." });
+      setDeleteTarget(null);
+      return;
+    }
+    const deletedId = deleteTarget.id;
+    const deletedName = deleteTarget.full_name ?? "Client";
+    setRemovedIds((prev) => new Set([...prev, deletedId]));
+    setSelected((prev) => { const n = new Set(prev); n.delete(deletedId); return n; });
+    setDeleteTarget(null);
+
+    showUndo({
+      message: `${deletedName} deleted.`,
+      onUndo: async () => {
+        const rfd = new FormData();
+        rfd.set("id", deletedId);
+        await restoreClientAction(rfd);
+        setRemovedIds((prev) => { const n = new Set(prev); n.delete(deletedId); return n; });
+      },
+    });
+  }
+
+  async function handleBulkDelete() {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    // Optimistically remove all
+    setRemovedIds((prev) => new Set([...prev, ...ids]));
+    setSelected(new Set());
+    const count = ids.length;
+    await Promise.all(ids.map((id) => {
+      const fd = new FormData(); fd.set("id", id); return deleteClientAction(fd);
+    }));
+    showUndo({
+      message: `${count} client${count > 1 ? "s" : ""} deleted.`,
+      onUndo: async () => {
+        await Promise.all(ids.map((id) => {
+          const fd = new FormData(); fd.set("id", id); return restoreClientAction(fd);
+        }));
+        setRemovedIds((prev) => { const n = new Set(prev); ids.forEach((id) => n.delete(id)); return n; });
+      },
+    });
+  }
+
+  const selectedCount = selected.size;
+
   return (
     <section className="space-y-5">
       <ClientFormSheet
         open={sheetOpen}
         client={sheetClient}
-        onClose={() => {
-          setSheetOpen(false);
-          setSheetClient(null);
-        }}
+        onClose={() => { setSheetOpen(false); setSheetClient(null); }}
         createClientAction={createClientAction}
         updateClientAction={updateClientAction}
-        onSaveSuccess={(message) => {
-          setBanner({ type: "success", message });
-          setSearch("");
-        }}
+        onSaveSuccess={(message) => { setBanner({ type: "success", message }); setSearch(""); }}
+      />
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        entityName={deleteTarget?.full_name ?? "this client"}
+        entityType="client"
+        loading={deleting}
       />
 
       {banner ? (
@@ -245,13 +400,37 @@ export default function OwnerClientsView({
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedCount > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2.5 shadow-sm">
+          <span className="text-sm font-medium text-[var(--text-primary)]">
+            {selectedCount} selected
+          </span>
+          <button
+            type="button"
+            onClick={handleBulkDelete}
+            className="inline-flex items-center gap-1.5 rounded-md bg-red-600 hover:bg-red-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+          >
+            <Trash2 size={13} />
+            Delete selected
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className="ml-auto text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {(
           [
             ["all", "All"],
             ["customer", "Customers"],
             ["supplier", "Suppliers"],
-            ["lead", "Leads"]
+            ["lead", "Leads"],
           ] as const
         ).map(([value, label]) => (
           <button
@@ -290,6 +469,15 @@ export default function OwnerClientsView({
           <table className="w-full min-w-[800px] text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                <th className="px-2 py-2 w-8">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all"
+                    className="rounded border-[var(--border)] accent-[var(--accent-color)]"
+                  />
+                </th>
                 <th className="px-2 py-2 font-medium">Name</th>
                 <th className="px-2 py-2 font-medium">Type</th>
                 <th className="px-2 py-2 font-medium">Email</th>
@@ -302,6 +490,7 @@ export default function OwnerClientsView({
                 <th className="px-2 py-2 font-medium">Created</th>
                 <th className="px-2 py-2 font-medium">Portal</th>
                 <th className="px-2 py-2 font-medium">Open</th>
+                <th className="px-2 py-2 w-8" />
               </tr>
             </thead>
             <tbody>
@@ -312,13 +501,20 @@ export default function OwnerClientsView({
                   tabIndex={0}
                   onClick={() => openEdit(client)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openEdit(client);
-                    }
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(client); }
                   }}
                   className="cursor-pointer border-b border-[var(--border)] hover:bg-[var(--bg-primary)]"
                 >
+                  <td className="px-2 py-2 w-8" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(client.id)}
+                      onChange={(e) => toggleSelect(client.id, e as unknown as React.MouseEvent)}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Select ${client.full_name ?? "client"}`}
+                      className="rounded border-[var(--border)] accent-[var(--accent-color)]"
+                    />
+                  </td>
                   <td className="px-2 py-2 font-medium text-[var(--text-primary)]">
                     <div className="flex flex-wrap items-center gap-2">
                       <span>{client.full_name ?? "-"}</span>
@@ -326,9 +522,7 @@ export default function OwnerClientsView({
                     </div>
                   </td>
                   <td className="px-2 py-2">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${clientTypeBadgeClass(client.client_type)}`}
-                    >
+                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${clientTypeBadgeClass(client.client_type)}`}>
                       {clientTypeLabel(client.client_type)}
                     </span>
                   </td>
@@ -365,9 +559,7 @@ export default function OwnerClientsView({
                           <span className="text-[10px] text-[var(--text-muted)]">Demo — email disabled</span>
                         )}
                       </div>
-                    ) : (
-                      "—"
-                    )}
+                    ) : "—"}
                   </td>
                   <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                     <Link
@@ -377,11 +569,17 @@ export default function OwnerClientsView({
                       View Jobs
                     </Link>
                   </td>
+                  <td className="px-2 py-2 w-8" onClick={(e) => e.stopPropagation()}>
+                    <RowMenu
+                      onEdit={() => openEdit(client)}
+                      onDelete={() => setDeleteTarget(client)}
+                    />
+                  </td>
                 </tr>
               ))}
               {filteredClients.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-6 text-[var(--text-muted)]" colSpan={12}>
+                  <td className="px-2 py-6 text-[var(--text-muted)]" colSpan={14}>
                     No clients match your filters or search.
                   </td>
                 </tr>
@@ -398,26 +596,44 @@ export default function OwnerClientsView({
               tabIndex={0}
               onClick={() => openEdit(client)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openEdit(client);
-                }
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(client); }
               }}
-              className="flex cursor-pointer flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm transition hover:bg-[color-mix(in_srgb,var(--accent-color)_5%,var(--bg-primary))]"
+              className="relative flex cursor-pointer flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4 shadow-sm transition hover:bg-[color-mix(in_srgb,var(--accent-color)_5%,var(--bg-primary))]"
             >
-              <div className="flex flex-wrap items-center gap-2">
+              {/* Three-dot menu */}
+              <div className="absolute right-3 top-3" onClick={(e) => e.stopPropagation()}>
+                <RowMenu
+                  onEdit={() => openEdit(client)}
+                  onDelete={() => setDeleteTarget(client)}
+                />
+              </div>
+
+              {/* Checkbox */}
+              <div
+                className="absolute left-3 top-3"
+                onClick={(e) => { e.stopPropagation(); toggleSelect(client.id, e); }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(client.id)}
+                  onChange={() => {}}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Select ${client.full_name ?? "client"}`}
+                  className="rounded border-[var(--border)] accent-[var(--accent-color)]"
+                />
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2 pl-5 pr-8">
                 <p className="text-lg font-semibold leading-tight text-[var(--text-primary)]">{client.full_name ?? "Unnamed client"}</p>
                 {client.is_demo ? <DemoBadge /> : null}
               </div>
               {client.company_name ? (
-                <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">{client.company_name}</p>
+                <p className="mt-1 pl-5 text-sm font-medium text-[var(--text-secondary)]">{client.company_name}</p>
               ) : null}
               <p className="mt-3 text-sm text-[var(--text-primary)]">{client.phone ?? "—"}</p>
               <p className="text-sm text-[var(--text-primary)]">{client.email ?? "—"}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(client.status)}`}
-                >
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(client.status)}`}>
                   {(client.status ?? "active").replace(/-/g, " ")}
                 </span>
               </div>

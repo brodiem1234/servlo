@@ -381,6 +381,30 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     return { ok: true, id: data?.id, label: data?.full_name ?? full_name };
   }
 
+  async function deleteInvoiceAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb.from("invoices").update({ deleted_at: new Date().toISOString() }).eq("id", id).eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath("/dashboard/owner/invoices");
+    return { ok: true };
+  }
+
+  async function restoreInvoiceAction(formData: FormData): Promise<{ ok: boolean; message?: string }> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb.from("invoices").update({ deleted_at: null }).eq("id", id).eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidatePath("/dashboard/owner/invoices");
+    return { ok: true };
+  }
+
   const visibleInvoices = filterDemoEntities(invoices ?? []);
 
   return (
@@ -399,6 +423,8 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
         initialBucket={typeof sp.bucket === "string" ? sp.bucket : undefined}
         businessProfile={businessRow ? { businessName: businessRow.business_name ?? null, abn: businessRow.abn ?? null, phone: businessRow.phone ?? null, address: businessRow.address ?? null } : null}
         appOrigin={appOrigin}
+        deleteInvoiceAction={deleteInvoiceAction}
+        restoreInvoiceAction={restoreInvoiceAction}
       />
     </section>
   );

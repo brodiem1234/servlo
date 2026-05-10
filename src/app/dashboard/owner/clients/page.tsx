@@ -359,6 +359,38 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     return { ok: true };
   }
 
+  async function deleteClientAction(formData: FormData): Promise<ClientActionResult> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not authenticated." };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb
+      .from("clients")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidateOwnerWorkspaceRoutes();
+    return { ok: true };
+  }
+
+  async function restoreClientAction(formData: FormData): Promise<ClientActionResult> {
+    "use server";
+    const sb = await createClient();
+    const { data: { user: owner } } = await sb.auth.getUser();
+    if (!owner) return { ok: false, message: "Not authenticated." };
+    const id = String(formData.get("id") ?? "");
+    const { error } = await sb
+      .from("clients")
+      .update({ deleted_at: null })
+      .eq("id", id)
+      .eq("owner_id", owner.id);
+    if (error) return { ok: false, message: error.message };
+    revalidateOwnerWorkspaceRoutes();
+    return { ok: true };
+  }
+
   async function sendPortalEmailAction(formData: FormData) {
     "use server";
     const sb = await createClient();
@@ -405,6 +437,8 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
         initialClientTypeTab={clientTypeTab}
         createClientAction={createClientAction}
         updateClientAction={updateClientAction}
+        deleteClientAction={deleteClientAction}
+        restoreClientAction={restoreClientAction}
         sendPortalEmailAction={sendPortalEmailAction}
         appOrigin={appOrigin}
       />

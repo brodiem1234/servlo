@@ -1,7 +1,9 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { useUndoToast } from "@/hooks/useUndoToast";
 import { DemoBadge } from "@/components/demo-badge";
 import { useEffect, useMemo, useState, useRef, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -66,7 +68,37 @@ type Props = {
   saveJobSignoffAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   clearJobSignoffAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   sendJobToClientAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  deleteJobAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  restoreJobAction: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
 };
+
+function JobRowMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }} className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Row actions">
+        <MoreVertical size={16} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-8 z-30 min-w-[140px] rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]">
+            <Pencil size={14} />Edit
+          </button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
+            <Trash2 size={14} />Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const ADD_NEW_CLIENT = "__add_new_client__";
 const ADD_NEW_EMPLOYEE = "__add_new_employee__";
@@ -158,7 +190,9 @@ export default function JobsManager({
   quickCreateEmployeeForJobAction,
   saveJobSignoffAction,
   clearJobSignoffAction,
-  sendJobToClientAction
+  sendJobToClientAction,
+  deleteJobAction,
+  restoreJobAction,
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -186,6 +220,10 @@ export default function JobsManager({
   const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
   const [dragOverDateKey, setDragOverDateKey] = useState<string | null>(null);
   const [clientOptions, setClientOptions] = useState<RefOpt[]>(clients);
+  const [deleteJobTarget, setDeleteJobTarget] = useState<Job | null>(null);
+  const [deletingJob, setDeletingJob] = useState(false);
+  const [removedJobIds, setRemovedJobIds] = useState<Set<string>>(new Set());
+  const { showUndo: showJobUndo } = useUndoToast();
   const [employeeOptions, setEmployeeOptions] = useState<RefOpt[]>(employees);
   const [quickClientSaving, setQuickClientSaving] = useState(false);
   const [quickEmployeeSaving, setQuickEmployeeSaving] = useState(false);
@@ -346,9 +384,9 @@ export default function JobsManager({
       const matchesFrom = !fromDate || (dateKey && dateKey >= fromDate);
       const matchesTo = !toDate || (dateKey && dateKey <= toDate);
 
-      return matchesSearch && matchesClient && matchesStatus && matchesPriority && matchesFrom && matchesTo;
+      return matchesSearch && matchesClient && matchesStatus && matchesPriority && matchesFrom && matchesTo && !removedJobIds.has(job.id);
     });
-  }, [jobs, search, clientFilter, statusFilter, priorityFilter, fromDate, toDate]);
+  }, [jobs, search, clientFilter, statusFilter, priorityFilter, fromDate, toDate, removedJobIds]);
 
   const jobNumberById = useMemo(() => {
     const sorted = [...jobs].sort((a, b) => {
@@ -723,8 +761,38 @@ export default function JobsManager({
         ? `${weekDays[0].toLocaleDateString("en-AU")} - ${weekDays[6].toLocaleDateString("en-AU")}`
         : focusDate.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
+  async function handleDeleteJobConfirm() {
+    if (!deleteJobTarget) return;
+    setDeletingJob(true);
+    const fd = new FormData();
+    fd.set("id", deleteJobTarget.id);
+    const result = await deleteJobAction(fd);
+    setDeletingJob(false);
+    if (!result.ok) { setDeleteJobTarget(null); return; }
+    const deletedId = deleteJobTarget.id;
+    const deletedTitle = deleteJobTarget.title ?? "Job";
+    setRemovedJobIds((prev) => new Set([...prev, deletedId]));
+    setDeleteJobTarget(null);
+    showJobUndo({
+      message: `"${deletedTitle}" deleted.`,
+      onUndo: async () => {
+        const rfd = new FormData(); rfd.set("id", deletedId);
+        await restoreJobAction(rfd);
+        setRemovedJobIds((prev) => { const n = new Set(prev); n.delete(deletedId); return n; });
+      },
+    });
+  }
+
   return (
     <div className="space-y-4">
+      <DeleteConfirmModal
+        isOpen={!!deleteJobTarget}
+        onClose={() => setDeleteJobTarget(null)}
+        onConfirm={handleDeleteJobConfirm}
+        entityName={deleteJobTarget?.title ?? "this job"}
+        entityType="job"
+        loading={deletingJob}
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="rounded-md border bg-white p-1 text-sm">
           <button onClick={() => setView("list")} className={`rounded px-3 py-1 ${view === "list" ? "bg-[var(--accent-color)] text-white" : ""}`}>List View</button>
@@ -1189,6 +1257,7 @@ export default function JobsManager({
                   <th className="px-2 py-2 font-medium">Priority</th>
                   <th className="px-2 py-2 font-medium">Employee</th>
                   <th className="whitespace-nowrap px-2 py-2 font-medium">Actions</th>
+                  <th className="px-2 py-2 w-8" />
                 </tr>
               </thead>
               <tbody>
@@ -1284,6 +1353,12 @@ export default function JobsManager({
                           ) : (
                             <span className="text-xs text-[var(--text-muted)]">—</span>
                           )}
+                        </td>
+                        <td className="px-2 py-2 w-8" onClick={(e) => e.stopPropagation()}>
+                          <JobRowMenu
+                            onEdit={() => startEdit(job)}
+                            onDelete={() => setDeleteJobTarget(job)}
+                          />
                         </td>
                       </tr>
                     );

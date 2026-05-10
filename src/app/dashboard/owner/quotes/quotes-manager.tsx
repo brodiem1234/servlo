@@ -2,7 +2,10 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import jsPDF from "jspdf";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { DemoBadge } from "@/components/demo-badge";
+import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
+import { useUndoToast } from "@/hooks/useUndoToast";
 
 type Quote = {
   id: string;
@@ -35,6 +38,8 @@ type Props = {
   quickCreateClientForQuoteAction: (formData: FormData) => Promise<QuickCreateResult>;
   initialBucket?: string | null;
   businessProfile?: { businessName: string | null; abn: string | null } | null;
+  deleteQuoteAction?: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  restoreQuoteAction?: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
@@ -54,6 +59,34 @@ function statusColor(status: string | null) {
   if (s === "declined" || s === "cancelled") return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-100";
   if (s === "sent" || s === "awaiting") return "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100";
   return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200";
+}
+
+function QuoteRowMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }} className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Row actions">
+        <MoreVertical size={16} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-8 z-30 min-w-[140px] rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)]">
+            <Pencil size={14} />Edit
+          </button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
+            <Trash2 size={14} />Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function classifyQuoteBucket(status: string | null): "draft" | "awaiting" | "accepted" | "declined" {
@@ -76,7 +109,9 @@ export default function QuotesManager({
   loadQuoteItemsAction,
   quickCreateClientForQuoteAction,
   initialBucket,
-  businessProfile
+  businessProfile,
+  deleteQuoteAction,
+  restoreQuoteAction,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -98,6 +133,10 @@ export default function QuotesManager({
   // Quick-create client modal
   const [newClientOpen, setNewClientOpen] = useState(false);
   const [newClientName, setNewClientName] = useState("");
+  const [deleteQuoteTarget, setDeleteQuoteTarget] = useState<Quote | null>(null);
+  const [deletingQuote, setDeletingQuote] = useState(false);
+  const [removedQuoteIds, setRemovedQuoteIds] = useState<Set<string>>(new Set());
+  const { showUndo: showQuoteUndo } = useUndoToast();
   const [newClientEmail, setNewClientEmail] = useState("");
   const [newClientPhone, setNewClientPhone] = useState("");
   const [savingNewClient, setSavingNewClient] = useState(false);
@@ -153,9 +192,10 @@ export default function QuotesManager({
 
   const filteredQuotes = useMemo(() => {
     const key = (initialBucket ?? "").toLowerCase().trim();
-    if (!key || !["draft", "awaiting", "accepted", "declined"].includes(key)) return quotes;
-    return quotes.filter((q) => classifyQuoteBucket(q.status) === key);
-  }, [quotes, initialBucket]);
+    const base = quotes.filter((q) => !removedQuoteIds.has(q.id));
+    if (!key || !["draft", "awaiting", "accepted", "declined"].includes(key)) return base;
+    return base.filter((q) => classifyQuoteBucket(q.status) === key);
+  }, [quotes, initialBucket, removedQuoteIds]);
 
   function startNew() {
     setEditingId("");
@@ -345,8 +385,38 @@ export default function QuotesManager({
     { value: "cancelled", label: "Cancelled" }
   ];
 
+  async function handleDeleteQuoteConfirm() {
+    if (!deleteQuoteTarget || !deleteQuoteAction) return;
+    setDeletingQuote(true);
+    const fd = new FormData(); fd.set("id", deleteQuoteTarget.id);
+    const result = await deleteQuoteAction(fd);
+    setDeletingQuote(false);
+    if (!result.ok) { setDeleteQuoteTarget(null); return; }
+    const deletedId = deleteQuoteTarget.id;
+    const deletedNum = deleteQuoteTarget.quote_number ?? "Quote";
+    setRemovedQuoteIds((prev) => new Set([...prev, deletedId]));
+    setDeleteQuoteTarget(null);
+    showQuoteUndo({
+      message: `${deletedNum} deleted.`,
+      onUndo: async () => {
+        if (!restoreQuoteAction) return;
+        const rfd = new FormData(); rfd.set("id", deletedId);
+        await restoreQuoteAction(rfd);
+        setRemovedQuoteIds((prev) => { const n = new Set(prev); n.delete(deletedId); return n; });
+      },
+    });
+  }
+
   return (
     <div className="space-y-4">
+      <DeleteConfirmModal
+        isOpen={!!deleteQuoteTarget}
+        onClose={() => setDeleteQuoteTarget(null)}
+        onConfirm={handleDeleteQuoteConfirm}
+        entityName={deleteQuoteTarget?.quote_number ?? "this quote"}
+        entityType="quote"
+        loading={deletingQuote}
+      />
       {toast ? (
         <div
           className={`rounded-md px-4 py-3 text-sm font-medium ${
@@ -428,6 +498,7 @@ export default function QuotesManager({
               <th className="px-2 py-3">Total</th>
               <th className="px-2 py-3">Status</th>
               <th className="px-2 py-3">Actions</th>
+              <th className="px-2 py-3 w-8" />
             </tr>
           </thead>
           <tbody>
@@ -546,6 +617,14 @@ export default function QuotesManager({
                       ) : (
                         <span className="text-xs text-[var(--text-muted)]">Demo</span>
                       )}
+                    </td>
+                    <td className="px-2 py-3 w-8" onClick={(e) => e.stopPropagation()}>
+                      {!demo && deleteQuoteAction ? (
+                        <QuoteRowMenu
+                          onEdit={() => startEdit(quote)}
+                          onDelete={() => setDeleteQuoteTarget(quote)}
+                        />
+                      ) : null}
                     </td>
                   </tr>
                 );
