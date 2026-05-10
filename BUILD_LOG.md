@@ -97,4 +97,28 @@ All commits: zero `tsc --noEmit` errors ✅
 
 ---
 
+## Phase 3 — Session 3 (2026-05-10 continuation)
+
+| Feature | Files | Status |
+|---------|-------|--------|
+| Employee dashboard (EmployeeDashboardClient) | `employee/employee-dashboard-client.tsx` | ✅ PASS |
+| Employee jobs list page | `employee/jobs/page.tsx` + `employee-jobs-client.tsx` | ✅ PASS |
+| Employee expense submission | `employee/expenses/page.tsx` + `api/employee/expenses/route.ts` | ✅ PASS |
+| Employee bottom-nav shell | `employee/layout.tsx` + `employee-shell.tsx` | ✅ PASS |
+| Fix employee timesheets (wrong table) | `employee/timesheets/page.tsx` — was using timesheet_entries | ✅ FIXED |
+| Fix employee /clock stub | `employee/clock/page.tsx` — redirect to home | ✅ FIXED |
+| Client dashboard enhance | `dashboard/client/page.tsx` — quote sign + invoice pay | ✅ PASS |
+| Brand kit migration | `supabase/migrations/20260516100000_businesses_brand_fields.sql` | ✅ WRITTEN |
+| Error pages | `app/error.tsx` + `app/global-error.tsx` | ✅ PASS |
+| Job automations wired | `lib/job-automations.ts` — fired from owner + employee status updates | ✅ PASS |
+| Satisfaction survey on completion | `lib/job-survey.ts` — auto-email survey when job completed | ✅ PASS |
+| Quote sign owner notification | `api/quotes/[id]/sign/route.ts` — email owner on accept | ✅ PASS |
+| Sidebar todos optimistic UI | `components/dashboard/owner-sidebar-todos.tsx` | ✅ FIXED |
+| Loading skeletons | compliance, expenses, bas, timesheets, grow/brand, grow/seo | ✅ PASS |
+
+### Phase 3 TypeScript gate
+All commits: zero `tsc --noEmit` errors ✅
+
+---
+
 ## Phase 1 — CORE (legacy — see Phase 1 detail table above)
