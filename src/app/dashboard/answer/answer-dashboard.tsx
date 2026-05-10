@@ -772,7 +772,7 @@ export function AnswerDashboard({ callLogs, stats }: Props) {
         {/* Tabs */}
         <div>
           <nav
-            className="flex gap-1 border-b"
+            className="flex gap-1 overflow-x-auto border-b"
             style={{ borderColor: "var(--border, rgba(255,255,255,0.1))" }}
             aria-label="Answer dashboard sections"
           >
@@ -780,7 +780,7 @@ export function AnswerDashboard({ callLogs, stats }: Props) {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                className={`shrink-0 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   activeTab === tab.key
                     ? ""
                     : "border-transparent text-slate-500 hover:text-slate-300"

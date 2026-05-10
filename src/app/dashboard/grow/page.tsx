@@ -166,7 +166,7 @@ export default async function GrowDashboardPage() {
             Get started with SERVLO GROW — build your online presence in
             minutes.
           </p>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {QUICK_START.map(({ title, description, href, Icon }) => (
               <Link
                 key={href}

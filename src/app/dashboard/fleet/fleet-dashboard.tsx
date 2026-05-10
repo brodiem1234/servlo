@@ -259,7 +259,7 @@ function AddVehicleForm({ onSuccess, onCancel, addToast }: AddVehicleFormProps) 
       </div>
 
       {/* Make / Model */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="veh-make" className={labelCls}>Make</label>
           <input
@@ -287,7 +287,7 @@ function AddVehicleForm({ onSuccess, onCancel, addToast }: AddVehicleFormProps) 
       </div>
 
       {/* Year / Registration */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="veh-year" className={labelCls}>Year</label>
           <input
@@ -325,7 +325,7 @@ function AddVehicleForm({ onSuccess, onCancel, addToast }: AddVehicleFormProps) 
       </div>
 
       {/* Fuel type / Status */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="veh-fuel" className={labelCls}>Fuel Type</label>
           <select
@@ -557,7 +557,7 @@ export default function FleetDashboard({ vehicles: initialVehicles, serviceRecor
 
       {/* Tab bar */}
       <div
-        className="flex gap-1 rounded-xl p-1"
+        className="flex gap-1 rounded-xl p-1 overflow-x-auto"
         style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border, rgba(255,255,255,0.1))" }}
         role="tablist"
         aria-label="Fleet sections"
@@ -570,7 +570,7 @@ export default function FleetDashboard({ vehicles: initialVehicles, serviceRecor
             aria-controls={`tabpanel-${id}`}
             id={`tab-${id}`}
             onClick={() => setActiveTab(id)}
-            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex-1 justify-center"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors flex-1 justify-center"
             style={
               activeTab === id
                 ? { background: "#F97316", color: "#fff" }

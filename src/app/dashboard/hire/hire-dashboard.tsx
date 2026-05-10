@@ -200,7 +200,7 @@ export function HireDashboard({ postings: initialPostings, applications: initial
 
       {/* Tabs */}
       <div style={{ borderBottom: "1px solid var(--border)" }}>
-        <nav className="flex gap-1" role="tablist" aria-label="Hire sections">
+        <nav className="flex flex-wrap gap-1" role="tablist" aria-label="Hire sections">
           {(["board", "ats", "onboarding", "post"] as const).map((t) => {
             const labels = { board: "Job Board", ats: "ATS Pipeline", onboarding: "Onboarding", post: "Post a Job" };
             const active = tab === t;
@@ -618,7 +618,7 @@ function OnboardingTab({
               }}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }} htmlFor="new-task-category">
                 Category

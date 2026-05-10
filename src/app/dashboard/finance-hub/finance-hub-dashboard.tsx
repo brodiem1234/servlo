@@ -458,7 +458,7 @@ export function FinanceHubDashboard({
         role="tablist"
         aria-label="Finance Hub sections"
       >
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -468,7 +468,7 @@ export function FinanceHubDashboard({
               id={`tab-${tab.id}`}
               tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => setActiveTab(tab.id)}
-              className="relative px-4 py-3 text-sm font-medium transition-colors"
+              className="relative shrink-0 px-4 py-3 text-sm font-medium transition-colors"
               style={{
                 color:
                   activeTab === tab.id
@@ -506,7 +506,7 @@ export function FinanceHubDashboard({
         {activeTab === "bank" && (
           <div className="space-y-4">
             {/* Summary row */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
                 {
                   label: "Inflow",
@@ -526,7 +526,7 @@ export function FinanceHubDashboard({
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-xl border p-4 text-center"
+                  className="rounded-xl border p-3 sm:p-4 text-center"
                   style={{
                     borderColor: "var(--border)",
                     background: "var(--bg-card)",
@@ -539,7 +539,7 @@ export function FinanceHubDashboard({
                     {item.label}
                   </p>
                   <p
-                    className="text-lg font-bold tabular-nums"
+                    className="text-sm sm:text-lg font-bold tabular-nums break-all"
                     style={{ color: item.color }}
                   >
                     {item.value}
@@ -768,6 +768,7 @@ export function FinanceHubDashboard({
                 className="rounded-xl border overflow-hidden"
                 style={{ borderColor: "var(--border)" }}
               >
+                <div className="overflow-x-auto">
                 <table
                   className="w-full text-sm"
                   role="table"
@@ -912,6 +913,7 @@ export function FinanceHubDashboard({
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>
@@ -1156,6 +1158,7 @@ export function FinanceHubDashboard({
                 className="rounded-xl border overflow-hidden"
                 style={{ borderColor: "var(--border)" }}
               >
+                <div className="overflow-x-auto">
                 <table
                   className="w-full text-sm"
                   role="table"
@@ -1249,6 +1252,7 @@ export function FinanceHubDashboard({
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>
@@ -1298,7 +1302,7 @@ export function FinanceHubDashboard({
                   GST figures are pre-filled from your paid invoices in the last
                   quarter. Review and adjust before lodging.
                 </p>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
                     {
                       label: "GST Collected",
