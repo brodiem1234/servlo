@@ -11,14 +11,29 @@ import {
   MapPin,
   Menu,
   X as XIcon,
+  Compass,
+  HelpCircle,
+  LayoutGrid,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
+import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 
 const FLEET_COLOR = "#F97316";
+
+const MOBILE_APPS = [
+  { label: "Core",        sub: "Business Mgmt",    href: "/dashboard/owner",       color: "#3B82F6" },
+  { label: "Grow",        sub: "Marketing & Ads",  href: "/dashboard/grow",        color: "#8B5CF6" },
+  { label: "Leads",       sub: "Lead Marketplace", href: "/dashboard/leads",       color: "#F59E0B" },
+  { label: "Answer",      sub: "AI Phone Agent",   href: "/dashboard/answer",      color: "#14B8A6" },
+  { label: "Pay",         sub: "Payments",         href: "/dashboard/pay",         color: "#22C55E" },
+  { label: "Fleet",       sub: "Vehicles & Assets",href: "/dashboard/fleet",       color: "#F97316" },
+  { label: "Finance Hub", sub: "Accounting & BAS", href: "/dashboard/finance-hub", color: "#059669" },
+  { label: "Hire",        sub: "Recruitment & HR", href: "/dashboard/hire",        color: "#6366F1" },
+];
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -43,6 +58,7 @@ export default function FleetShell({
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [appsOpen, setAppsOpen] = useState(false);
   const handleSignOut = useCallback(async () => {
     const supabase = createSupabaseBrowser();
     await supabase.auth.signOut();
@@ -180,6 +196,27 @@ export default function FleetShell({
             </p>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
+              {/* Tour trigger — mobile only */}
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("servlo:start-tour"))}
+                className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+                style={{ color: "var(--text-secondary)" }}
+                aria-label="Start tour"
+              >
+                <Compass size={18} />
+              </button>
+              {/* Help — mobile only */}
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("servlo:open-help"))}
+                className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+                style={{ color: "var(--text-secondary)" }}
+                aria-label="Help"
+              >
+                <HelpCircle size={18} />
+              </button>
+              <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}
@@ -192,6 +229,69 @@ export default function FleetShell({
         </header>
         <main className="p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
+      {/* Mobile bottom nav */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--sidebar-divider)] bg-[var(--sidebar-bg)] md:hidden"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
+      >
+        <div className="grid grid-cols-5 px-2">
+          {FLEET_NAV.slice(0, 4).map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                data-active={active ? "true" : "false"}
+                onClick={() => setAppsOpen(false)}
+                className="flex min-h-[52px] flex-1 min-w-0 flex-col items-center justify-center px-1 py-2 text-[10px] text-[var(--sidebar-text)]"
+              >
+                <item.Icon size={20} className="shrink-0 text-[var(--sidebar-text)]" />
+                <span className="mt-0.5 w-full truncate text-center leading-tight">{item.label}</span>
+              </a>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setAppsOpen((v) => !v)}
+            className={`flex min-h-[52px] flex-1 min-w-0 flex-col items-center justify-center px-1 py-2 text-[10px] text-[var(--sidebar-text)] ${appsOpen ? "bg-white/10" : ""}`}
+          >
+            <LayoutGrid size={20} className="shrink-0" />
+            <span className="mt-0.5 leading-tight truncate">Apps</span>
+          </button>
+        </div>
+      </nav>
+      {/* Mobile apps sheet */}
+      {appsOpen ? (
+        <>
+          <button type="button" aria-label="Close apps" className="fixed inset-0 z-[38] bg-black/40 md:hidden" onClick={() => setAppsOpen(false)} />
+          <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-2xl md:hidden"
+            style={{ background: "var(--product-sidebar)", border: "1px solid var(--sidebar-divider)", height: "60vh", paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}>
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="h-1 w-10 rounded-full bg-white/20" />
+            </div>
+            <div className="flex items-center justify-between px-4 py-2">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Switch App</p>
+              <button type="button" onClick={() => setAppsOpen(false)} className="rounded-md p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-label="Close">
+                <XIcon size={16} />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-4 pb-4" style={{ height: "calc(60vh - 80px)" }}>
+              <div className="grid grid-cols-3 gap-3">
+                {MOBILE_APPS.map((app) => (
+                  <a key={app.href} href={app.href} onClick={() => setAppsOpen(false)}
+                    className="flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors hover:bg-white/10">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white" style={{ background: app.color }}>
+                      {app.label[0]}
+                    </div>
+                    <span className="text-center text-xs font-medium leading-tight text-[var(--text-primary)]">{app.label}</span>
+                    <span className="line-clamp-2 text-center text-[10px] leading-tight text-[var(--text-muted)]">{app.sub}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
       <HelpButton />
     </div>
   );
