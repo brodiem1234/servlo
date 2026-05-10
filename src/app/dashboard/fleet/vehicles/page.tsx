@@ -1,184 +1,208 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useState, useEffect, useCallback } from "react";
 
-const COLOR = "#0EA5E9";
-const COLOR_LIGHT = "#7DD3FC";
-const COLOR_BG = "rgb(14 165 233 / 0.12)";
-const COLOR_BORDER = "rgb(14 165 233 / 0.3)";
+const COLOR = "#F97316";
+const COLOR_LIGHT = "#FDBA74";
 
-const DEMO_VEHICLES = [
-  {
-    rego: "ABC 123",
-    make: "Toyota HiLux",
-    year: 2022,
-    type: "Ute",
-    driver: "Marcus Webb",
-    status: "On job",
-    odometer: "42,310 km",
-  },
-  {
-    rego: "XYZ 789",
-    make: "Ford Transit",
-    year: 2021,
-    type: "Van",
-    driver: "Dylan Cooper",
-    status: "Available",
-    odometer: "78,450 km",
-  },
-  {
-    rego: "DEF 456",
-    make: "Isuzu D-Max",
-    year: 2023,
-    type: "Ute",
-    driver: "Ben Thornton",
-    status: "On job",
-    odometer: "15,990 km",
-  },
-  {
-    rego: "GHI 001",
-    make: "Volkswagen Transporter",
-    year: 2020,
-    type: "Van",
-    driver: "Unassigned",
-    status: "In depot",
-    odometer: "91,200 km",
-  },
-  {
-    rego: "JKL 555",
-    make: "Toyota LandCruiser",
-    year: 2022,
-    type: "SUV",
-    driver: "Anh Pham",
-    status: "Servicing",
-    odometer: "38,770 km",
-  },
-];
+type Vehicle = {
+  id: string;
+  name: string;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  registration: string | null;
+  status: string | null;
+  odometer_km: number | null;
+  fuel_type: string | null;
+  assigned_to: string | null;
+};
 
-export default async function FleetVehiclesPage() {
-  const sb = await createClient();
-  const {
-    data: { user },
-  } = await sb.auth.getUser();
-  if (!user) redirect("/auth/login");
+function statusStyle(status: string | null) {
+  const s = (status ?? "").toLowerCase();
+  if (s === "active" || s === "available")
+    return { background: "rgb(34 197 94 / 0.15)", color: "#86EFAC" };
+  if (s === "in_use" || s === "on_job")
+    return { background: "rgb(249 115 22 / 0.15)", color: COLOR_LIGHT };
+  if (s === "maintenance" || s === "servicing")
+    return { background: "rgb(234 179 8 / 0.15)", color: "#FDE047" };
+  return { background: "rgb(255 255 255 / 0.08)", color: "var(--text-muted)" };
+}
+
+export default function FleetVehiclesPage() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Form state
+  const [name, setName] = useState("");
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState("");
+  const [registration, setRegistration] = useState("");
+  const [fuelType, setFuelType] = useState("petrol");
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/fleet/vehicles")
+      .then((r) => r.json())
+      .then((d: { vehicles?: Vehicle[] }) => setVehicles(d.vehicles ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAdd = async () => {
+    if (!name.trim()) { showToast("Vehicle name is required"); return; }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/fleet/vehicles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, make, model, year: year || undefined, registration, fuel_type: fuelType }),
+      });
+      const data = await res.json() as { vehicle?: Vehicle; error?: string };
+      if (res.ok && data.vehicle) {
+        setVehicles((prev) => [...prev, data.vehicle!]);
+        showToast("Vehicle added");
+        setShowAdd(false);
+        setName(""); setMake(""); setModel(""); setYear(""); setRegistration(""); setFuelType("petrol");
+      } else {
+        showToast(data.error ?? "Failed to add vehicle");
+      }
+    } catch { showToast("Network error"); }
+    finally { setSaving(false); }
+  };
+
+  const inputCls = "w-full rounded-lg px-3 py-2 text-sm outline-none focus:ring-2";
+  const inputStyle = { background: "var(--bg-primary)", border: "1px solid var(--border)", color: "var(--text-primary)" };
+  const labelCls = "mb-1 block text-xs font-semibold uppercase tracking-wider";
 
   return (
     <section className="space-y-6">
-      {/* Launch banner */}
-      <div
-        className="flex items-center justify-between gap-4 rounded-xl px-5 py-4"
-        style={{ background: COLOR_BG, border: `1px solid ${COLOR_BORDER}` }}
-      >
-        <p className="text-sm font-semibold" style={{ color: COLOR_LIGHT }}>
-          SERVLO Fleet is launching Q2 2027. Vehicle records shown are a preview.
-        </p>
-        <a
-          href="mailto:hello@servlo.com.au?subject=SERVLO Fleet Early Access"
-          className="shrink-0 rounded-lg px-4 py-2 text-xs font-semibold text-white"
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Vehicles</h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>Manage every vehicle in your fleet.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAdd(true)}
+          className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
           style={{ background: COLOR }}
         >
-          Join waitlist
-        </a>
+          + Add Vehicle
+        </button>
       </div>
 
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-          Vehicles
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-          Manage every vehicle in your fleet.
-        </p>
-      </div>
-
-      <div
-        className="relative overflow-hidden rounded-xl border"
-        style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-      >
-        {/* Coming soon overlay */}
-        <div
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl"
-          style={{ background: `color-mix(in srgb, ${COLOR} 8%, rgba(0,0,0,0.65))` }}
-        >
-          <p className="text-base font-bold" style={{ color: COLOR_LIGHT }}>
-            Vehicle management available at launch — Q2 2027
-          </p>
-          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-            Preview below shows your vehicle registry
-          </p>
-        </div>
-
-        <div className="p-5" style={{ filter: "blur(1px)", opacity: 0.5 }}>
+      <div className="rounded-xl border overflow-hidden" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+        {loading ? (
+          <div className="p-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>Loading vehicles…</div>
+        ) : vehicles.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="font-medium" style={{ color: "var(--text-primary)" }}>No vehicles yet.</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>Add your first vehicle to get started.</p>
+            <button
+              type="button"
+              onClick={() => setShowAdd(true)}
+              className="mt-2 rounded-lg px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: COLOR }}
+            >
+              Add Vehicle
+            </button>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                  {["Rego", "Make & Model", "Type", "Driver", "Status", "Odometer"].map((h) => (
-                    <th
-                      key={h}
-                      className="pb-3 pr-4 text-left text-xs font-semibold uppercase tracking-wide"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      {h}
-                    </th>
+                  {["Name", "Make / Model", "Year", "Rego", "Fuel", "Odometer", "Status"].map((h) => (
+                    <th key={h} className="pb-3 pt-4 pr-4 pl-5 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {DEMO_VEHICLES.map((v, i) => (
-                  <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
-                    <td className="py-3 pr-4 font-mono text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
-                      {v.rego}
-                    </td>
+                {vehicles.map((v) => (
+                  <tr key={v.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td className="py-3 pl-5 pr-4 font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{v.name}</td>
+                    <td className="py-3 pr-4 text-sm" style={{ color: "var(--text-secondary)" }}>{[v.make, v.model].filter(Boolean).join(" ") || "—"}</td>
+                    <td className="py-3 pr-4 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>{v.year ?? "—"}</td>
+                    <td className="py-3 pr-4 font-mono text-xs font-semibold" style={{ color: "var(--text-primary)" }}>{v.registration ?? "—"}</td>
+                    <td className="py-3 pr-4 text-xs capitalize" style={{ color: "var(--text-muted)" }}>{v.fuel_type ?? "—"}</td>
+                    <td className="py-3 pr-4 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>{v.odometer_km != null ? `${v.odometer_km.toLocaleString()} km` : "—"}</td>
                     <td className="py-3 pr-4">
-                      <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                        {v.make}
-                      </p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {v.year}
-                      </p>
-                    </td>
-                    <td className="py-3 pr-4 text-xs" style={{ color: "var(--text-muted)" }}>
-                      {v.type}
-                    </td>
-                    <td className="py-3 pr-4 text-sm" style={{ color: "var(--text-primary)" }}>
-                      {v.driver}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                        style={{
-                          background:
-                            v.status === "On job"
-                              ? "rgb(14 165 233 / 0.15)"
-                              : v.status === "Available"
-                              ? "rgb(34 197 94 / 0.15)"
-                              : v.status === "Servicing"
-                              ? "rgb(234 179 8 / 0.15)"
-                              : "rgb(255 255 255 / 0.08)",
-                          color:
-                            v.status === "On job"
-                              ? COLOR_LIGHT
-                              : v.status === "Available"
-                              ? "#86EFAC"
-                              : v.status === "Servicing"
-                              ? "#FDE047"
-                              : "var(--text-muted)",
-                        }}
-                      >
-                        {v.status}
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize" style={statusStyle(v.status)}>
+                        {v.status ?? "active"}
                       </span>
-                    </td>
-                    <td className="py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
-                      {v.odometer}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Add Vehicle Modal */}
+      {showAdd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+            <h3 className="mb-5 text-lg font-bold" style={{ color: "var(--text-primary)" }}>Add Vehicle</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className={labelCls} style={{ color: "var(--text-muted)" }}>Name / Nickname *</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work Ute #1" className={inputCls} style={inputStyle} />
+              </div>
+              <div>
+                <label className={labelCls} style={{ color: "var(--text-muted)" }}>Make</label>
+                <input value={make} onChange={(e) => setMake(e.target.value)} placeholder="e.g. Toyota" className={inputCls} style={inputStyle} />
+              </div>
+              <div>
+                <label className={labelCls} style={{ color: "var(--text-muted)" }}>Model</label>
+                <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="e.g. HiLux" className={inputCls} style={inputStyle} />
+              </div>
+              <div>
+                <label className={labelCls} style={{ color: "var(--text-muted)" }}>Year</label>
+                <input type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="e.g. 2022" min="1990" max="2030" className={inputCls} style={inputStyle} />
+              </div>
+              <div>
+                <label className={labelCls} style={{ color: "var(--text-muted)" }}>Registration</label>
+                <input value={registration} onChange={(e) => setRegistration(e.target.value)} placeholder="e.g. ABC 123" className={inputCls} style={inputStyle} />
+              </div>
+              <div>
+                <label className={labelCls} style={{ color: "var(--text-muted)" }}>Fuel Type</label>
+                <select value={fuelType} onChange={(e) => setFuelType(e.target.value)} className={inputCls} style={inputStyle}>
+                  <option value="petrol">Petrol</option>
+                  <option value="diesel">Diesel</option>
+                  <option value="electric">Electric</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="lpg">LPG</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <button type="button" onClick={() => setShowAdd(false)} className="rounded-lg px-4 py-2 text-sm font-medium" style={{ background: "var(--bg-primary)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                Cancel
+              </button>
+              <button type="button" onClick={handleAdd} disabled={saving} className="rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" style={{ background: COLOR }}>
+                {saving ? "Saving…" : "Add Vehicle"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-50 rounded-xl border px-4 py-3 text-sm font-medium shadow-lg" style={{ background: "var(--bg-card)", borderColor: "var(--border)", color: "var(--text-primary)" }}>
+          {toast}
+        </div>
+      )}
     </section>
   );
 }
