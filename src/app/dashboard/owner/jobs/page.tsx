@@ -10,6 +10,7 @@ import { filterDemoEntities } from "@/lib/demo/visibility";
 import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 import { canCreateJob } from "@/lib/plan-limits";
 import { fireJobAutomations } from "@/lib/job-automations";
+import { sendJobCompletionSurvey } from "@/lib/job-survey";
 
 export const dynamic = "force-dynamic";
 
@@ -376,6 +377,9 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
           body: subtotal > 0 ? `Invoice ${invoiceNumber} ($${total.toFixed(2)}) generated.` : undefined,
           actionUrl: invoiceId ? `/dashboard/owner/finance?tab=invoices` : `/dashboard/owner/jobs`,
         });
+
+        // Send satisfaction survey to client (fire-and-forget)
+        sendJobCompletionSurvey(owner.id, id, job.client_id, job.title).catch(() => {});
       }
     }
 
