@@ -69,7 +69,7 @@ export function CommandPalette() {
       sb.from("clients").select("id,full_name,company_name").or(`full_name.ilike.%${q}%,company_name.ilike.%${q}%`).is("deleted_at", null).limit(4),
       sb.from("invoices").select("id,invoice_number,total").ilike("invoice_number", `%${q}%`).is("deleted_at", null).limit(3),
       sb.from("quotes").select("id,quote_number,total").ilike("quote_number", `%${q}%`).is("deleted_at", null).limit(3),
-      sb.from("pricebook_items").select("id,name,unit_price,type").ilike("name", `%${q}%`).is("deleted_at", null).limit(3),
+      sb.from("pricebook_items").select("id,name,unit_price,unit,is_service").ilike("name", `%${q}%`).is("deleted_at", null).limit(3),
       sb.from("employees").select("id,full_name,role").ilike("full_name", `%${q}%`).is("deleted_at", null).limit(3),
     ]);
     const out: Result[] = [];
@@ -86,7 +86,7 @@ export function CommandPalette() {
       out.push({ id: `quote-${qt.id}`, label: qt.quote_number ?? "Quote", sub: new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(qt.total ?? 0), href: `/dashboard/owner/quotes`, icon: "quote" });
     }
     for (const p of priceRes.data ?? []) {
-      out.push({ id: `price-${p.id}`, label: p.name ?? "Item", sub: `${p.type ?? "item"} · ${new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(p.unit_price ?? 0)}`, href: `/dashboard/owner/pricebook`, icon: "pricebook" });
+      out.push({ id: `price-${p.id}`, label: p.name ?? "Item", sub: `${p.is_service ? "Service" : "Product"} · ${new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(p.unit_price ?? 0)}/${p.unit ?? "each"}`, href: `/dashboard/owner/pricebook`, icon: "pricebook" });
     }
     for (const e of empRes.data ?? []) {
       out.push({ id: `emp-${e.id}`, label: e.full_name ?? "Employee", sub: e.role ?? "team member", href: `/dashboard/owner/team`, icon: "employee" });

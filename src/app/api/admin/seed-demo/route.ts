@@ -30,18 +30,46 @@ export async function POST() {
     return d.toISOString().slice(0, 10);
   }
 
-  // ── Check if already seeded ────────────────────────────────────────────────
-  const { count: existingClients } = await admin
-    .from("clients")
-    .select("id", { count: "exact", head: true })
-    .eq("owner_id", ownerId)
-    .eq("is_demo", true);
-
-  if ((existingClients ?? 0) >= 5) {
-    return NextResponse.json({ ok: true, message: "Demo data already exists", skipped: true });
-  }
-
   const errors: string[] = [];
+
+  // ── Delete existing demo data before reseeding (idempotent) ───────────────
+  try {
+    // Jobs (and job_photos via cascade or manual)
+    const { data: demoJobs } = await admin.from("jobs").select("id").eq("owner_id", ownerId).eq("is_demo", true);
+    const demoJobIds = (demoJobs ?? []).map((j: { id: string }) => j.id);
+    if (demoJobIds.length > 0) {
+      await admin.from("job_photos").delete().in("job_id", demoJobIds);
+    }
+    // Invoice items
+    const { data: demoInvoices } = await admin.from("invoices").select("id").eq("owner_id", ownerId).eq("is_demo", true);
+    const demoInvIds = (demoInvoices ?? []).map((i: { id: string }) => i.id);
+    if (demoInvIds.length > 0) {
+      await admin.from("invoice_items").delete().in("invoice_id", demoInvIds);
+    }
+    // Quote items
+    const { data: demoQuotes } = await admin.from("quotes").select("id").eq("owner_id", ownerId).eq("is_demo", true);
+    const demoQuoteIds = (demoQuotes ?? []).map((q: { id: string }) => q.id);
+    if (demoQuoteIds.length > 0) {
+      await admin.from("quote_items").delete().in("quote_id", demoQuoteIds);
+    }
+    // Main tables
+    await Promise.all([
+      admin.from("jobs").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("invoices").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("quotes").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("clients").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("pricebook_items").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("bank_transactions").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("expense_claims").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("vehicles").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("job_postings").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("grow_social_posts").delete().eq("owner_id", ownerId).eq("is_demo", true),
+      admin.from("grow_campaigns").delete().eq("owner_id", ownerId).eq("is_demo", true),
+    ]);
+  } catch (cleanErr) {
+    // Non-fatal — table may not exist yet on fresh deploy
+    console.warn("[seed-demo] cleanup warning:", cleanErr);
+  }
 
   // ── 1. Clients ─────────────────────────────────────────────────────────────
   const { data: clients, error: clientErr } = await admin
