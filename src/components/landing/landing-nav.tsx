@@ -36,15 +36,26 @@ export function LandingNav() {
       <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link href="/" className="shrink-0" onClick={close}>
+          {/* Mobile: circle S mark */}
           <Image
-            src="/servlo-master-white.svg"
+            src="/servlo-mark-dark.svg"
             alt="SERVLO"
-            width={120}
+            width={32}
             height={32}
             priority
             unoptimized
-            className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-7 w-auto md:h-8"
+            className="block dark:hidden md:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)] h-7 w-7"
           />
+          <Image
+            src="/servlo-mark-white.svg"
+            alt="SERVLO"
+            width={32}
+            height={32}
+            priority
+            unoptimized
+            className="hidden dark:block md:dark:hidden drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-7 w-7"
+          />
+          {/* Desktop: full wordmark */}
           <Image
             src="/servlo-master-dark.svg"
             alt="SERVLO"
@@ -52,7 +63,16 @@ export function LandingNav() {
             height={32}
             priority
             unoptimized
-            className="block dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)] h-7 w-auto md:h-8"
+            className="hidden md:block md:dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)] h-8 w-auto"
+          />
+          <Image
+            src="/servlo-master-white.svg"
+            alt="SERVLO"
+            width={120}
+            height={32}
+            priority
+            unoptimized
+            className="hidden md:dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
           />
         </Link>
 

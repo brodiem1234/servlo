@@ -140,10 +140,10 @@ export function PwaInstallPrompt() {
         {/* Logo */}
         <div className="mb-5 flex items-center gap-3">
           <Image
-            src="/servlo-master-white.svg"
+            src="/servlo-mark-white.svg"
             alt="SERVLO"
-            width={100}
-            height={28}
+            width={48}
+            height={48}
             unoptimized
             className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
           />

@@ -145,19 +145,19 @@ export function LoginExperience({
         {/* Logo with glow */}
         <div className="mb-8 flex justify-center">
           <Image
-            src="/servlo-master-dark.svg"
+            src="/servlo-mark-dark.svg"
             alt="SERVLO"
-            width={140}
-            height={36}
+            width={44}
+            height={44}
             priority
             unoptimized
             className="block dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]"
           />
           <Image
-            src="/servlo-master-white.svg"
+            src="/servlo-mark-white.svg"
             alt="SERVLO"
-            width={140}
-            height={36}
+            width={44}
+            height={44}
             priority
             unoptimized
             className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"

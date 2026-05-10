@@ -1005,7 +1005,7 @@ export function SignupForm() {
           className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
-            <Image src="/servlo-master-white.svg" alt="SERVLO" width={120} height={32} unoptimized
+            <Image src="/servlo-mark-white.svg" alt="SERVLO" width={44} height={44} unoptimized
               className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </div>
           <h1 className="text-xl font-bold sm:text-3xl" style={{ color: "#f8fafc" }}>
