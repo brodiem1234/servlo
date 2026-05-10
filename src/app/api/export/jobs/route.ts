@@ -16,8 +16,9 @@ export async function GET() {
       .select("title, status, scheduled_date, scheduled_time, address, notes, client_id, created_at")
       .eq("owner_id", user.id)
       .eq("is_demo", false)
+      .is("deleted_at", null)
       .order("scheduled_date", { ascending: false }),
-    supabase.from("clients").select("id, full_name").eq("owner_id", user.id)
+    supabase.from("clients").select("id, full_name").eq("owner_id", user.id).is("deleted_at", null)
   ]);
 
   if (jobError) {

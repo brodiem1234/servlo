@@ -16,8 +16,9 @@ export async function GET() {
       .select("invoice_number, status, total, subtotal, gst, due_date, issue_date, notes, client_id")
       .eq("owner_id", user.id)
       .eq("is_demo", false)
+      .is("deleted_at", null)
       .order("due_date", { ascending: false }),
-    supabase.from("clients").select("id, full_name").eq("owner_id", user.id)
+    supabase.from("clients").select("id, full_name").eq("owner_id", user.id).is("deleted_at", null)
   ]);
 
   if (invError) {
