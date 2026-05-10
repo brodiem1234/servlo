@@ -126,12 +126,12 @@ export default async function OwnerClientDetailPage({ params }: Props) {
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{client.full_name ?? "Client Profile"}</h1>
           <p className="text-sm text-[var(--text-secondary)]">Client profile, jobs, invoices and quotes</p>
         </div>
-        <a href="/dashboard/owner/clients" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition">
+        <a href="/dashboard/owner/clients" className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition">
           Back to clients
         </a>
       </div>

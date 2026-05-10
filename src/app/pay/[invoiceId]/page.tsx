@@ -66,9 +66,9 @@ export default async function QuickPayPage({ params }: Props) {
           .badge-paid { background: #d1fae5; color: #065f46; }
           .divider { height: 1px; background: #f0f0f0; }
           .body { padding: 1.5rem 2rem; }
-          .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem; }
-          .label { font-size: 0.875rem; color: #6b7280; }
-          .value { font-size: 0.875rem; font-weight: 500; color: #111; }
+          .row { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+          .label { font-size: 0.875rem; color: #6b7280; white-space: nowrap; }
+          .value { font-size: 0.875rem; font-weight: 500; color: #111; word-break: break-word; text-align: right; }
           .amount-row { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; }
           .amount-label { font-size: 1rem; font-weight: 600; }
           .amount-value { font-size: 1.5rem; font-weight: 800; }

@@ -229,11 +229,11 @@ export default function ComplianceManager({ initialDocs }: Props) {
       )}
 
       {/* Tab bar */}
-      <div className="flex items-center justify-between border-b border-[var(--border)]">
-        <div className="flex gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)]">
+        <div className="flex gap-1 overflow-x-auto">
           {(["documents", "templates"] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? "border-blue-500 text-blue-400" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+              className={`shrink-0 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? "border-blue-500 text-blue-400" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
             >
               {tab === "documents" ? `My Documents (${docs.length})` : `Templates (${TEMPLATES.length})`}
             </button>
@@ -241,7 +241,7 @@ export default function ComplianceManager({ initialDocs }: Props) {
         </div>
         {activeTab === "documents" && (
           <button onClick={() => setActiveTab("templates")}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 mb-0.5">
+            className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 mb-0.5">
             + New Document
           </button>
         )}
@@ -251,7 +251,7 @@ export default function ComplianceManager({ initialDocs }: Props) {
       <div className="flex flex-wrap gap-3 items-center">
         <input type="search" placeholder={activeTab === "documents" ? "Search documents…" : "Search templates…"}
           value={search} onChange={(e) => setSearch(e.target.value)}
-          className="h-9 rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] sm:w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Search" />
         <div className="flex flex-wrap gap-1.5">
           {["ALL", ...ALL_CATEGORIES].map((cat) => (
@@ -285,8 +285,8 @@ export default function ComplianceManager({ initialDocs }: Props) {
 
       {/* ── DOCUMENTS ── */}
       {activeTab === "documents" && (
-        <div className="rounded-xl border border-[var(--border)] overflow-hidden">
-          <table className="w-full text-sm" aria-label="Compliance documents">
+        <div className="rounded-xl border border-[var(--border)] overflow-x-auto">
+          <table className="w-full min-w-[320px] text-sm" aria-label="Compliance documents">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--bg-card)]">
                 <th className="text-left px-4 py-3 text-[var(--text-muted)] font-medium">Document Name</th>
@@ -411,7 +411,7 @@ export default function ComplianceManager({ initialDocs }: Props) {
                   </select>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Expiry Date</label>
                   <input type="date" value={newDocExpiry} onChange={(e) => setNewDocExpiry(e.target.value)}

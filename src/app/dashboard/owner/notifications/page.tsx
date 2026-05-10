@@ -91,7 +91,7 @@ export default async function NotificationsPage() {
 
   return (
     <section className="space-y-5 max-w-2xl">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Notifications</h1>
           <p className="text-sm text-[var(--text-secondary)]">Last 30 days</p>

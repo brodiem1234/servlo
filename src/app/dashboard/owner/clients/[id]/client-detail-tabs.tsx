@@ -273,7 +273,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes, stats
       </div>
 
       {/* ── Tab bar ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-1 w-fit shadow-sm">
+      <div className="flex flex-wrap gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-1 shadow-sm overflow-x-auto">
         {(["overview", "jobs", "invoices", "quotes", "notes", "properties", "activity"] as TabKey[]).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)} className={tabClass(t)}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
