@@ -154,14 +154,6 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
 
   const primaryClientsQuery = await clientsQuery;
 
-  console.log("Fetching clients for owner:", ownerId);
-  console.log("Raw results:", JSON.stringify(primaryClientsQuery.data ?? []));
-  console.log("[clients-page] owner_id (= Supabase auth user id)", ownerId);
-  console.log("[clients-page] Supabase SELECT error", primaryClientsQuery.error ?? null);
-  console.log(
-    "[clients-page] Supabase SELECT raw rows (full array)",
-    JSON.stringify(primaryClientsQuery.data ?? [], null, 2)
-  );
 
   let clients:
     | Array<{
@@ -193,7 +185,6 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     clients = primaryClientsQuery.data ?? [];
   }
 
-  console.log("[clients-page] clients after query handling (full array, includes demo + real)", JSON.stringify(clients ?? [], null, 2));
 
   /** All rows where owner_id = auth uid(), including `is_demo: true`. */
   const clientsBase = clients ?? [];
