@@ -15,6 +15,7 @@ export async function GET() {
     .select("full_name, email, phone, suburb, state, postcode, client_type, status, created_at")
     .eq("owner_id", user.id)
     .eq("is_demo", false)
+    .is("deleted_at", null)
     .order("full_name");
 
   if (error) {

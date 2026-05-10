@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
     .from("jobs")
     .select("id, title, address, suburb, scheduled_date, client_id")
     .eq("id", job_id)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (!job) {
