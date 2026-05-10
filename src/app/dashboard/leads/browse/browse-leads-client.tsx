@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition, useCallback } from "react";
+import { useState, useMemo, useTransition, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Zap,
@@ -385,6 +385,41 @@ export default function BrowseLeadsClient({
   // ── AI scoring state ────────────────────────────────────────────────────────
   const [scores, setScores] = useState<AiScoreMap>({});
   const [isScoringAll, setIsScoringAll] = useState(false);
+
+  // Auto-score top 5 unscored leads on mount
+  useEffect(() => {
+    const top5 = filtered.slice(0, 5);
+    if (top5.length === 0) return;
+    void Promise.allSettled(
+      top5.map(async (lead) => {
+        const res = await fetch("/api/leads/score", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            lead: {
+              service_type: lead.service_type ?? "",
+              urgency: lead.urgency ?? "flexible",
+              estimated_budget: lead.estimated_budget ?? 0,
+              description: lead.description ?? "",
+              suburb: lead.suburb ?? "",
+            },
+          }),
+        });
+        if (!res.ok) return null;
+        const data: AiScore = await res.json();
+        return { id: lead.id, data };
+      })
+    ).then((results) => {
+      const newScores: AiScoreMap = {};
+      for (const result of results) {
+        if (result.status === "fulfilled" && result.value) {
+          newScores[result.value.id] = result.value.data;
+        }
+      }
+      setScores((prev) => ({ ...prev, ...newScores }));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function scoreAllLeads() {
     if (isScoringAll) return;
