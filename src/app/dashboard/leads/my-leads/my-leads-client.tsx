@@ -274,7 +274,7 @@ export default function MyLeadsClient({
                         </button>
                         {isOpen && (
                           <div
-                            className="absolute left-0 top-full z-20 mt-1 w-36 rounded-lg border bg-white py-1 shadow-lg dark:bg-[#1a2235]"
+                            className="absolute left-0 top-full z-20 mt-1 w-36 rounded-lg border py-1 shadow-lg bg-[#1a2235]"
                             style={{
                               borderColor: "var(--border)",
                             }}
@@ -353,7 +353,7 @@ export default function MyLeadsClient({
                             onBlur={() => handleNotesBlur(lead.id)}
                             placeholder="Add notes about this lead…"
                             rows={3}
-                            className="w-full max-w-2xl resize-none rounded-lg border bg-gray-50 p-3 text-sm dark:bg-[#161d2e]"
+                            className="w-full max-w-2xl resize-none rounded-lg border bg-[#161d2e] p-3 text-sm"
                             style={{
                               borderColor: "var(--border)",
                               color: "var(--text-primary)",
@@ -442,7 +442,7 @@ function ConvertToClientModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border bg-white p-6 shadow-2xl dark:bg-[#1a2235]"
+        className="relative w-full max-w-md rounded-2xl border bg-[#1a2235] p-6 shadow-2xl"
         style={{
           borderColor: "var(--border)",
         }}
@@ -533,7 +533,7 @@ function ConvertToClientModal({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Full name"
-                className="w-full rounded-lg border px-3 py-2 text-sm bg-gray-50 dark:bg-[#161d2e]"
+                className="w-full rounded-lg border px-3 py-2 text-sm bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",
@@ -554,7 +554,7 @@ function ConvertToClientModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="client@example.com"
-                className="w-full rounded-lg border px-3 py-2 text-sm bg-gray-50 dark:bg-[#161d2e]"
+                className="w-full rounded-lg border px-3 py-2 text-sm bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",
@@ -575,7 +575,7 @@ function ConvertToClientModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="04xx xxx xxx"
-                className="w-full rounded-lg border px-3 py-2 text-sm bg-gray-50 dark:bg-[#161d2e]"
+                className="w-full rounded-lg border px-3 py-2 text-sm bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",

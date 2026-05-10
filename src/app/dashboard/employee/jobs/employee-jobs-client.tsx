@@ -18,11 +18,11 @@ type Job = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  pending:     "bg-yellow-100 text-yellow-800",
-  scheduled:   "bg-blue-100 text-blue-800",
-  in_progress: "bg-purple-100 text-purple-800",
-  completed:   "bg-green-100 text-green-800",
-  cancelled:   "bg-gray-100 text-gray-500",
+  pending:     "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20",
+  scheduled:   "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  in_progress: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
+  completed:   "bg-green-500/15 text-green-400 border border-green-500/20",
+  cancelled:   "bg-white/5 text-[var(--text-muted)] border border-white/10",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -186,7 +186,7 @@ export function EmployeeJobsClient({ jobs }: { jobs: Job[] }) {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_STYLES[job.status ?? "pending"] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_STYLES[job.status ?? "pending"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
                       {STATUS_LABEL[job.status ?? "pending"] ?? job.status}
                     </span>
                     <span className="text-xs" style={{ color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>

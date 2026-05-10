@@ -56,15 +56,15 @@ export function SlideOverPanel({
       {/* Panel */}
       <div
         ref={panelRef}
-        className={`relative flex h-full w-full flex-col bg-white dark:bg-gray-900 shadow-2xl ${widthClass[width]} animate-in slide-in-from-right duration-200`}
+        className={`relative flex h-full w-full flex-col bg-[var(--bg-card)] shadow-2xl ${widthClass[width]} animate-in slide-in-from-right duration-200`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/10 px-6 py-4">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h2>
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+            className="rounded-md p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/10 transition-colors"
             aria-label="Close panel"
           >
             <X size={18} />

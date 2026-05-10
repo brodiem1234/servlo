@@ -58,7 +58,7 @@ export function AIUsageMeter() {
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+        <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
               isAtLimit ? "bg-red-500" : isWarning ? "bg-amber-500" : "bg-green-500"

@@ -417,7 +417,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Registered entity name</label>
-              <div className="bg-gray-100 dark:bg-[#161d2e] rounded-md px-3 py-2 text-sm text-[var(--text-primary)] cursor-not-allowed opacity-70">
+              <div className="bg-[#161d2e] rounded-md px-3 py-2 text-sm text-[var(--text-primary)] cursor-not-allowed opacity-70">
                 {(businessRow as { entity_name?: string | null } | null)?.entity_name ?? "Not set"}
               </div>
               <p className="text-xs text-[var(--text-muted)]">Sourced from the Australian Business Register. Contact support to update.</p>
@@ -821,7 +821,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
                   ))}
                 </div>
               </div>
-              <div className="sticky bottom-0 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2235] p-4 -mx-6 -mb-6">
+              <div className="sticky bottom-0 border-t border-white/10 bg-[#1a2235] p-4 -mx-6 -mb-6">
                 <button
                   type="submit"
                   className="rounded-md bg-[var(--product-accent)] px-5 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-accent-hover)]"

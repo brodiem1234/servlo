@@ -425,7 +425,7 @@ export function TeamPerformance({ employees, timesheets, jobs }: Props) {
       {/* Leave request form modal */}
       {showLeaveForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="New leave request">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-[#1e2433] p-6 shadow-2xl">
             <h2 className="mb-5 text-lg font-semibold text-[var(--text-primary)]">New Leave Request</h2>
             <div className="space-y-4">
               <div>

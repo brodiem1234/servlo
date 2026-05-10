@@ -37,17 +37,17 @@ export function DeleteConfirmModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-sm rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 shadow-2xl p-6">
+      <div className="relative w-full max-w-sm rounded-xl bg-[var(--bg-card)] border border-white/10 shadow-2xl p-6">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 rounded-full bg-red-100 dark:bg-red-500/15 p-2.5">
-            <AlertTriangle size={20} className="text-red-600 dark:text-red-400" />
+          <div className="flex-shrink-0 rounded-full bg-red-500/15 p-2.5">
+            <AlertTriangle size={20} className="text-red-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">
               Delete {entityType}
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
-              Are you sure you want to delete <span className="font-medium text-gray-700 dark:text-slate-200">{entityName}</span>? This action can be undone within 5 seconds.
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Are you sure you want to delete <span className="font-medium text-[var(--text-primary)]">{entityName}</span>? This action can be undone within 5 seconds.
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export function DeleteConfirmModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-lg border border-gray-200 dark:border-white/10 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-white/5 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

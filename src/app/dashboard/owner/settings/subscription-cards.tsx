@@ -73,7 +73,7 @@ export default function SubscriptionCards({ email, currentPlan, success, priceId
   };
 
   return (
-    <article className="rounded-xl border bg-white p-4 shadow-sm">
+    <article className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4">
       <h2 className="text-lg font-semibold text-[var(--text-primary)]">Subscription</h2>
       {success ? (
         <p className="mt-2 rounded bg-green-50 px-3 py-2 text-sm text-[#22c55e]">

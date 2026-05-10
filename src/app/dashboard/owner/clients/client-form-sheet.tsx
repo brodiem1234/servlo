@@ -155,7 +155,7 @@ export default function ClientFormSheet({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40">
-      <div className="ml-auto flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-xl dark:bg-[var(--bg-card)]">
+      <div className="ml-auto flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-[var(--bg-card)] p-5 shadow-xl">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">{editing ? "Edit Client" : "Add Client"}</h2>
         {errorBanner ? (
           <div className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-200">{errorBanner}</div>

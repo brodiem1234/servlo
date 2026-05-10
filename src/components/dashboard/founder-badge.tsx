@@ -29,10 +29,10 @@ export function FounderBadge({ founderNumber }: FounderBadgeProps) {
 
       {/* Tooltip */}
       <div
-        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-xl border border-amber-200 bg-white p-3 text-xs shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
-        style={{ color: "#334155" }}
+        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-xl border border-amber-500/30 bg-[#1e2433] p-3 text-xs shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+        style={{ color: "var(--text-secondary)" }}
       >
-        <p className="font-bold text-amber-700 mb-2">Founding Member Benefits</p>
+        <p className="font-bold text-amber-400 mb-2">Founding Member Benefits</p>
         <ul className="space-y-1">
           {FOUNDER_BENEFITS.map((b) => (
             <li key={b} className="flex items-start gap-1.5">

@@ -109,7 +109,7 @@ export function JobHistoryPanel({ jobId, jobTitle, onClose }: Props) {
         onClick={onClose}
       >
         <div
-          className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#1e2433] shadow-2xl flex flex-col max-h-[80vh]"
+          className="w-full max-w-lg rounded-2xl bg-[#1e2433] shadow-2xl flex flex-col max-h-[80vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

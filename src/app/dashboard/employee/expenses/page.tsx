@@ -20,10 +20,10 @@ const CATEGORIES = [
 ];
 
 const STATUS_STYLES: Record<string, string> = {
-  pending:  "bg-yellow-100 text-yellow-800",
-  approved: "bg-green-100 text-green-800",
-  paid:     "bg-blue-100 text-blue-800",
-  rejected: "bg-red-100 text-red-800",
+  pending:  "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20",
+  approved: "bg-green-500/15 text-green-400 border border-green-500/20",
+  paid:     "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  rejected: "bg-red-500/15 text-red-400 border border-red-500/20",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -233,7 +233,7 @@ export default function EmployeeExpensesPage() {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>${Number(e.amount).toFixed(2)}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[e.status] ?? "bg-gray-100 text-gray-600"}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[e.status] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
                   {e.status.charAt(0).toUpperCase() + e.status.slice(1)}
                 </span>
               </div>

@@ -368,7 +368,7 @@ function RequestReviewModal({
     >
       <div
         ref={modalRef}
-        className="w-full max-w-md rounded-2xl border bg-white p-6 shadow-2xl dark:bg-[#1a2235]"
+        className="w-full max-w-md rounded-2xl border bg-[#1a2235] p-6 shadow-2xl"
         style={{ borderColor: "var(--border)" }}
       >
         <div className="mb-5 flex items-center justify-between">
@@ -416,7 +416,7 @@ function RequestReviewModal({
                 <select
                   value={selectedJobId}
                   onChange={(e) => setSelectedJobId(e.target.value)}
-                  className="w-full rounded-lg border bg-gray-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50 dark:bg-[#161d2e]"
+                  className="w-full rounded-lg border bg-[#161d2e] px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
                   style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
                 >
                   <option value="">Select a job…</option>
@@ -431,7 +431,7 @@ function RequestReviewModal({
 
             {selectedJob && (
               <div
-                className="rounded-lg border bg-gray-50 p-3 text-sm space-y-1 dark:bg-[#161d2e]"
+                className="rounded-lg border bg-[#161d2e] p-3 text-sm space-y-1"
                 style={{ borderColor: "var(--border)" }}
               >
                 <p style={{ color: "var(--text-secondary)" }}>
@@ -634,7 +634,7 @@ export default function ReviewHubClient({
       {/* Google integration coming soon dialog */}
       <dialog
         ref={dialogRef}
-        className="rounded-2xl border bg-white p-6 shadow-2xl backdrop:bg-black/60 dark:bg-[#1a2235]"
+        className="rounded-2xl border bg-[#1a2235] p-6 shadow-2xl backdrop:bg-black/60"
         style={{
           borderColor: "var(--border)",
           color: "var(--text-primary)",

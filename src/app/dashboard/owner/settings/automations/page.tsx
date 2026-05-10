@@ -152,7 +152,7 @@ export default function AutomationsPage() {
                       {a.action_type}
                     </span>
                     {!a.is_active && (
-                      <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs text-[var(--text-muted)]">
+                      <span className="rounded-full bg-gray-800 px-2 py-0.5 text-xs text-[var(--text-muted)]">
                         Paused
                       </span>
                     )}

@@ -101,7 +101,7 @@ export default function SignaturePad({ onSave, saving }: Props) {
         placeholder="Client name"
         className="h-10 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
       />
-      <div className="rounded border border-[var(--border)] bg-white">
+      <div className="rounded border border-[var(--border)] bg-[#f8fafc]">
         <canvas
           ref={canvasRef}
           width={400}

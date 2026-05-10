@@ -16,9 +16,9 @@ type Props = {
 };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "text-amber-600 bg-amber-50 border-amber-200" },
-  signed_up: { label: "Signed Up", color: "text-blue-600 bg-blue-50 border-blue-200" },
-  subscribed: { label: "Subscribed", color: "text-green-600 bg-green-50 border-green-200" },
+  pending: { label: "Pending", color: "text-amber-400 bg-amber-500/15 border-amber-500/20" },
+  signed_up: { label: "Signed Up", color: "text-blue-400 bg-blue-500/15 border-blue-500/20" },
+  subscribed: { label: "Subscribed", color: "text-green-400 bg-green-500/15 border-green-500/20" },
 };
 
 export function ReferralsClient({ code, referralUrl, stats }: Props) {
@@ -113,7 +113,7 @@ export function ReferralsClient({ code, referralUrl, stats }: Props) {
         ) : (
           <div className="divide-y divide-[var(--border)]">
             {stats.map((s, i) => {
-              const statusInfo = STATUS_LABELS[s.status] ?? { label: s.status, color: "text-gray-600 bg-gray-50 border-gray-200" };
+              const statusInfo = STATUS_LABELS[s.status] ?? { label: s.status, color: "text-[var(--text-secondary)] bg-white/5 border-white/10" };
               return (
                 <div key={i} className="flex items-center justify-between px-5 py-3 gap-3">
                   <p className="text-sm text-[var(--text-primary)] truncate">{s.referred_email}</p>

@@ -132,9 +132,9 @@ function statusLabel(s: string | null | undefined) {
 
 function statusBadgeClassForClient(s: string | null | undefined) {
   const v = (s ?? "active").toLowerCase();
-  if (v === "active") return "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-100 dark:ring-emerald-800";
-  if (v === "lead") return "bg-amber-100 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950 dark:text-amber-100 dark:ring-amber-800";
-  return "bg-slate-100 text-slate-800 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-600";
+  if (v === "active") return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20";
+  if (v === "lead") return "bg-amber-500/15 text-amber-400 border border-amber-500/20";
+  return "bg-slate-800 text-slate-100 border border-slate-600";
 }
 
 // ─── Activity helpers ────────────────────────────────────────────────────────

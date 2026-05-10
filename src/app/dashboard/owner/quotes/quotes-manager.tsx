@@ -57,10 +57,10 @@ const STATUS_LABELS: Record<string, string> = {
 
 function statusColor(status: string | null) {
   const s = (status ?? "draft").toLowerCase();
-  if (s === "accepted") return "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100";
-  if (s === "declined" || s === "cancelled") return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-100";
-  if (s === "sent" || s === "awaiting") return "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100";
-  return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200";
+  if (s === "accepted") return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20";
+  if (s === "declined" || s === "cancelled") return "bg-red-500/15 text-red-400 border border-red-500/20";
+  if (s === "sent" || s === "awaiting") return "bg-sky-500/15 text-sky-400 border border-sky-500/20";
+  return "bg-slate-800 text-slate-200 border border-slate-600";
 }
 
 function QuoteRowMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
@@ -639,7 +639,7 @@ export default function QuotesManager({
 
       {open ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-black/50 md:flex-row md:justify-end">
-          <div className="relative ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1e2433]">
+          <div className="relative ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-[#1e2433] p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {editingId ? `Edit Quote ${editingQuote?.quote_number ?? ""}` : "New Quote"}
@@ -870,7 +870,7 @@ export default function QuotesManager({
       {/* Quick-create client modal */}
       {newClientOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1e2433]">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[#1e2433] p-6 shadow-2xl">
             <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Client</h3>
             <div className="space-y-3">
               <div>

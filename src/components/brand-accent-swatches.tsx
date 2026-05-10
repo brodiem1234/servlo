@@ -46,7 +46,7 @@ export function BrandAccentSwatches({ name, value: controlled, defaultValue, onC
     <div
       role="group"
       aria-label="Brand accent colour"
-      className="rounded-xl border border-slate-300 bg-slate-50/90 p-4 dark:border-slate-600 dark:bg-slate-900/40"
+      className="rounded-xl border border-slate-600 bg-slate-900/40 p-4"
     >
       {name ? <input type="hidden" name={name} value={selected} readOnly /> : null}
       <div className="flex flex-wrap gap-3">

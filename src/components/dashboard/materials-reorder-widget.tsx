@@ -31,7 +31,7 @@ function QuantityBadge({ qty, threshold }: { qty: number; threshold: number }) {
     );
   }
   return (
-    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+    <span className="rounded-full bg-gray-800 px-2 py-0.5 text-xs text-gray-400">
       {qty} in stock
     </span>
   );

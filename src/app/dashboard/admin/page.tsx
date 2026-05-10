@@ -133,8 +133,8 @@ export default async function AdminDashboardPage() {
                   <td className="px-4 py-2.5">
                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
                       u.subscription_status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-green-500/15 text-green-400 border border-green-500/20"
+                        : "bg-white/5 text-[var(--text-secondary)] border border-white/10"
                     }`}>
                       {u.subscription_status ?? "trial"}
                     </span>

@@ -128,7 +128,7 @@ export default function BrandSettingsPage() {
                 <img
                   src={state.brand_logo_url}
                   alt="Business logo"
-                  className="h-16 w-auto rounded border border-[var(--border)] bg-white p-1 object-contain"
+                  className="h-16 w-auto rounded border border-[var(--border)] bg-white/10 p-1 object-contain"
                 />
                 <button
                   type="button"

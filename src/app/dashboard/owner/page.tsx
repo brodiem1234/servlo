@@ -486,7 +486,7 @@ export default async function OwnerDashboardPage() {
                           <input type="hidden" name="invoice_id" value={invoice.id} />
                           <button
                             type="submit"
-                            className="shrink-0 rounded border border-[var(--border)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)]"
+                            className="shrink-0 rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-white/10"
                           >
                             Send Reminder
                           </button>
@@ -524,12 +524,12 @@ export default async function OwnerDashboardPage() {
             ) : (
               recentActivity.map((item) => {
                 const kindColors: Record<string, string> = {
-                  job: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-                  client: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-                  invoice: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
-                  quote: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                  job: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+                  client: "bg-green-500/15 text-green-400 border border-green-500/20",
+                  invoice: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
+                  quote: "bg-amber-500/15 text-amber-400 border border-amber-500/20"
                 };
-                const badge = kindColors[item.kind] ?? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+                const badge = kindColors[item.kind] ?? "bg-gray-800 text-gray-300 border border-gray-600";
                 return (
                   <li
                     key={item.id}

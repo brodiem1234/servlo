@@ -109,7 +109,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
         <select
           value={selectedClientId}
           onChange={(e) => setSelectedClientId(e.target.value)}
-          className="h-10 rounded border bg-white px-3 text-sm"
+          className="h-10 rounded border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)]"
         >
           <option value="">Select client to edit</option>
           {clients.map((client) => (
@@ -130,7 +130,7 @@ export default function ClientsManager({ clients, createClientAction, updateClie
 
       {open ? (
         <div className="fixed inset-0 z-50 bg-black/40">
-          <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-xl">
+          <div className="ml-auto h-full w-full max-w-2xl overflow-y-auto bg-[var(--bg-card)] p-5 shadow-xl">
             <h2 className="text-lg font-semibold text-slate-100">{editing ? "Edit Client" : "Add Client"}</h2>
             <form action={action} className="mt-4 grid gap-3 sm:grid-cols-2">
               <input type="hidden" name="id" value={values.id} />

@@ -6,19 +6,19 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 const STATUS_BADGE: Record<string, string> = {
-  pending:     "bg-yellow-100 text-yellow-800",
-  scheduled:   "bg-blue-100 text-blue-800",
-  in_progress: "bg-purple-100 text-purple-800",
-  completed:   "bg-green-100 text-green-800",
-  cancelled:   "bg-gray-100 text-gray-500",
-  draft:       "bg-gray-100 text-gray-600",
-  sent:        "bg-blue-100 text-blue-700",
-  accepted:    "bg-green-100 text-green-700",
-  declined:    "bg-red-100 text-red-700",
-  expired:     "bg-orange-100 text-orange-700",
-  paid:        "bg-emerald-100 text-emerald-700",
-  overdue:     "bg-red-100 text-red-800",
-  unpaid:      "bg-yellow-100 text-yellow-800",
+  pending:     "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20",
+  scheduled:   "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  in_progress: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
+  completed:   "bg-green-500/15 text-green-400 border border-green-500/20",
+  cancelled:   "bg-white/5 text-[var(--text-muted)] border border-white/10",
+  draft:       "bg-white/5 text-[var(--text-secondary)] border border-white/10",
+  sent:        "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  accepted:    "bg-green-500/15 text-green-400 border border-green-500/20",
+  declined:    "bg-red-500/15 text-red-400 border border-red-500/20",
+  expired:     "bg-orange-500/15 text-orange-400 border border-orange-500/20",
+  paid:        "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20",
+  overdue:     "bg-red-500/15 text-red-400 border border-red-500/20",
+  unpaid:      "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20",
 };
 
 function fmtDate(d: string | null) {
@@ -109,7 +109,7 @@ export default async function ClientDashboardPage() {
                 <div key={job.id} className="rounded-lg p-2.5" style={{ background: "var(--bg-secondary)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{job.title ?? "Untitled"}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[job.status ?? "scheduled"] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[job.status ?? "scheduled"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
                       {job.status ?? "scheduled"}
                     </span>
                   </div>
@@ -134,7 +134,7 @@ export default async function ClientDashboardPage() {
                 <div key={quote.id} className="rounded-lg p-2.5" style={{ background: "var(--bg-secondary)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{quote.quote_number ?? "Quote"}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[quote.status ?? "draft"] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[quote.status ?? "draft"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
                       {quote.status ?? "draft"}
                     </span>
                   </div>
@@ -165,7 +165,7 @@ export default async function ClientDashboardPage() {
                 <div key={invoice.id} className="rounded-lg p-2.5" style={{ background: "var(--bg-secondary)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{invoice.invoice_number ?? "Invoice"}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[invoice.status ?? "unpaid"] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[invoice.status ?? "unpaid"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
                       {invoice.status ?? "unpaid"}
                     </span>
                   </div>

@@ -384,7 +384,7 @@ export default function ComplianceManager({ initialDocs }: Props) {
       {/* ── CREATE FORM ── */}
       {creating && selectedTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Create compliance document">
-          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl bg-[#1e2433] p-6 shadow-2xl">
             <div className="flex items-start justify-between mb-5">
               <div>
                 <h2 className="text-lg font-bold text-[var(--text-primary)]">Create Document</h2>

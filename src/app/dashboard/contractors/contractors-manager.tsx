@@ -301,7 +301,7 @@ export default function ContractorsManager({ contractors, createContractorAction
       {/* Confirm delete modal */}
       {confirmDelete ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1e2433]">
+          <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[#1e2433] p-6 shadow-2xl">
             <h3 className="mb-2 text-base font-semibold text-[var(--text-primary)]">Remove Contractor?</h3>
             <p className="mb-5 text-sm text-[var(--text-secondary)]">
               Remove <strong className="text-[var(--text-primary)]">{confirmDelete.full_name}</strong> from your contractors list? This cannot be undone.
@@ -321,7 +321,7 @@ export default function ContractorsManager({ contractors, createContractorAction
       {/* Add/Edit drawer */}
       {open ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-black/50 md:flex-row md:justify-end">
-          <div className="relative ml-auto h-full w-full max-w-2xl overflow-y-auto border-l border-[var(--border)] bg-white p-6 shadow-2xl dark:bg-[#1e2433]">
+          <div className="relative ml-auto h-full w-full max-w-2xl overflow-y-auto border-l border-[var(--border)] bg-[#1e2433] p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {editing ? "Edit Contractor" : "Add Contractor"}

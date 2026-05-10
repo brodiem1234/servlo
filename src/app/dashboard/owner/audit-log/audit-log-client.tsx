@@ -14,11 +14,11 @@ type AuditEntry = {
 };
 
 const ACTION_COLORS: Record<string, string> = {
-  created: "bg-green-100 text-green-800",
-  updated: "bg-blue-100 text-blue-800",
-  deleted: "bg-red-100 text-red-800",
-  exported: "bg-purple-100 text-purple-800",
-  viewed: "bg-gray-100 text-gray-700",
+  created: "bg-green-500/15 text-green-400 border border-green-500/20",
+  updated: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  deleted: "bg-red-500/15 text-red-400 border border-red-500/20",
+  exported: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
+  viewed: "bg-white/5 text-[var(--text-secondary)] border border-white/10",
 };
 
 export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
@@ -91,7 +91,7 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-left uppercase tracking-wide" style={{ background: "#f1f5f9" }}>
+            <tr className="text-xs text-left uppercase tracking-wide bg-white/5">
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Action</th>
               <th className="px-4 py-3">Table</th>
@@ -108,7 +108,7 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
               </tr>
             ) : (
               filtered.map((entry) => (
-                <tr key={entry.id} className="border-t hover:bg-gray-50 transition-colors">
+                <tr key={entry.id} className="border-t hover:bg-white/5 transition-colors">
                   <td className="px-4 py-3 whitespace-nowrap font-mono text-xs" style={{ color: "var(--text-secondary, #64748b)" }}>
                     {new Date(entry.created_at).toLocaleString("en-AU", {
                       day: "2-digit", month: "short", year: "numeric",
@@ -116,7 +116,7 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
                     })}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${ACTION_COLORS[entry.action] ?? "bg-gray-100 text-gray-700"}`}>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${ACTION_COLORS[entry.action] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
                       {entry.action}
                     </span>
                   </td>

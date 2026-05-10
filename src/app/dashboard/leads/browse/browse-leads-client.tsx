@@ -1128,7 +1128,7 @@ function LeadDetailPanel({
 
   return (
     <div
-      className="fixed right-0 top-0 z-50 flex h-full w-full flex-col overflow-y-auto bg-white shadow-2xl dark:bg-[#1a2235] md:w-96"
+      className="fixed right-0 top-0 z-50 flex h-full w-full flex-col overflow-y-auto bg-[#1a2235] shadow-2xl md:w-96"
       style={{
         borderLeft: "1px solid var(--border)",
       }}
@@ -1226,7 +1226,7 @@ function LeadDetailPanel({
 
         {/* Details grid */}
         <div
-          className="grid grid-cols-2 gap-3 rounded-xl border bg-gray-50 p-4 dark:bg-[#161d2e]"
+          className="grid grid-cols-2 gap-3 rounded-xl border bg-[#161d2e] p-4"
           style={{ borderColor: "var(--border)" }}
         >
           <PanelDetail label="Property type" value="Residential" />
@@ -1364,7 +1364,7 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border bg-white p-6 shadow-2xl dark:bg-[#1a2235]"
+        className="relative w-full max-w-md rounded-2xl border bg-[#1a2235] p-6 shadow-2xl"
         style={{
           borderColor: "var(--border)",
         }}
@@ -1444,7 +1444,7 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
                 value={suburb}
                 onChange={(e) => setSuburb(e.target.value)}
                 placeholder="e.g. Bondi, 2026"
-                className="w-full rounded-lg border bg-gray-50 px-3 py-2 text-sm dark:bg-[#161d2e]"
+                className="w-full rounded-lg border bg-[#161d2e] px-3 py-2 text-sm"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",

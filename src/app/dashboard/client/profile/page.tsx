@@ -18,7 +18,7 @@ export default async function ClientProfilePage() {
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Profile</h1>
-      <article className="rounded-xl border bg-white p-4 shadow-sm">
+      <article className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-4">
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-[var(--text-secondary)]">Full name</dt>

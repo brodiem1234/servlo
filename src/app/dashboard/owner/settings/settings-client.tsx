@@ -1127,8 +1127,8 @@ export function IntegrationsTab({ stripeConnected }: IntegrationsTabProps) {
                       <span
                         className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                           resolvedStatus === "Active"
-                            ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-                            : "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400"
+                            ? "bg-emerald-900/40 text-emerald-300"
+                            : "bg-white/10 text-gray-400"
                         }`}
                       >
                         {resolvedStatus}
@@ -1185,7 +1185,7 @@ function DemoDataSection() {
         can explore SERVLO without entering real records.
       </p>
       {result && (
-        <p className={`mb-3 text-sm rounded-md px-3 py-2 ${result.startsWith("✅") ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300" : "bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300"}`}>
+        <p className={`mb-3 text-sm rounded-md px-3 py-2 ${result.startsWith("✅") ? "bg-green-900/20 text-green-300" : "bg-gray-800 text-gray-300"}`}>
           {result}
         </p>
       )}
@@ -1339,7 +1339,7 @@ export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
             <input
               value={deleteNameInput}
               onChange={(e) => setDeleteNameInput(e.target.value)}
-              className="w-full max-w-sm rounded-md border border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-[#161d2e] px-3 py-2 text-sm"
+              className="w-full max-w-sm rounded-md border border-white/20 bg-[#161d2e] px-3 py-2 text-sm text-[var(--text-primary)]"
               placeholder="Business name"
             />
           </div>
