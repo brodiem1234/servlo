@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     type: "founding_member",
     title: "You're a Founding Member!",
     body: "Welcome to the SERVLO Founding Member club. Thank you for your early support.",
-    href: "/dashboard/owner/settings/billing",
+    link: "/dashboard/owner/settings/billing",
     read: false,
   });
 
