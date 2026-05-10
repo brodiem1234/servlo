@@ -6,6 +6,8 @@ import { DemoBadge } from "@/components/demo-badge";
 import { useEffect, useMemo, useState, useRef, type CSSProperties, type DragEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import SignaturePad from "@/components/dashboard/signature-pad";
+import { PhotoGallery, type GalleryPhoto } from "@/components/dashboard/photo-gallery";
+import { GeofenceClock } from "@/components/dashboard/geofence-clock";
 
 type Job = {
   id: string;
@@ -1619,6 +1621,12 @@ export default function JobsManager({
               {activeTab === "signoff" ? (
                 <div className="sm:col-span-2 space-y-4">
                   <p className="text-sm font-semibold text-[var(--text-primary)]">Client Sign-off</p>
+                  {editing && !editingDemo && (values.address || values.suburb) ? (
+                    <GeofenceClock
+                      jobId={values.id}
+                      jobAddress={[values.address, values.suburb].filter(Boolean).join(", ")}
+                    />
+                  ) : null}
                   {!editing ? (
                     <p className="text-sm text-[var(--text-muted)]">Save the job first, then collect a signature.</p>
                   ) : editingDemo ? (
@@ -1731,68 +1739,24 @@ export default function JobsManager({
                       <button type="button" onClick={uploadPhotos} className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">Upload Photos</button>
                     </div>
                   ) : null}
-                  {(() => {
-                    const allPhotos = jobPhotosByJob[values.id] ?? [];
-                    const beforePhotos = allPhotos.filter((p) => p.label === "before");
-                    const afterPhotos = allPhotos.filter((p) => p.label === "after");
-                    const hasBeforeAndAfter = beforePhotos.length > 0 && afterPhotos.length > 0;
-
-                    if (allPhotos.length === 0) {
-                      return <p className="text-sm text-[var(--text-muted)]">No photos uploaded yet.</p>;
-                    }
-
-                    return (
-                      <div className="space-y-4">
-                        {hasBeforeAndAfter ? (
-                          <div>
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Before / After Comparison</p>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <p className="mb-1 text-xs font-medium text-[var(--text-muted)]">Before</p>
-                                <Image
-                                  src={beforePhotos[0].url}
-                                  alt="Before photo"
-                                  width={320}
-                                  height={200}
-                                  className="h-36 w-full rounded-lg border border-[var(--border)] object-cover"
-                                  unoptimized
-                                />
-                              </div>
-                              <div>
-                                <p className="mb-1 text-xs font-medium text-[var(--text-muted)]">After</p>
-                                <Image
-                                  src={afterPhotos[0].url}
-                                  alt="After photo"
-                                  width={320}
-                                  height={200}
-                                  className="h-36 w-full rounded-lg border border-[var(--border)] object-cover"
-                                  unoptimized
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ) : null}
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">All Photos</p>
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                          {allPhotos.map((photo, idx) => (
-                            <div key={`${photo.url}-${idx}`} className="rounded-lg border border-[var(--border)] p-2">
-                              <Image
-                                src={photo.url}
-                                alt={`Job photo ${idx + 1}`}
-                                width={320}
-                                height={96}
-                                className="h-24 w-full rounded object-cover"
-                                unoptimized
-                              />
-                              <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${photo.label === "after" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"}`}>
-                                {photo.label}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  {editing ? (
+                    <PhotoGallery
+                      jobId={values.id}
+                      photos={(jobPhotosByJob[values.id] ?? []).map<GalleryPhoto>((p) => ({
+                        url: p.url,
+                        label: p.label,
+                      }))}
+                      onAnnotationSave={async (_jobId, dataUrl, label) => {
+                        const fd = new FormData();
+                        fd.set("job_id", _jobId);
+                        fd.set("photo_label", label);
+                        const blob = await (await fetch(dataUrl)).blob();
+                        fd.append("photos", blob, "annotation.png");
+                        await uploadJobPhotoAction(fd);
+                        setToast({ type: "success", message: "Annotation saved" });
+                      }}
+                    />
+                  ) : null}
                 </div>
               ) : null}
             </form>

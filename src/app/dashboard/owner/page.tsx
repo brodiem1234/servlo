@@ -16,6 +16,9 @@ import { ensureReferralCode } from "@/lib/referral";
 import { DayBriefingWidget } from "@/components/dashboard/day-briefing-widget";
 import { ProfitabilityAlerts } from "@/components/dashboard/profitability-alerts";
 import { MaterialsReorderWidget } from "@/components/dashboard/materials-reorder-widget";
+import { ChurnRiskWidget } from "@/components/dashboard/churn-risk-widget";
+import VoiceToJobButton from "@/components/dashboard/voice-to-job-button";
+import PhotoToQuoteButton from "@/components/dashboard/photo-to-quote-button";
 
 export const dynamic = "force-dynamic";
 
@@ -301,6 +304,12 @@ export default async function OwnerDashboardPage() {
         <div className="text-lg font-semibold tabular-nums">
           <LiveClock />
         </div>
+      </div>
+
+      {/* Quick capture actions */}
+      <div className="flex flex-wrap gap-3">
+        <VoiceToJobButton />
+        <PhotoToQuoteButton />
       </div>
 
       {/* Row 1: Today's Jobs */}
@@ -597,6 +606,9 @@ export default async function OwnerDashboardPage() {
 
       {/* Materials reorder alerts */}
       <MaterialsReorderWidget />
+
+      {/* Churn risk widget */}
+      <ChurnRiskWidget />
 
       {/* Referral widget — collapsed by default */}
       <ReferralWidget referralUrl={referralUrl} />
