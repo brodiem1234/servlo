@@ -8,8 +8,10 @@ import {
   FileText,
   Home,
   LayoutGrid,
+  Menu,
   MoreHorizontal,
-  Users
+  Users,
+  X as XIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import OwnerKeyboardShortcuts from "@/components/dashboard/owner-keyboard-shortcuts";
@@ -24,6 +26,7 @@ import { InstallBanner } from "@/components/pwa/install-banner";
 import { QuickActionFab } from "@/components/dashboard/quick-action-fab";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
+import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 import { OnlineMembersIndicator } from "@/components/dashboard/online-members-indicator";
 
@@ -110,6 +113,7 @@ export default function OwnerShell({
 }: Props) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const mainSections = useMemo(() => navSections.filter((s) => !s.pinnedBottom), [navSections]);
   const bottomSections = useMemo(() => navSections.filter((s) => s.pinnedBottom), [navSections]);
@@ -176,9 +180,18 @@ export default function OwnerShell({
         style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
       >
         <aside
-          className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
+          className={`owner-sidebar fixed left-0 top-0 z-40 flex h-screen w-[280px] flex-col px-4 py-6 text-[var(--sidebar-text)] shadow-[inset_-1px_0_0_var(--sidebar-divider)] transition-transform duration-300 ease-in-out md:w-[256px] ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
           style={{ background: "var(--product-sidebar)" }}
         >
+          {/* Close button — mobile only */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-[var(--sidebar-text)] opacity-70 hover:opacity-100 md:hidden"
+            aria-label="Close menu"
+          >
+            <XIcon size={18} />
+          </button>
           <div className="mb-6 flex flex-col items-center">
             <Image
               src="/core.png"
@@ -198,27 +211,50 @@ export default function OwnerShell({
             <nav className="flex flex-col gap-2">
               {mainSections.map((section, i) => renderSection(section, i))}
             </nav>
-            <OwnerSidebarTodos initialTasks={initialTasks} />
+            <div className="hidden md:block">
+              <OwnerSidebarTodos initialTasks={initialTasks} />
+            </div>
           </div>
 
-          {/* Pinned bottom — Settings */}
-          {bottomSections.length > 0 ? (
-            <div className="mt-2 border-t border-[var(--sidebar-divider)] pt-2">
-              {bottomSections.map((section, i) => (
-                <div key={`bottom-${i}`} className="flex flex-col gap-1">
-                  {section.items.map((item) => renderNavItem(item))}
-                </div>
-              ))}
-            </div>
-          ) : null}
+          {/* Pinned bottom — Settings + mobile sign-out */}
+          <div className="mt-2 border-t border-[var(--sidebar-divider)] pt-2">
+            {bottomSections.length > 0
+              ? bottomSections.map((section, i) => (
+                  <div key={`bottom-${i}`} className="flex flex-col gap-1">
+                    {section.items.map((item) => renderNavItem(item))}
+                  </div>
+                ))
+              : null}
+            {/* Sign out — only shown in mobile sidebar */}
+            <form action={signOutAction} className="mt-1 md:hidden">
+              <button
+                type="submit"
+                className="w-full rounded-md px-3 py-2 text-left text-sm text-[var(--sidebar-text)] transition-colors hover:bg-white/10"
+              >
+                Sign Out
+              </button>
+            </form>
+          </div>
         </aside>
 
+        {/* Mobile sidebar overlay */}
+        <MobileSidebarOverlay open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
         <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
-          <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 md:px-6">
-            <div className="flex items-center gap-3">
-              <p className="text-sm font-semibold text-[var(--text-primary)] md:text-base">SERVLO CORE</p>
+          <header className="flex h-12 items-center justify-between border-b border-[var(--border)] bg-[var(--bg-secondary)] px-3 md:h-14 md:px-6">
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Hamburger — mobile only */}
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10 md:hidden"
+                aria-label="Open menu"
+              >
+                <Menu size={18} />
+              </button>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">SERVLO CORE</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 md:gap-2">
               <DarkModeToggle />
               {businessId && currentUserId && currentUserName && (
                 <OnlineMembersIndicator
@@ -229,7 +265,7 @@ export default function OwnerShell({
                 />
               )}
               <NotificationBell />
-              <form action={signOutAction}>
+              <form action={signOutAction} className="hidden md:block">
                 <button type="submit" className="dashboard-primary rounded-md px-4 py-2 text-sm font-semibold text-white">
                   Sign Out
                 </button>

@@ -2,18 +2,21 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   LayoutDashboard,
   AlertTriangle,
   BookOpen,
   ShieldCheck,
+  Menu,
+  X as XIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
+import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 
 const SAFE_COLOR = "#EF4444";
 
@@ -34,6 +37,7 @@ function isActive(pathname: string, href: string) {
 export default function SafeShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const handleSignOut = useCallback(async () => {
     const supabase = createSupabaseBrowser();
     await supabase.auth.signOut();
@@ -51,10 +55,22 @@ export default function SafeShell({ children }: { children: React.ReactNode }) {
       } as React.CSSProperties}
     >
       {/* Sidebar */}
+      <MobileSidebarOverlay open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <aside
-        className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
+        className={`owner-sidebar fixed left-0 top-0 z-40 flex h-screen w-[280px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] transition-transform duration-300 ease-in-out md:w-[256px] ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         style={{ background: "var(--product-sidebar)", color: "var(--sidebar-text)" }}
       >
+        {/* Close button — mobile only */}
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(false)}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md opacity-70 hover:opacity-100 md:hidden"
+          style={{ color: "var(--sidebar-text)" }}
+          aria-label="Close menu"
+        >
+          <XIcon size={18} />
+        </button>
+
         {/* Brand */}
         <div className="mb-4 flex flex-col items-center">
           <Image
@@ -125,34 +141,45 @@ export default function SafeShell({ children }: { children: React.ReactNode }) {
         style={{ background: "var(--product-main)" }}
       >
         <header
-          className="flex items-center justify-between border-b px-4 py-3 md:px-6"
+          className="flex h-12 items-center justify-between border-b px-3 md:h-14 md:px-6"
           style={{
             background: "var(--bg-secondary)",
             borderColor: "var(--border)",
           }}
         >
-          <p
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            SERVLO Safe
-            <span
-              className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-              style={{
-                background: "rgb(239 68 68 / 0.2)",
-                color: "#FCA5A5",
-                border: "1px solid rgb(239 68 68 / 0.35)",
-              }}
-            >
-              Coming soon
-            </span>
-          </p>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+              style={{ color: "var(--text-secondary)" }}
+              aria-label="Open menu"
+            >
+              <Menu size={18} />
+            </button>
+            <p
+              className="text-sm font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              SERVLO Safe
+              <span
+                className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                style={{
+                  background: "rgb(239 68 68 / 0.2)",
+                  color: "#FCA5A5",
+                  border: "1px solid rgb(239 68 68 / 0.35)",
+                }}
+              >
+                Coming soon
+              </span>
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 md:gap-2">
             <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}
-              className="rounded-md px-4 py-2 text-sm font-semibold text-white"
+              className="hidden md:block rounded-md px-4 py-2 text-sm font-semibold text-white"
               style={{ background: "var(--product-accent)" }}
             >
               Sign Out

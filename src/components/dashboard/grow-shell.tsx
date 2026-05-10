@@ -2,13 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Bot, LayoutDashboard, Mail, Megaphone, Palette, Search, Settings2, Share2, Star, Users2 } from "lucide-react";
-import React, { useCallback } from "react";
+import { Bot, LayoutDashboard, Mail, Megaphone, Menu, Palette, Search, Settings2, Share2, Star, Users2, X as XIcon } from "lucide-react";
+import React, { useCallback, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
+import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 
 const GROW_COLOR = "#8B5CF6";
 
@@ -36,6 +37,7 @@ function isActive(pathname: string, href: string) {
 export default function GrowShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const handleSignOut = useCallback(async () => {
     const supabase = createSupabaseBrowser();
     await supabase.auth.signOut();
@@ -52,11 +54,23 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
         "--sidebar-ring": GROW_COLOR,
       } as React.CSSProperties}
     >
+      <MobileSidebarOverlay open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
       {/* Sidebar */}
       <aside
-        className="owner-sidebar fixed left-0 top-0 z-40 hidden h-screen w-[256px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] md:flex"
+        className={`owner-sidebar fixed left-0 top-0 z-40 flex h-screen w-[280px] flex-col overflow-y-auto px-4 py-6 shadow-[inset_-1px_0_0_var(--sidebar-divider)] transition-transform duration-300 ease-in-out md:w-[256px] ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         style={{ background: "var(--product-sidebar)", color: "var(--sidebar-text)" }}
       >
+        {/* Close button — mobile only */}
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(false)}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md opacity-70 hover:opacity-100 md:hidden"
+          style={{ color: "var(--sidebar-text)" }}
+          aria-label="Close menu"
+        >
+          <XIcon size={18} />
+        </button>
         {/* Brand */}
         <div className="mb-4 flex flex-col items-center">
           <Image
@@ -113,13 +127,23 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
       {/* Main */}
       <div className="flex min-h-screen flex-col md:pl-[256px]" style={{ background: "var(--product-main)" }}>
         <header
-          className="flex items-center justify-between border-b px-4 py-3 md:px-6"
+          className="flex h-12 items-center justify-between border-b px-3 md:h-14 md:px-6"
           style={{
             background: "var(--bg-secondary)",
             borderColor: "var(--border)",
           }}
         >
-          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+              style={{ color: "var(--text-secondary)" }}
+              aria-label="Open menu"
+            >
+              <Menu size={18} />
+            </button>
+            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             SERVLO GROW
             <span
               className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
@@ -128,12 +152,13 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
               Coming soon
             </span>
           </p>
-          <div className="flex items-center gap-2">
+          </div>
+          <div className="flex items-center gap-1.5 md:gap-2">
             <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}
-              className="rounded-md px-4 py-2 text-sm font-semibold text-white"
+              className="hidden rounded-md px-4 py-2 text-sm font-semibold text-white md:block"
               style={{ background: "var(--product-accent)" }}
             >
               Sign Out

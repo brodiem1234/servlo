@@ -5,10 +5,11 @@ import { X } from "lucide-react";
 
 type Width = "sm" | "md" | "lg";
 
+// Desktop max-width constraint (full-width on mobile, constrained on sm+)
 const widthClass: Record<Width, string> = {
-  sm: "max-w-sm",
-  md: "max-w-md",
-  lg: "max-w-lg",
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
 };
 
 interface SlideOverPanelProps {
