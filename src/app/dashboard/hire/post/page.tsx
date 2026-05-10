@@ -120,7 +120,7 @@ export default function HirePostPage() {
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label className={labelCls} style={{ color: "var(--text-primary)" }}>Employment Type</label>
             <select value={employmentType} onChange={(e) => setEmploymentType(e.target.value)} className={inputCls} style={inputStyle}>
@@ -141,7 +141,7 @@ export default function HirePostPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Rate type:</label>
           {["annual", "hourly", "fixed"].map((t) => (
             <button

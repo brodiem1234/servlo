@@ -85,7 +85,7 @@ export default function FleetVehiclesPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Vehicles</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>Manage every vehicle in your fleet.</p>
@@ -118,7 +118,7 @@ export default function FleetVehiclesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="min-w-[600px] w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
                   {["Name", "Make / Model", "Year", "Rego", "Fuel", "Odometer", "Status"].map((h) => (
@@ -185,7 +185,7 @@ export default function FleetVehiclesPage() {
                 </select>
               </div>
             </div>
-            <div className="mt-5 flex justify-end gap-3">
+            <div className="mt-5 flex flex-wrap justify-end gap-3">
               <button type="button" onClick={() => setShowAdd(false)} className="rounded-lg px-4 py-2 text-sm font-medium" style={{ background: "var(--bg-primary)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
                 Cancel
               </button>

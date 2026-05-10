@@ -109,7 +109,7 @@ export function BrandManager({ brand, saveAction }: Props) {
   return (
     <section className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Brand Kit</h1>
           <p className="mt-1 text-sm text-[var(--text-muted)]">
@@ -166,7 +166,7 @@ export function BrandManager({ brand, saveAction }: Props) {
           {/* Typography */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
             <h2 className="text-xs font-bold uppercase tracking-wide text-[var(--text-muted)] mb-4">Typography</h2>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {TYPOGRAPHY_OPTIONS.map((t) => (
                 <button
                   key={t.id}
@@ -203,7 +203,7 @@ export function BrandManager({ brand, saveAction }: Props) {
           {/* Brand Voice */}
           <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
             <h2 className="text-xs font-bold uppercase tracking-wide text-[var(--text-muted)] mb-4">Brand Voice</h2>
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               {(["professional", "friendly", "authoritative"] as Tone[]).map((tone) => (
                 <button
                   key={tone}
@@ -276,7 +276,7 @@ export function BrandManager({ brand, saveAction }: Props) {
               <div className="h-1.5 w-full" style={{ background: accentColour }} />
               <div className="p-6">
                 {/* Biz header */}
-                <div className="flex items-start justify-between mb-6">
+                <div className="flex flex-wrap items-start justify-between gap-2 mb-6">
                   <div>
                     <p className="text-xl font-black text-slate-900" style={{ color: accentColour }}>
                       {bizName}

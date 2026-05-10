@@ -518,7 +518,7 @@ export default function SocialCalendarManager({
               Plan, schedule and track your social media posts.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* view toggle */}
             <div
               className="flex rounded-lg border p-0.5"
@@ -585,7 +585,7 @@ export default function SocialCalendarManager({
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm" aria-label="Social posts">
+                <table className="min-w-[700px] w-full text-sm" aria-label="Social posts">
                   <thead>
                     <tr
                       className="border-b text-left text-xs font-semibold uppercase tracking-wide"
@@ -735,7 +735,7 @@ export default function SocialCalendarManager({
               {Array.from({ length: calOffset }, (_, i) => (
                 <div
                   key={`blank-${i}`}
-                  className="min-h-[68px] border-b border-r"
+                  className="min-h-[44px] sm:min-h-[68px] border-b border-r"
                   style={{ borderColor: "var(--border)" }}
                 />
               ))}
@@ -757,7 +757,7 @@ export default function SocialCalendarManager({
                     aria-pressed={isSelected}
                     onClick={() => setSelectedDay(isSelected ? null : new Date(date))}
                     className={[
-                      "relative min-h-[68px] p-1.5 text-left transition-colors",
+                      "relative min-h-[44px] sm:min-h-[68px] p-1 sm:p-1.5 text-left transition-colors",
                       isLastRow ? "" : "border-b",
                       isLastCol ? "" : "border-r",
                       isSelected ? "bg-purple-500/10" : "hover:bg-white/5",
