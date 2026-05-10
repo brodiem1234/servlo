@@ -29,6 +29,8 @@ type SetupBusinessBody = {
   selectedPlan?: string;
   selectedProducts?: string;
   entityName?: string;
+  /** grow_referral code — marks the referral as signed_up when provided */
+  referralCode?: string;
 };
 
 function jsonErr(message: string, status: number) {
@@ -199,6 +201,8 @@ export async function POST(request: Request) {
     typeof body.phone === "string" ? body.phone.trim() : String(meta.phone_number ?? "").trim();
   const entityName =
     typeof body.entityName === "string" ? body.entityName.trim() : null;
+  const referralCode =
+    typeof body.referralCode === "string" ? body.referralCode.trim() : null;
   const planTier =
     typeof body.selectedPlan === "string" && body.selectedPlan.trim()
       ? body.selectedPlan.trim()
@@ -374,6 +378,19 @@ export async function POST(request: Request) {
     );
   } catch (welcomeErr) {
     console.warn("[setup-business] welcome email failed (non-fatal)", welcomeErr);
+  }
+
+  // Mark referral as signed_up if a referral code was provided
+  if (referralCode) {
+    try {
+      await supabaseAdmin
+        .from("grow_referrals")
+        .update({ status: "signed_up", referred_user_id: userId })
+        .eq("referral_code", referralCode)
+        .eq("status", "pending");
+    } catch (refErr) {
+      console.warn("[setup-business] referral update failed (non-fatal)", refErr);
+    }
   }
 
   return NextResponse.json({
