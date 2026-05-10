@@ -37,11 +37,14 @@ type Props = {
   threads: Thread[];
   clients: Client[];
   clientMap: Record<string, { full_name: string | null; email: string | null; phone?: string | null }>;
+  emailProvider?: string | null;
+  emailConnectedAddress?: string | null;
+  emailSyncEnabled?: boolean;
 };
 
 type CommsTab = "email" | "sms";
 
-export function CommsClient({ threads, clients, clientMap }: Props) {
+export function CommsClient({ threads, clients, clientMap, emailProvider, emailConnectedAddress, emailSyncEnabled }: Props) {
   const [tab, setTab] = useState<CommsTab>("email");
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -236,6 +239,35 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
         </div>
       ) : (
       /* Email panel — original layout */
+      <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Email provider banner */}
+      {!emailProvider && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--bg-card)] px-4 py-3">
+          <div>
+            <p className="text-xs font-medium text-[var(--text-primary)]">Connect your email</p>
+            <p className="text-xs text-[var(--text-muted)]">Send from your real email address</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a href="/api/auth/gmail" className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-white/10 transition-colors">
+              <span className="text-base">G</span> Gmail
+            </a>
+            <a href="/api/auth/outlook" className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-white/10 transition-colors">
+              <span className="text-base">⊞</span> Outlook
+            </a>
+          </div>
+        </div>
+      )}
+      {emailProvider && emailSyncEnabled && (
+        <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-card)] px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-green-400"></span>
+            <span className="text-xs text-[var(--text-muted)]">
+              Sending from <span className="font-medium text-[var(--text-primary)]">{emailConnectedAddress}</span> via {emailProvider === "gmail" ? "Gmail" : "Outlook"}
+            </span>
+          </div>
+          <a href="/dashboard/owner/settings?tab=integrations" className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]">Manage</a>
+        </div>
+      )}
       <div className="flex flex-1 overflow-hidden">
       {/* Thread list */}
       <aside className={`flex-col border-r border-[var(--border)] bg-[var(--bg-card)] ${mobileView === "conversation" ? "hidden md:flex md:w-72 md:shrink-0" : "flex flex-1 md:w-72 md:flex-none md:shrink-0"}`}>
@@ -437,6 +469,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
             </div>
           </div>
         )}
+      </div>
       </div>
       </div>
       )}

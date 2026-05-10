@@ -34,6 +34,15 @@ export async function POST(req: NextRequest) {
   const fromName = brand.emailFromName || brand.businessName || "SERVLO";
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? "hello@servlo.com.au";
 
+  // Check if business has connected email provider
+  const { data: biz } = await admin
+    .from("businesses")
+    .select("email_provider, email_sync_enabled, email_connected_address")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  const useProvider = biz?.email_sync_enabled && biz?.email_provider;
+
   let threadId = body.thread_id;
 
   // Create thread if not supplied
@@ -56,15 +65,39 @@ export async function POST(req: NextRequest) {
     threadId = thread.id;
   }
 
-  // Send via Resend
   let resendId: string | null = null;
   let status: "sent" | "failed" = "sent";
+  let providerUsed = "resend";
+
   try {
-    await sendEmail(body.to_email, body.subject, body.body_html, `${fromName} <${fromEmail}>`);
-    resendId = null; // sendEmail doesn't return id; could be extended later
+    if (useProvider === "gmail") {
+      const { sendGmailEmail } = await import("@/lib/email/gmail");
+      await sendGmailEmail(user.id, {
+        to: body.to_email,
+        subject: body.subject,
+        bodyHtml: body.body_html,
+        bodyText: body.body_text,
+        fromName,
+        fromEmail: biz?.email_connected_address ?? fromEmail,
+      });
+      providerUsed = "gmail";
+    } else if (useProvider === "outlook") {
+      const { sendOutlookEmail } = await import("@/lib/email/outlook");
+      await sendOutlookEmail(user.id, {
+        to: body.to_email,
+        subject: body.subject,
+        bodyHtml: body.body_html,
+        bodyText: body.body_text,
+      });
+      providerUsed = "outlook";
+    } else {
+      await sendEmail(body.to_email, body.subject, body.body_html, `${fromName} <${fromEmail}>`);
+    }
   } catch {
     status = "failed";
   }
+
+  const effectiveFromEmail = useProvider && biz?.email_connected_address ? biz.email_connected_address : fromEmail;
 
   // Record the message
   const now = new Date().toISOString();
@@ -72,7 +105,7 @@ export async function POST(req: NextRequest) {
     thread_id: threadId,
     owner_id: user.id,
     direction: "outbound",
-    from_email: fromEmail,
+    from_email: effectiveFromEmail,
     to_email: body.to_email,
     subject: body.subject,
     body_html: body.body_html,
@@ -90,6 +123,8 @@ export async function POST(req: NextRequest) {
     .from("email_threads")
     .update({ last_message_at: now })
     .eq("id", threadId!);
+
+  void providerUsed;
 
   if (status === "failed") {
     return NextResponse.json({ error: "Email delivery failed", thread_id: threadId }, { status: 500 });

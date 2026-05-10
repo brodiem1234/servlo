@@ -127,7 +127,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       .maybeSingle(),
     supabase
       .from("businesses")
-      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered")
+      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered, email_provider, email_connected_address")
       .eq("owner_id", user.id)
       .maybeSingle()
   ]);
@@ -855,7 +855,11 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
 
       {/* ── Integrations tab ─────────────────────────────────────────────── */}
       {activeTab === "integrations" ? (
-        <IntegrationsTab stripeConnected={stripeConnected} />
+        <IntegrationsTab
+          stripeConnected={stripeConnected}
+          emailProvider={(businessRow as { email_provider?: string | null } | null)?.email_provider ?? null}
+          emailConnectedAddress={(businessRow as { email_connected_address?: string | null } | null)?.email_connected_address ?? null}
+        />
       ) : null}
 
       {/* ── Demo Data tab ────────────────────────────────────────────────── */}

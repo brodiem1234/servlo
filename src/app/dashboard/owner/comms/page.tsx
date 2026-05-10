@@ -28,11 +28,21 @@ export default async function CommsPage() {
     clientMap[c.id] = { full_name: c.full_name, email: c.email, phone: c.phone ?? null };
   }
 
+  // Load email provider status
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("email_provider, email_connected_address, email_sync_enabled")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
   return (
     <CommsClient
       threads={threads ?? []}
       clients={clients ?? []}
       clientMap={clientMap}
+      emailProvider={(biz as { email_provider?: string | null } | null)?.email_provider ?? null}
+      emailConnectedAddress={(biz as { email_connected_address?: string | null } | null)?.email_connected_address ?? null}
+      emailSyncEnabled={(biz as { email_sync_enabled?: boolean | null } | null)?.email_sync_enabled ?? false}
     />
   );
 }

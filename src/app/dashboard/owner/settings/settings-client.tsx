@@ -1083,14 +1083,82 @@ const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
 
 type IntegrationsTabProps = {
   stripeConnected: boolean;
+  emailProvider?: string | null;
+  emailConnectedAddress?: string | null;
 };
 
-export function IntegrationsTab({ stripeConnected }: IntegrationsTabProps) {
+export function IntegrationsTab({ stripeConnected, emailProvider, emailConnectedAddress }: IntegrationsTabProps) {
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">Integrations</h2>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">Connect SERVLO to the tools you already use.</p>
+      </div>
+
+      {/* Email section */}
+      <div>
+        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Email</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+          {/* Gmail card */}
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-lg font-bold text-[var(--text-primary)] shrink-0">G</div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Gmail</p>
+                <p className="text-xs text-[var(--text-muted)] truncate">Send from your Gmail address</p>
+              </div>
+              {emailProvider === "gmail" && (
+                <span className="ml-auto shrink-0 rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-semibold text-green-400 border border-green-500/20">Connected</span>
+              )}
+            </div>
+            {emailProvider === "gmail" ? (
+              <div className="space-y-2">
+                <p className="text-xs text-[var(--text-muted)]">
+                  Connected as <span className="font-medium text-[var(--text-primary)]">{emailConnectedAddress}</span>
+                </p>
+                <form action="/api/auth/gmail/disconnect" method="POST" className="inline">
+                  <button type="submit" className="text-xs text-red-400 hover:text-red-300 transition-colors">Disconnect</button>
+                </form>
+              </div>
+            ) : process.env.NEXT_PUBLIC_GOOGLE_CONFIGURED === "true" || typeof window !== "undefined" ? (
+              <a href="/api/auth/gmail" className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent-color)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity">
+                Connect Gmail
+              </a>
+            ) : (
+              <p className="text-xs text-[var(--text-muted)]">Coming soon — <a href="mailto:hello@servlo.com.au" className="text-[var(--accent-color)] hover:underline">contact us to join beta</a></p>
+            )}
+            <p className="mt-3 text-[10px] text-[var(--text-muted)]">Emails encrypted, stored max 90 days</p>
+          </div>
+
+          {/* Outlook card */}
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-lg font-bold text-[var(--text-primary)] shrink-0">⊞</div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Outlook / Microsoft 365</p>
+                <p className="text-xs text-[var(--text-muted)] truncate">Send from your Outlook address</p>
+              </div>
+              {emailProvider === "outlook" && (
+                <span className="ml-auto shrink-0 rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-semibold text-green-400 border border-green-500/20">Connected</span>
+              )}
+            </div>
+            {emailProvider === "outlook" ? (
+              <div className="space-y-2">
+                <p className="text-xs text-[var(--text-muted)]">
+                  Connected as <span className="font-medium text-[var(--text-primary)]">{emailConnectedAddress}</span>
+                </p>
+                <form action="/api/auth/outlook/disconnect" method="POST" className="inline">
+                  <button type="submit" className="text-xs text-red-400 hover:text-red-300 transition-colors">Disconnect</button>
+                </form>
+              </div>
+            ) : (
+              <a href="/api/auth/outlook" className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent-color)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity">
+                Connect Outlook
+              </a>
+            )}
+            <p className="mt-3 text-[10px] text-[var(--text-muted)]">Emails encrypted, stored max 90 days</p>
+          </div>
+        </div>
       </div>
 
       {INTEGRATION_CATEGORIES.map((category) => (
