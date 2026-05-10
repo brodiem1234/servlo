@@ -62,11 +62,11 @@ export default function CompareTradifyPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-6">
           <Link href="/" className="shrink-0">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={100} height={28} unoptimized
-              className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]" />
+              className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/compare" className="text-sm text-slate-400 transition hover:text-white">All comparisons</Link>
-            <Link href="/auth/signup" className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold transition hover:bg-blue-400">
+            <Link href="/auth/signup" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100">
               Start free trial
             </Link>
           </div>

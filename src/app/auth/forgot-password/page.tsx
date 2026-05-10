@@ -54,7 +54,7 @@ export default function ForgotPasswordPage({ searchParams }: Props) {
             <Image src="/servlo-master-dark.svg" alt="SERVLO" width={140} height={36} priority unoptimized
               className="block dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={36} priority unoptimized
-              className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]" />
+              className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Reset your password</h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">

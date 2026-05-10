@@ -160,7 +160,7 @@ export function LoginExperience({
             height={36}
             priority
             unoptimized
-            className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+            className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
           />
         </div>
 

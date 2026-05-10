@@ -1006,7 +1006,7 @@ export function SignupForm() {
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={120} height={32} unoptimized
-              className="drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]" />
+              className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </div>
           <h1 className="text-3xl font-bold" style={{ color: "#f8fafc" }}>
             Create your account

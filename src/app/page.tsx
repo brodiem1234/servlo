@@ -66,7 +66,7 @@ export default async function HomePage() {
               height={32}
               priority
               unoptimized
-              className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+              className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
             />
             <Image
               src="/servlo-master-dark.svg"
@@ -75,7 +75,7 @@ export default async function HomePage() {
               height={32}
               priority
               unoptimized
-              className="block dark:hidden"
+              className="block dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)]"
             />
           </Link>
           <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 dark:text-slate-400 md:flex">
@@ -91,7 +91,7 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/auth/signup"
-              className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
             >
               Start free trial
             </Link>
@@ -102,13 +102,13 @@ export default async function HomePage() {
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 pb-28 pt-20 md:px-6 md:pb-36 md:pt-32">
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-1/2 top-0 h-[700px] w-[1000px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[140px]" />
-          <div className="absolute -right-32 top-32 h-[400px] w-[400px] rounded-full bg-indigo-700/10 blur-[100px]" />
+          <div className="absolute left-1/2 top-0 h-[700px] w-[1000px] -translate-x-1/2 rounded-full bg-zinc-900/5 dark:bg-white/[0.04] blur-[140px]" />
+          <div className="absolute -right-32 top-32 h-[400px] w-[400px] rounded-full bg-zinc-900/5 dark:bg-white/[0.03] blur-[100px]" />
         </div>
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 md:grid-cols-2 md:gap-12">
           {/* Left */}
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-300">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-300 dark:border-white/15 bg-zinc-100/80 dark:bg-white/[0.05] px-3.5 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
               Built for Australian service businesses
             </div>
             <h1 className="text-5xl font-extrabold leading-[1.06] tracking-tight text-gray-900 dark:text-white md:text-[68px]">
@@ -121,7 +121,7 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/auth/signup"
-                className="flex items-center gap-2 rounded-xl bg-blue-500 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:bg-blue-400"
+                className="flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10"
               >
                 Start free &mdash; 30 days
                 <ArrowRight size={16} />
@@ -152,7 +152,7 @@ export default async function HomePage() {
                 "Built in Adelaide SA",
               ].map((s) => (
                 <div key={s} className="flex items-center gap-1.5 text-gray-500 dark:text-slate-400">
-                  <Check size={13} className="text-blue-400" />
+                  <Check size={13} className="text-emerald-500 dark:text-emerald-400" />
                   <span>{s}</span>
                 </div>
               ))}
@@ -285,7 +285,7 @@ export default async function HomePage() {
           </div>
           <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Up and running in minutes</h2>
           <div className="relative mt-16 grid gap-10 md:grid-cols-3">
-            <div aria-hidden className="absolute left-[calc(33%+1rem)] right-[calc(33%+1rem)] top-8 hidden h-px bg-gradient-to-r from-blue-500/40 via-blue-500/60 to-blue-500/40 md:block" />
+            <div aria-hidden className="absolute left-[calc(33%+1rem)] right-[calc(33%+1rem)] top-8 hidden h-px bg-gradient-to-r from-zinc-300/40 via-zinc-300/60 to-zinc-300/40 dark:from-white/20 dark:via-white/30 dark:to-white/20 md:block" />
             {[
               {
                 step: "01",
@@ -304,7 +304,7 @@ export default async function HomePage() {
               }
             ].map(({ step, title, copy }) => (
               <div key={step} className="relative flex flex-col items-center text-center">
-                <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-blue-500/40 bg-blue-500/15 text-lg font-bold text-blue-600 dark:text-blue-300">
+                <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-zinc-300 dark:border-white/20 bg-zinc-100 dark:bg-white/10 text-lg font-bold text-zinc-700 dark:text-zinc-200">
                   {step}
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
@@ -328,7 +328,7 @@ export default async function HomePage() {
           {[
             {
               logo: "/core.png",
-              logoGlow: "drop-shadow-[0_0_16px_rgba(59,130,246,0.4)]",
+              logoGlow: "drop-shadow-[0_0_16px_rgba(255,255,255,0.2)]",
               name: "SERVLO Core",
               color: "#3B82F6",
               badge: "Available now",
@@ -424,6 +424,7 @@ export default async function HomePage() {
           <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
             Start with Core. Add products as you grow. One login, one bill.
           </p>
+          {/* Row 1 — ANSWER, PAY, HIRE */}
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
@@ -477,6 +478,42 @@ export default async function HomePage() {
                   "Training compliance tracker"
                 ]
               },
+            ].map(({ Icon, name, tagline, color, badge, badgeStyle, desc, features }) => (
+              <div
+                key={name}
+                className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
+              >
+                <div className="h-1 w-full" style={{ backgroundColor: color }} />
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                      style={{ background: `${color}20` }}
+                    >
+                      <Icon size={16} style={{ color }} />
+                    </div>
+                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
+                      {badge}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">{name}</h3>
+                  <p className="mt-0.5 text-xs font-semibold text-gray-400 dark:text-slate-500">{tagline}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{desc}</p>
+                  <ul className="mt-5 flex-1 space-y-2">
+                    {features.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                        <Check size={13} className="shrink-0 text-blue-400" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Row 2 — FLEET + FINANCE HUB, centred */}
+          <div className="mt-6 flex flex-wrap justify-center gap-6">
+            {[
               {
                 Icon: Truck,
                 name: "FLEET",
@@ -514,7 +551,7 @@ export default async function HomePage() {
             ].map(({ Icon, name, tagline, color, badge, badgeStyle, desc, features }) => (
               <div
                 key={name}
-                className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
+                className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20 sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
               >
                 <div className="h-1 w-full" style={{ backgroundColor: color }} />
                 <div className="flex flex-1 flex-col p-6">
@@ -590,8 +627,8 @@ export default async function HomePage() {
                 },
               ].map(({ Icon, title, copy }) => (
                 <li key={title} className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/15">
-                    <Icon size={16} className="text-blue-400" />
+                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-500/10 dark:bg-white/[0.06]">
+                    <Icon size={16} className="text-zinc-500 dark:text-zinc-300" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">{title}</p>
@@ -604,7 +641,7 @@ export default async function HomePage() {
 
           {/* Mock AI card — stays dark as it shows app UI */}
           <div className="relative">
-            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-blue-600/10 blur-2xl" />
+            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-zinc-900/5 dark:bg-white/[0.04] blur-2xl" />
             <div className="relative rounded-2xl border border-white/10 bg-[#0c1525] p-6">
               <div className="mb-4 flex items-center gap-2">
                 <span className="text-sm font-semibold text-white">AI Quote Assistant</span>
@@ -689,14 +726,14 @@ export default async function HomePage() {
           ].map(({ Icon, title, copy, proof }) => (
             <div
               key={title}
-              className="flex flex-col items-start rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] border-l-4 border-l-blue-500/50 p-7"
+              className="flex flex-col items-start rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] border-l-4 border-l-zinc-300/60 dark:border-l-white/20 p-7"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15">
-                <Icon size={18} className="text-blue-400" />
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-500/10 dark:bg-white/[0.06]">
+                <Icon size={18} className="text-zinc-500 dark:text-zinc-400" />
               </div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{copy}</p>
-              <p className="mt-3 text-xs font-semibold text-blue-600 dark:text-blue-400">{proof}</p>
+              <p className="mt-3 text-xs font-semibold text-zinc-600 dark:text-zinc-400">{proof}</p>
             </div>
           ))}
         </div>
@@ -716,7 +753,7 @@ export default async function HomePage() {
       {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 py-32 md:px-6">
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[120px]" />
+          <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-zinc-900/5 dark:bg-white/[0.04] blur-[120px]" />
         </div>
         <div className="relative mx-auto max-w-2xl text-center">
           {founderCount > 0 && (
@@ -736,7 +773,7 @@ export default async function HomePage() {
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/auth/signup"
-              className="flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:bg-blue-400"
+              className="flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10"
             >
               Start free &mdash; 30 days
               <ArrowRight size={16} />
@@ -773,7 +810,7 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
-                  className="hidden dark:block drop-shadow-[0_0_28px_rgba(59,130,246,0.55)]"
+                  className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
                 />
                 <Image
                   src="/servlo-master-dark.svg"
@@ -781,7 +818,7 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
-                  className="block dark:hidden"
+                  className="block dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)]"
                 />
               </Link>
               <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
@@ -821,7 +858,7 @@ export default async function HomePage() {
               <div className="mt-5">
                 <Link
                   href="/auth/signup"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
                 >
                   Start free trial
                   <ArrowRight size={14} />
