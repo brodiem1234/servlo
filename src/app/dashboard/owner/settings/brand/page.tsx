@@ -235,7 +235,7 @@ export default function BrandSettingsPage() {
                 />
               ))}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <input
                 type="color"
                 value={state.brand_color_primary || "#3B82F6"}
@@ -243,7 +243,7 @@ export default function BrandSettingsPage() {
                 className="h-10 w-12 cursor-pointer rounded border border-[var(--border)] p-0.5"
               />
               <input
-                className="h-10 w-40 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm font-mono text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+                className="h-10 w-36 min-w-0 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm font-mono text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
                 placeholder="#3B82F6"
                 value={state.brand_color_primary}
                 onChange={(e) => setState((s) => ({ ...s, brand_color_primary: e.target.value }))}

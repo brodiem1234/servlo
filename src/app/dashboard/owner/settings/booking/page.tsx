@@ -98,11 +98,11 @@ export default function BookingSettingsPage() {
 
             <div className="space-y-1">
               <label className="block text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Booking page URL slug *</label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-[var(--text-muted)] whitespace-nowrap">{appUrl}/book/</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-[var(--text-muted)] break-all">{appUrl}/book/</span>
                 <input
                   required
-                  className={inputCls}
+                  className={`${inputCls} min-w-0 flex-1 basis-32`}
                   placeholder="acme-plumbing"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}

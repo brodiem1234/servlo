@@ -384,7 +384,7 @@ export function PortalClient({
                     className="w-full rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#1e293b] placeholder-[#9ca3af] focus:outline-none focus:ring-2"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-[#374151]">
                       Preferred date

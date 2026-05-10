@@ -6,9 +6,9 @@ export default function ConnectProfilePage() {
       <div className="max-w-2xl space-y-6">
         <h1 className="text-2xl font-bold text-white">My Profile</h1>
         <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-          <div className="flex items-start gap-5">
-            <div className="w-20 h-20 rounded-full bg-indigo-500/20 border-2 border-indigo-500/40 flex items-center justify-center text-2xl font-bold text-indigo-400">YB</div>
-            <div>
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 shrink-0 rounded-full bg-indigo-500/20 border-2 border-indigo-500/40 flex items-center justify-center text-2xl font-bold text-indigo-400 sm:w-20 sm:h-20">YB</div>
+            <div className="min-w-0">
               <h2 className="text-xl font-bold text-white">Your Business</h2>
               <div className="flex items-center gap-1 text-slate-400 text-sm mt-1"><Wrench size={12} />Your Trade</div>
               <div className="flex items-center gap-1 text-slate-400 text-sm mt-0.5"><MapPin size={12} />Your Suburb, SA</div>
@@ -18,7 +18,7 @@ export default function ConnectProfilePage() {
               </div>
             </div>
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-4 text-center">
+          <div className="mt-5 grid grid-cols-3 gap-2 text-center sm:gap-4">
             {[["0", "Posts"], ["0", "Connections"], ["0", "Reviews"]].map(([val, label]) => (
               <div key={label} className="rounded-lg bg-white/5 p-3">
                 <div className="text-xl font-bold text-white">{val}</div>

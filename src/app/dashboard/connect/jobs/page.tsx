@@ -20,22 +20,22 @@ export default function TradeJobsPage() {
         <div className="space-y-3">
           {DEMO_JOBS.map((job) => (
             <div key={job.title} className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20 transition-colors cursor-pointer">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mt-0.5" style={{ background: job.color + "22", border: `1px solid ${job.color}44` }}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center mt-0.5" style={{ background: job.color + "22", border: `1px solid ${job.color}44` }}>
                     <Briefcase size={16} style={{ color: job.color }} />
                   </div>
-                  <div>
-                    <div className="font-semibold text-white">{job.title}</div>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-white truncate">{job.title}</div>
                     <div className="text-sm text-slate-400">{job.company}</div>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-slate-500">
                       <span className="flex items-center gap-1"><MapPin size={10} />{job.location}</span>
                       <span className="flex items-center gap-1"><DollarSign size={10} />{job.pay}</span>
                       <span className="flex items-center gap-1"><Clock size={10} />{job.posted}</span>
                     </div>
                   </div>
                 </div>
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${
                   job.type === "Full-time" ? "bg-blue-500/20 text-blue-400" :
                   job.type === "Contract" ? "bg-purple-500/20 text-purple-400" :
                   "bg-yellow-500/20 text-yellow-400"

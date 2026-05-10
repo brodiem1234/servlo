@@ -104,14 +104,14 @@ export default function EmployeeExpensesPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>My Expenses</h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>Submit work-related expenses for reimbursement</p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+          className="shrink-0 px-4 py-2 rounded-lg text-sm font-semibold text-white"
           style={{ background: "var(--accent-color)" }}
         >
           {showForm ? "Cancel" : "+ Submit Expense"}
@@ -151,7 +151,7 @@ export default function EmployeeExpensesPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium block mb-1" style={{ color: "var(--text-muted)" }}>Amount ($)</label>
               <input
