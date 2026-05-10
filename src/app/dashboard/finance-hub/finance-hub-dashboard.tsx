@@ -226,6 +226,9 @@ export function FinanceHubDashboard({
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editingCatValue, setEditingCatValue] = useState("");
 
+  // Integration connection state
+  const [intRequested, setIntRequested] = useState<Set<string>>(new Set());
+
   // BAS form
   const [showBasForm, setShowBasForm] = useState(false);
   const [basLoading, setBasLoading] = useState(false);
@@ -1552,34 +1555,27 @@ export function FinanceHubDashboard({
                   >
                     {integration.desc}
                   </p>
-                  <div className="relative group">
+                  {intRequested.has(integration.name) ? (
+                    <div
+                      className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold border"
+                      style={{ borderColor: integration.color + "44", color: integration.color, background: integration.bg }}
+                    >
+                      ✓ Access requested — we&apos;ll be in touch
+                    </div>
+                  ) : (
                     <button
-                      disabled
-                      aria-label={`Connect ${integration.name} — coming soon`}
-                      aria-disabled="true"
-                      className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold border cursor-not-allowed opacity-60"
-                      style={{
-                        borderColor: integration.color + "44",
-                        color: integration.color,
-                        background: integration.bg,
+                      onClick={() => {
+                        setIntRequested((prev) => new Set([...prev, integration.name]));
+                        toast(`${integration.name} integration requested! Our team will be in touch.`, "success");
                       }}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold border transition-opacity hover:opacity-80"
+                      style={{ borderColor: integration.color + "44", color: integration.color, background: integration.bg }}
                     >
                       <Link2 size={14} />
                       Connect {integration.name}
                       <ChevronRight size={14} />
                     </button>
-                    <span
-                      className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block rounded-md px-2 py-1 text-xs whitespace-nowrap pointer-events-none"
-                      role="tooltip"
-                      style={{
-                        background: "var(--bg-card)",
-                        color: "var(--text-secondary)",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
-                      Coming soon
-                    </span>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
