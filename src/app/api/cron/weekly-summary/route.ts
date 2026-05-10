@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
         : "A quiet week — time to follow up on open quotes.";
 
       // Insert notification
-      await admin.from("notifications").insert({
+      await admin.from("owner_notifications").insert({
         owner_id: owner.id,
         type: "weekly_summary",
         title: "Your week in review",

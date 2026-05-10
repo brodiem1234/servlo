@@ -89,7 +89,7 @@ async function checkDatabase(): Promise<AutoCheck[]> {
 
   // Check notifications table accessible
   const { error: notifErr } = await admin
-    .from("notifications")
+    .from("owner_notifications")
     .select("id")
     .limit(1);
   checks.push({

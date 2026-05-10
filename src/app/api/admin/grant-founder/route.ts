@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Insert founding member notification for the user
-  await admin.from("notifications").insert({
+  await admin.from("owner_notifications").insert({
     owner_id: (profile as { id: string }).id,
     type: "founding_member",
     title: "You're a Founding Member!",

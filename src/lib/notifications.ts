@@ -13,12 +13,12 @@ export async function createNotification(ownerId: string, {
 }) {
   try {
     const sb = await createClient();
-    await sb.from("notifications").insert({
+    await sb.from("owner_notifications").insert({
       owner_id: ownerId,
       type,
       title,
       body: body ?? null,
-      action_url: actionUrl ?? null,
+      link: actionUrl ?? null,
       read: false,
     });
   } catch (e) {

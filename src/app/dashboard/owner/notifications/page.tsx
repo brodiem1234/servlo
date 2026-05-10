@@ -9,7 +9,7 @@ type Notification = {
   type: string;
   title: string;
   body: string | null;
-  href: string | null;
+  link: string | null;
   read: boolean;
   created_at: string;
 };
@@ -69,8 +69,8 @@ export default async function NotificationsPage() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
 
   const { data: notifications } = await supabase
-    .from("notifications")
-    .select("id, type, title, body, href, read, created_at")
+    .from("owner_notifications")
+    .select("id, type, title, body, link, read, created_at")
     .eq("owner_id", user.id)
     .gte("created_at", thirtyDaysAgo)
     .order("created_at", { ascending: false })
@@ -85,7 +85,7 @@ export default async function NotificationsPage() {
     const sb = await createClient();
     const { data: { user: owner } } = await sb.auth.getUser();
     if (!owner) return;
-    await sb.from("notifications").update({ read: true }).eq("owner_id", owner.id).eq("read", false);
+    await sb.from("owner_notifications").update({ read: true }).eq("owner_id", owner.id).eq("read", false);
     revalidatePath("/dashboard/owner/notifications");
   }
 
@@ -134,8 +134,8 @@ export default async function NotificationsPage() {
                       <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{timeAgo(n.created_at)}</p>
                     </div>
                     {!n.read && <div className="mt-2.5 h-2 w-2 shrink-0 rounded-full bg-[var(--accent-color)]" />}
-                    {n.href && (
-                      <a href={n.href} className="shrink-0 text-xs text-[var(--accent-color)] hover:underline">
+                    {n.link && (
+                      <a href={n.link} className="shrink-0 text-xs text-[var(--accent-color)] hover:underline">
                         View →
                       </a>
                     )}

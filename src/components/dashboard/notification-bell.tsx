@@ -8,7 +8,7 @@ type Notification = {
   type: string;
   title: string;
   body: string | null;
-  action_url: string | null;
+  link: string | null;
   read: boolean;
   created_at: string;
 };
@@ -58,8 +58,8 @@ export function NotificationBell() {
         setLoading(false);
         return;
       }
-      const { data } = await sb.from("notifications")
-        .select("id, type, title, body, action_url, read, created_at")
+      const { data } = await sb.from("owner_notifications")
+        .select("id, type, title, body, link, read, created_at")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -71,7 +71,7 @@ export function NotificationBell() {
         .on("postgres_changes", {
           event: "INSERT",
           schema: "public",
-          table: "notifications",
+          table: "owner_notifications",
           filter: `owner_id=eq.${user.id}`,
         }, (payload) => {
           setNotifications(prev => [payload.new as Notification, ...prev]);
@@ -102,12 +102,12 @@ export function NotificationBell() {
   async function markAllRead() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return;
-    await sb.from("notifications").update({ read: true }).eq("owner_id", user.id).eq("read", false);
+    await sb.from("owner_notifications").update({ read: true }).eq("owner_id", user.id).eq("read", false);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   }
 
   async function markRead(id: string, actionUrl: string | null) {
-    await sb.from("notifications").update({ read: true }).eq("id", id);
+    await sb.from("owner_notifications").update({ read: true }).eq("id", id);
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     if (actionUrl) window.location.href = actionUrl;
     setOpen(false);
@@ -152,7 +152,7 @@ export function NotificationBell() {
             {notifications.map(n => (
               <button
                 key={n.id}
-                onClick={() => markRead(n.id, n.action_url)}
+                onClick={() => markRead(n.id, n.link)}
                 className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--bg-secondary)] ${!n.read ? "bg-[var(--bg-secondary)]/50" : ""}`}
               >
                 <span className="mt-0.5 text-base">{notifIcon(n.type)}</span>

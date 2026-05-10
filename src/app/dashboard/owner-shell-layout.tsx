@@ -46,10 +46,10 @@ export default async function DashboardOwnerShellLayout({ children }: { children
       .order("created_at", { ascending: true })
       .limit(80),
     supabase
-      .from("notifications")
-      .select("id, message, type, read_at")
+      .from("owner_notifications")
+      .select("id, title, type, read")
       .eq("owner_id", user.id)
-      .is("read_at", null)
+      .eq("read", false)
       .order("created_at", { ascending: false })
       .limit(5)
   ]);
@@ -85,7 +85,7 @@ export default async function DashboardOwnerShellLayout({ children }: { children
   const alerts = [
     ...(notifRes.data ?? []).map((n) => ({
       id: `notif-${n.id}`,
-      text: n.message as string
+      text: n.title as string
     })),
     ...(unpaidInvoices ?? []).map((invoice) => ({
       id: `invoice-${invoice.id}`,
