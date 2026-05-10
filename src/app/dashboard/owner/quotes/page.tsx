@@ -42,7 +42,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
   const { user, enabled, supabase: sb } = await requireOwnerWorkspaceFeatures();
   guardWorkspaceNav(enabled, "quotes");
 
-  const [quotesResult, clientsResult, profileResult] = await Promise.all([
+  const [quotesResult, clientsResult, profileResult, pbResult] = await Promise.all([
     sb
       .from("quotes")
       .select("id, quote_number, client_id, total, subtotal, gst, status, created_at, is_demo, notes")
@@ -50,8 +50,10 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
       .is("deleted_at", null)
       .order("created_at", { ascending: false }),
     sb.from("clients").select("id, full_name, email, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("full_name"),
-    sb.from("businesses").select("business_name, abn").eq("owner_id", user.id).maybeSingle()
+    sb.from("businesses").select("business_name, abn").eq("owner_id", user.id).maybeSingle(),
+    sb.from("pricebook_items").select("id, name, description, unit_price, unit, category, is_service").eq("owner_id", user.id).eq("is_active", true).is("deleted_at", null).order("name")
   ]);
+  const pricebookItems = (pbResult.data ?? []) as Array<{ id: string; name: string; description: string | null; unit_price: number; unit: string; category: string | null; is_service: boolean }>;
 
   if (quotesResult.error) {
     throw new Error(quotesResult.error.message);
@@ -470,6 +472,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
         businessProfile={businessProfile ? { businessName: businessProfile.business_name ?? null, abn: businessProfile.abn ?? null } : null}
         deleteQuoteAction={deleteQuoteAction}
         restoreQuoteAction={restoreQuoteAction}
+        pricebookItems={pricebookItems}
       />
     </section>
   );

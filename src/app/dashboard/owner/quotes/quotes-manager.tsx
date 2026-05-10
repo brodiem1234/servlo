@@ -6,6 +6,7 @@ import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { DemoBadge } from "@/components/demo-badge";
 import { DeleteConfirmModal } from "@/components/ui/delete-confirm-modal";
 import { useUndoToast } from "@/hooks/useUndoToast";
+import { PricebookAutocomplete, type PricebookSuggestion } from "@/components/dashboard/pricebook-autocomplete";
 
 type Quote = {
   id: string;
@@ -40,6 +41,7 @@ type Props = {
   businessProfile?: { businessName: string | null; abn: string | null } | null;
   deleteQuoteAction?: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
   restoreQuoteAction?: (formData: FormData) => Promise<{ ok: boolean; message?: string }>;
+  pricebookItems?: PricebookSuggestion[];
 };
 
 const emptyLine: LineItem = { description: "", quantity: 1, unit_price: 0, gst_applicable: true };
@@ -112,6 +114,7 @@ export default function QuotesManager({
   businessProfile,
   deleteQuoteAction,
   restoreQuoteAction,
+  pricebookItems = [],
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -711,15 +714,24 @@ export default function QuotesManager({
                         const lineTotal = item.quantity * item.unit_price;
                         return (
                           <tr key={idx} className="border-b border-[var(--border)] last:border-0">
-                            <td className="px-2 py-1.5">
-                              <input
+                            <td className="px-2 py-1.5 min-w-[160px]">
+                              <PricebookAutocomplete
                                 value={item.description}
-                                onChange={(e) =>
+                                onChange={(v) =>
                                   setLineItems((prev) =>
-                                    prev.map((x, i) => (i === idx ? { ...x, description: e.target.value } : x))
+                                    prev.map((x, i) => (i === idx ? { ...x, description: v } : x))
                                   )
                                 }
-                                placeholder="Description"
+                                onSelect={(pb) =>
+                                  setLineItems((prev) =>
+                                    prev.map((x, i) =>
+                                      i === idx
+                                        ? { ...x, description: pb.name, unit_price: pb.unit_price, gst_applicable: true }
+                                        : x
+                                    )
+                                  )
+                                }
+                                items={pricebookItems}
                                 className="h-8 w-full rounded border border-[var(--border)] bg-[var(--input-bg)] px-2 text-xs text-[var(--text-primary)]"
                               />
                             </td>

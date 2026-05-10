@@ -39,11 +39,13 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
   const invSelect =
     "id, invoice_number, client_id, total, subtotal, gst, status, due_date, issue_date, is_demo, notes";
 
-  const [invResult, clientsResult, businessResult] = await Promise.all([
+  const [invResult, clientsResult, businessResult, pbResult] = await Promise.all([
     sb.from("invoices").select(invSelect).eq("owner_id", user.id).is("deleted_at", null).order("due_date", { ascending: true }),
     sb.from("clients").select("id, full_name, is_demo").eq("owner_id", user.id).is("deleted_at", null).order("full_name"),
-    sb.from("businesses").select("business_name, abn, phone, address").eq("owner_id", user.id).maybeSingle()
+    sb.from("businesses").select("business_name, abn, phone, address").eq("owner_id", user.id).maybeSingle(),
+    sb.from("pricebook_items").select("id, name, description, unit_price, unit, category, is_service").eq("owner_id", user.id).eq("is_active", true).is("deleted_at", null).order("name")
   ]);
+  const pricebookItems = (pbResult.data ?? []) as Array<{ id: string; name: string; description: string | null; unit_price: number; unit: string; category: string | null; is_service: boolean }>;
 
   let invoices: Array<{
     id: string;
@@ -425,6 +427,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
         appOrigin={appOrigin}
         deleteInvoiceAction={deleteInvoiceAction}
         restoreInvoiceAction={restoreInvoiceAction}
+        pricebookItems={pricebookItems}
       />
     </section>
   );
