@@ -186,7 +186,7 @@ export function EmployeeJobsClient({ jobs }: { jobs: Job[] }) {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLES[job.status ?? "pending"] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ${STATUS_STYLES[job.status ?? "pending"] ?? "bg-gray-100 text-gray-600"}`}>
                       {STATUS_LABEL[job.status ?? "pending"] ?? job.status}
                     </span>
                     <span className="text-xs" style={{ color: "var(--text-muted)" }}>{isOpen ? "▲" : "▼"}</span>

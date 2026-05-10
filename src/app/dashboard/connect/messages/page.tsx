@@ -18,9 +18,9 @@ export default function MessagesPage() {
     <div style={{ position: "relative", minHeight: "600px" }}>
       <div>
         <h1 className="text-2xl font-bold text-white mb-4">Messages</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 rounded-xl border border-white/10 overflow-hidden" style={{ height: "500px" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 rounded-xl border border-white/10 overflow-hidden" style={{ minHeight: "500px" }}>
           {/* Sidebar */}
-          <div className="border-r border-white/10 overflow-y-auto" style={{ background: "rgba(255,255,255,0.02)" }}>
+          <div className="border-r border-white/10 overflow-y-auto md:max-h-[500px]" style={{ background: "rgba(255,255,255,0.02)" }}>
             {DEMO_CONVOS.map((c) => (
               <div key={c.name} className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 border-b border-white/5 ${c.name === "Mike's Plumbing Co" ? "bg-white/5" : ""}`}>
                 <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: c.color + "33", border: `1px solid ${c.color}66` }}>{c.initials}</div>
@@ -33,7 +33,7 @@ export default function MessagesPage() {
             ))}
           </div>
           {/* Chat */}
-          <div className="col-span-2 flex flex-col">
+          <div className="md:col-span-2 flex flex-col md:max-h-[500px]">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
               <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-xs font-bold text-blue-400">MP</div>
               <span className="font-semibold text-white text-sm">{"Mike's Plumbing Co"}</span>
