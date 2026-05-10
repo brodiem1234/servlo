@@ -688,7 +688,7 @@ function AddLeadModal({
               placeholder="Lead name"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 className="mb-1 block text-xs font-semibold uppercase tracking-wide"
@@ -721,7 +721,7 @@ function AddLeadModal({
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 className="mb-1 block text-xs font-semibold uppercase tracking-wide"
@@ -1022,7 +1022,7 @@ function LeadDetailPanel({
             >
               Move to Stage
             </p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {STATUS_OPTIONS.filter((s) => s.value !== lead.status).map((s) => (
                 <button
                   key={s.value}

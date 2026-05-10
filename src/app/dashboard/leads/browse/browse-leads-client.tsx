@@ -741,7 +741,7 @@ export default function BrowseLeadsClient({
       {/* ── Right content ────────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 space-y-6">
         {/* Top bar — alert button + AI score button */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             Showing{" "}
             <span
@@ -752,7 +752,7 @@ export default function BrowseLeadsClient({
             </span>{" "}
             of {allLeads.length} demo leads — live marketplace launches Q4 2026
           </p>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={scoreAllLeads}

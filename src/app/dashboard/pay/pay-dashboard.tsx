@@ -261,7 +261,7 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
       {/* Tabs */}
       <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
         {/* Tab bar */}
-        <div className="flex border-b" style={{ borderColor: "var(--border)" }}>
+        <div className="flex overflow-x-auto border-b" style={{ borderColor: "var(--border)" }}>
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -490,7 +490,7 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
               <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
                 Generate Link
               </h3>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                     Amount (AUD)
