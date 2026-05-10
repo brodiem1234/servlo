@@ -15,7 +15,7 @@ import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
-const HIRE_COLOR = "#F97316";
+const HIRE_COLOR = "#7C3AED";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -115,18 +115,18 @@ export default function HireShell({
           <div
             className="rounded-lg px-3 py-2.5"
             style={{
-              background: "rgb(249 115 22 / 0.12)",
-              border: "1px solid rgb(249 115 22 / 0.3)",
+              background: "rgb(124 58 237 / 0.12)",
+              border: "1px solid rgb(124 58 237 / 0.3)",
             }}
           >
-            <p className="text-xs font-semibold" style={{ color: "#FDBA74" }}>
+            <p className="text-xs font-semibold" style={{ color: "#C4B5FD" }}>
               Coming soon
             </p>
             <p
               className="mt-0.5 text-xs"
               style={{ color: "var(--sidebar-text-muted)" }}
             >
-              SERVLO Hire launches Q1 2027
+              ATS & hiring for service businesses
             </p>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function HireShell({
             <span
               className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
               style={{
-                background: "rgb(249 115 22 / 0.2)",
+                background: "rgb(124 58 237 / 0.2)",
                 color: "#FDBA74",
                 border: "1px solid rgb(249 115 22 / 0.35)",
               }}

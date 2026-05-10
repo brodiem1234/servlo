@@ -112,8 +112,7 @@ export default function PayShell({ children }: { children: React.ReactNode }) {
             }}
           >
             <p className="text-xs font-semibold" style={{ color: "#86EFAC" }}>
-              Coming soon
-            </p>
+              Beta</p>
             <p
               className="mt-0.5 text-xs"
               style={{ color: "var(--sidebar-text-muted)" }}
@@ -149,8 +148,7 @@ export default function PayShell({ children }: { children: React.ReactNode }) {
                 border: "1px solid rgb(34 197 94 / 0.35)",
               }}
             >
-              Coming soon
-            </span>
+              Beta</span>
           </p>
           <div className="flex items-center gap-2">
             <button

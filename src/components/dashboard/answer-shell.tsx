@@ -124,8 +124,7 @@ export default function AnswerShell({
             }}
           >
             <p className="text-xs font-semibold" style={{ color: "#5EEAD4" }}>
-              Coming soon
-            </p>
+              Beta</p>
             <p
               className="mt-0.5 text-xs"
               style={{ color: "var(--sidebar-text-muted)" }}
@@ -161,8 +160,7 @@ export default function AnswerShell({
                 border: "1px solid rgb(20 184 166 / 0.35)",
               }}
             >
-              Coming soon
-            </span>
+              Beta</span>
           </p>
           <div className="flex items-center gap-2">
             <button

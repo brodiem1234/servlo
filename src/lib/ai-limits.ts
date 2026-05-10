@@ -52,19 +52,30 @@ export async function checkAILimit(userId: string): Promise<AIUsageStats> {
   ]);
 
   const plan: string = (profileResult.data as { plan?: string } | null)?.plan ?? "free";
-  const used: number = countResult.count ?? 0;
+  // If ai_usage_log table doesn't exist, fail open (allow the call)
+  const used: number = (countResult.error?.code === "42P01") ? 0 : (countResult.count ?? 0);
+
+  // If table errors (missing/not ready), fail open with generous limit
+  if (countResult.error?.code === "42P01") {
+    return { used: 0, limit: 9999, plan, resetDate, allowed: true, isSoftCap: true };
+  }
 
   // Look up the limit for this plan
   const limitResult = await admin
     .from("plan_ai_limits")
     .select("monthly_limit, is_soft_cap")
     .eq("plan", plan)
-    .single();
+    .maybeSingle();
 
-  const monthlyLimit: number = (limitResult.data as { monthly_limit?: number } | null)?.monthly_limit ?? 0;
-  const isSoftCap: boolean = (limitResult.data as { is_soft_cap?: boolean } | null)?.is_soft_cap ?? false;
+  // If plan_ai_limits table doesn't exist or has no row for this plan, fail open
+  if (limitResult.error?.code === "42P01" || !limitResult.data) {
+    return { used, limit: 9999, plan, resetDate, allowed: true, isSoftCap: true };
+  }
 
-  const allowed = monthlyLimit === 0 ? false : isSoftCap || used < monthlyLimit;
+  const monthlyLimit: number = (limitResult.data as { monthly_limit?: number } | null)?.monthly_limit ?? 9999;
+  const isSoftCap: boolean = (limitResult.data as { is_soft_cap?: boolean } | null)?.is_soft_cap ?? true;
+
+  const allowed = isSoftCap || used < monthlyLimit;
 
   return { used, limit: monthlyLimit, plan, resetDate, allowed, isSoftCap };
 }

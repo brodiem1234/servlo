@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const STUB_REPLIES = [
-  "Great question! For Australian trades businesses, the best way to get more Google reviews is to ask right after the job is done. Send a text or email with a direct link to your Google Business Profile review page. Aim for 5 new reviews per month — consistency beats volume.",
-  "The best time to run ads for trades in Australia is Tuesday–Thursday between 7am–9am and 5pm–8pm. Homeowners are planning work before their day starts or unwinding in the evening. For emergency services, run 24/7.",
-  "Here's a Facebook post for you: '🔧 Job done right, first time. We just wrapped up another happy customer in [your suburb]. No mess left behind, no hidden costs — just quality workmanship. Call us today for a free quote! 📞 [your number]'",
-  "To beat local competitors, focus on: 1) More Google reviews (aim for 50+), 2) Faster response time (reply within 1 hour), 3) Show your work — post before/after photos on Google and Facebook weekly, 4) Get listed on hipages and ServiceSeeking with a full profile.",
-];
-
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -22,12 +15,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
   }
 
+  // Fetch real business context
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("business_name, suburb, state, phone, abn")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  const businessName = biz?.business_name ?? "your business";
+  const suburb = biz?.suburb ?? "your area";
+  const state = biz?.state ?? "Australia";
+  const phone = biz?.phone ?? null;
+  const locationStr = suburb !== "your area" ? `${suburb}, ${state}` : state;
+
+  const systemPrompt = `You are an AI marketing coach for ${businessName}, an Australian service business based in ${locationStr}.
+${phone ? `Their phone number is ${phone}.` : ""}
+Give specific, actionable advice personalised to this business. Use their actual suburb and business name in examples.
+Be concise, practical, and use Australian English. When writing social media posts or ad copy, use the real business name and location — never use placeholder brackets like [your suburb] or [your number].`;
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
-    // Stub response — rotate through canned replies
-    const idx = Math.floor(Math.random() * STUB_REPLIES.length);
-    return NextResponse.json({ reply: STUB_REPLIES[idx] });
+    // Stub response — use real business context
+    const stubs = [
+      `Great question! For ${businessName} in ${locationStr}, the best way to get more Google reviews is to ask right after the job is done. Send a text with a direct review link. Aim for 5 new reviews per month — consistency beats volume.`,
+      `The best time to run ads for ${businessName} is Tuesday–Thursday between 7am–9am and 5pm–8pm. Homeowners in ${suburb} are planning work before their day starts or unwinding in the evening.`,
+      `Here's a Facebook post for ${businessName}: '🔧 Job done right, first time. We just wrapped up another happy customer in ${suburb}. No mess left behind, no hidden costs — just quality workmanship. ${phone ? `Call us today on ${phone}!` : "DM us for a free quote!"}'`,
+      `To beat local competitors in ${locationStr}: 1) Get to 50+ Google reviews, 2) Reply within 1 hour, 3) Post before/after photos weekly, 4) Full profile on hipages and ServiceSeeking.`,
+    ];
+    return NextResponse.json({ reply: stubs[Math.floor(Math.random() * stubs.length)] });
   }
 
   try {
@@ -40,18 +56,17 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "claude-3-5-haiku-20241022",
-        max_tokens: 400,
-        system:
-          "You are an AI marketing coach specialising in Australian trades and service businesses. Give specific, actionable advice. Be concise and practical. Use Australian English and examples from Australian cities.",
+        max_tokens: 500,
+        system: systemPrompt,
         messages: [{ role: "user", content: message }],
       }),
     });
     const data = (await res.json()) as {
       content?: Array<{ text: string }>;
     };
-    const reply = data.content?.[0]?.text ?? STUB_REPLIES[0];
+    const reply = data.content?.[0]?.text ?? `Here's advice for ${businessName}: focus on Google reviews and response time in ${suburb}.`;
     return NextResponse.json({ reply });
   } catch {
-    return NextResponse.json({ reply: STUB_REPLIES[0] });
+    return NextResponse.json({ reply: `Here's advice for ${businessName}: focus on Google reviews and fast response time in ${locationStr}.` });
   }
 }

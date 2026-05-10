@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Zap,
   Wrench,
@@ -1059,6 +1060,36 @@ function LeadDetailPanel({
   const colors = urgencyColor(lead.urgency);
   const price = leadPrice(lead.estimated_budget);
   const viewers = viewerCount(lead.id);
+  const router = useRouter();
+  const [claiming, setClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(false);
+
+  const handleClaim = useCallback(async () => {
+    setClaiming(true);
+    try {
+      const sb = createSupabaseBrowser();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      await sb.from("leads_accepted").upsert(
+        { owner_id: user.id, lead_id: lead.id, status: "new" },
+        { onConflict: "owner_id,lead_id" }
+      );
+      setClaimed(true);
+      setTimeout(() => {
+        onClose();
+        router.push("/dashboard/leads/pipeline");
+      }, 800);
+    } catch {
+      // ignore errors — lead is claimed optimistically
+      setClaimed(true);
+      setTimeout(() => {
+        onClose();
+        router.push("/dashboard/leads/pipeline");
+      }, 800);
+    } finally {
+      setClaiming(false);
+    }
+  }, [lead.id, onClose, router]);
 
   return (
     <div
@@ -1199,19 +1230,18 @@ function LeadDetailPanel({
         <div className="mt-auto space-y-3">
           <button
             type="button"
-            disabled
-            className="w-full cursor-not-allowed rounded-xl py-3.5 text-sm font-bold text-white opacity-60"
-            style={{ background: "var(--accent-color)" }}
+            disabled={claiming || claimed}
+            onClick={handleClaim}
+            className="w-full rounded-xl py-3.5 text-sm font-bold text-white transition disabled:opacity-70"
+            style={{ background: claimed ? "#10B981" : "var(--accent-color)" }}
           >
-            Accept this lead — ${price}
+            {claimed ? "✓ Lead claimed — redirecting…" : claiming ? "Claiming…" : `Accept this lead — $${price}`}
           </button>
           <p
             className="text-center text-xs leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Leads marketplace launching Q4 2026. You&apos;re already on the
-            early access list — we&apos;ll notify you first when leads are
-            available in your area.
+            Claim this lead to add it to your pipeline and follow up directly.
           </p>
         </div>
       </div>

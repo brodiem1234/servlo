@@ -15,7 +15,7 @@ import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
-const FINANCE_HUB_COLOR = "#6366F1";
+const FINANCE_HUB_COLOR = "#10B981";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -120,18 +120,18 @@ export default function FinanceHubShell({
           <div
             className="rounded-lg px-3 py-2.5"
             style={{
-              background: "rgb(99 102 241 / 0.12)",
-              border: "1px solid rgb(99 102 241 / 0.3)",
+              background: "rgb(16 185 129 / 0.12)",
+              border: "1px solid rgb(16 185 129 / 0.3)",
             }}
           >
-            <p className="text-xs font-semibold" style={{ color: "#A5B4FC" }}>
+            <p className="text-xs font-semibold" style={{ color: "#6EE7B7" }}>
               Coming soon
             </p>
             <p
               className="mt-0.5 text-xs"
               style={{ color: "var(--sidebar-text-muted)" }}
             >
-              SERVLO Finance launches Q3 2027
+              Banking & BAS for service businesses
             </p>
           </div>
         </div>
@@ -157,9 +157,9 @@ export default function FinanceHubShell({
             <span
               className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
               style={{
-                background: "rgb(99 102 241 / 0.2)",
-                color: "#A5B4FC",
-                border: "1px solid rgb(99 102 241 / 0.35)",
+                background: "rgb(16 185 129 / 0.2)",
+                color: "#6EE7B7",
+                border: "1px solid rgb(16 185 129 / 0.35)",
               }}
             >
               Coming soon

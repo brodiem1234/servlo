@@ -323,7 +323,7 @@ export function ProductSwitcher({
               color: "var(--text-muted, #6b7280)",
             }}
           >
-            SERVLO Platform — 3 of 13 products active
+            SERVLO Platform — 8 of 13 products active
           </div>
           </div>
         </>

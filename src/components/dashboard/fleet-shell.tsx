@@ -15,7 +15,7 @@ import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
 
-const FLEET_COLOR = "#0EA5E9";
+const FLEET_COLOR = "#F97316";
 
 type NavItem = { href: string; label: string; Icon: LucideIcon };
 
@@ -107,18 +107,18 @@ export default function FleetShell({
           <div
             className="rounded-lg px-3 py-2.5"
             style={{
-              background: "rgb(14 165 233 / 0.12)",
-              border: "1px solid rgb(14 165 233 / 0.3)",
+              background: "rgb(249 115 22 / 0.12)",
+              border: "1px solid rgb(249 115 22 / 0.3)",
             }}
           >
-            <p className="text-xs font-semibold" style={{ color: "#7DD3FC" }}>
+            <p className="text-xs font-semibold" style={{ color: "#FDBA74" }}>
               Coming soon
             </p>
             <p
               className="mt-0.5 text-xs"
               style={{ color: "var(--sidebar-text-muted)" }}
             >
-              SERVLO Fleet launches Q2 2027
+              Fleet management for service businesses
             </p>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function FleetShell({
               className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
               style={{
                 background: "rgb(14 165 233 / 0.2)",
-                color: "#7DD3FC",
+                color: "#FDBA74",
                 border: "1px solid rgb(14 165 233 / 0.35)",
               }}
             >
