@@ -1,22 +1,40 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { addOwnerTask, deleteOwnerTask, toggleOwnerTask } from "@/app/dashboard/owner/owner-task-actions";
 
 export type OwnerTaskRow = { id: string; title: string; done: boolean };
 
 export default function OwnerSidebarTodos({ initialTasks }: { initialTasks: OwnerTaskRow[] }) {
+  const [tasks, setTasks] = useState<OwnerTaskRow[]>(initialTasks);
   const [title, setTitle] = useState("");
-  const pending = useMemo(() => initialTasks.filter((t) => !t.done), [initialTasks]);
+  const pending = tasks.filter((t) => !t.done);
 
   async function onAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
+    const tempId = `temp-${Date.now()}`;
+    setTasks((prev) => [...prev, { id: tempId, title: trimmed, done: false }]);
+    setTitle("");
     const fd = new FormData();
     fd.set("title", trimmed);
     await addOwnerTask(fd);
-    setTitle("");
+    setTasks((prev) => prev.filter((t) => t.id !== tempId));
+  }
+
+  async function onToggle(id: string) {
+    setTasks((prev) => prev.map((t) => t.id === id ? { ...t, done: true } : t));
+    const fd = new FormData();
+    fd.set("id", id);
+    await toggleOwnerTask(fd);
+  }
+
+  async function onDelete(id: string) {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    const fd = new FormData();
+    fd.set("id", id);
+    await deleteOwnerTask(fd);
   }
 
   return (
@@ -41,27 +59,23 @@ export default function OwnerSidebarTodos({ initialTasks }: { initialTasks: Owne
         ) : (
           pending.map((t) => (
             <li key={t.id} className="flex items-start gap-2 rounded-md px-1 py-1 hover:bg-white/5">
-              <form action={toggleOwnerTask}>
-                <input type="hidden" name="id" value={t.id} />
-                <button
-                  type="submit"
-                  className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded border border-[var(--sidebar-divider)] text-[10px]"
-                  aria-label="Mark done"
-                >
-                  ○
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={() => onToggle(t.id)}
+                className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded border border-[var(--sidebar-divider)] text-[10px]"
+                aria-label="Mark done"
+              >
+                ○
+              </button>
               <span className="min-w-0 flex-1 leading-snug text-[var(--sidebar-text)]">{t.title}</span>
-              <form action={deleteOwnerTask}>
-                <input type="hidden" name="id" value={t.id} />
-                <button
-                  type="submit"
-                  className="text-[10px] text-[var(--sidebar-text)] opacity-55 hover:opacity-100"
-                  aria-label="Remove task"
-                >
-                  ✕
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={() => onDelete(t.id)}
+                className="text-[10px] text-[var(--sidebar-text)] opacity-55 hover:opacity-100"
+                aria-label="Remove task"
+              >
+                ✕
+              </button>
             </li>
           ))
         )}
