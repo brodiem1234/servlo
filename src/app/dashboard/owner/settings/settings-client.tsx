@@ -1148,6 +1148,59 @@ export function IntegrationsTab({ stripeConnected }: IntegrationsTabProps) {
 
 // WelcomeOverlay removed — onboarding tour now lives on dashboard only (see onboarding-tour.tsx)
 
+// ── Demo Data Section ───────────────────────────────────────────────────────
+
+function DemoDataSection() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  async function handleSeed() {
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/seed-demo", { method: "POST" });
+      const data = await res.json() as { skipped?: boolean; ok?: boolean; seeded?: Record<string, number> };
+      if (data.skipped) {
+        setResult("Demo data already loaded.");
+      } else if (data.ok) {
+        const counts = data.seeded ?? {};
+        setResult(
+          `✅ Demo data loaded! Added ${counts.clients ?? 0} clients, ${counts.jobs ?? 0} jobs, ${counts.invoices ?? 0} invoices, ${counts.quotes ?? 0} quotes, and more.`
+        );
+      } else {
+        setResult("Something went wrong. Try again.");
+      }
+    } catch {
+      setResult("Failed to load demo data.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-blue-200 dark:border-blue-900/40 p-5">
+      <h3 className="font-semibold text-[var(--text-primary)] mb-1">Load demo data</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Populate your account with realistic sample data — clients, jobs, invoices, quotes, vehicles, and more — so you
+        can explore SERVLO without entering real records.
+      </p>
+      {result && (
+        <p className={`mb-3 text-sm rounded-md px-3 py-2 ${result.startsWith("✅") ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300" : "bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300"}`}>
+          {result}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={handleSeed}
+        disabled={loading}
+        className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors"
+      >
+        {loading ? "Loading…" : "Load demo data"}
+      </button>
+    </div>
+  );
+}
+
 // ── Danger Zone Tab (ITEM 11) ───────────────────────────────────────────────
 
 type DangerZoneTabProps = {
@@ -1252,6 +1305,9 @@ export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
           </div>
         ) : null}
       </div>
+
+      {/* Demo data */}
+      <DemoDataSection />
 
       {/* Delete account */}
       <div className="rounded-lg border border-red-200 dark:border-red-900/40 p-5">
