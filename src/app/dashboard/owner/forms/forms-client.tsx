@@ -161,7 +161,7 @@ export function FormsClient({ initialForms, templates, createFromTemplateAction,
             <div className="space-y-3">
               {editFields.map((field, idx) => (
                 <div key={field.id} className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3 space-y-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <div className="flex flex-col gap-0.5">
                       <button type="button" onClick={() => moveField(idx, -1)} disabled={idx === 0} className="text-[var(--text-muted)] text-xs leading-none hover:text-[var(--text-primary)] disabled:opacity-30">▲</button>
                       <button type="button" onClick={() => moveField(idx, 1)} disabled={idx === editFields.length - 1} className="text-[var(--text-muted)] text-xs leading-none hover:text-[var(--text-primary)] disabled:opacity-30">▼</button>
@@ -177,7 +177,7 @@ export function FormsClient({ initialForms, templates, createFromTemplateAction,
                       ))}
                     </select>
                     <input
-                      className="h-8 flex-1 rounded border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+                      className="h-8 min-w-0 flex-1 rounded border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
                       placeholder="Field label"
                       value={field.label}
                       onChange={(e) => updateField(field.id, { label: e.target.value })}
@@ -273,7 +273,7 @@ export function FormsClient({ initialForms, templates, createFromTemplateAction,
             Build safety checklists, sign-off sheets, and job forms. Attach them to jobs for field completion.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setView("templates")}
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"

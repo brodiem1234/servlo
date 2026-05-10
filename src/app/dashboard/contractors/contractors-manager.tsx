@@ -188,7 +188,7 @@ export default function ContractorsManager({ contractors, createContractorAction
         <h1 className="mb-3 text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
           Team
         </h1>
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {TEAM_TABS.map((t) => (
             <a
               key={t.id}

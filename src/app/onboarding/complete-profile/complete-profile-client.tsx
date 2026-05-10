@@ -29,8 +29,8 @@ export function CompleteProfileClient({ flash, signedIn, email }: Props) {
   const banner = state.error ?? flash;
 
   return (
-    <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-6 py-16">
-      <div className="auth-card mx-auto w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    <main className="auth-theme flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-16">
+      <div className="auth-card mx-auto w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
         <h1 className="text-2xl font-bold text-white">Finish setting up your account</h1>
         <p className="mt-2 text-sm text-slate-400">
           If signup stopped early, retry completes your profile and business record (brand colour and demo data). Sign in first if this isn&apos;t your device.

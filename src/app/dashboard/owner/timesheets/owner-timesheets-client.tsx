@@ -137,9 +137,9 @@ export default function OwnerTimesheetsClient({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Tab buttons */}
-        <div className="flex gap-1 border-b border-[var(--border)]">
+        <div className="flex gap-1 overflow-x-auto border-b border-[var(--border)]">
           {tabs.map((tab) => (
             <button
               key={tab.id}

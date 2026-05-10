@@ -37,7 +37,7 @@ export default async function FinancePage({ searchParams }: Props) {
         <h1 className="mb-3 text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
           Finance
         </h1>
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {availableTabs.map((t) => (
             <Link
               key={t.id}
@@ -61,8 +61,8 @@ export default async function FinancePage({ searchParams }: Props) {
 
       {/* Quick access cards */}
       <div className="mt-8 space-y-3">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between gap-4">
-          <div>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[var(--text-primary)]">Pricebook</p>
             <p className="text-xs text-[var(--text-muted)]">Manage reusable materials, labour rates, and service items.</p>
           </div>
@@ -73,8 +73,8 @@ export default async function FinancePage({ searchParams }: Props) {
             Open Pricebook
           </Link>
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between gap-4">
-          <div>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-[var(--text-primary)]">BAS Helper ✨</p>
             <p className="text-xs text-[var(--text-muted)]">Estimate your quarterly BAS figures from your invoice and expense data.</p>
           </div>
