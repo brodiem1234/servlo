@@ -231,16 +231,18 @@ function AddReferralModal({
 export default function ReferralManager({
   referrals: initialReferrals,
   stats,
+  referralUrl: propReferralUrl,
 }: {
   referrals: Referral[];
   stats: Stats;
+  referralUrl?: string;
 }) {
   const [referrals, setReferrals] = useState(initialReferrals);
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const referralUrl = "https://servlo.com.au/refer/YOUR-CODE";
+  const referralUrl = propReferralUrl ?? "https://servlo.com.au/ref/YOUR-CODE";
 
   function addToast(message: string, type: "success" | "error") {
     const id = Date.now();

@@ -59,7 +59,7 @@ export default async function ReportsPage() {
 
     // Completed jobs for last 12 months (for job count)
     sb.from("jobs")
-      .select("id, status, completed_at, created_at, is_demo")
+      .select("id, status, created_at, is_demo")
       .eq("owner_id", user.id)
       .eq("status", "completed")
       .gte("created_at", twelveMonthsAgo.toISOString()),
@@ -108,7 +108,7 @@ export default async function ReportsPage() {
 
   for (const job of completedJobs ?? []) {
     if ((job as any).is_demo) continue;
-    const created = ((job as any).completed_at ?? (job as any).created_at) as string;
+    const created = (job as any).created_at as string;
     const ym = created.slice(0, 7);
     if (monthlyMap[ym]) {
       monthlyMap[ym].jobs += 1;

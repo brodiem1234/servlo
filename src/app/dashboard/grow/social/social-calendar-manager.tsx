@@ -414,6 +414,7 @@ export default function SocialCalendarManager({
   const today = new Date();
   const [view, setView] = useState<View>("list");
   const [showModal, setShowModal] = useState(false);
+  const [generatingBatch, setGeneratingBatch] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [posts, addPost] = useOptimistic(
     initialPosts,
@@ -437,6 +438,32 @@ export default function SocialCalendarManager({
   function handleCreated(post: SocialPost) {
     addPost(post);
   }
+
+  const handleBatchGenerate = async () => {
+    if (generatingBatch) return;
+    setGeneratingBatch(true);
+    try {
+      const res = await fetch("/api/grow/generate-posts-batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessName, suburb, state: bizState }),
+      });
+      const json = await res.json() as { posts?: SocialPost[]; count?: number; error?: string };
+      if (!res.ok) {
+        showToast(json.error ?? "Failed to generate posts", "error");
+        return;
+      }
+      const newPosts = json.posts ?? [];
+      for (const post of newPosts) {
+        addPost(post);
+      }
+      showToast(`Generated ${newPosts.length} posts for the next month!`, "success");
+    } catch {
+      showToast("Network error, please try again", "error");
+    } finally {
+      setGeneratingBatch(false);
+    }
+  };
 
   async function handleDelete(id: string) {
     setDeletedIds((prev) => new Set([...prev, id]));
@@ -542,6 +569,15 @@ export default function SocialCalendarManager({
                 </button>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={() => void handleBatchGenerate()}
+              disabled={generatingBatch}
+              className="flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50"
+              style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+            >
+              {generatingBatch ? "Generating…" : "✨ Generate month"}
+            </button>
             <button
               type="button"
               onClick={() => setShowModal(true)}

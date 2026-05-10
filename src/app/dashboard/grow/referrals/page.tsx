@@ -37,5 +37,10 @@ export default async function ReferralProgramPage() {
 
   const stats = { totalReferrals, convertedCount, pendingCount, totalRewardsValue };
 
-  return <ReferralManager referrals={referrals} stats={stats} />;
+  // Generate a stable referral code from the first 8 chars of user.id
+  const referralCode = user.id.replace(/-/g, "").slice(0, 8).toUpperCase();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const referralUrl = `${appUrl}/ref/${referralCode}`;
+
+  return <ReferralManager referrals={referrals} stats={stats} referralUrl={referralUrl} />;
 }

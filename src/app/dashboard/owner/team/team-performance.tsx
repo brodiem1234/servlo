@@ -24,7 +24,7 @@ type Timesheet = {
 
 type Job = {
   id: string;
-  assigned_to: string | null;
+  employee_id: string | null;
   status: string | null;
   scheduled_start: string | null;
 };
@@ -66,7 +66,7 @@ function hoursForEmployee(sheets: Timesheet[], employeeId: string, since: Date):
 
 function jobsForEmployee(jobs: Job[], employeeId: string, since: Date): number {
   return jobs.filter((j) => {
-    if (j.assigned_to !== employeeId) return false;
+    if (j.employee_id !== employeeId) return false;
     const d = j.scheduled_start ? new Date(j.scheduled_start) : null;
     return d && d >= since && j.status === "completed";
   }).length;

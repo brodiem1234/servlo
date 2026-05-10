@@ -67,7 +67,7 @@ export default async function TeamPage({ searchParams }: Props) {
         ),
         safeFetch(() =>
           supabase.from("jobs")
-            .select("id, assigned_to, status, scheduled_start")
+            .select("id, employee_id, status, scheduled_start")
             .eq("owner_id", user.id)
             .is("deleted_at", null)
             .gte("scheduled_start", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())

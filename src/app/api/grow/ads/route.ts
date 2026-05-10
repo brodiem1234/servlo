@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       ad_copy: ad_copy || {},
       targeting: targeting || {},
     })
-    .select("id, name, platform, objective, status, budget_daily, budget_total, spend, impressions, clicks, conversions, start_date, end_date, created_at")
+    .select("id, name, platform, objective, status, budget_daily, budget_total, spend, impressions, clicks, conversions, start_date, end_date, ad_copy, targeting, created_at")
     .single();
   if (error) {
     if (error.code === "42P01") return NextResponse.json({ error: "Table not ready. Apply migrations." }, { status: 503 });
