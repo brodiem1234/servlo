@@ -355,13 +355,13 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats, bu
 
       {/* Tabs */}
       <div className="rounded-xl border" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-        <div className="flex border-b" style={{ borderColor: "var(--border)" }}>
+        <div className="flex overflow-x-auto border-b" style={{ borderColor: "var(--border)" }}>
           {TABS.map((t) => (
             <button
               key={t.key}
               type="button"
   onClick={() => t.key === "create" ? handleOpenCreate() : setActiveTab(t.key)}
-              className="px-5 py-3 text-sm font-semibold transition-colors"
+              className="shrink-0 px-5 py-3 text-sm font-semibold transition-colors"
               style={{
                 borderBottom: activeTab === t.key ? "2px solid #8B5CF6" : "2px solid transparent",
                 color: activeTab === t.key ? "#A78BFA" : "var(--text-muted)",
@@ -442,7 +442,7 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats, bu
                         </div>
 
                         {/* Metrics */}
-                        <div className="grid grid-cols-4 gap-2 rounded-lg p-2 text-center text-xs" style={{ background: "rgba(139,92,246,0.06)" }}>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-lg p-2 text-center text-xs" style={{ background: "rgba(139,92,246,0.06)" }}>
                           {[
                             { label: "Impressions", val: fmtNum(c.impressions) },
                             { label: "Clicks", val: fmtNum(c.clicks) },
@@ -545,7 +545,7 @@ export default function AdStudioManager({ campaigns: initialCampaigns, stats, bu
                   </React.Fragment>
                 ))}
               </div>
-              <div className="flex justify-between text-xs" style={{ color: "var(--text-muted)" }}>
+              <div className="hidden sm:flex justify-between text-xs" style={{ color: "var(--text-muted)" }}>
                 <span>Platform & Goal</span>
                 <span>Budget & Schedule</span>
                 <span>Ad Creative</span>

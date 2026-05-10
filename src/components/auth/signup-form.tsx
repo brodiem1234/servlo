@@ -1356,12 +1356,12 @@ export function SignupForm() {
               ) : null}
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-                <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
+                <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
                 <div className="flex gap-2">
-                  <Button type="button" variant="dark-ghost" onClick={handleContinueFromIndustries} className="text-slate-400 text-sm">
+                  <Button type="button" variant="dark-ghost" onClick={handleContinueFromIndustries} className="flex-1 text-slate-400 text-sm sm:flex-none">
                     Skip
                   </Button>
-                  <Button type="button" onClick={handleContinueFromIndustries} className={accentBtn}>Continue</Button>
+                  <Button type="button" onClick={handleContinueFromIndustries} className={`flex-1 sm:flex-none ${accentBtn}`}>Continue</Button>
                 </div>
               </div>
             </div>
@@ -1530,7 +1530,7 @@ export function SignupForm() {
                     />
                     <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <p className="text-base font-bold text-white">{FULL_PLATFORM.name}</p>
                           <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-500/30">
                             {FULL_PLATFORM.badge}
@@ -1573,8 +1573,8 @@ export function SignupForm() {
               ) : null}
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-                <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
-                <Button type="button" onClick={handleContinueFromProducts} className={accentBtn}>Continue</Button>
+                <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
+                <Button type="button" onClick={handleContinueFromProducts} className={`w-full sm:w-auto ${accentBtn}`}>Continue</Button>
               </div>
             </div>
 
@@ -1658,8 +1658,8 @@ export function SignupForm() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-                <Button type="button" variant="dark-ghost" onClick={handleBack}>Back</Button>
-                <Button type="button" onClick={handleContinueFromPlanTier} className={accentBtn}>Continue</Button>
+                <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
+                <Button type="button" onClick={handleContinueFromPlanTier} className={`w-full sm:w-auto ${accentBtn}`}>Continue</Button>
               </div>
             </div>
 
@@ -1736,7 +1736,7 @@ export function SignupForm() {
               ) : null}
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-                <Button type="button" variant="dark-ghost" onClick={handleBack} disabled={ownerSubmitting}>
+                <Button type="button" variant="dark-ghost" onClick={handleBack} disabled={ownerSubmitting} className="w-full sm:w-auto">
                   Back
                 </Button>
                 <Button

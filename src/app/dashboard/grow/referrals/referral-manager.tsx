@@ -132,7 +132,7 @@ function AddReferralModal({
             </div>
           ))}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
                 Reward Type
@@ -413,10 +413,10 @@ export default function ReferralManager({
         </div>
       ) : (
         <div
-          className="rounded-xl border overflow-hidden"
+          className="rounded-xl border overflow-x-auto"
           style={{ borderColor: "var(--border)" }}
         >
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[600px] text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)", backgroundColor: "rgba(255,255,255,0.02)" }}>
                 {["Name", "Contact", "Status", "Reward", "Date", "Actions"].map((h) => (

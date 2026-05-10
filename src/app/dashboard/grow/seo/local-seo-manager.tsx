@@ -159,10 +159,10 @@ export function LocalSeoManager({ business, industryLabel, seoScore, reviewCount
   return (
     <div className="space-y-5">
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-[var(--border)]">
+      <div className="flex overflow-x-auto gap-1 border-b border-[var(--border)]">
         {([["overview", "Overview"], ["keywords", "Keywords"], ["citations", "Directories"], ["checklist", "Action Plan"]] as const).map(([id, label]) => (
           <button key={id} onClick={() => setActiveTab(id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? "border-[#8B5CF6] text-[#8B5CF6]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+            className={`shrink-0 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? "border-[#8B5CF6] text-[#8B5CF6]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
           >{label}</button>
         ))}
       </div>

@@ -666,7 +666,7 @@ export function EmailCampaignsManager({
                     type="datetime-local"
                     value={formScheduledAt}
                     onChange={(e) => setFormScheduledAt(e.target.value)}
-                    className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
+                    className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500/50"
                     style={{
                       background: "var(--bg-secondary)",
                       borderColor: "var(--border)",
@@ -677,7 +677,7 @@ export function EmailCampaignsManager({
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-1">
+              <div className="flex flex-wrap gap-3 pt-1">
                 <button
                   type="submit"
                   disabled={submitting}
