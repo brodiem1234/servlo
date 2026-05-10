@@ -262,20 +262,20 @@ export default function OwnerShell({
               <p className="text-sm font-semibold text-[var(--text-primary)]">SERVLO CORE</p>
             </div>
             <div className="flex items-center gap-1.5 md:gap-2">
-              {/* Tour trigger — mobile only */}
+              {/* Tour */}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("servlo:start-tour"))}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10 md:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10"
                 aria-label="Start tour"
               >
                 <Compass size={18} />
               </button>
-              {/* Help — mobile only */}
+              {/* Help */}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("servlo:open-help"))}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10 md:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10"
                 aria-label="Help"
               >
                 <HelpCircle size={18} />

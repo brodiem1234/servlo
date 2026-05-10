@@ -190,21 +190,21 @@ export default function SafeShell({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
-              {/* Tour trigger — mobile only */}
+              {/* Tour trigger */}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("servlo:start-tour"))}
-                className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10"
                 style={{ color: "var(--text-secondary)" }}
                 aria-label="Start tour"
               >
                 <Compass size={18} />
               </button>
-              {/* Help — mobile only */}
+              {/* Help */}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("servlo:open-help"))}
-                className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-white/10"
                 style={{ color: "var(--text-secondary)" }}
                 aria-label="Help"
               >

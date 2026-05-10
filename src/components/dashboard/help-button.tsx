@@ -219,7 +219,7 @@ export function HelpButton() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Help"
-        className="fixed bottom-20 right-4 z-50 hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)] shadow-lg transition-colors hover:text-[var(--accent-color)] md:bottom-6 md:flex"
+        className="hidden"
       >
         {open ? <X size={18} /> : <HelpCircle size={18} />}
       </button>
@@ -233,7 +233,7 @@ export function HelpButton() {
             onClick={() => setOpen(false)}
             aria-label="Close help"
           />
-          <div className="fixed bottom-32 right-4 z-[60] w-80 overflow-hidden rounded-xl shadow-2xl md:bottom-20" style={{ background: "#1a1f2e", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" }}>
+          <div className="fixed bottom-4 right-4 z-[60] w-80 overflow-hidden rounded-xl shadow-2xl md:bottom-16" style={{ background: "#1a1f2e", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" }}>
 
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
