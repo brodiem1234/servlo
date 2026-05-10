@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
         type: "weekly_summary",
         title: "Your week in review",
         body,
-        href: "/dashboard/reports",
+        link: "/dashboard/reports",
         read: false,
       });
 
