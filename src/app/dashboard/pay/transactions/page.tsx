@@ -62,7 +62,7 @@ export default async function PayTransactionsPage() {
     <section className="space-y-6">
       {/* Launch banner */}
       <div
-        className="flex items-center justify-between gap-4 rounded-xl px-5 py-4"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-5 py-4"
         style={{ background: COLOR_BG, border: `1px solid ${COLOR_BORDER}` }}
       >
         <p className="text-sm font-semibold" style={{ color: COLOR_LIGHT }}>

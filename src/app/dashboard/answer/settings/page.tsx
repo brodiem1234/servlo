@@ -19,7 +19,7 @@ export default async function AnswerSettingsPage() {
     <section className="space-y-6">
       {/* Launch banner */}
       <div
-        className="flex items-center justify-between gap-4 rounded-xl px-5 py-4"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-5 py-4"
         style={{ background: COLOR_BG, border: `1px solid ${COLOR_BORDER}` }}
       >
         <p className="text-sm font-semibold" style={{ color: COLOR_LIGHT }}>
@@ -85,7 +85,7 @@ export default async function AnswerSettingsPage() {
                     type="time"
                     defaultValue="08:00"
                     disabled
-                    className="rounded-lg border px-3 py-2 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm"
                     style={{
                       background: "var(--bg-secondary)",
                       borderColor: "var(--border)",
@@ -97,7 +97,7 @@ export default async function AnswerSettingsPage() {
                     type="time"
                     defaultValue="17:00"
                     disabled
-                    className="rounded-lg border px-3 py-2 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm"
                     style={{
                       background: "var(--bg-secondary)",
                       borderColor: "var(--border)",
@@ -115,7 +115,7 @@ export default async function AnswerSettingsPage() {
                     type="time"
                     defaultValue="08:00"
                     disabled
-                    className="rounded-lg border px-3 py-2 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm"
                     style={{
                       background: "var(--bg-secondary)",
                       borderColor: "var(--border)",
@@ -127,7 +127,7 @@ export default async function AnswerSettingsPage() {
                     type="time"
                     defaultValue="12:00"
                     disabled
-                    className="rounded-lg border px-3 py-2 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm"
                     style={{
                       background: "var(--bg-secondary)",
                       borderColor: "var(--border)",
