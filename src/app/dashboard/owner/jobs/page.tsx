@@ -11,6 +11,7 @@ import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 import { canCreateJob } from "@/lib/plan-limits";
 import { fireJobAutomations } from "@/lib/job-automations";
 import { sendJobCompletionSurvey } from "@/lib/job-survey";
+import { getNextJobNumber } from "@/lib/sequences";
 
 export const dynamic = "force-dynamic";
 
@@ -136,12 +137,16 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
       );
     }
 
+    // Auto-assign job number
+    const jobNumber = await getNextJobNumber(sb, owner.id).catch(() => null);
+
     const { data: inserted, error } = await sb
       .from("jobs")
       .insert({
         owner_id: owner.id,
         is_demo: false,
         status: "scheduled",
+        job_number: jobNumber,
         title: String(formData.get("title") ?? ""),
         description: String(formData.get("description") ?? ""),
         client_id: String(formData.get("client_id") ?? "") || null,
@@ -380,6 +385,26 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
 
         // Send satisfaction survey to client (fire-and-forget)
         sendJobCompletionSurvey(owner.id, id, job.client_id, job.title).catch(() => {});
+
+        // Queue auto follow-up sequence (fire-and-forget)
+        {
+          const now2 = new Date();
+          const addDays2 = (d: Date, n: number) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
+          const appUrl2 = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+          const clientNameForSeq = job.client_id
+            ? (await sb.from("clients").select("full_name").eq("id", job.client_id).maybeSingle()).data?.full_name ?? "there"
+            : "there";
+          void (async () => {
+            try {
+              await sb.from("job_follow_up_queue").insert([
+                { owner_id: owner.id, job_id: id, client_id: job.client_id, send_at: now2.toISOString(), type: "completion", subject: `Job completed: ${job.title}`, body: `Hi ${clientNameForSeq},\n\nYour job "${job.title}" has been completed. Thank you for your business!`, channel: "email", status: "pending" },
+                { owner_id: owner.id, job_id: id, client_id: job.client_id, send_at: addDays2(now2, 1).toISOString(), type: "survey", subject: `How did we do? — ${job.title}`, body: `Hi ${clientNameForSeq}, we'd love your feedback: ${appUrl2}/feedback/${id}`, channel: "email", status: "pending" },
+                { owner_id: owner.id, job_id: id, client_id: job.client_id, send_at: addDays2(now2, 3).toISOString(), type: "review_request", subject: "Would you leave us a Google review?", body: `Hi ${clientNameForSeq}, a review would mean the world to us: ${appUrl2}/review`, channel: "email", status: "pending" },
+                { owner_id: owner.id, job_id: id, client_id: job.client_id, send_at: addDays2(now2, 90).toISOString(), type: "maintenance_reminder", subject: "Time for your next maintenance check?", body: `Hi ${clientNameForSeq}, it's been 3 months since "${job.title}". Book now: ${appUrl2}/book`, channel: "email", status: "pending" },
+              ]);
+            } catch { /* table may not exist yet */ }
+          })();
+        }
       }
     }
 

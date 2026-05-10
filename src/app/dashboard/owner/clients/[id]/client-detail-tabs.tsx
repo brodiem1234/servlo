@@ -175,6 +175,111 @@ const ACTIVITY_ICONS: Record<ActivityItem["type"], string> = {
   note: "📝",
 };
 
+// ─── LTV Predictor ───────────────────────────────────────────────────────────
+
+type LtvPrediction = {
+  currentLtv: number;
+  predictedLtv12m: number;
+  avgJobValue: number;
+  jobsPerYear: number;
+  daysSinceLastJob: number | null;
+  riskLevel: "low" | "medium" | "high";
+  riskReason: string;
+};
+
+function computeLtv(jobs: Job[], invoices: Invoice[], totalPaid: number): LtvPrediction {
+  const now = Date.now();
+
+  // Average job value from invoices
+  const paidInvoices = invoices.filter((i) => (i.status ?? "").toLowerCase() === "paid");
+  const avgJobValue = paidInvoices.length > 0
+    ? paidInvoices.reduce((s, i) => s + Number(i.total ?? 0), 0) / paidInvoices.length
+    : jobs.length > 0 ? totalPaid / jobs.length : 0;
+
+  // Job frequency
+  const jobDates = jobs
+    .map((j) => j.scheduled_date ? new Date(j.scheduled_date).getTime() : null)
+    .filter((d): d is number => d !== null)
+    .sort((a, b) => a - b);
+
+  let jobsPerYear = 0;
+  let daysSinceLastJob: number | null = null;
+
+  if (jobDates.length >= 2) {
+    const spanMs = jobDates[jobDates.length - 1] - jobDates[0];
+    const spanYears = spanMs / (1000 * 60 * 60 * 24 * 365);
+    jobsPerYear = spanYears > 0 ? (jobDates.length - 1) / spanYears : jobDates.length;
+  } else if (jobDates.length === 1) {
+    jobsPerYear = 2; // assume 2/year as conservative estimate
+  }
+
+  if (jobDates.length > 0) {
+    daysSinceLastJob = Math.floor((now - jobDates[jobDates.length - 1]) / (1000 * 60 * 60 * 24));
+  }
+
+  const predictedLtv12m = avgJobValue * Math.max(jobsPerYear, 0);
+
+  // Churn risk
+  let riskLevel: LtvPrediction["riskLevel"] = "low";
+  let riskReason = "Regular client — low churn risk";
+  if (daysSinceLastJob === null || jobs.length === 0) {
+    riskLevel = "medium";
+    riskReason = "No job history — potential new lead";
+  } else if (daysSinceLastJob > 365) {
+    riskLevel = "high";
+    riskReason = `No activity in ${Math.floor(daysSinceLastJob / 30)}+ months`;
+  } else if (daysSinceLastJob > 180) {
+    riskLevel = "medium";
+    riskReason = `Last job ${Math.floor(daysSinceLastJob / 30)} months ago`;
+  }
+
+  return { currentLtv: totalPaid, predictedLtv12m, avgJobValue, jobsPerYear, daysSinceLastJob, riskLevel, riskReason };
+}
+
+function LtvPredictorCard({ ltv }: { ltv: LtvPrediction }) {
+  const riskColor = ltv.riskLevel === "low"
+    ? { bg: "rgb(34 197 94 / 0.1)", text: "rgb(34 197 94)", border: "rgb(34 197 94 / 0.25)" }
+    : ltv.riskLevel === "medium"
+    ? { bg: "rgb(245 158 11 / 0.1)", text: "rgb(251 191 36)", border: "rgb(245 158 11 / 0.25)" }
+    : { bg: "rgb(239 68 68 / 0.1)", text: "rgb(248 113 113)", border: "rgb(239 68 68 / 0.25)" };
+
+  return (
+    <article className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-base font-semibold text-[var(--text-primary)]">🤖 Client Intelligence</h3>
+        <span
+          className="rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+          style={{ background: riskColor.bg, color: riskColor.text, borderColor: riskColor.border }}
+        >
+          {ltv.riskLevel === "low" ? "✓ Low risk" : ltv.riskLevel === "medium" ? "⚠ Medium risk" : "⚡ High risk"}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Lifetime Value</p>
+          <p className="mt-1 text-lg font-bold text-[var(--text-primary)]">{fmt(ltv.currentLtv)}</p>
+        </div>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Predicted 12m</p>
+          <p className="mt-1 text-lg font-bold" style={{ color: "var(--accent-color)" }}>{fmt(ltv.predictedLtv12m)}</p>
+        </div>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Avg Job Value</p>
+          <p className="mt-1 text-lg font-bold text-[var(--text-primary)]">{fmt(ltv.avgJobValue)}</p>
+        </div>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Jobs / Year</p>
+          <p className="mt-1 text-lg font-bold text-[var(--text-primary)]">{ltv.jobsPerYear.toFixed(1)}</p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs" style={{ color: riskColor.text }}>
+        {ltv.riskReason}
+        {ltv.daysSinceLastJob !== null ? ` · Last job ${ltv.daysSinceLastJob} day${ltv.daysSinceLastJob !== 1 ? "s" : ""} ago` : ""}
+      </p>
+    </article>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function ClientDetailTabs({ client, jobs, invoices, quotes, stats, updateNotesAction, acceptQuoteAction, declineQuoteAction }: Props) {
@@ -211,6 +316,7 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes, stats
   };
 
   const activityItems = buildActivity(jobs, invoices, quotes, Boolean(client.notes), client.full_name);
+  const ltv = computeLtv(jobs, invoices, stats.totalPaid);
 
   const tabClass = (t: TabKey) =>
     `rounded px-3 py-1.5 text-sm font-medium transition ${tab === t
@@ -298,6 +404,9 @@ export default function ClientDetailTabs({ client, jobs, invoices, quotes, stats
               </div>
             ))}
           </div>
+
+          {/* LTV / Intelligence */}
+          <LtvPredictorCard ltv={ltv} />
 
           {/* Client info */}
           <article className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5 shadow-sm">

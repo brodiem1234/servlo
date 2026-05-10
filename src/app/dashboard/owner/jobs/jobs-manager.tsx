@@ -35,6 +35,7 @@ type Job = {
   hourly_rate?: number | null;
   revenue?: number | null;
   recurrence_rule?: string | null;
+  checklist?: Array<{ id: string; text: string; done: boolean }> | null;
   digital_signoff_image?: string | null;
   signoff_name?: string | null;
   signoff_at?: string | null;
@@ -213,7 +214,9 @@ export default function JobsManager({
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
-  const [activeTab, setActiveTab] = useState<"details" | "costing" | "recurring" | "signoff" | "photos">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "costing" | "checklist" | "recurring" | "signoff" | "photos">("details");
+  const [checklistItems, setChecklistItems] = useState<Array<{ id: string; text: string; done: boolean }>>([]);
+  const [newCheckItem, setNewCheckItem] = useState("");
   const [photoLabel, setPhotoLabel] = useState<"before" | "after">("before");
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [quickAdd, setQuickAdd] = useState<null | "client" | "employee">(null);
@@ -227,6 +230,7 @@ export default function JobsManager({
   const [employeeOptions, setEmployeeOptions] = useState<RefOpt[]>(employees);
   const [quickClientSaving, setQuickClientSaving] = useState(false);
   const [quickEmployeeSaving, setQuickEmployeeSaving] = useState(false);
+  const [suggestingTitle, setSuggestingTitle] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceFreq, setRecurrenceFreq] = useState("weekly");
   const [createRecurringInstances, setCreateRecurringInstances] = useState(false);
@@ -320,6 +324,8 @@ export default function JobsManager({
     setIsRecurring(false);
     setRecurrenceFreq("weekly");
     setCreateRecurringInstances(false);
+    setChecklistItems([]);
+    setNewCheckItem("");
   };
 
   const statusPillClasses: Record<string, string> = {
@@ -664,6 +670,9 @@ export default function JobsManager({
     });
     setActiveTab("details");
     setQuickAdd(null);
+    // Load checklist from job
+    const rawChecklist = job.checklist;
+    setChecklistItems(Array.isArray(rawChecklist) ? rawChecklist : []);
     setOpen(true);
   }
 
@@ -1441,6 +1450,9 @@ export default function JobsManager({
             <div className="mt-3 flex flex-wrap gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)] p-1 text-sm w-fit">
               <button type="button" onClick={() => setActiveTab("details")} className={`rounded px-3 py-1 ${activeTab === "details" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Details</button>
               <button type="button" onClick={() => setActiveTab("costing")} className={`rounded px-3 py-1 ${activeTab === "costing" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Costing</button>
+              <button type="button" onClick={() => setActiveTab("checklist")} className={`rounded px-3 py-1 ${activeTab === "checklist" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>
+                Checklist{checklistItems.length > 0 ? ` (${checklistItems.filter(i => i.done).length}/${checklistItems.length})` : ""}
+              </button>
               <button type="button" onClick={() => setActiveTab("recurring")} className={`rounded px-3 py-1 ${activeTab === "recurring" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Recurring</button>
               <button type="button" onClick={() => setActiveTab("signoff")} className={`rounded px-3 py-1 ${activeTab === "signoff" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Sign-off</button>
               <button type="button" onClick={() => setActiveTab("photos")} className={`rounded px-3 py-1 ${activeTab === "photos" ? "bg-[var(--accent-color)] text-white" : "text-[var(--text-primary)]"}`}>Photos</button>
@@ -1458,6 +1470,8 @@ export default function JobsManager({
                   <input type="hidden" name="revenue_amount" value={values.revenue_amount} />
                 </>
               ) : null}
+              {/* Always carry checklist JSON */}
+              <input type="hidden" name="checklist" value={JSON.stringify(checklistItems)} />
               {/* Always carry core fields so they survive costing-only saves */}
               {activeTab !== "details" ? (
                 <>
@@ -1478,7 +1492,39 @@ export default function JobsManager({
               ) : null}
               {activeTab === "details" ? (
                 <>
-              <input name="title" value={values.title} onChange={(e) => setValues((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="h-10 rounded border px-3" />
+              <div className="relative sm:col-span-2 flex gap-2">
+                <input
+                  name="title"
+                  value={values.title}
+                  onChange={(e) => setValues((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="Job title"
+                  className="h-10 flex-1 rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
+                />
+                <button
+                  type="button"
+                  disabled={suggestingTitle}
+                  onClick={async () => {
+                    if (!values.description && !values.job_type) return;
+                    setSuggestingTitle(true);
+                    try {
+                      const res = await fetch("/api/ai/suggest-job-title", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ description: values.description, job_type: values.job_type }),
+                      });
+                      const json = await res.json() as { title?: string };
+                      if (json.title) setValues((p) => ({ ...p, title: json.title! }));
+                    } finally {
+                      setSuggestingTitle(false);
+                    }
+                  }}
+                  title="AI suggest title from description"
+                  className="shrink-0 flex items-center gap-1 rounded border border-[var(--border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-40 transition-colors"
+                  style={{ background: "var(--bg-secondary)" }}
+                >
+                  {suggestingTitle ? "…" : "✨ AI"}
+                </button>
+              </div>
               <input name="job_type" value={values.job_type} onChange={(e) => setValues((p) => ({ ...p, job_type: e.target.value }))} placeholder="Job type" className="h-10 rounded border px-3" />
               <select
                 name="client_id"
@@ -1604,35 +1650,125 @@ export default function JobsManager({
                     const materials = Number(values.materials_cost || 0);
                     const hours = Number(values.labour_hours || 0);
                     const rate = Number(values.hourly_rate || 0);
-                    const totalCost = materials + hours * rate;
+                    const labourCost = hours * rate;
+                    const totalCost = materials + labourCost;
                     const revenue = Number(values.revenue_amount || 0);
                     const profit = revenue - totalCost;
                     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+                    const marginColor = margin >= 40 ? "#10B981" : margin >= 20 ? "#F59E0B" : margin >= 0 ? "#EF4444" : "#EF4444";
+                    const marginLabel = margin >= 40 ? "Healthy ✓" : margin >= 20 ? "Acceptable" : margin >= 0 ? "Low — review pricing" : "Loss-making ⚠";
+                    const barWidth = Math.max(0, Math.min(100, margin));
                     return (
-                      <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3 space-y-1.5 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-[var(--text-muted)]">Total Cost</span>
-                          <span className="font-semibold text-[var(--text-primary)]">${totalCost.toFixed(2)}</span>
+                      <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-4 space-y-3 text-sm">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Profitability</p>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div className="rounded-lg bg-[var(--bg-primary)] p-2">
+                            <p className="text-[10px] text-[var(--text-muted)]">Cost</p>
+                            <p className="font-bold text-[var(--text-primary)]">${totalCost.toFixed(0)}</p>
+                          </div>
+                          <div className="rounded-lg bg-[var(--bg-primary)] p-2">
+                            <p className="text-[10px] text-[var(--text-muted)]">Revenue</p>
+                            <p className="font-bold text-[var(--text-primary)]">${revenue.toFixed(0)}</p>
+                          </div>
+                          <div className="rounded-lg p-2" style={{ background: `${marginColor}18` }}>
+                            <p className="text-[10px] text-[var(--text-muted)]">Profit</p>
+                            <p className="font-bold" style={{ color: marginColor }}>${profit.toFixed(0)}</p>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--text-muted)]">Revenue</span>
-                          <span className="font-semibold text-[var(--text-primary)]">${revenue.toFixed(2)}</span>
-                        </div>
-                        <div className="border-t border-[var(--border)] pt-1.5 flex justify-between">
-                          <span className="text-[var(--text-muted)]">Profit</span>
-                          <span className={`font-bold ${profit >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                            ${profit.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[var(--text-muted)]">Profit Margin</span>
-                          <span className={`font-bold ${margin >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                            {margin.toFixed(1)}%
-                          </span>
-                        </div>
+                        {revenue > 0 && (
+                          <div>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span style={{ color: marginColor }}>{marginLabel}</span>
+                              <span style={{ color: marginColor }} className="font-bold">{margin.toFixed(1)}% margin</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-[var(--bg-primary)] overflow-hidden">
+                              <div className="h-full rounded-full transition-all" style={{ width: `${barWidth}%`, background: marginColor }} />
+                            </div>
+                          </div>
+                        )}
+                        {totalCost > 0 && (
+                          <div className="flex justify-between text-xs text-[var(--text-muted)]">
+                            <span>Labour: ${labourCost.toFixed(0)}</span>
+                            <span>Materials: ${materials.toFixed(0)}</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => closeJobOverlay()} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)]">Cancel</button>
+                    <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Job"}</button>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeTab === "checklist" ? (
+                <div className="sm:col-span-2 space-y-4">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">Job Checklist</p>
+                  <p className="text-xs text-[var(--text-muted)]">Add tasks that need to be completed for this job. Check them off as you go.</p>
+                  {/* Add new item */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newCheckItem}
+                      onChange={(e) => setNewCheckItem(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const text = newCheckItem.trim();
+                          if (!text) return;
+                          setChecklistItems((prev) => [...prev, { id: crypto.randomUUID(), text, done: false }]);
+                          setNewCheckItem("");
+                        }
+                      }}
+                      placeholder="Add checklist item… (press Enter)"
+                      className="h-9 flex-1 rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const text = newCheckItem.trim();
+                        if (!text) return;
+                        setChecklistItems((prev) => [...prev, { id: crypto.randomUUID(), text, done: false }]);
+                        setNewCheckItem("");
+                      }}
+                      className="shrink-0 rounded border border-[var(--border)] px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition"
+                    >
+                      + Add
+                    </button>
+                  </div>
+                  {/* Checklist items */}
+                  {checklistItems.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-[var(--text-muted)]">No checklist items yet — add one above.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {checklistItems.map((item) => (
+                        <li key={item.id} className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2">
+                          <input
+                            type="checkbox"
+                            checked={item.done}
+                            onChange={() => setChecklistItems((prev) => prev.map((i) => i.id === item.id ? { ...i, done: !i.done } : i))}
+                            className="h-4 w-4 shrink-0 rounded accent-[var(--accent-color)]"
+                          />
+                          <span className={`flex-1 text-sm ${item.done ? "line-through text-[var(--text-muted)]" : "text-[var(--text-primary)]"}`}>
+                            {item.text}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setChecklistItems((prev) => prev.filter((i) => i.id !== item.id))}
+                            className="text-xs text-[var(--text-muted)] hover:text-red-400 transition"
+                          >
+                            ✕
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {checklistItems.length > 0 && (
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {checklistItems.filter((i) => i.done).length} of {checklistItems.length} tasks complete
+                    </p>
+                  )}
                   <div className="flex justify-end gap-2">
                     <button type="button" onClick={() => closeJobOverlay()} className="rounded border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)]">Cancel</button>
                     <button type="submit" className="rounded bg-[var(--accent-color)] px-4 py-2 text-sm text-white hover:bg-[var(--accent-hover)]">{editing ? "Save Changes" : "Create Job"}</button>

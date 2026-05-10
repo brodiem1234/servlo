@@ -10,6 +10,8 @@ export type PricebookItem = {
   unit_price: number;
   category: string | null;
   sku: string | null;
+  supplier?: string | null;
+  cost_price?: number | null;
   taxable: boolean;
   is_active: boolean;
   created_at: string;
@@ -32,8 +34,10 @@ const emptyForm = {
   description: "",
   unit: "each",
   unit_price: "0.00",
+  cost_price: "",
   category: "",
   sku: "",
+  supplier: "",
   taxable: true,
   is_active: true,
 };
@@ -77,8 +81,10 @@ export function PricebookClient({ initialItems, createAction, updateAction, dele
       description: item.description ?? "",
       unit: item.unit ?? "each",
       unit_price: item.unit_price.toFixed(2),
+      cost_price: item.cost_price != null ? item.cost_price.toFixed(2) : "",
       category: item.category ?? "",
       sku: item.sku ?? "",
+      supplier: item.supplier ?? "",
       taxable: item.taxable,
       is_active: item.is_active,
     });
@@ -326,6 +332,14 @@ export function PricebookClient({ initialItems, createAction, updateAction, dele
                 <div className="space-y-1">
                   <label className="block text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">SKU / Part no.</label>
                   <input name="sku" className={inputCls} value={form.sku} onChange={(e) => setForm((p) => ({ ...p, sku: e.target.value }))} placeholder="Optional" />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Supplier</label>
+                  <input name="supplier" className={inputCls} value={form.supplier} onChange={(e) => setForm((p) => ({ ...p, supplier: e.target.value }))} placeholder="e.g. Bunnings, Reece" />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Cost price ($)</label>
+                  <input name="cost_price" type="number" step="0.01" min="0" className={inputCls} value={form.cost_price} onChange={(e) => setForm((p) => ({ ...p, cost_price: e.target.value }))} placeholder="Your cost (optional)" />
                 </div>
                 <div className="flex items-center gap-3 sm:col-span-2">
                   <label className="flex items-center gap-2 text-sm text-[var(--text-primary)] cursor-pointer">

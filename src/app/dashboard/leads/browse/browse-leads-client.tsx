@@ -1098,6 +1098,8 @@ function LeadDetailPanel({
   const router = useRouter();
   const [claiming, setClaiming] = useState(false);
   const [claimed, setClaimed] = useState(false);
+  const [instantQuoting, setInstantQuoting] = useState(false);
+  const [instantQuoteMsg, setInstantQuoteMsg] = useState<string | null>(null);
 
   const handleClaim = useCallback(async () => {
     setClaiming(true);
@@ -1125,6 +1127,39 @@ function LeadDetailPanel({
       setClaiming(false);
     }
   }, [lead.id, onClose, router]);
+
+  const handleInstantQuote = useCallback(async () => {
+    if (instantQuoting) return;
+    setInstantQuoting(true);
+    setInstantQuoteMsg(null);
+    try {
+      const res = await fetch("/api/leads/instant-quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          description: lead.description ?? "",
+          service_type: lead.service_type ?? undefined,
+          suburb: lead.suburb ?? undefined,
+          estimated_budget: lead.estimated_budget ?? undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { quoteId?: string; title?: string; lineItemCount?: number; total?: number };
+        const totalFmt = data.total ? ` · $${data.total.toLocaleString("en-AU")} total` : "";
+        setInstantQuoteMsg(`Draft quote created${totalFmt}`);
+        setTimeout(() => {
+          onClose();
+          router.push("/dashboard/owner/quotes");
+        }, 1200);
+      } else {
+        setInstantQuoteMsg("Could not generate quote — try again");
+      }
+    } catch {
+      setInstantQuoteMsg("Could not generate quote — try again");
+    } finally {
+      setInstantQuoting(false);
+    }
+  }, [instantQuoting, lead, onClose, router]);
 
   return (
     <div
@@ -1272,6 +1307,36 @@ function LeadDetailPanel({
           >
             {claimed ? "✓ Lead claimed — redirecting…" : claiming ? "Claiming…" : `Accept this lead — $${price}`}
           </button>
+
+          {/* Instant quote button */}
+          <button
+            type="button"
+            disabled={instantQuoting || !!instantQuoteMsg?.startsWith("Draft")}
+            onClick={handleInstantQuote}
+            className="w-full rounded-xl border py-3 text-sm font-bold transition disabled:opacity-70 flex items-center justify-center gap-2"
+            style={{
+              borderColor: "rgb(139 92 246 / 0.5)",
+              color: instantQuoteMsg?.startsWith("Draft") ? "rgb(34 197 94)" : "rgb(167 139 250)",
+              background: instantQuoteMsg?.startsWith("Draft")
+                ? "rgb(34 197 94 / 0.08)"
+                : "rgb(139 92 246 / 0.08)",
+            }}
+          >
+            {instantQuoting ? (
+              <><Loader2 size={14} className="animate-spin" /> Generating quote…</>
+            ) : instantQuoteMsg?.startsWith("Draft") ? (
+              <>✓ {instantQuoteMsg}</>
+            ) : (
+              <>⚡ Instant Quote</>
+            )}
+          </button>
+
+          {instantQuoteMsg && !instantQuoteMsg.startsWith("Draft") && (
+            <p className="text-center text-xs" style={{ color: "rgb(248 113 113)" }}>
+              {instantQuoteMsg}
+            </p>
+          )}
+
           <p
             className="text-center text-xs leading-relaxed"
             style={{ color: "var(--text-muted)" }}

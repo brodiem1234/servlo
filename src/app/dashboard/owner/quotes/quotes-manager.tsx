@@ -144,6 +144,11 @@ export default function QuotesManager({
   const [newClientPhone, setNewClientPhone] = useState("");
   const [savingNewClient, setSavingNewClient] = useState(false);
 
+  // Quote extras
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [expiryDate, setExpiryDate] = useState("");
+  const [terms, setTerms] = useState("");
+
   // AI Draft modal
   const [aiDraftOpen, setAiDraftOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
@@ -184,13 +189,15 @@ export default function QuotesManager({
     return () => window.clearTimeout(t);
   }, [toast]);
 
-  const subTotal = useMemo(
+  const lineSubTotal = useMemo(
     () => lineItems.reduce((s, i) => s + i.quantity * i.unit_price, 0),
     [lineItems]
   );
+  const discountAmount = useMemo(() => lineSubTotal * Math.max(0, Math.min(100, discountPercent)) / 100, [lineSubTotal, discountPercent]);
+  const subTotal = useMemo(() => lineSubTotal - discountAmount, [lineSubTotal, discountAmount]);
   const gst = useMemo(
-    () => lineItems.reduce((s, i) => s + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0),
-    [lineItems]
+    () => lineItems.reduce((s, i) => s + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0) * (1 - Math.max(0, Math.min(100, discountPercent)) / 100),
+    [lineItems, discountPercent]
   );
 
   const filteredQuotes = useMemo(() => {
@@ -206,6 +213,9 @@ export default function QuotesManager({
     setClientId("");
     setNotes("");
     setLineItems([{ ...emptyLine }]);
+    setDiscountPercent(0);
+    setExpiryDate("");
+    setTerms("");
     setOpen(true);
   }
 
@@ -215,6 +225,9 @@ export default function QuotesManager({
     setClientId(quote.client_id ?? "");
     setNotes(quote.notes ?? "");
     setLineItems([{ ...emptyLine }]);
+    setDiscountPercent(0);
+    setExpiryDate("");
+    setTerms("");
     setOpen(true);
     try {
       const items = await loadQuoteItemsAction(quote.id);
@@ -799,9 +812,28 @@ export default function QuotesManager({
                 </div>
                 <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-3 text-right text-sm">
                   <div className="flex justify-between text-[var(--text-secondary)]">
-                    <span>Subtotal</span>
-                    <span>${subTotal.toFixed(2)}</span>
+                    <span>Line subtotal</span>
+                    <span>${lineSubTotal.toFixed(2)}</span>
                   </div>
+                  {/* Discount row */}
+                  <div className="flex items-center justify-between text-[var(--text-secondary)]">
+                    <div className="flex items-center gap-2">
+                      <span>Discount</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={discountPercent || ""}
+                        onChange={(e) => setDiscountPercent(Number(e.target.value) || 0)}
+                        placeholder="0"
+                        className="h-6 w-14 rounded border border-[var(--border)] bg-[var(--input-bg)] px-1.5 text-xs text-[var(--text-primary)]"
+                      />
+                      <span className="text-xs">%</span>
+                    </div>
+                    <span className="text-red-400">−${discountAmount.toFixed(2)}</span>
+                  </div>
+                  <input type="hidden" name="discount_percent" value={discountPercent} />
                   <div className="flex justify-between text-[var(--text-secondary)]">
                     <span>GST (10%)</span>
                     <span>${gst.toFixed(2)}</span>
@@ -810,6 +842,41 @@ export default function QuotesManager({
                     <span>Total</span>
                     <span>${(subTotal + gst).toFixed(2)}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Expiry date + terms */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    Quote Expiry
+                  </label>
+                  <input
+                    type="date"
+                    name="expiry_date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    Payment Terms
+                  </label>
+                  <select
+                    name="terms"
+                    value={terms}
+                    onChange={(e) => setTerms(e.target.value)}
+                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-primary)]"
+                  >
+                    <option value="">Select terms…</option>
+                    <option value="On acceptance">On acceptance</option>
+                    <option value="Due on completion">Due on completion</option>
+                    <option value="7 days">7 days</option>
+                    <option value="14 days">14 days</option>
+                    <option value="30 days">30 days</option>
+                    <option value="50% deposit, 50% on completion">50% deposit, 50% on completion</option>
+                  </select>
                 </div>
               </div>
 
@@ -822,7 +889,7 @@ export default function QuotesManager({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="Validity period, payment terms, inclusions/exclusions…"
+                  placeholder="Inclusions/exclusions, special conditions…"
                   className="w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-primary)]"
                 />
               </div>
