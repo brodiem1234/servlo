@@ -337,7 +337,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
         ) : selectedThread ? (
           <div className="flex flex-1 flex-col">
             {/* Thread header */}
-            <div className="border-b border-[var(--border)] px-4 py-3 md:px-6">
+            <div className="border-b border-[var(--border)] px-4 py-3">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -356,7 +356,7 @@ export function CommsClient({ threads, clients, clientMap }: Props) {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               {loadingMessages ? (
                 <p className="text-sm text-[var(--text-muted)]">Loading…</p>
               ) : messages.length === 0 ? (

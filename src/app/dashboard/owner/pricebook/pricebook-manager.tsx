@@ -221,7 +221,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <PricebookTemplateImport
             onImported={(count) => {
               if (count > 0) {

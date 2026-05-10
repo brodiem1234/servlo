@@ -592,7 +592,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">White-label branding</h2>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -601,7 +601,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </div>
               <a
                 href="/dashboard/owner/settings/brand"
-                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
                 Configure
               </a>
@@ -609,7 +609,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">Online booking widget</h2>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -618,7 +618,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </div>
               <a
                 href="/dashboard/owner/settings/booking"
-                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
                 Configure
               </a>
@@ -626,7 +626,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">Job stage automations</h2>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -635,7 +635,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </div>
               <a
                 href="/dashboard/owner/settings/automations"
-                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
                 Configure
               </a>
@@ -643,7 +643,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">SMS notifications</h2>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -652,7 +652,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </div>
               <a
                 href="/dashboard/owner/settings/sms"
-                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
                 Configure
               </a>
@@ -660,7 +660,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">Security &amp; Two-Factor Authentication</h2>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
@@ -669,7 +669,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               </div>
               <a
                 href="/dashboard/owner/settings/security"
-                className="ml-4 shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="shrink-0 rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
                 Configure
               </a>

@@ -1101,12 +1101,13 @@ export default function JobsManager({
           ) : null}
           {calendarView === "month" ? (
             <>
-              <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-[var(--text-muted)]">
+              <div className="overflow-x-auto pb-1">
+              <div className="min-w-[560px] grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-[var(--text-muted)]">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
                   <div key={d}>{d}</div>
                 ))}
               </div>
-              <div className="mt-2 grid grid-cols-7 gap-2">
+              <div className="mt-2 min-w-[560px] grid grid-cols-7 gap-2">
                 {calendarDays.map((date, index) => {
                   if (!date) {
                     return <div key={`empty-${index}`} className="min-h-[140px] rounded-lg border border-[var(--border)] bg-[var(--bg-primary)]" />;
@@ -1180,6 +1181,7 @@ export default function JobsManager({
                     </div>
                   );
                 })}
+              </div>
               </div>
             </>
           ) : null}

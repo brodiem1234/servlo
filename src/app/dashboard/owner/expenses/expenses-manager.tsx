@@ -386,7 +386,7 @@ export function ExpensesManager({ expenses: initialExpenses, employees }: Props)
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search expenses…"
-          className="h-8 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
+          className="h-8 w-full sm:w-auto rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]"
         />
         <select
           value={statusFilter}
