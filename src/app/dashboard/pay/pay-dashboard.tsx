@@ -121,8 +121,39 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
   const [linkDesc, setLinkDesc] = useState("");
   const [linkExpiry, setLinkExpiry] = useState("14");
 
+  const [localTx, setLocalTx] = useState<PayTransaction[]>(transactions);
   const filteredTx =
-    txFilter === "all" ? transactions : transactions.filter((t) => t.status === txFilter);
+    txFilter === "all" ? localTx : localTx.filter((t) => t.status === txFilter);
+
+  // Add transaction modal state
+  const [showAddTx, setShowAddTx] = useState(false);
+  const [addTxAmount, setAddTxAmount] = useState("");
+  const [addTxMethod, setAddTxMethod] = useState("card");
+  const [addTxDesc, setAddTxDesc] = useState("");
+  const [addTxSaving, setAddTxSaving] = useState(false);
+
+  const handleAddTransaction = async () => {
+    const amt = parseFloat(addTxAmount);
+    if (!amt || isNaN(amt) || amt <= 0) { show("Enter a valid amount", "error"); return; }
+    setAddTxSaving(true);
+    try {
+      const res = await fetch("/api/pay/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: amt, payment_method: addTxMethod, description: addTxDesc || undefined }),
+      });
+      const data = await res.json() as { transaction?: PayTransaction };
+      if (res.ok && data.transaction) {
+        setLocalTx((prev) => [data.transaction!, ...prev]);
+        show("Transaction recorded", "success");
+        setShowAddTx(false);
+        setAddTxAmount(""); setAddTxDesc(""); setAddTxMethod("card");
+      } else {
+        show("Failed to record transaction", "error");
+      }
+    } catch { show("Network error", "error"); }
+    finally { setAddTxSaving(false); }
+  };
 
   function exportCSV() {
     const rows = [
@@ -270,14 +301,23 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
                   </button>
                 ))}
               </div>
-              <button
-                onClick={exportCSV}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-                style={{ background: "#052e16", color: "#22C55E", border: "1px solid #22C55E33" }}
-              >
-                <Download size={12} />
-                Export CSV
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowAddTx(true)}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors text-white"
+                  style={{ background: "#22C55E" }}
+                >
+                  + Add Transaction
+                </button>
+                <button
+                  onClick={exportCSV}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                  style={{ background: "#052e16", color: "#22C55E", border: "1px solid #22C55E33" }}
+                >
+                  <Download size={12} />
+                  Export CSV
+                </button>
+              </div>
             </div>
 
             {filteredTx.length === 0 ? (
@@ -654,6 +694,74 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
       </div>
 
       <ToastContainer toasts={toasts} />
+
+      {/* Add Transaction Modal */}
+      {showAddTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-2xl border p-6 shadow-2xl" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+            <h3 className="mb-4 text-lg font-bold" style={{ color: "var(--text-primary)" }}>Record Transaction</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Amount (AUD) *</label>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={addTxAmount}
+                  onChange={(e) => setAddTxAmount(e.target.value)}
+                  placeholder="e.g. 350.00"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
+                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Payment Method</label>
+                <select
+                  value={addTxMethod}
+                  onChange={(e) => setAddTxMethod(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
+                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                >
+                  <option value="card">Card</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Description (optional)</label>
+                <input
+                  type="text"
+                  value={addTxDesc}
+                  onChange={(e) => setAddTxDesc(e.target.value)}
+                  placeholder="e.g. Invoice #INV-0012 payment"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
+                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowAddTx(false); setAddTxAmount(""); setAddTxDesc(""); setAddTxMethod("card"); }}
+                className="rounded-lg px-4 py-2 text-sm font-medium"
+                style={{ background: "var(--bg-primary)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddTransaction}
+                disabled={addTxSaving}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                style={{ background: "#22C55E" }}
+              >
+                {addTxSaving ? "Saving…" : "Record"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
