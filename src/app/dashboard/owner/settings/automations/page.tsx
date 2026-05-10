@@ -162,7 +162,7 @@ export default function AutomationsPage() {
                   )}
                   <p className="mt-0.5 text-xs text-[var(--text-muted)] truncate">{a.message_body}</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => handleToggle(a)}
@@ -189,7 +189,7 @@ export default function AutomationsPage() {
           <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-xl">
             <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">{editing ? "Edit Automation" : "New Automation"}</h2>
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">When status changes to</label>
                   <select className={inputCls} value={form.trigger_status} onChange={(e) => { setForm((p) => ({ ...p, trigger_status: e.target.value, message_body: DEFAULT_BODY[e.target.value] ?? p.message_body })); }}>

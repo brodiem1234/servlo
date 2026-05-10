@@ -217,12 +217,12 @@ export default async function LeadsMyLeadsPage() {
               { service: "Electrical quote", suburb: "Chatswood", days: "5d", status: "Contacted", value: "$1,200" },
               { service: "Roof inspection", suburb: "Penrith", days: "1d", status: "Quoted", value: "$800" },
             ].map((r, i) => (
-              <div key={i} className="flex items-center justify-between rounded-lg border px-4 py-3" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+              <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-3" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
                 <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{r.service}</span>
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.suburb}</span>
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.days}</span>
                 <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: "rgba(245,158,11,0.15)", color: "#FCD34D" }}>{r.status}</span>
-                <span className="text-sm font-bold" style={{ color: "#F59E0B" }}>{r.value}</span>
+                <span className="ml-auto text-sm font-bold" style={{ color: "#F59E0B" }}>{r.value}</span>
               </div>
             ))}
           </div>

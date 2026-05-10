@@ -33,12 +33,12 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
         <p className="text-slate-400 mt-1">Configure your lead preferences and notifications</p>
       </div>
 
-      <div className="flex gap-1 border-b border-white/10">
+      <div className="flex gap-1 overflow-x-auto border-b border-white/10">
         {["preferences", "notifications", "billing"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
+            className={`shrink-0 px-4 py-2.5 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
               activeTab === tab ? "border-yellow-500 text-yellow-400" : "border-transparent text-slate-400 hover:text-white"
             }`}
           >
@@ -71,7 +71,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
 
           <div className="rounded-xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2"><MapPin size={15} className="text-yellow-400" />Location &amp; Budget</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm text-slate-400 mb-1.5">Search Radius (km)</label>
                 <input

@@ -36,15 +36,15 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-end">
-        <div>
+      <div className="flex flex-wrap gap-3 items-end w-full">
+        <div className="flex-1 min-w-[130px]">
           <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary, #64748b)" }}>
             Action
           </label>
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="rounded border px-2 py-1.5 text-sm"
+            className="w-full rounded border px-2 py-1.5 text-sm"
           >
             <option value="all">All actions</option>
             <option value="created">Created</option>
@@ -54,7 +54,7 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
             <option value="viewed">Viewed</option>
           </select>
         </div>
-        <div>
+        <div className="flex-1 min-w-[130px]">
           <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary, #64748b)" }}>
             From
           </label>
@@ -62,10 +62,10 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded border px-2 py-1.5 text-sm"
+            className="w-full rounded border px-2 py-1.5 text-sm"
           />
         </div>
-        <div>
+        <div className="flex-1 min-w-[130px]">
           <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary, #64748b)" }}>
             To
           </label>
@@ -73,7 +73,7 @@ export function AuditLogClient({ entries }: { entries: AuditEntry[] }) {
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded border px-2 py-1.5 text-sm"
+            className="w-full rounded border px-2 py-1.5 text-sm"
           />
         </div>
         {(actionFilter !== "all" || dateFrom || dateTo) && (

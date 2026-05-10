@@ -177,7 +177,7 @@ export function PublicQuoteView({ quote, business, lineItems, token }: Props) {
 
       <div className="max-w-3xl mx-auto px-4 py-10 print:py-4">
         {/* Business header */}
-        <div className="flex items-start justify-between mb-8 print:mb-4">
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-8 print:mb-4">
           <div>
             <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">
               {String(business.business_name ?? "Your Business")}
@@ -204,7 +204,7 @@ export function PublicQuoteView({ quote, business, lineItems, token }: Props) {
         </div>
 
         {/* Meta grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6 print:mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 print:mb-3">
           <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 print:border print:border-slate-300">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Prepared For</div>
             <div className="font-semibold text-slate-900 dark:text-slate-50">{String(quote.client_name ?? "Valued Client")}</div>
@@ -259,7 +259,7 @@ export function PublicQuoteView({ quote, business, lineItems, token }: Props) {
         )}
 
         {/* Line items */}
-        <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden mb-6 print:mb-3 print:border print:border-slate-300">
+        <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-x-auto mb-6 print:mb-3 print:border print:border-slate-300">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
@@ -414,11 +414,11 @@ export function PublicQuoteView({ quote, business, lineItems, token }: Props) {
               By accepting this quote, you agree to the terms and conditions as stated. This constitutes a legally binding acceptance of the quoted services and pricing.
             </p>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={handleAccept}
                 disabled={loading}
-                className="flex-1 py-2.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="flex-1 min-w-[120px] py-2.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 style={{ background: accent }}
               >
                 {loading ? "Signing…" : "Confirm Acceptance"}
