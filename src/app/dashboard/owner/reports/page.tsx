@@ -1,168 +1,202 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { ReportsClient } from "./reports-client";
 
-import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { TrendingUp, DollarSign, Briefcase, Users } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-const MONTHLY_REVENUE = [
-  { month: "Dec", revenue: 8200 },
-  { month: "Jan", revenue: 11400 },
-  { month: "Feb", revenue: 9800 },
-  { month: "Mar", revenue: 14200 },
-  { month: "Apr", revenue: 12600 },
-  { month: "May", revenue: 15800 },
-];
+function isoYearMonth(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
+}
 
-const JOB_STATUS_DATA = [
-  { status: "Completed", count: 24, color: "#22C55E" },
-  { status: "In Progress", count: 6, color: "#F59E0B" },
-  { status: "Scheduled", count: 12, color: "#3B82F6" },
-  { status: "Cancelled", count: 2, color: "#EF4444" },
-];
+function monthLabel(yearMonth: string): string {
+  const [y, m] = yearMonth.split("-");
+  const d = new Date(Number(y), Number(m) - 1, 1);
+  return d.toLocaleDateString("en-AU", { month: "short", year: "2-digit" });
+}
 
-export default function ReportsPage() {
-  const [period, setPeriod] = useState("6m");
+/** Build an array of last N year-month strings in order */
+function lastNMonths(n: number): string[] {
+  const result: string[] = [];
+  const now = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push(isoYearMonth(d));
+  }
+  return result;
+}
+
+export default async function ReportsPage() {
+  const sb = await createClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) redirect("/auth/login");
+
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  twelveMonthsAgo.setDate(1);
+  twelveMonthsAgo.setHours(0, 0, 0, 0);
+
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const [
+    { data: paidInvoices },
+    { data: completedJobs },
+    { data: allJobs },
+    { data: newClients },
+    { data: prevInvoices },
+  ] = await Promise.all([
+    // Paid invoices for last 12 months
+    sb.from("invoices")
+      .select("total, paid_at, client_id, is_demo")
+      .eq("owner_id", user.id)
+      .eq("status", "paid")
+      .gte("paid_at", twelveMonthsAgo.toISOString())
+      .not("paid_at", "is", null),
+
+    // Completed jobs for last 12 months (for job count)
+    sb.from("jobs")
+      .select("id, status, completed_at, created_at, is_demo")
+      .eq("owner_id", user.id)
+      .eq("status", "completed")
+      .gte("created_at", twelveMonthsAgo.toISOString()),
+
+    // All jobs for status breakdown
+    sb.from("jobs")
+      .select("id, status, is_demo")
+      .eq("owner_id", user.id)
+      .is("deleted_at", null),
+
+    // New clients in last 6 months
+    sb.from("clients")
+      .select("id")
+      .eq("owner_id", user.id)
+      .gte("created_at", sixMonthsAgo.toISOString())
+      .is("deleted_at", null)
+      .eq("is_demo", false),
+
+    // Previous 6-month revenue for change %
+    sb.from("invoices")
+      .select("total, is_demo")
+      .eq("owner_id", user.id)
+      .eq("status", "paid")
+      .gte("paid_at", (() => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - 12);
+        d.setDate(1);
+        return d.toISOString();
+      })())
+      .lt("paid_at", sixMonthsAgo.toISOString()),
+  ]);
+
+  // ── Monthly buckets (last 12 months) ──────────────────────────────────────
+  const months = lastNMonths(12);
+  const monthlyMap: Record<string, { revenue: number; jobs: number }> = {};
+  for (const m of months) monthlyMap[m] = { revenue: 0, jobs: 0 };
+
+  for (const inv of paidInvoices ?? []) {
+    if ((inv as any).is_demo) continue;
+    const paid = (inv as any).paid_at as string;
+    const ym = paid.slice(0, 7);
+    if (monthlyMap[ym]) {
+      monthlyMap[ym].revenue += Number((inv as any).total ?? 0);
+    }
+  }
+
+  for (const job of completedJobs ?? []) {
+    if ((job as any).is_demo) continue;
+    const created = ((job as any).completed_at ?? (job as any).created_at) as string;
+    const ym = created.slice(0, 7);
+    if (monthlyMap[ym]) {
+      monthlyMap[ym].jobs += 1;
+    }
+  }
+
+  const monthly12 = months.map((ym) => ({
+    month: monthLabel(ym),
+    revenue: Math.round(monthlyMap[ym].revenue * 100) / 100,
+    jobs: monthlyMap[ym].jobs,
+  }));
+
+  // ── KPIs ──────────────────────────────────────────────────────────────────
+  const realPaidInvoices = (paidInvoices ?? []).filter((i: any) => !i.is_demo);
+  const recentMonths = lastNMonths(6);
+  const revenueThisPeriod = realPaidInvoices
+    .filter((i: any) => {
+      const paid = (i.paid_at as string).slice(0, 7);
+      return recentMonths.includes(paid);
+    })
+    .reduce((s: number, i: any) => s + Number(i.total ?? 0), 0);
+
+  const prevRevenue = ((prevInvoices ?? []) as any[])
+    .filter((i) => !i.is_demo)
+    .reduce((s: number, i: any) => s + Number(i.total ?? 0), 0);
+
+  const revenueChange = prevRevenue > 0
+    ? ((revenueThisPeriod - prevRevenue) / prevRevenue) * 100
+    : null;
+
+  const jobsThisPeriod = (completedJobs ?? []).filter((j: any) => !j.is_demo).length;
+  const jobsChange: number | null = null; // Would need prev-period jobs too
+
+  const kpis = {
+    revenueTotal: revenueThisPeriod,
+    jobsCompleted: jobsThisPeriod,
+    avgJobValue: jobsThisPeriod > 0 ? revenueThisPeriod / jobsThisPeriod : 0,
+    newClients: (newClients ?? []).length,
+    revenueChange,
+    jobsChange,
+  };
+
+  // ── Job status breakdown (all non-demo jobs) ──────────────────────────────
+  const statusCounts: Record<string, number> = {};
+  for (const job of allJobs ?? []) {
+    if ((job as any).is_demo) continue;
+    const s = ((job as any).status as string) ?? "pending";
+    statusCounts[s] = (statusCounts[s] ?? 0) + 1;
+  }
+  const statusBreakdown = Object.entries(statusCounts)
+    .map(([status, count]) => ({ status, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // ── Top clients by revenue (last 6 months) ────────────────────────────────
+  const clientRevMap: Record<string, number> = {};
+  for (const inv of realPaidInvoices) {
+    const paid = ((inv as any).paid_at as string).slice(0, 7);
+    if (!recentMonths.includes(paid)) continue;
+    const cid = (inv as any).client_id as string | null;
+    if (!cid) continue;
+    clientRevMap[cid] = (clientRevMap[cid] ?? 0) + Number((inv as any).total ?? 0);
+  }
+
+  // Fetch client names for top 8
+  const topClientIds = Object.entries(clientRevMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([id]) => id);
+
+  let topClients: { name: string; revenue: number }[] = [];
+  if (topClientIds.length > 0) {
+    const { data: clientRows } = await sb
+      .from("clients")
+      .select("id, full_name, company_name")
+      .in("id", topClientIds);
+    topClients = topClientIds.map((id) => {
+      const row = (clientRows ?? []).find((c: any) => c.id === id);
+      const name = (row as any)?.company_name || (row as any)?.full_name || "Unknown client";
+      return { name, revenue: Math.round(clientRevMap[id] * 100) / 100 };
+    });
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Reports</h1>
-          <p className="text-slate-400 mt-1">Business performance overview</p>
-        </div>
-        <div className="flex gap-2">
-          {["1m", "3m", "6m", "1y"].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                period === p
-                  ? "bg-blue-600 text-white"
-                  : "bg-white/5 border border-white/10 text-slate-400 hover:text-white"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Revenue (6mo)", value: "$72,000", change: "+18%", color: "#22C55E", Icon: DollarSign },
-          { label: "Jobs Completed", value: "44", change: "+12%", color: "#3B82F6", Icon: Briefcase },
-          { label: "Avg Job Value", value: "$1,636", change: "+5%", color: "#8B5CF6", Icon: TrendingUp },
-          { label: "New Clients", value: "11", change: "+3", color: "#F59E0B", Icon: Users },
-        ].map(({ label, value, change, color, Icon }) => (
-          <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div className="flex items-start justify-between mb-2">
-              <p className="text-xs text-slate-500">{label}</p>
-              <div className="rounded p-1.5" style={{ background: color + "22" }}>
-                <Icon size={14} style={{ color }} />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="text-xs mt-1" style={{ color }}>{change} vs prev period</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Revenue chart */}
-      <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-        <h2 className="font-semibold text-white mb-4">Monthly Revenue (AUD)</h2>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={MONTHLY_REVENUE} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="month" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-            <YAxis
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v: unknown) => `$${(Number(v) / 1000).toFixed(0)}k`}
-            />
-            <Tooltip
-              contentStyle={{ background: "#111927", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#f9fafb" }}
-              formatter={(v: unknown) => [`$${Number(v).toLocaleString()}`, "Revenue"]}
-            />
-            <Bar dataKey="revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Job status breakdown */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-          <h2 className="font-semibold text-white mb-4">Job Status Breakdown</h2>
-          <div className="space-y-3">
-            {JOB_STATUS_DATA.map(({ status, count, color }) => {
-              const total = JOB_STATUS_DATA.reduce((s, d) => s + d.count, 0);
-              const pct = Math.round((count / total) * 100);
-              return (
-                <div key={status}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-slate-300">{status}</span>
-                    <span className="text-slate-400">{count} ({pct}%)</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{ width: `${pct}%`, background: color }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Revenue trend */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-          <h2 className="font-semibold text-white mb-4">Revenue Trend</h2>
-          <ResponsiveContainer width="100%" height={160}>
-            <LineChart data={MONTHLY_REVENUE} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v: unknown) => `$${(Number(v) / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                contentStyle={{ background: "#111927", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#f9fafb" }}
-                formatter={(v: unknown) => [`$${Number(v).toLocaleString()}`, "Revenue"]}
-              />
-              <Line type="monotone" dataKey="revenue" stroke="#8B5CF6" strokeWidth={2} dot={{ fill: "#8B5CF6", r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Top jobs */}
-      <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-        <h2 className="font-semibold text-white mb-4">Top Revenue Sources</h2>
-        <div className="space-y-2">
-          {[
-            { label: "Installation Work", value: "$28,400", pct: 39 },
-            { label: "Service & Repair", value: "$19,200", pct: 27 },
-            { label: "Maintenance Contracts", value: "$14,800", pct: 21 },
-            { label: "Emergency Callouts", value: "$9,600", pct: 13 },
-          ].map(({ label, value, pct }) => (
-            <div key={label} className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-300">{label}</span>
-                  <span className="font-semibold text-white">{value}</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${pct}%` }} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <ReportsClient
+      monthly12={monthly12}
+      statusBreakdown={statusBreakdown}
+      topClients={topClients}
+      kpis={kpis}
+    />
   );
 }
