@@ -27,6 +27,8 @@ type Quote = {
   total: number | null;
   status: string | null;
   created_at: string | null;
+  public_token?: string | null;
+  expiry_date?: string | null;
 };
 
 type Business = {
@@ -451,33 +453,28 @@ export function PortalClient({
                       </div>
                       <InvoiceStatusBadge status={invoice.status} />
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      {!isPaid ? (
-                        <div className="group relative">
-                          <button
-                            disabled
-                            className="cursor-not-allowed rounded-lg px-3 py-1.5 text-xs font-semibold text-white opacity-60"
-                            style={{ backgroundColor: accent }}
-                          >
-                            Pay Now
-                          </button>
-                          <div className="pointer-events-none absolute bottom-full left-0 mb-1 hidden w-44 rounded bg-[#1e293b] px-2 py-1 text-xs text-white group-hover:block">
-                            Online payments coming soon
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="group relative">
-                          <button
-                            disabled
-                            className="cursor-not-allowed rounded-lg border border-[#d1d5db] bg-white px-3 py-1.5 text-xs font-medium text-[#64748b] opacity-60"
-                          >
-                            Download receipt
-                          </button>
-                          <div className="pointer-events-none absolute bottom-full left-0 mb-1 hidden w-28 rounded bg-[#1e293b] px-2 py-1 text-xs text-white group-hover:block">
-                            Coming soon
-                          </div>
-                        </div>
-                      )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {!isPaid && invoice.stripe_payment_link ? (
+                        <a
+                          href={invoice.stripe_payment_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                          style={{ backgroundColor: accent }}
+                        >
+                          Pay Now
+                        </a>
+                      ) : !isPaid ? (
+                        <span className="inline-flex items-center rounded-lg border border-[#d1d5db] bg-[#f1f5f9] px-3 py-1.5 text-xs font-medium text-[#94a3b8]">
+                          Payment link coming
+                        </span>
+                      ) : null}
+                      {isPaid ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#15803d]">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                          Paid in full
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -519,29 +516,48 @@ export function PortalClient({
                       </div>
                       <QuoteStatusBadge status={quote.status} />
                     </div>
+                    {quote.expiry_date && isPending && (
+                      <p className="mt-1 text-xs text-[#94a3b8]">
+                        Expires {formatDate(quote.expiry_date)}
+                      </p>
+                    )}
                     {isPending && (
-                      <div className="mt-3 flex gap-2">
-                        <form action={acceptQuoteAction}>
-                          <input type="hidden" name="quote_id" value={quote.id} />
-                          <input type="hidden" name="token" value={token} />
-                          <button
-                            type="submit"
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {quote.public_token ? (
+                          <a
+                            href={`/q/${quote.public_token}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-80"
-                            style={{ backgroundColor: "#22c55e" }}
+                            style={{ backgroundColor: accent }}
                           >
-                            Accept
-                          </button>
-                        </form>
-                        <form action={declineQuoteAction}>
-                          <input type="hidden" name="quote_id" value={quote.id} />
-                          <input type="hidden" name="token" value={token} />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-[#d1d5db] bg-white px-4 py-1.5 text-xs font-semibold text-[#ef4444] transition-colors hover:bg-[#fee2e2]"
-                          >
-                            Decline
-                          </button>
-                        </form>
+                            View &amp; Sign Quote
+                          </a>
+                        ) : (
+                          <>
+                            <form action={acceptQuoteAction}>
+                              <input type="hidden" name="quote_id" value={quote.id} />
+                              <input type="hidden" name="token" value={token} />
+                              <button
+                                type="submit"
+                                className="rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                                style={{ backgroundColor: "#22c55e" }}
+                              >
+                                Accept
+                              </button>
+                            </form>
+                            <form action={declineQuoteAction}>
+                              <input type="hidden" name="quote_id" value={quote.id} />
+                              <input type="hidden" name="token" value={token} />
+                              <button
+                                type="submit"
+                                className="rounded-lg border border-[#d1d5db] bg-white px-4 py-1.5 text-xs font-semibold text-[#ef4444] transition-colors hover:bg-[#fee2e2]"
+                              >
+                                Decline
+                              </button>
+                            </form>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

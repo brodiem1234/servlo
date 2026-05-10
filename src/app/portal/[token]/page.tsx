@@ -37,7 +37,7 @@ export default async function ClientPortalPage({ params }: Props) {
       .order("scheduled_date", { ascending: false }),
     supabase
       .from("quotes")
-      .select("id, quote_number, total, status, created_at")
+      .select("id, quote_number, total, status, created_at, public_token, expiry_date")
       .eq("client_id", client.id)
       .order("created_at", { ascending: false }),
     supabase
