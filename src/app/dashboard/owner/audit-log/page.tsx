@@ -20,12 +20,17 @@ export default async function AuditLogPage() {
   const businessId = business?.id ?? null;
 
   const admin = createAdminClient();
-  const { data: entries } = await admin
+  const { data: entries, error: auditError } = await admin
     .from("audit_log")
     .select("id, user_id, table_name, record_id, action, changed_fields, ip_address, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false })
     .limit(200);
+
+  // Table may not exist yet — treat as empty
+  if (auditError && (auditError as { code?: string }).code !== "42P01") {
+    console.error("[audit-log] fetch error:", auditError.message);
+  }
 
   return (
     <div className="space-y-6 p-6">
