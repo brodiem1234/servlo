@@ -145,58 +145,67 @@ export async function getOwnerDashboardData(ownerId: string) {
     { data: recentQuotesActivity },
     { count: employeeHeadcount }
   ] = await Promise.all([
-    supabase.from("clients").select("id, full_name, status, is_demo").eq("owner_id", ownerId),
+    supabase.from("clients").select("id, full_name, status, is_demo").eq("owner_id", ownerId).is("deleted_at", null),
     supabase
       .from("invoices")
       .select("id, invoice_number, total, due_date, status, client_id, is_demo, created_at, last_reminder_sent")
       .eq("owner_id", ownerId)
+      .is("deleted_at", null)
       .order("due_date", { ascending: true }),
     supabase
       .from("jobs")
       .select("id, title, status, scheduled_date, scheduled_start, scheduled_end, address, suburb, state, labour_hours, client_id, is_demo")
-      .eq("owner_id", ownerId),
+      .eq("owner_id", ownerId)
+      .is("deleted_at", null),
     supabase
       .from("invoices")
       .select("id, invoice_number, total, due_date, status, client_id, is_demo, last_reminder_sent")
       .eq("owner_id", ownerId)
       .eq("status", "unpaid")
+      .is("deleted_at", null)
       .order("due_date", { ascending: true }),
     supabase
       .from("quotes")
       .select("id, quote_number, status, created_at, total, client_id, is_demo, last_reminder_sent")
       .eq("owner_id", ownerId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true }),
     supabase
       .from("invoices")
       .select("total, created_at, is_demo")
       .eq("owner_id", ownerId)
       .eq("status", "paid")
+      .is("deleted_at", null)
       .gte("created_at", sevenDaysAgo.toISOString()),
     supabase
       .from("jobs")
       .select("id, title, created_at, is_demo")
       .eq("owner_id", ownerId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("clients")
       .select("id, full_name, created_at, is_demo")
       .eq("owner_id", ownerId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("invoices")
       .select("id, invoice_number, created_at, is_demo")
       .eq("owner_id", ownerId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(8),
     supabase
       .from("quotes")
       .select("id, quote_number, created_at, is_demo")
       .eq("owner_id", ownerId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(8),
-    supabase.from("employees").select("id", { count: "exact", head: true }).eq("owner_id", ownerId)
+    supabase.from("employees").select("id", { count: "exact", head: true }).eq("owner_id", ownerId).is("deleted_at", null)
   ]);
 
   const now = new Date();
