@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
     .limit(1)
     .maybeSingle();
 
-  if (!(jobOwner as any)?.owner_id) {
+  let ownerId: string | undefined = (jobOwner as any)?.owner_id;
+
+  if (!ownerId) {
     // fallback: check employees table
     const { data: empRow } = await sb
       .from("employees")
@@ -57,12 +59,11 @@ export async function POST(req: NextRequest) {
       .eq("email", user.email ?? "")
       .limit(1)
       .maybeSingle();
-    if (!(empRow as any)?.owner_id) {
+    ownerId = (empRow as any)?.owner_id;
+    if (!ownerId) {
       return NextResponse.json({ error: "Cannot determine owner for this employee" }, { status: 422 });
     }
   }
-
-  const ownerId = (jobOwner as any)?.owner_id;
 
   const { data, error } = await sb
     .from("expense_claims")
