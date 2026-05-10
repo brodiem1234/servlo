@@ -87,6 +87,7 @@ export default function InvoicesManager({
   prefill,
   initialBucket,
   businessProfile,
+  appOrigin,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
@@ -98,6 +99,7 @@ export default function InvoicesManager({
   const [lineItems, setLineItems] = useState<LineItem[]>([{ ...emptyLine }]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [markingPaid, setMarkingPaid] = useState<string | null>(null);
   const [partialPaymentInvoice, setPartialPaymentInvoice] = useState<Invoice | null>(null);
   const [partialAmount, setPartialAmount] = useState("");
@@ -390,6 +392,20 @@ export default function InvoicesManager({
     }
   };
 
+  const handleCopyPayLink = async (invoice: Invoice) => {
+    if (invoice.is_demo) return;
+    const origin = appOrigin ?? window.location.origin;
+    const url = `${origin}/pay/${invoice.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLink(invoice.id);
+      setToast({ type: "success", message: "Payment link copied!" });
+      setTimeout(() => setCopiedLink(null), 2000);
+    } catch {
+      setToast({ type: "error", message: "Could not copy link" });
+    }
+  };
+
   return (
     <div className="space-y-4">
       {toast ? (
@@ -536,6 +552,16 @@ export default function InvoicesManager({
                               className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)] disabled:opacity-60"
                             >
                               {sendingEmail === invoice.id ? "Sending…" : "Email"}
+                            </button>
+                          ) : null}
+                          {!invoice.is_demo ? (
+                            <button
+                              type="button"
+                              onClick={() => handleCopyPayLink(invoice)}
+                              className="rounded border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+                              title="Copy payment link to share with client"
+                            >
+                              {copiedLink === invoice.id ? "Copied!" : "Pay link"}
                             </button>
                           ) : null}
                         </div>

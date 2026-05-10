@@ -8,3 +8,4 @@
 | 1D | AI Marketing Coach injects real business context | ✅ PASS | api/ai/marketing-coach/route.ts |
 | 1E | AI rate limiter fails open on table errors | ✅ PASS | lib/ai-limits.ts |
 | 1F | Leads claim button enabled — inserts leads_accepted + redirects to pipeline | ✅ PASS | browse-leads-client.tsx |
+| 2 | Demo data seeder — POST /api/admin/seed-demo + Settings "Load demo data" button | ✅ PASS | api/admin/seed-demo/route.ts, settings-client.tsx |
