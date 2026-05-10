@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingPricing } from "@/components/landing/landing-pricing";
-import { ThemeTogglePublic } from "@/components/theme-toggle-public";
+import { LandingNav } from "@/components/landing/landing-nav";
 
 async function getFounderCount(): Promise<number> {
   try {
@@ -53,82 +53,41 @@ export default async function HomePage() {
   const spotsRemaining = Math.max(0, 50 - founderCount);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
+    <div className="min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-gray-200 dark:border-white/[0.06] bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-6">
-          <Link href="/" className="shrink-0">
-            <Image
-              src="/servlo-master-white.svg"
-              alt="SERVLO"
-              width={120}
-              height={32}
-              priority
-              unoptimized
-              className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
-            />
-            <Image
-              src="/servlo-master-dark.svg"
-              alt="SERVLO"
-              width={120}
-              height={32}
-              priority
-              unoptimized
-              className="block dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)]"
-            />
-          </Link>
-          <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 dark:text-slate-400 md:flex">
-            <a href="#pricing" className="transition hover:text-gray-900 dark:hover:text-white">Pricing</a>
-            <a href="#platform" className="transition hover:text-gray-900 dark:hover:text-white">Compare</a>
-            <a href="#roadmap" className="transition hover:text-gray-900 dark:hover:text-white">Roadmap</a>
-            <Link href="/status" className="transition hover:text-gray-900 dark:hover:text-white">Status</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <ThemeTogglePublic />
-            <Link href="/auth/login" className="hidden text-sm font-medium text-gray-600 dark:text-slate-300 transition hover:text-gray-900 dark:hover:text-white md:block">
-              Log in
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
-            >
-              Start free trial
-            </Link>
-          </div>
-        </div>
-      </header>
+      <LandingNav />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-4 pb-28 pt-20 md:px-6 md:pb-36 md:pt-32">
+      <section className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-36 md:pt-32">
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-1/2 top-0 h-[700px] w-[1000px] -translate-x-1/2 rounded-full bg-zinc-900/5 dark:bg-white/[0.04] blur-[140px]" />
-          <div className="absolute -right-32 top-32 h-[400px] w-[400px] rounded-full bg-zinc-900/5 dark:bg-white/[0.03] blur-[100px]" />
+          <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-zinc-900/5 dark:bg-white/[0.04] blur-[100px] md:h-[700px] md:w-[1000px] md:blur-[140px]" />
+          <div className="absolute -right-32 top-32 hidden h-[400px] w-[400px] rounded-full bg-zinc-900/5 dark:bg-white/[0.03] blur-[100px] md:block" />
         </div>
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 md:grid-cols-2 md:gap-12">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 md:grid-cols-2 md:gap-12">
           {/* Left */}
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-300 dark:border-white/15 bg-zinc-100/80 dark:bg-white/[0.05] px-3.5 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
               Built for Australian service businesses
             </div>
-            <h1 className="text-5xl font-extrabold leading-[1.06] tracking-tight text-gray-900 dark:text-white md:text-[68px]">
+            <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl md:leading-[1.06] lg:text-[68px]">
               Run your trade business like a pro.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-500 dark:text-slate-400">
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-gray-500 dark:text-slate-400 md:mt-6 md:text-lg">
               Jobs. Quotes. Invoices. Team. Marketing. Leads. All in one place &mdash; built for Australian tradies,
               cleaners, landscapers, and field service businesses.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/auth/signup"
-                className="flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto"
               >
                 Start free &mdash; 30 days
                 <ArrowRight size={16} />
               </Link>
               <a
                 href="#platform"
-                className="flex items-center gap-2 rounded-xl border border-gray-300 dark:border-white/15 px-6 py-3.5 text-base font-semibold text-gray-700 dark:text-white transition hover:border-gray-400 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-white/15 px-6 py-3.5 text-base font-semibold text-gray-700 dark:text-white transition hover:border-gray-400 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 sm:w-auto"
               >
                 See the platform
               </a>
@@ -144,7 +103,7 @@ export default async function HomePage() {
             <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">No credit card &nbsp;&middot;&nbsp; Cancel anytime &nbsp;&middot;&nbsp; Australian owned &amp; operated</p>
 
             {/* Stat row */}
-            <div className="mt-10 flex flex-wrap gap-6 border-t border-gray-200 dark:border-white/10 pt-8 text-sm">
+            <div className="mt-8 grid grid-cols-1 gap-3 border-t border-gray-200 dark:border-white/10 pt-6 text-sm sm:grid-cols-2 md:mt-10 md:flex md:flex-wrap md:gap-6 md:pt-8">
               {[
                 "No lock-in contracts",
                 "Cheaper than ServiceM8 at 50+ jobs/mo",
@@ -152,7 +111,7 @@ export default async function HomePage() {
                 "Built in Adelaide SA",
               ].map((s) => (
                 <div key={s} className="flex items-center gap-1.5 text-gray-500 dark:text-slate-400">
-                  <Check size={13} className="text-emerald-500 dark:text-emerald-400" />
+                  <Check size={13} className="shrink-0 text-emerald-500 dark:text-emerald-400" />
                   <span>{s}</span>
                 </div>
               ))}
@@ -160,52 +119,52 @@ export default async function HomePage() {
           </div>
 
           {/* Right — dashboard mockup */}
-          <div className="relative">
-            <div aria-hidden className="absolute -inset-6 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-2xl" />
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0c1525] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.7)]">
+          <div className="relative w-full max-w-full">
+            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-2xl md:-inset-6" />
+            <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0c1525] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.7)]">
               {/* Chrome bar */}
-              <div className="flex items-center gap-2 border-b border-white/10 bg-[#111f36]/90 px-4 py-3">
-                <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-                <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-                <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-                <span className="ml-3 truncate text-xs font-medium text-slate-400">servlo.app &nbsp;&middot;&nbsp; Dashboard</span>
+              <div className="flex items-center gap-2 border-b border-white/10 bg-[#111f36]/90 px-3 py-2.5 md:px-4 md:py-3">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57] md:h-3 md:w-3" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e] md:h-3 md:w-3" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#28c840] md:h-3 md:w-3" />
+                <span className="ml-2 truncate text-[10px] font-medium text-slate-400 md:ml-3 md:text-xs">servlo.app &nbsp;&middot;&nbsp; Dashboard</span>
               </div>
-              <div className="p-5">
+              <div className="p-4 md:p-5">
                 {/* Top stats */}
-                <div className="mb-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-white/10 bg-[#152238] px-4 py-3">
+                <div className="mb-4 grid grid-cols-2 gap-2 md:gap-3">
+                  <div className="rounded-xl border border-white/10 bg-[#152238] px-3 py-2.5 md:px-4 md:py-3">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">This month</p>
-                    <p className="mt-1 text-xl font-bold tabular-nums text-white">$12,450</p>
+                    <p className="mt-1 text-lg font-bold tabular-nums text-white md:text-xl">$12,450</p>
                     <div className="mt-2">
                       <Sparkline />
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-[#152238] px-4 py-3">
+                  <div className="rounded-xl border border-white/10 bg-[#152238] px-3 py-2.5 md:px-4 md:py-3">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Jobs this week</p>
-                    <p className="mt-1 text-xl font-bold tabular-nums text-white">14</p>
+                    <p className="mt-1 text-lg font-bold tabular-nums text-white md:text-xl">14</p>
                     <p className="mt-1 text-xs text-emerald-400">+3 vs last week</p>
                   </div>
                 </div>
 
                 {/* Job card */}
                 <div className="overflow-hidden rounded-xl border border-white/10 bg-[#152238]">
-                  <div className="flex items-start justify-between gap-3 border-b border-white/10 bg-[#1a2d47]/80 px-4 py-3">
+                  <div className="flex items-start justify-between gap-3 border-b border-white/10 bg-[#1a2d47]/80 px-3 py-2.5 md:px-4 md:py-3">
                     <div className="min-w-0 flex-1">
-                      <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-200 ring-1 ring-inset ring-emerald-500/30">
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-200 ring-1 ring-inset ring-emerald-500/30 md:text-[11px]">
                         In Progress
                       </span>
                       <h3 className="mt-2 truncate text-sm font-bold text-white">Install GPOs &mdash; Mike&rsquo;s Plumbing</h3>
                       <p className="truncate text-xs text-slate-400">Norwood, SA &nbsp;&middot;&nbsp; 9:00 AM &ndash; 2:00 PM</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-lg font-extrabold tabular-nums text-blue-300">$1,920</p>
+                      <p className="text-base font-extrabold tabular-nums text-blue-300 md:text-lg">$1,920</p>
                       <p className="text-[10px] text-slate-400">Inc. GST</p>
                     </div>
                   </div>
                   {/* Invoice row */}
-                  <div className="flex items-center justify-between gap-2 px-4 py-2.5 text-xs">
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 text-[11px] md:px-4 md:py-2.5 md:text-xs">
                     <span className="font-mono text-slate-400">INV-0042</span>
-                    <span className="text-slate-300">Sarah Chen</span>
+                    <span className="truncate text-slate-300">Sarah Chen</span>
                     <span className="font-semibold text-white">$1,840</span>
                     <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-semibold text-emerald-300 ring-1 ring-emerald-500/25">
                       Paid
@@ -214,12 +173,12 @@ export default async function HomePage() {
                 </div>
 
                 {/* AI status indicator */}
-                <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-purple-500/25 bg-purple-500/10 px-3.5 py-2.5">
-                  <span className="relative flex h-2 w-2">
+                <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-purple-500/25 bg-purple-500/10 px-3 py-2 md:px-3.5 md:py-2.5">
+                  <span className="relative flex h-2 w-2 shrink-0">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-purple-400" />
                   </span>
-                  <span className="text-xs font-medium text-purple-200">AI generating ad for &ldquo;emergency electrician Adelaide&rdquo;&hellip;</span>
+                  <span className="truncate text-[11px] font-medium text-purple-200 md:text-xs">AI generating ad for &ldquo;emergency electrician Adelaide&rdquo;&hellip;</span>
                 </div>
               </div>
             </div>
@@ -230,12 +189,12 @@ export default async function HomePage() {
       {/* ── SOCIAL PROOF STRIP ───────────────────────────────────────────── */}
       <section className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] py-5">
         <div className="mx-auto max-w-5xl px-4 md:px-6">
-          <p className="mb-5 text-center text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
+          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500 md:mb-5">
             Built for every trade
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:gap-10">
             {["Electricians", "Plumbers", "HVAC", "Builders", "Cleaners", "Landscapers"].map((label) => (
-              <div key={label} className="text-sm font-medium text-gray-500 dark:text-slate-400">
+              <div key={label} className="text-xs font-medium text-gray-500 dark:text-slate-400 md:text-sm">
                 {label}
               </div>
             ))}
@@ -244,14 +203,14 @@ export default async function HomePage() {
       </section>
 
       {/* ── PROBLEM ──────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-32 md:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-32">
         <div className="mb-4 text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">The problem</span>
         </div>
-        <h2 className="mx-auto max-w-2xl text-center text-4xl font-bold leading-tight text-gray-900 dark:text-white md:text-[52px] md:leading-[1.1]">
+        <h2 className="mx-auto max-w-2xl text-center text-3xl font-bold leading-tight text-gray-900 dark:text-white sm:text-4xl md:text-[52px] md:leading-[1.1]">
           Still running your business on paper and WhatsApp?
         </h2>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:mt-14 md:gap-6 md:grid-cols-3">
           {[
             {
               title: "Texting quotes to clients at 10pm",
@@ -268,7 +227,7 @@ export default async function HomePage() {
           ].map(({ title, copy }) => (
             <div
               key={title}
-              className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.03] p-7 transition hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/[0.05]"
+              className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.03] p-5 transition hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-white/[0.05] md:p-7"
             >
               <h3 className="text-base font-bold text-gray-900 dark:text-white">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{copy}</p>
@@ -278,13 +237,13 @@ export default async function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
+      <section id="how-it-works" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-16 md:py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">How it works</span>
           </div>
-          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Up and running in minutes</h2>
-          <div className="relative mt-16 grid gap-10 md:grid-cols-3">
+          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">Up and running in minutes</h2>
+          <div className="relative mt-10 grid gap-8 md:mt-16 md:gap-10 md:grid-cols-3">
             <div aria-hidden className="absolute left-[calc(33%+1rem)] right-[calc(33%+1rem)] top-8 hidden h-px bg-gradient-to-r from-zinc-300/40 via-zinc-300/60 to-zinc-300/40 dark:from-white/20 dark:via-white/30 dark:to-white/20 md:block" />
             {[
               {
@@ -316,15 +275,15 @@ export default async function HomePage() {
       </section>
 
       {/* ── THREE PRODUCTS ───────────────────────────────────────────────── */}
-      <section id="platform" className="mx-auto max-w-7xl px-4 py-32 md:px-6">
+      <section id="platform" className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-32">
         <div className="mb-4 text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">The platform</span>
         </div>
-        <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Three products, one login</h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
+        <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">Three products, one login</h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
           Start with Core to run your business. Add Grow to market it. Use Leads to fill your pipeline.
         </p>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:mt-14 md:gap-6 md:grid-cols-3">
           {[
             {
               logo: "/core.png",
@@ -386,7 +345,7 @@ export default async function HomePage() {
               className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
             >
               <div className="h-1 w-full" style={{ backgroundColor: color }} />
-              <div className="flex flex-1 flex-col p-6">
+              <div className="flex flex-1 flex-col p-5 md:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="relative h-8 w-8 shrink-0">
                     <Image src={logo} alt={name} fill sizes="32px" className={`object-contain ${logoGlow ?? ""}`} unoptimized />
@@ -415,17 +374,17 @@ export default async function HomePage() {
       </section>
 
       {/* ── FULL PLATFORM (5 COMING PRODUCTS) ────────────────────────────── */}
-      <section id="roadmap" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
+      <section id="roadmap" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-16 md:py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Roadmap</span>
           </div>
-          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">The full platform</h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
+          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">The full platform</h2>
+          <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
             Start with Core. Add products as you grow. One login, one bill.
           </p>
           {/* Row 1 — ANSWER, PAY, HIRE */}
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 md:mt-14 md:gap-6 lg:grid-cols-3">
             {[
               {
                 Icon: Phone,
@@ -484,7 +443,7 @@ export default async function HomePage() {
                 className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
               >
                 <div className="h-1 w-full" style={{ backgroundColor: color }} />
-                <div className="flex flex-1 flex-col p-6">
+                <div className="flex flex-1 flex-col p-5 md:p-6">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
@@ -512,7 +471,7 @@ export default async function HomePage() {
             ))}
           </div>
           {/* Row 2 — FLEET + FINANCE HUB, centred */}
-          <div className="mt-6 flex flex-wrap justify-center gap-6">
+          <div className="mt-5 flex flex-wrap justify-center gap-5 md:mt-6 md:gap-6">
             {[
               {
                 Icon: Truck,
@@ -551,10 +510,10 @@ export default async function HomePage() {
             ].map(({ Icon, name, tagline, color, badge, badgeStyle, desc, features }) => (
               <div
                 key={name}
-                className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20 sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+                className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20 sm:w-[calc(50%-10px)] md:sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
               >
                 <div className="h-1 w-full" style={{ backgroundColor: color }} />
-                <div className="flex flex-1 flex-col p-6">
+                <div className="flex flex-1 flex-col p-5 md:p-6">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
@@ -585,20 +544,20 @@ export default async function HomePage() {
       </section>
 
       {/* ── YOUR EDGE (AI) ───────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-32 md:px-6">
-        <div className="grid items-center gap-14 md:grid-cols-2">
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-32">
+        <div className="grid items-center gap-10 md:grid-cols-2 md:gap-14">
           <div>
             <div className="mb-4">
               <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Your edge</span>
             </div>
-            <h2 className="text-4xl font-bold leading-tight text-gray-900 dark:text-white md:text-[52px] md:leading-[1.1]">
+            <h2 className="text-3xl font-bold leading-tight text-gray-900 dark:text-white sm:text-4xl md:text-[52px] md:leading-[1.1]">
               The only Australian trade platform with built-in AI.
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-gray-500 dark:text-slate-400">
+            <p className="mt-4 text-sm leading-relaxed text-gray-500 dark:text-slate-400 md:mt-5 md:text-base">
               SERVLO isn&apos;t just software &mdash; it uses AI to save you hours every week.
               Smart features that work behind the scenes so you can stay on the tools.
             </p>
-            <ul className="mt-10 space-y-5">
+            <ul className="mt-8 space-y-5 md:mt-10">
               {[
                 {
                   Icon: Megaphone,
@@ -640,9 +599,9 @@ export default async function HomePage() {
           </div>
 
           {/* Mock AI card — stays dark as it shows app UI */}
-          <div className="relative">
+          <div className="relative w-full max-w-full">
             <div aria-hidden className="absolute -inset-4 rounded-3xl bg-zinc-900/5 dark:bg-white/[0.04] blur-2xl" />
-            <div className="relative rounded-2xl border border-white/10 bg-[#0c1525] p-6">
+            <div className="relative rounded-2xl border border-white/10 bg-[#0c1525] p-4 md:p-6">
               <div className="mb-4 flex items-center gap-2">
                 <span className="text-sm font-semibold text-white">AI Quote Assistant</span>
                 <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">Live</span>
@@ -680,30 +639,30 @@ export default async function HomePage() {
       </section>
 
       {/* ── PRICING ──────────────────────────────────────────────────────── */}
-      <section id="pricing" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
+      <section id="pricing" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-16 md:py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Pricing</span>
           </div>
-          <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">
+          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">
             Simple pricing. No surprises.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-base text-gray-500 dark:text-slate-400">
+          <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
             Early adopters lock in the founding rate &mdash; your price never increases while your subscription is active.
           </p>
-          <div className="mt-12">
+          <div className="mt-10 md:mt-12">
             <LandingPricing />
           </div>
         </div>
       </section>
 
       {/* ── NO LOCK-IN ───────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 py-32 md:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-32">
         <div className="mb-4 text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Our promise</span>
         </div>
-        <h2 className="text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Your data. Your business. Your call.</h2>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">Your data. Your business. Your call.</h2>
+        <div className="mt-10 grid gap-5 md:mt-14 md:gap-6 md:grid-cols-3">
           {[
             {
               Icon: Shield,
@@ -726,7 +685,7 @@ export default async function HomePage() {
           ].map(({ Icon, title, copy, proof }) => (
             <div
               key={title}
-              className="flex flex-col items-start rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] border-l-4 border-l-zinc-300/60 dark:border-l-white/20 p-7"
+              className="flex flex-col items-start rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] border-l-4 border-l-zinc-300/60 dark:border-l-white/20 p-5 md:p-7"
             >
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-500/10 dark:bg-white/[0.06]">
                 <Icon size={18} className="text-zinc-500 dark:text-zinc-400" />
@@ -740,20 +699,20 @@ export default async function HomePage() {
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-32">
+      <section className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-16 md:py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-4 text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">FAQ</span>
           </div>
-          <h2 className="mb-14 text-center text-4xl font-bold text-gray-900 dark:text-white md:text-[52px]">Common questions</h2>
+          <h2 className="mb-10 text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:mb-14 md:text-[52px]">Common questions</h2>
           <LandingFaq />
         </div>
       </section>
 
       {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-4 py-32 md:px-6">
+      <section className="relative overflow-hidden px-4 py-16 md:px-6 md:py-32">
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-zinc-900/5 dark:bg-white/[0.04] blur-[120px]" />
+          <div className="absolute left-1/2 top-0 h-[300px] w-[500px] -translate-x-1/2 rounded-full bg-zinc-900/5 dark:bg-white/[0.04] blur-[100px] md:h-[500px] md:w-[700px] md:blur-[120px]" />
         </div>
         <div className="relative mx-auto max-w-2xl text-center">
           {founderCount > 0 && (
@@ -763,24 +722,24 @@ export default async function HomePage() {
               Australian businesses already on SERVLO
             </p>
           )}
-          <h2 className="text-4xl font-extrabold leading-tight text-gray-900 dark:text-white md:text-[56px] md:leading-[1.06]">
+          <h2 className="text-3xl font-extrabold leading-tight text-gray-900 dark:text-white sm:text-4xl md:text-[56px] md:leading-[1.06]">
             Stop leaving money on the table.
           </h2>
-          <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-gray-500 dark:text-slate-400">
+          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-gray-500 dark:text-slate-400 md:mt-6 md:text-lg">
             Every week you spend on admin instead of SERVLO is a week of missed invoices,
             lost quotes, and jobs you forgot to follow up on.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 md:mt-10">
             <Link
               href="/auth/signup"
-              className="flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto sm:px-8"
             >
               Start free &mdash; 30 days
               <ArrowRight size={16} />
             </Link>
             <Link
               href="/auth/signup?plan=solo&code=EARLYACCESS"
-              className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-8 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-6 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20 sm:w-auto sm:px-8"
             >
               Claim 75% off &mdash; Founding 100
             </Link>
@@ -798,11 +757,11 @@ export default async function HomePage() {
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-200 dark:border-white/[0.06] bg-gray-100 dark:bg-[#050505] py-16">
+      <footer className="border-t border-gray-200 dark:border-white/[0.06] bg-gray-100 dark:bg-[#050505] py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="grid gap-10 md:grid-cols-4">
+          <div className="flex flex-col gap-10 md:grid md:grid-cols-4 md:gap-10">
             {/* Brand */}
-            <div>
+            <div className="text-center md:text-left">
               <Link href="/" className="inline-flex items-center gap-2">
                 <Image
                   src="/servlo-master-white.svg"
@@ -827,6 +786,9 @@ export default async function HomePage() {
               <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">ABN: 88 688 301 684</p>
             </div>
 
+            {/* Link columns — 2-col grid on mobile, slot into parent grid at md+ */}
+            <div className="grid grid-cols-2 gap-6 md:contents">
+
             {/* Product */}
             <div>
               <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Product</p>
@@ -849,7 +811,7 @@ export default async function HomePage() {
             </div>
 
             {/* Get started */}
-            <div>
+            <div className="col-span-2 md:col-span-1">
               <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Get started</p>
               <ul className="space-y-2.5 text-sm text-gray-500 dark:text-slate-400">
                 <li><Link href="/auth/signup" className="transition hover:text-gray-900 dark:hover:text-white">Start free trial</Link></li>
@@ -865,9 +827,10 @@ export default async function HomePage() {
                 </Link>
               </div>
             </div>
+            </div>{/* /link columns wrapper */}
           </div>
 
-          <div className="mt-12 border-t border-gray-200 dark:border-white/[0.06] pt-8 text-center text-xs text-gray-400 dark:text-slate-500">
+          <div className="mt-10 border-t border-gray-200 dark:border-white/[0.06] pt-6 text-center text-xs text-gray-400 dark:text-slate-500 md:mt-12 md:pt-8">
             &copy; 2026 SERVLO Pty Ltd. All rights reserved. Built in Adelaide, South Australia.
           </div>
         </div>
