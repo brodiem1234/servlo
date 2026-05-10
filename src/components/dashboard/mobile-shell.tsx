@@ -10,7 +10,7 @@
  *     <ProductShell>{children}</ProductShell>
  *   </div>
  *   <div className="md:hidden">
- *     <MobileShell productName="SERVLO GROW" accentColor="#8B5CF6"
+ *     <MobileShell productName="SERVLO GROW" accentColor="#7C3AED"
  *       navItems={[...]} logoSrc="/grow.png">
  *       {children}
  *     </MobileShell>
@@ -41,13 +41,13 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 const MOBILE_APPS = [
   { label: "Core",        sub: "Business Mgmt",    href: "/dashboard/owner",       color: "#3B82F6" },
-  { label: "Grow",        sub: "Marketing & Ads",  href: "/dashboard/grow",        color: "#8B5CF6" },
+  { label: "Grow",        sub: "Marketing & Ads",  href: "/dashboard/grow",        color: "#7C3AED" },
   { label: "Leads",       sub: "Lead Marketplace", href: "/dashboard/leads",       color: "#F59E0B" },
   { label: "Answer",      sub: "AI Phone Agent",   href: "/dashboard/answer",      color: "#14B8A6" },
-  { label: "Pay",         sub: "Payments",         href: "/dashboard/pay",         color: "#22C55E" },
+  { label: "Pay",         sub: "Payments",         href: "/dashboard/pay",         color: "#10B981" },
   { label: "Fleet",       sub: "Vehicles & Assets",href: "/dashboard/fleet",       color: "#F97316" },
-  { label: "Finance Hub", sub: "Accounting & BAS", href: "/dashboard/finance-hub", color: "#059669" },
-  { label: "Hire",        sub: "Recruitment & HR", href: "/dashboard/hire",        color: "#6366F1" },
+  { label: "Finance Hub", sub: "Accounting & BAS", href: "/dashboard/finance-hub", color: "#06B6D4" },
+  { label: "Hire",        sub: "Recruitment & HR", href: "/dashboard/hire",        color: "#EA580C" },
 ];
 
 // ── Nav item types ────────────────────────────────────────────────────────────

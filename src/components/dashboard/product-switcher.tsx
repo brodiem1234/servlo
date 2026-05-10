@@ -38,7 +38,7 @@ const ACTIVE_PRODUCTS: Array<{
     label: "Grow",
     sub: "Marketing & Ads",
     href: "/dashboard/grow",
-    color: "#8B5CF6",
+    color: "#7C3AED",
   },
   {
     id: "leads",
@@ -59,7 +59,7 @@ const ACTIVE_PRODUCTS: Array<{
     label: "Pay",
     sub: "Payment Processing",
     href: "/dashboard/pay",
-    color: "#22C55E",
+    color: "#10B981",
   },
   {
     id: "fleet",
@@ -73,14 +73,14 @@ const ACTIVE_PRODUCTS: Array<{
     label: "Finance Hub",
     sub: "Accounting & BAS",
     href: "/dashboard/finance-hub",
-    color: "#059669",
+    color: "#06B6D4",
   },
   {
     id: "hire",
     label: "Hire",
     sub: "Recruitment & HR",
     href: "/dashboard/hire",
-    color: "#6366F1",
+    color: "#EA580C",
   },
 ];
 
@@ -97,7 +97,7 @@ const COMING_SOON_PRODUCTS: Array<{
     label: "Connect",
     sub: "Trades Community",
     href: "/dashboard/connect",
-    color: "#6366F1",
+    color: "#6B7280",
     launch: "Q2 2026",
   },
   {
@@ -105,7 +105,7 @@ const COMING_SOON_PRODUCTS: Array<{
     label: "Insurance",
     sub: "Embedded Insurance",
     href: "/dashboard/insurance",
-    color: "#F43F5E",
+    color: "#6B7280",
     launch: "Q4 2027",
   },
   {
@@ -113,7 +113,7 @@ const COMING_SOON_PRODUCTS: Array<{
     label: "Safe",
     sub: "Safety & Compliance",
     href: "/dashboard/safe",
-    color: "#EF4444",
+    color: "#6B7280",
     launch: "Q2 2027",
   },
   {
@@ -121,7 +121,7 @@ const COMING_SOON_PRODUCTS: Array<{
     label: "Books",
     sub: "Bookkeeping & BAS",
     href: "/dashboard/books",
-    color: "#10B981",
+    color: "#6B7280",
     launch: "Q3 2027",
   },
   {
@@ -129,7 +129,7 @@ const COMING_SOON_PRODUCTS: Array<{
     label: "Academy",
     sub: "Trade Training",
     href: "/dashboard/academy",
-    color: "#EAB308",
+    color: "#6B7280",
     launch: "Q1 2028",
   },
 ];
