@@ -108,6 +108,13 @@ export function OnboardingTour({
     return () => document.removeEventListener("keydown", onKey);
   }, [phase]); // re-bind when phase changes so closure is fresh
 
+  // ── External tour trigger via top-bar Compass button ─────────────────────
+  useEffect(() => {
+    function onTrigger(_e: Event) { doStartTour(); }
+    window.addEventListener("servlo:start-tour", onTrigger);
+    return () => window.removeEventListener("servlo:start-tour", onTrigger);
+  }, []); // intentionally empty — doStartTour only uses stable state setters + router
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   function doSkipWelcome() {

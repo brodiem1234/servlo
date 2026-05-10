@@ -141,6 +141,13 @@ export function HelpButton() {
     if (!open) { setQuery(""); setFrSuccess(false); setBugSuccess(false); }
   }, [open]);
 
+  // External open via top-bar HelpCircle button (mobile)
+  useEffect(() => {
+    function onOpen(_e: Event) { setOpen(true); }
+    window.addEventListener("servlo:open-help", onOpen);
+    return () => window.removeEventListener("servlo:open-help", onOpen);
+  }, []);
+
   async function submitFeatureRequest() {
     if (!frTitle.trim()) return;
     setFrSubmitting(true);
@@ -212,7 +219,7 @@ export function HelpButton() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Help"
-        className="fixed bottom-20 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)] shadow-lg transition-colors hover:text-[var(--accent-color)] md:bottom-6"
+        className="fixed bottom-20 right-4 z-50 hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-muted)] shadow-lg transition-colors hover:text-[var(--accent-color)] md:bottom-6 md:flex"
       >
         {open ? <X size={18} /> : <HelpCircle size={18} />}
       </button>
