@@ -121,4 +121,20 @@ All commits: zero `tsc --noEmit` errors ✅
 
 ---
 
+## Phase 4 — Session 4 (2026-05-10 continuation)
+
+| Feature | Files | Status |
+|---------|-------|--------|
+| Loading skeletons (38 missing routes) | `dashboard/**/loading.tsx` | ✅ PASS |
+| Fix notifications table name | `notification-bell.tsx`, `owner-shell-layout.tsx`, `lib/notifications.ts`, `cron/weekly-summary`, `grant-founder`, `launch-checklist` | ✅ FIXED |
+| Fix notifications column: `action_url`/`href`/`message`/`read_at` → `link`/`title`/`read` | same files | ✅ FIXED |
+| Fix notifications page table/column names | `owner/notifications/page.tsx` | ✅ FIXED |
+| Add `paid_at` + owner notification on Stripe invoice payment | `api/stripe/webhook/route.ts` | ✅ PASS |
+| Graceful 42P01 for audit_log | `owner/audit-log/page.tsx` | ✅ FIXED |
+
+### Phase 4 TypeScript gate
+All commits: zero `tsc --noEmit` errors ✅
+
+---
+
 ## Phase 1 — CORE (legacy — see Phase 1 detail table above)
