@@ -9,6 +9,7 @@ import { createNotification } from "@/lib/notifications";
 import { filterDemoEntities } from "@/lib/demo/visibility";
 import FirstVisitBanner from "@/components/dashboard/first-visit-banner";
 import { canCreateJob } from "@/lib/plan-limits";
+import { fireJobAutomations } from "@/lib/job-automations";
 
 export const dynamic = "force-dynamic";
 
@@ -282,6 +283,11 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
     const status = String(formData.get("status") ?? "scheduled");
     const { error } = await sb.from("jobs").update({ status }).eq("id", id).eq("owner_id", owner.id);
     if (error) throw new Error(error.message);
+
+    // Fire automations for this status change (fire-and-forget, non-fatal)
+    fireJobAutomations(owner.id, id, status).catch((e) => {
+      console.warn("[automations] error", e);
+    });
 
     // When a job is completed, auto-generate a draft invoice.
     let invoiceId: string | undefined;
