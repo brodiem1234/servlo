@@ -913,6 +913,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             <DangerZoneTab
               businessName={businessRow?.business_name ?? ""}
               userEmail={user.email ?? ""}
+              isFoundingMember={(businessRow as { is_founding_member?: boolean } | null)?.is_founding_member ?? false}
+              commitmentEndDate={(businessRow as { commitment_end_date?: string | null } | null)?.commitment_end_date ?? null}
             />
           </div>
         </div>

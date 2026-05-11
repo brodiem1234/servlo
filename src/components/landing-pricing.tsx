@@ -463,7 +463,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
             href="/auth/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-3.5 text-base font-semibold text-white hover:bg-blue-600"
           >
-            Upgrade to Team — $89/mo
+            Upgrade to Team — $79/mo
           </Link>
         </div>
       </div>

@@ -50,7 +50,7 @@ function Sparkline() {
 
 export default async function HomePage() {
   const founderCount = await getFounderCount();
-  const spotsRemaining = Math.max(0, 50 - founderCount);
+  const spotsRemaining = Math.max(0, 100 - founderCount);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
@@ -100,7 +100,10 @@ export default async function HomePage() {
                 Watch 2-min demo &rarr;
               </a>
             </div>
-            <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">No credit card &nbsp;&middot;&nbsp; Cancel anytime &nbsp;&middot;&nbsp; Australian owned &amp; operated</p>
+            <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
+              No credit card &nbsp;&middot;&nbsp; Cancel anytime &nbsp;&middot;&nbsp;{" "}
+              <Link href="/guarantee" className="underline hover:text-gray-600 dark:hover:text-slate-300">30-day guarantee</Link>
+            </p>
 
             {/* Stat row */}
             <div className="mt-8 grid grid-cols-1 gap-3 border-t border-gray-200 dark:border-white/10 pt-6 text-sm sm:grid-cols-2 md:mt-10 md:flex md:flex-wrap md:gap-6 md:pt-8">
@@ -698,6 +701,45 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ── GUARANTEE + REFERRAL ─────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Guarantee card */}
+          <div className="flex flex-col rounded-2xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-950/20 p-7">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-500/15">
+              <Shield size={18} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">30-day money-back guarantee</h3>
+            <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 flex-1">
+              Not happy in the first 30 days? We refund every cent. No questions, no phone call required. Email us and it&apos;s done.
+            </p>
+            <Link
+              href="/guarantee"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Read the full guarantee <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {/* Referral card */}
+          <div className="flex flex-col rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-950/20 p-7">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/15">
+              <Users size={18} className="text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Refer a tradie, earn a free month</h3>
+            <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 flex-1">
+              Every business you refer that subscribes earns you both 1 free month. No cap — refer 12 businesses, get a whole year free.
+            </p>
+            <Link
+              href="/auth/signup"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Sign up to get your referral link <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <section className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-16 md:py-32">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
@@ -746,11 +788,13 @@ export default async function HomePage() {
           </div>
           {spotsRemaining > 0 && (
             <p className="mt-5 text-sm font-medium text-gray-500 dark:text-slate-400">
-              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 50</span> founding spots remain.
+              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 100</span> founding spots remain.
               After that, full price only.
             </p>
           )}
           <p className="mt-4 text-sm text-gray-400 dark:text-slate-500">
+            <Link href="/guarantee" className="underline hover:text-gray-300">30-day money-back guarantee</Link>
+            {" "}&nbsp;&middot;&nbsp;{" "}
             Built in Adelaide SA &nbsp;&middot;&nbsp; ABN 88 688 301 684
           </p>
         </div>

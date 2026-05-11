@@ -8,13 +8,13 @@ const TIERS = [
   {
     name: "Solo",
     desc: "Perfect for sole traders",
-    monthly: 39,
-    annual: 32.5,
-    annualTotal: 390,
+    monthly: 29,
+    annual: 24.17,
+    annualTotal: 290,
     href: "/auth/signup?plan=solo",
     highlight: false,
     badge: null,
-    earlyAdopter: 9.75,
+    earlyAdopter: 7.25,
     features: [
       "Unlimited jobs & invoices",
       "Client management (CRM)",
@@ -30,13 +30,13 @@ const TIERS = [
   {
     name: "Team",
     desc: "For growing trade businesses",
-    monthly: 89,
-    annual: 74,
-    annualTotal: 888,
+    monthly: 79,
+    annual: 65.83,
+    annualTotal: 790,
     href: "/auth/signup?plan=team",
     highlight: true,
     badge: "Most popular",
-    earlyAdopter: 22.25,
+    earlyAdopter: 19.75,
     features: [
       "Everything in Solo",
       "Unlimited team members",
@@ -49,13 +49,13 @@ const TIERS = [
   {
     name: "Business",
     desc: "For established operations",
-    monthly: 179,
-    annual: 149,
-    annualTotal: 1788,
+    monthly: 149,
+    annual: 124.17,
+    annualTotal: 1490,
     href: "/auth/signup?plan=business",
     highlight: false,
     badge: "Early adopter price locked",
-    earlyAdopter: 44.75,
+    earlyAdopter: 37.25,
     features: [
       "Everything in Team",
       "Advanced analytics",
@@ -87,11 +87,11 @@ export function LandingPricing() {
               <span className="font-bold text-white">{SPOTS_REMAINING} of 50 spots remaining.</span>
             </p>
             <p className="mt-2 text-xs text-amber-200/70 md:text-sm">
-              Solo from <strong className="text-amber-200">$9.75/mo</strong>
+              Solo from <strong className="text-amber-200">$7.25/mo</strong>
               <span className="hidden sm:inline"> &nbsp;&middot;&nbsp; </span>
-              <span className="block sm:inline">Team from <strong className="text-amber-200">$22.25/mo</strong></span>
+              <span className="block sm:inline">Team from <strong className="text-amber-200">$19.75/mo</strong></span>
               <span className="hidden sm:inline"> &nbsp;&middot;&nbsp; </span>
-              <span className="block sm:inline">Business from <strong className="text-amber-200">$44.75/mo</strong></span>
+              <span className="block sm:inline">Business from <strong className="text-amber-200">$37.25/mo</strong></span>
             </p>
           </div>
         </div>
@@ -181,8 +181,8 @@ export function LandingPricing() {
       {/* Comparison note */}
       <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center md:mt-8">
         <p className="text-xs text-slate-300 md:text-sm">
-          If you do 50+ jobs a month, SERVLO Solo ($39) beats ServiceM8 Growing ($79).{" "}
-          <strong className="text-white">You save $480/year.</strong>
+          If you do 50+ jobs a month, SERVLO Solo ($29) beats ServiceM8 Growing ($79).{" "}
+          <strong className="text-white">You save $600/year.</strong>
         </p>
         <Link
           href="/compare/servicem8"

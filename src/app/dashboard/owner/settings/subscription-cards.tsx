@@ -42,8 +42,8 @@ export default function SubscriptionCards({ email, currentPlan, success, priceId
     {
       key: "business",
       label: "Business",
-      price: "$179/mo",
-      description: "Up to 20 employees, all features",
+      price: "$149/mo",
+      description: "Unlimited employees, all features",
       priceId: priceIds.business
     }
   ];

@@ -86,6 +86,24 @@ export async function POST(req: Request) {
             subscription_tier: plan
           })
           .eq("email", customerEmail);
+
+        // Also update businesses table with stripe customer id and plan
+        const { data: prof } = await admin
+          .from("profiles")
+          .select("id")
+          .eq("email", customerEmail)
+          .maybeSingle();
+        if (prof?.id) {
+          await admin
+            .from("businesses")
+            .update({
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              plan,
+              subscription_status: "active",
+            })
+            .eq("owner_id", prof.id);
+        }
       }
     }
 
@@ -262,6 +280,79 @@ export async function POST(req: Request) {
           }
 
           await sendEmail(profile.email, subject, body);
+        }
+      }
+    }
+
+    // ── Free months application — apply credit before billing ───────────────
+    // invoice.upcoming fires ~1 hour before an invoice is finalized
+    if (event.type === "invoice.upcoming") {
+      const upcomingInvoice = event.data.object;
+      const customerId = typeof upcomingInvoice.customer === "string" ? upcomingInvoice.customer : null;
+      const subscriptionId = typeof upcomingInvoice.subscription === "string" ? upcomingInvoice.subscription : null;
+
+      if (customerId && subscriptionId) {
+        try {
+          // Look up owner by stripe_customer_id in businesses table
+          const { data: biz } = await admin
+            .from("businesses")
+            .select("owner_id, free_months_balance, free_months_used, stripe_customer_id")
+            .eq("stripe_customer_id", customerId)
+            .maybeSingle();
+
+          // Also try profiles if not found in businesses
+          let ownerId = (biz as { owner_id?: string } | null)?.owner_id;
+          let freeBalance = (biz as { free_months_balance?: number } | null)?.free_months_balance ?? 0;
+
+          if (!ownerId) {
+            const { data: prof } = await admin
+              .from("profiles")
+              .select("id")
+              .eq("stripe_customer_id", customerId)
+              .maybeSingle();
+            ownerId = prof?.id;
+          }
+
+          if (ownerId && freeBalance > 0) {
+            // Apply a discount coupon or credit via Stripe
+            try {
+              // Create a one-time credit coupon for 100% off one invoice
+              const coupon = await stripe.coupons.create({
+                percent_off: 100,
+                duration: "once",
+                name: "SERVLO Free Month Reward",
+                max_redemptions: 1,
+              });
+
+              await stripe.subscriptions.update(subscriptionId, {
+                coupon: coupon.id,
+              });
+
+              // Decrement free months balance
+              const currentBalance = freeBalance;
+              const newBalance = Math.max(0, currentBalance - 1);
+              const { data: bizForUpdate } = await admin
+                .from("businesses")
+                .select("free_months_used")
+                .eq("owner_id", ownerId)
+                .single();
+              const currentUsed = (bizForUpdate as { free_months_used?: number } | null)?.free_months_used ?? 0;
+
+              await admin
+                .from("businesses")
+                .update({
+                  free_months_balance: newBalance,
+                  free_months_used: currentUsed + 1,
+                })
+                .eq("owner_id", ownerId);
+
+              console.log(`[webhook] Applied free month for owner ${ownerId}, balance: ${currentBalance} -> ${newBalance}`);
+            } catch (stripeErr) {
+              console.error("[webhook] Failed to apply free month coupon:", stripeErr);
+            }
+          }
+        } catch (err) {
+          console.error("[webhook] invoice.upcoming free months error:", err);
         }
       }
     }

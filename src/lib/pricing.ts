@@ -1,18 +1,7 @@
-// ACTION REQUIRED AFTER DEPLOY:
-// Create new Stripe prices in Stripe dashboard at:
-// Solo Monthly: $39.00 AUD/month
-// Solo Annual: $390.00 AUD/year
-// Team Monthly: $89.00 AUD/month
-// Team Annual: $890.00 AUD/year
-// Business Monthly: $179.00 AUD/month
-// Business Annual: $1,790.00 AUD/year
-// Then update these env vars in Vercel:
-// NEXT_PUBLIC_STRIPE_SOLO_MONTHLY_PRICE_ID
-// NEXT_PUBLIC_STRIPE_SOLO_ANNUAL_PRICE_ID
-// NEXT_PUBLIC_STRIPE_TEAM_MONTHLY_PRICE_ID
-// NEXT_PUBLIC_STRIPE_TEAM_ANNUAL_PRICE_ID
-// NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PRICE_ID
-// NEXT_PUBLIC_STRIPE_BUSINESS_ANNUAL_PRICE_ID
+// Stripe Price IDs (CLAUDE.md canonical):
+// Solo:     price_1TTiL8K1tzStyRcJQAfbuJ5n
+// Team:     price_1TTiLaK1tzStyRcJNOgCeg0X
+// Business: price_1TTiLyK1tzStyRcJ4BVJz0o8
 
 export const PLANS = {
   free: {
@@ -38,9 +27,9 @@ export const PLANS = {
     name: 'Solo',
     badge: 'Just me',
     subtitle: 'Perfect for sole traders',
-    monthlyPrice: 39,
-    annualPrice: 390,
-    annualMonthlyEquiv: 32.5,
+    monthlyPrice: 29,
+    annualPrice: 290,
+    annualMonthlyEquiv: 24.17,
     jobsPerMonth: Infinity,
     users: 1,
     aiGenerations: 50,
@@ -59,9 +48,9 @@ export const PLANS = {
     name: 'Team',
     badge: 'I have a team',
     subtitle: 'Unlimited team members',
-    monthlyPrice: 89,
-    annualPrice: 890,
-    annualMonthlyEquiv: 74.17,
+    monthlyPrice: 79,
+    annualPrice: 790,
+    annualMonthlyEquiv: 65.83,
     jobsPerMonth: Infinity,
     users: Infinity,
     aiGenerations: 200,
@@ -80,9 +69,9 @@ export const PLANS = {
     name: 'Business',
     badge: 'Growing business',
     subtitle: 'Advanced features & integrations',
-    monthlyPrice: 179,
-    annualPrice: 1790,
-    annualMonthlyEquiv: 149.17,
+    monthlyPrice: 149,
+    annualPrice: 1490,
+    annualMonthlyEquiv: 124.17,
     jobsPerMonth: Infinity,
     users: Infinity,
     aiGenerations: 500,
@@ -127,9 +116,9 @@ export const EARLY_ADOPTER_DISCOUNT = {
   discountPercent: 75,
   months: 3,
   plans: {
-    solo: { discountedMonthly: 9.75, fullPrice: 39 },
-    team: { discountedMonthly: 22.25, fullPrice: 89 },
-    business: { discountedMonthly: 44.75, fullPrice: 179 },
+    solo: { discountedMonthly: 7.25, fullPrice: 29 },
+    team: { discountedMonthly: 19.75, fullPrice: 79 },
+    business: { discountedMonthly: 37.25, fullPrice: 149 },
   },
 };
 

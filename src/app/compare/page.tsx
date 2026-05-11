@@ -39,7 +39,7 @@ export default function ComparePage() {
             {
               href: "/compare/tradify",
               title: "SERVLO vs Tradify",
-              desc: "SERVLO Team ($89) includes unlimited users. Tradify charges per seat.",
+              desc: "SERVLO Team ($79) includes unlimited users. Tradify charges per seat.",
               badge: null,
               badgeStyle: ""
             },

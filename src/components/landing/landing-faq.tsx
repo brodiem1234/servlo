@@ -10,7 +10,7 @@ const FAQS = [
   },
   {
     q: "What's the difference between the 30-day trial and early adopter pricing?",
-    a: "30-day trial: start free, card charged on day 31 at full price. Early adopter: pay $9.75/mo now (75% off), that rate is locked for 3 months then goes to $39/mo. If you want to try first, do the trial. If you're ready to commit and want the cheapest total cost, do early adopter."
+    a: "30-day trial: start free, card charged on day 31 at full price. Early adopter: pay $7.25/mo now (75% off), that rate is locked for 3 months then goes to $29/mo. If you want to try first, do the trial. If you're ready to commit and want the cheapest total cost, do early adopter."
   },
   {
     q: "Does it work on mobile?",
@@ -22,7 +22,7 @@ const FAQS = [
   },
   {
     q: "How does my team access it?",
-    a: "You invite team members by email from the Team page. They create their own account, get linked to your business, and see only what they need. Solo plan is owner-only. Team plan ($89/mo) adds unlimited team members."
+    a: "You invite team members by email from the Team page. They create their own account, get linked to your business, and see only what they need. Solo plan is owner-only. Team plan ($79/mo) adds unlimited team members."
   },
   {
     q: "Is SERVLO Australian?",

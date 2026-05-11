@@ -7,22 +7,22 @@ export const dynamic = "force-dynamic";
 const PLANS = [
   {
     name: "Solo",
-    price: "$39/mo",
+    price: "$29/mo",
     priceId: "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-    features: ["1 user", "500 clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"],
+    features: ["1 user", "Unlimited clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"],
     accent: "#3B82F6",
   },
   {
     name: "Team",
-    price: "$89/mo",
+    price: "$79/mo",
     priceId: "price_1TTiLaK1tzStyRcJNOgCeg0X",
-    features: ["5 users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"],
+    features: ["Unlimited users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"],
     accent: "#7c3aed",
     popular: true,
   },
   {
     name: "Business",
-    price: "$179/mo",
+    price: "$149/mo",
     priceId: "price_1TTiLyK1tzStyRcJ4BVJz0o8",
     features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB", "White-label"],
     accent: "#059669",
@@ -128,7 +128,7 @@ export default async function UpgradePage() {
           {/* Enterprise */}
           <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-[var(--text-primary)]">Enterprise — from $399/mo</p>
+              <p className="font-semibold text-[var(--text-primary)]">Enterprise — from $299/mo</p>
               <p className="text-sm text-[var(--text-secondary)]">Unlimited everything, 2000 AI uses/mo, dedicated support</p>
             </div>
             <a

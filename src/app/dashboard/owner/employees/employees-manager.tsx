@@ -364,10 +364,10 @@ export default function EmployeesManager({
         onClose={() => setUpgradeOpen(false)}
         feature="Team members"
         currentPlan={userPlan === 'free' ? 'Free' : 'Solo'}
-        currentPlanPrice={userPlan === 'free' ? 'Free' : '$39/mo'}
+        currentPlanPrice={userPlan === 'free' ? 'Free' : '$29/mo'}
         currentPlanNote={userPlan === 'free' ? '5 jobs/mo, 1 user' : '1 user only'}
         requiredPlan="Team"
-        requiredPlanPrice="$89/mo"
+        requiredPlanPrice="$79/mo"
         requiredPlanNote="Unlimited team members"
         description="Add employees and contractors to your team. Assign them to jobs and track timesheets."
       />

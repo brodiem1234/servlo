@@ -232,10 +232,14 @@ export default function ReferralManager({
   referrals: initialReferrals,
   stats,
   referralUrl: propReferralUrl,
+  referralCode: propReferralCode,
+  freeMonthsBalance = 0,
 }: {
   referrals: Referral[];
   stats: Stats;
   referralUrl?: string;
+  referralCode?: string;
+  freeMonthsBalance?: number;
 }) {
   const [referrals, setReferrals] = useState(initialReferrals);
   const [showModal, setShowModal] = useState(false);
@@ -343,14 +347,35 @@ export default function ReferralManager({
         ))}
       </div>
 
+      {/* Free months balance */}
+      {freeMonthsBalance > 0 && (
+        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 flex items-center gap-3">
+          <span className="text-2xl font-bold text-emerald-400">{freeMonthsBalance}</span>
+          <div>
+            <p className="text-sm font-semibold text-emerald-300">Free month{freeMonthsBalance !== 1 ? "s" : ""} earned</p>
+            <p className="text-xs text-emerald-400/80">Applied automatically to your next billing cycle</p>
+          </div>
+        </div>
+      )}
+
       {/* Referral link section */}
       <div
         className="rounded-xl border p-5 space-y-4"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--bg-card)" }}
       >
-        <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-          Your Referral Link
-        </h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            Your Referral Link
+          </h2>
+          {propReferralCode && (
+            <span className="font-mono text-xs rounded-full bg-purple-500/15 text-purple-400 px-2 py-0.5">
+              Code: {propReferralCode}
+            </span>
+          )}
+        </div>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          Share this link with other trade businesses. When they sign up and subscribe, you both earn 1 free month.
+        </p>
         <div className="flex items-center gap-2">
           <div
             className="flex-1 rounded-lg border px-3 py-2 text-sm font-mono truncate"

@@ -82,7 +82,7 @@ export default function CompareTradifyPage() {
             SERVLO vs Tradify
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-slate-400">
-            Tradify prices per user. SERVLO Team includes unlimited users for $89/mo flat.
+            Tradify prices per user. SERVLO Team includes unlimited users for $79/mo flat.
             Plus AI tools Tradify doesn&apos;t offer.
           </p>
         </div>

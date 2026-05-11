@@ -527,10 +527,10 @@ const PLAN_ROWS: PlanRow[] = [
 ];
 
 const PLAN_FEATURES: Record<string, { price: string; features: string[] }> = {
-  solo: { price: "$39/mo", features: ["1 user", "500 clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"] },
-  team: { price: "$89/mo", features: ["5 users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"] },
-  business: { price: "$179/mo", features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB"] },
-  enterprise: { price: "$399/mo", features: ["Everything in Business", "2000 AI uses/mo", "Dedicated support"] },
+  solo: { price: "$29/mo", features: ["1 user", "Unlimited clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"] },
+  team: { price: "$79/mo", features: ["Unlimited users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"] },
+  business: { price: "$149/mo", features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB"] },
+  enterprise: { price: "$299/mo", features: ["Everything in Business", "2000 AI uses/mo", "Dedicated support"] },
 };
 
 const PLAN_ORDER_LOCAL: Record<string, number> = { free: 0, trial: 0, solo: 1, team: 2, business: 3, enterprise: 4 };
@@ -1274,9 +1274,11 @@ function DemoDataSection() {
 type DangerZoneTabProps = {
   businessName: string;
   userEmail: string;
+  isFoundingMember?: boolean;
+  commitmentEndDate?: string | null;
 };
 
-export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
+export function DangerZoneTab({ businessName, userEmail, isFoundingMember, commitmentEndDate }: DangerZoneTabProps) {
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleteNameInput, setDeleteNameInput] = useState("");
   const [showRetention, setShowRetention] = useState(false);
@@ -1310,7 +1312,20 @@ export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
           To cancel, contact our support team. We&apos;ll process your cancellation within 1 business day.
         </p>
 
-        {!showRetention ? (
+        {isFoundingMember && commitmentEndDate && (
+          <div className="mb-4 rounded-lg border border-amber-400/50 bg-amber-50 dark:bg-amber-900/20 p-4">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              Founding Member — 3-month commitment active
+            </p>
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+              As a Founding Member, you committed to a 3-month minimum term ending{" "}
+              <strong>{new Date(commitmentEndDate).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}</strong>.
+              Cancellation is not available until after this date.
+            </p>
+          </div>
+        )}
+
+        {!showRetention && !isFoundingMember ? (
           <button
             type="button"
             onClick={() => setShowRetention(true)}
@@ -1318,6 +1333,13 @@ export function DangerZoneTab({ businessName, userEmail }: DangerZoneTabProps) {
           >
             Request cancellation
           </button>
+        ) : !showRetention && isFoundingMember ? (
+          <a
+            href={`mailto:support@servlo.com.au?subject=${encodeURIComponent("Founding Member — Cancellation Enquiry")}&body=${encodeURIComponent(`Hi,\n\nI'm a Founding Member and would like to discuss my subscription.\n\nBusiness: ${businessName}\nEmail: ${userEmail}`)}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Contact support
+          </a>
         ) : null}
 
         {/* Retention offer panel */}

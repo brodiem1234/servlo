@@ -37,10 +37,25 @@ export default async function ReferralProgramPage() {
 
   const stats = { totalReferrals, convertedCount, pendingCount, totalRewardsValue };
 
-  // Generate a stable referral code from the first 8 chars of user.id
-  const referralCode = user.id.replace(/-/g, "").slice(0, 8).toUpperCase();
+  // Try to get referral_code from businesses table, fall back to user.id-derived code
+  let referralCode: string = user.id.replace(/-/g, "").slice(0, 8).toUpperCase();
+  let freeMonthsBalance = 0;
+  try {
+    const { data: biz } = await supabase
+      .from("businesses")
+      .select("referral_code, free_months_balance")
+      .eq("owner_id", user.id)
+      .single();
+    if ((biz as { referral_code?: string | null } | null)?.referral_code) {
+      referralCode = (biz as { referral_code: string }).referral_code;
+    }
+    freeMonthsBalance = (biz as { free_months_balance?: number | null } | null)?.free_months_balance ?? 0;
+  } catch {
+    // fall back to user.id-derived code
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
   const referralUrl = `${appUrl}/ref/${referralCode}`;
 
-  return <ReferralManager referrals={referrals} stats={stats} referralUrl={referralUrl} />;
+  return <ReferralManager referrals={referrals} stats={stats} referralUrl={referralUrl} referralCode={referralCode} freeMonthsBalance={freeMonthsBalance} />;
 }

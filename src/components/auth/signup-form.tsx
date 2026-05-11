@@ -189,7 +189,7 @@ const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
     gradient: "linear-gradient(135deg, #0d1b36 0%, #1a3a6b 100%)",
     glow: "rgba(59,130,246,0.2)",
     desc: "Job management, invoicing, scheduling",
-    price: "From $39/mo", badge: "Available now", available: true,
+    price: "From $29/mo", badge: "Available now", available: true,
   },
   {
     id: "grow", name: "SERVLO Grow", color: "#8B5CF6",
@@ -309,13 +309,13 @@ function tiersForCombo(combo: string): PlanTier[] {
   if (combo === "grow") return GROW_TIERS;
 
   const priceMap: Record<string, [number, number, number, number]> = {
-    "core":             [39,  89, 179, 0],
-    "core+grow":        [99, 149, 249, 0],
-    "core+leads":       [79, 129, 219, 0],
-    "grow+leads":       [149, 199, 299, 0],
-    "core+grow+leads":  [199, 249, 349, 0],
+    "core":             [29,  79, 149, 0],
+    "core+grow":        [89, 129, 219, 0],
+    "core+leads":       [69, 109, 189, 0],
+    "grow+leads":       [129, 179, 269, 0],
+    "core+grow+leads":  [179, 229, 319, 0],
   };
-  const [p0, p1, p2] = priceMap[combo] ?? [39, 89, 179];
+  const [p0, p1, p2] = priceMap[combo] ?? [29, 79, 149];
   return [
     {
       id: "solo",
@@ -837,9 +837,12 @@ export function SignupForm() {
       const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, optionalChosen);
 
       // Capture referral code from URL query param (e.g. /auth/signup?ref=ABC123)
-      const referralCode = typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("ref") ?? undefined
-        : undefined;
+      const params = typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : new URLSearchParams();
+      const referralCode = params.get("ref") ?? undefined;
+      // Capture promo/discount code from URL (e.g. /auth/signup?code=EARLYACCESS)
+      const promoCode = params.get("code") ?? undefined;
 
       const setupBody = {
         userId,
@@ -854,6 +857,7 @@ export function SignupForm() {
         selectedProducts: selectedProductCombo,
         entityName: entityName || undefined,
         referralCode: referralCode || undefined,
+        promoCode: promoCode || undefined,
       };
 
       let res = await fetch("/api/setup-business", {
