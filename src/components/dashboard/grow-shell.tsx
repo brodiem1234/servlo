@@ -59,7 +59,7 @@ export default function GrowShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-product="grow"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": GROW_COLOR,

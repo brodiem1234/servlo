@@ -81,7 +81,7 @@ export default function FinanceHubShell({
   return (
     <div
       data-product="finance-hub"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": FINANCE_HUB_COLOR,

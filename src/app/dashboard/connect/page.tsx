@@ -100,7 +100,7 @@ export default function ConnectFeedPage() {
           <span className="text-sm text-slate-400">Trades Community Network</span>
         </div>
         {/* Create post box */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
           <div className="flex gap-3">
             <div className="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xs font-bold text-indigo-400">You</div>
             <div className="flex-1 rounded-lg bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-slate-500 cursor-pointer">Share something with the trades community...</div>
@@ -108,7 +108,7 @@ export default function ConnectFeedPage() {
         </div>
         {/* Posts */}
         {DEMO_POSTS.map((post) => (
-          <div key={post.id} className="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div key={post.id} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div
@@ -125,7 +125,7 @@ export default function ConnectFeedPage() {
               <button className="text-slate-600 hover:text-slate-400"><MoreHorizontal size={16} /></button>
             </div>
             <p className="text-sm text-slate-300 leading-relaxed mb-4">{post.content}</p>
-            <div className="flex items-center gap-4 text-slate-500 text-xs border-t border-white/5 pt-3">
+            <div className="flex items-center gap-4 text-slate-500 text-xs border-t border-zinc-100 dark:border-white/5 pt-3">
               <button className="flex items-center gap-1.5 hover:text-pink-400 transition-colors"><Heart size={14} />{post.likes}</button>
               <button className="flex items-center gap-1.5 hover:text-indigo-400 transition-colors"><MessageCircle size={14} />{post.comments}</button>
               <button className="flex items-center gap-1.5 hover:text-blue-400 transition-colors"><Share2 size={14} />Share</button>

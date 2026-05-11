@@ -248,10 +248,10 @@ export function CommsClient({ threads, clients, clientMap, emailProvider, emailC
             <p className="text-xs text-[var(--text-muted)]">Send from your real email address</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <a href="/api/auth/gmail" className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-white/10 transition-colors">
+            <a href="/api/auth/gmail" className="flex items-center gap-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
               <span className="text-base">G</span> Gmail
             </a>
-            <a href="/api/auth/outlook" className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-white/10 transition-colors">
+            <a href="/api/auth/outlook" className="flex items-center gap-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
               <span className="text-base">⊞</span> Outlook
             </a>
           </div>

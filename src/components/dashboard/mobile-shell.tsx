@@ -110,7 +110,7 @@ export default function MobileShell({
 
   return (
     <div
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": accentColor,

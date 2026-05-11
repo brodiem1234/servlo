@@ -533,10 +533,8 @@ html.dark {
   --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
 }
 
-/* Ensure sidebar text is always readable inside product shells (always-dark).
-   Product shells apply `class="dark"` to an inner div rather than <html>, so the
-   html.dark vars don't cascade here — we must re-declare them explicitly. */
-[data-product] {
+/* Dark mode: product shells get dark CSS vars */
+html.dark [data-product] {
   --product-rgb: 59,130,246;
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
@@ -560,29 +558,78 @@ html.dark {
   --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
   --sidebar-divider: rgba(255, 255, 255, 0.06);
 }
-[data-product] .owner-sidebar {
+html.dark [data-product] .owner-sidebar {
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
 }
 
-/* Active nav item — product-tinted background with accent border */
-[data-product] .owner-sidebar nav a[data-active="true"] {
+/* Light mode: product shells get light CSS vars */
+[data-product] {
+  --sidebar-text: #18181b;
+  --sidebar-text-muted: #6b7280;
+  --sidebar-hover-bg: #f4f4f5;
+  --sidebar-divider: #e4e4e7;
+  --text-primary: #0F172A;
+  --text-secondary: #374151;
+  --text-muted: #6B7280;
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --border: #e2e8f0;
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --modal-bg: #ffffff;
+  --modal-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  --panel-bg: #ffffff;
+  --panel-border: #e2e8f0;
+  --panel-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+[data-product] .owner-sidebar {
+  --sidebar-text: #18181b;
+  --sidebar-text-muted: #6b7280;
+}
+
+/* Dark mode: product sidebar nav */
+html.dark [data-product] .owner-sidebar nav a[data-active="true"] {
   background: rgba(var(--product-rgb), 0.15) !important;
   color: #ffffff !important;
   font-weight: 600;
   border-left: 3px solid var(--product-accent) !important;
 }
-[data-product] .owner-sidebar nav a[data-active="true"]:hover {
+html.dark [data-product] .owner-sidebar nav a[data-active="true"]:hover {
   background: rgba(var(--product-rgb), 0.20) !important;
   color: #ffffff !important;
 }
-[data-product] .owner-sidebar nav a:not([data-active="true"]) {
+html.dark [data-product] .owner-sidebar nav a:not([data-active="true"]) {
   color: rgba(255, 255, 255, 0.6) !important;
   border-left: 3px solid transparent !important;
 }
-[data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
+html.dark [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
   background-color: rgba(255, 255, 255, 0.04) !important;
   color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Light mode: product sidebar nav */
+[data-product] .owner-sidebar nav a[data-active="true"] {
+  background: rgba(var(--product-rgb), 0.08) !important;
+  color: var(--product-accent) !important;
+  font-weight: 600;
+  border-left: 3px solid var(--product-accent) !important;
+}
+[data-product] .owner-sidebar nav a[data-active="true"]:hover {
+  background: rgba(var(--product-rgb), 0.12) !important;
+  color: var(--product-accent) !important;
+}
+[data-product] .owner-sidebar nav a:not([data-active="true"]) {
+  color: #374151 !important;
+  border-left: 3px solid transparent !important;
+}
+[data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
+  background-color: #f4f4f5 !important;
+  color: #18181b !important;
 }
 
 /* ── Custom scrollbars (product-scoped) ─────────────────────────────────── */
@@ -615,11 +662,11 @@ html.light-mode [data-product] * {
 /* The dashboard is always dark — sidebar stays dark even in html.light-mode.
    Only the main content area may use light tokens if light mode is active. */
 html.light-mode [data-product] {
-  /* Keep dashboard dark — do NOT override sidebar or bg-primary here.
-     Only override content-area tokens so cards/inputs look lighter. */
   --text-primary: #0F172A;
   --text-secondary: #374151;
   --text-muted: #6B7280;
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #ffffff;
   --bg-card: #ffffff;
   --card-bg: #ffffff;
   --border: #e2e8f0;
@@ -630,108 +677,116 @@ html.light-mode [data-product] {
   --panel-shadow: 0 8px 24px rgba(0,0,0,0.12);
   --modal-bg: #ffffff;
   --modal-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  --sidebar-text: #18181b;
+  --sidebar-text-muted: #6b7280;
+  --sidebar-hover-bg: #f4f4f5;
+  --sidebar-divider: #e4e4e7;
 }
 
 /* In light mode, product shell main-content areas get a light tint;
-   sidebar colours are NOT overridden here — sidebar always stays dark. */
+   sidebar uses white background via --product-sidebar. */
 html.light-mode [data-product="core"] {
   background-color: #EEF4FF !important;
   --product-main: #EEF4FF;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(199deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(59,130,246,0.5));
 }
 
 html.light-mode [data-product="grow"] {
   background-color: #F0EEFF !important;
   --product-main: #F0EEFF;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(33%) sepia(97%) saturate(1300%) hue-rotate(250deg) brightness(95%) drop-shadow(0 0 8px rgba(139,92,246,0.5));
 }
 
 html.light-mode [data-product="leads"] {
   background-color: #FFF4E0 !important;
   --product-main: #FFF4E0;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(70%) sepia(90%) saturate(900%) hue-rotate(5deg) brightness(102%) drop-shadow(0 0 8px rgba(245,158,11,0.5));
 }
 
 html.light-mode [data-product="answer"] {
   background-color: #E6FAF8 !important;
   --product-main: #E6FAF8;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(155deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(20,184,166,0.5));
 }
 
 html.light-mode [data-product="pay"] {
   background-color: #E8FAF0 !important;
   --product-main: #E8FAF0;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(115deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(34,197,94,0.5));
 }
 
 html.light-mode [data-product="hire"] {
   background-color: #FEF3EB !important;
   --product-main: #FEF3EB;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(355deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(249,115,22,0.5));
 }
 
 html.light-mode [data-product="fleet"] {
   background-color: #E6F6FE !important;
   --product-main: #E6F6FE;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(175deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(14,165,233,0.5));
 }
 
 html.light-mode [data-product="finance-hub"] {
   background-color: #EEEEFF !important;
   --product-main: #EEEEFF;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(215deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(99,102,241,0.5));
 }
 
 html.light-mode [data-product="insurance"] {
   background-color: #FEE8EC !important;
   --product-main: #FEE8EC;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(325deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(244,63,94,0.5));
 }
 
 html.light-mode [data-product="safe"] {
   background-color: #FEE8E8 !important;
   --product-main: #FEE8E8;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(0deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(239,68,68,0.5));
 }
 
 html.light-mode [data-product="books"] {
   background-color: #E6FAF4 !important;
   --product-main: #E6FAF4;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(135deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(5,150,105,0.5));
 }
 
 html.light-mode [data-product="academy"] {
   background-color: #FEFAE6 !important;
   --product-main: #FEFAE6;
+  --product-sidebar: #ffffff;
   --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(20deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(234,179,8,0.5));
 }
 
-/* Light mode — sidebar nav active item stays dark-themed (sidebar is always dark) */
+/* Light mode: sidebar background white, nav items follow theme */
+html.light-mode [data-product] .owner-sidebar {
+  background: #ffffff !important;
+  border-right-color: #e4e4e7 !important;
+}
 html.light-mode [data-product] .owner-sidebar nav a[data-active="true"] {
-  background: rgba(var(--product-rgb), 0.15) !important;
-  color: #ffffff !important;
+  background: rgba(var(--product-rgb), 0.08) !important;
+  color: var(--product-accent) !important;
   font-weight: 600;
   border-left: 3px solid var(--product-accent) !important;
 }
 html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]) {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: #374151 !important;
   border-left: 3px solid transparent !important;
 }
 html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Sidebar always stays dark — do NOT apply white background in light mode */
-html.light-mode [data-product] .owner-sidebar {
-  /* sidebar bg is set by --product-sidebar on the sidebar element itself — keep dark */
-}
-
-/* product-switcher-trigger in light mode stays dark-sidebar themed */
-html.light-mode [data-product] .product-switcher-trigger {
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(255,255,255,0.85) !important;
+  background-color: #f4f4f5 !important;
+  color: #18181b !important;
 }
 
 /* Light mode cards */

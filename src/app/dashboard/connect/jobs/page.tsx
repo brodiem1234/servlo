@@ -19,7 +19,7 @@ export default function TradeJobsPage() {
         </div>
         <div className="space-y-3">
           {DEMO_JOBS.map((job) => (
-            <div key={job.title} className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20 transition-colors cursor-pointer">
+            <div key={job.title} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 hover:border-zinc-300 dark:hover:border-white/20 transition-colors cursor-pointer">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center mt-0.5" style={{ background: job.color + "22", border: `1px solid ${job.color}44` }}>

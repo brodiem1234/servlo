@@ -68,7 +68,7 @@ export default function PayShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-product="pay"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": PAY_COLOR,

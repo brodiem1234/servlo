@@ -89,7 +89,7 @@ export default function InsuranceShell({
   return (
     <div
       data-product="insurance"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": INSURANCE_COLOR,

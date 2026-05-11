@@ -303,7 +303,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
                   const m = getMargin(item);
                   const isLow = !item.is_service && item.quantity_on_hand != null && item.reorder_threshold != null && item.quantity_on_hand <= item.reorder_threshold;
                   return (
-                    <tr key={item.id} className="border-b border-[var(--border)] last:border-0 hover:bg-white/[0.02] transition-colors">
+                    <tr key={item.id} className="border-b border-[var(--border)] last:border-0 hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
                           <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${item.is_service ? "bg-blue-500/10" : "bg-orange-500/10"}`} aria-hidden>
@@ -318,7 +318,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
                       <td className="px-4 py-3 hidden sm:table-cell font-mono text-xs text-[var(--text-muted)]">{item.sku ?? "—"}</td>
                       <td className="px-4 py-3 hidden md:table-cell">
                         {item.category ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-xs text-[var(--text-secondary)]">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-white/5 px-2 py-0.5 text-xs text-[var(--text-secondary)]">
                             <Tag size={10} aria-hidden />{item.category}
                           </span>
                         ) : <span className="text-[var(--text-muted)]/40 text-xs">—</span>}
@@ -343,7 +343,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(item)} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-white/10 hover:text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]" aria-label={`Edit ${item.name}`}>
+                          <button onClick={() => openEdit(item)} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]" aria-label={`Edit ${item.name}`}>
                             <Edit2 size={13} aria-hidden />
                           </button>
                           <button onClick={() => setDeleteTarget(item)} disabled={deleting === item.id} className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-red-500/10 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50" aria-label={`Delete ${item.name}`}>
@@ -368,12 +368,12 @@ export default function PricebookManager({ initialItems, categories }: Props) {
           <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] shadow-2xl overflow-y-auto" style={{ maxHeight: "90vh" }}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <h2 id="pb-form-title" className="text-base font-semibold text-[var(--text-primary)]">{editingId ? "Edit Item" : "Add Item"}</h2>
-              <button onClick={() => setShowForm(false)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-white/10 transition-colors" aria-label="Close"><X size={16} /></button>
+              <button onClick={() => setShowForm(false)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors" aria-label="Close"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex rounded-lg overflow-hidden border border-[var(--border)]">
-                <button type="button" onClick={() => setForm(f => ({ ...f, is_service: false }))} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${!form.is_service ? "bg-orange-500/20 text-orange-400" : "text-[var(--text-muted)] hover:bg-white/5"}`} aria-pressed={!form.is_service}><ShoppingCart size={14} aria-hidden />Product / Material</button>
-                <button type="button" onClick={() => setForm(f => ({ ...f, is_service: true }))} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${form.is_service ? "bg-blue-500/20 text-blue-400" : "text-[var(--text-muted)] hover:bg-white/5"}`} aria-pressed={form.is_service}><Wrench size={14} aria-hidden />Service / Labour</button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, is_service: false }))} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${!form.is_service ? "bg-orange-500/20 text-orange-400" : "text-[var(--text-muted)] hover:bg-zinc-100 dark:hover:bg-white/5"}`} aria-pressed={!form.is_service}><ShoppingCart size={14} aria-hidden />Product / Material</button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, is_service: true }))} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors ${form.is_service ? "bg-blue-500/20 text-blue-400" : "text-[var(--text-muted)] hover:bg-zinc-100 dark:hover:bg-white/5"}`} aria-pressed={form.is_service}><Wrench size={14} aria-hidden />Service / Labour</button>
               </div>
               <div>
                 <label htmlFor="pb-name" className="block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">Name <span className="text-red-500" aria-hidden>*</span></label>
@@ -439,18 +439,18 @@ export default function PricebookManager({ initialItems, categories }: Props) {
                   </div>
                 </div>
               )}
-              <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white/[0.02] px-4 py-3">
+              <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-zinc-50 dark:bg-white/[0.02] px-4 py-3">
                 <div>
                   <p className="text-sm font-medium text-[var(--text-primary)]">Active</p>
                   <p className="text-xs text-[var(--text-muted)]">Show when building quotes and invoices</p>
                 </div>
-                <button type="button" role="switch" aria-checked={form.is_active} onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))} className={`relative h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] ${form.is_active ? "bg-[var(--accent-color)]" : "bg-white/20"}`}>
+                <button type="button" role="switch" aria-checked={form.is_active} onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))} className={`relative h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] ${form.is_active ? "bg-[var(--accent-color)]" : "bg-zinc-200 dark:bg-white/20"}`}>
                   <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${form.is_active ? "translate-x-5" : "translate-x-0.5"}`} />
                 </button>
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border)]">
-              <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-white/5 transition-colors">Cancel</button>
+              <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">Cancel</button>
               <button type="button" onClick={handleSave} disabled={saving} className="rounded-lg bg-[var(--accent-color)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition-opacity focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]">
                 {saving ? "Saving…" : editingId ? "Save Changes" : "Add to Pricebook"}
               </button>

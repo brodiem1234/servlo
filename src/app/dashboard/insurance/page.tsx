@@ -20,7 +20,7 @@ export default function InsuranceDashboardPage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {INSURANCE_TYPES.map(({ label, sub, coverage, Icon }) => (
-            <div key={label} className="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-6">
+            <div key={label} className="flex flex-col gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-6">
               <div className="flex items-start gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-500/10">
                   <Icon size={20} className="text-rose-400" />

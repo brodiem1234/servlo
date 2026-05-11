@@ -54,7 +54,7 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
   return (
     <div
       data-product="leads"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": LEADS_COLOR,

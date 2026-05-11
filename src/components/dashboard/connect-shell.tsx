@@ -54,7 +54,7 @@ export default function ConnectShell({ children }: { children: React.ReactNode }
   return (
     <div
       data-product="connect"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": CONNECT_COLOR,

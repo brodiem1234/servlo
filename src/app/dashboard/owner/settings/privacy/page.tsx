@@ -154,7 +154,7 @@ export default function PrivacySettingsPage() {
                   </button>
                   <button
                     onClick={() => setDeleteDialogOpen(false)}
-                    className="rounded-lg px-4 py-2 text-sm font-medium border border-[var(--border)] text-[var(--text-primary)] hover:bg-white/5"
+                    className="rounded-lg px-4 py-2 text-sm font-medium border border-[var(--border)] text-[var(--text-primary)] hover:bg-zinc-100 dark:hover:bg-white/5"
                   >
                     Cancel
                   </button>

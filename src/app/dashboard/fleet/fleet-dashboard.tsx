@@ -214,7 +214,7 @@ function AddVehicleForm({ onSuccess, onCancel, addToast }: AddVehicleFormProps) 
   }
 
   const inputCls =
-    "w-full rounded-lg border bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-colors";
+    "w-full rounded-lg border bg-zinc-100 dark:bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-colors";
   const inputStyle = { borderColor: "rgba(255,255,255,0.12)" };
   const labelCls = "block text-xs font-semibold text-slate-400 mb-1";
 
@@ -226,7 +226,7 @@ function AddVehicleForm({ onSuccess, onCancel, addToast }: AddVehicleFormProps) 
           type="button"
           onClick={onCancel}
           aria-label="Cancel"
-          className="rounded-lg p-1.5 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors"
+          className="rounded-lg p-1.5 text-slate-500 hover:text-slate-300 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
         >
           <X size={16} />
         </button>
@@ -362,7 +362,7 @@ function AddVehicleForm({ onSuccess, onCancel, addToast }: AddVehicleFormProps) 
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-400 border border-white/10 hover:bg-white/5 transition-colors"
+          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-400 border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
         >
           Cancel
         </button>
@@ -734,7 +734,7 @@ export default function FleetDashboard({ vehicles: initialVehicles, serviceRecor
                       <tr
                         key={s.id}
                         style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-                        className="last:border-0 hover:bg-white/5 transition-colors"
+                        className="last:border-0 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors"
                       >
                         <td className={tdCls}>{vehicleName(s.vehicle_id)}</td>
                         <td className={tdCls} style={{ color: "var(--text-primary, #fff)" }}>
@@ -795,7 +795,7 @@ export default function FleetDashboard({ vehicles: initialVehicles, serviceRecor
                     <tr
                       key={t.id}
                       style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-                      className="last:border-0 hover:bg-white/5 transition-colors"
+                      className="last:border-0 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors"
                     >
                       <td className={tdCls}>{vehicleName(t.vehicle_id)}</td>
                       <td className={tdCls}>{fmtDate(t.trip_date)}</td>

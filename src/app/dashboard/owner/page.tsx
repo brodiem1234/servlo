@@ -486,7 +486,7 @@ export default async function OwnerDashboardPage() {
                           <input type="hidden" name="invoice_id" value={invoice.id} />
                           <button
                             type="submit"
-                            className="shrink-0 rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-white/10"
+                            className="shrink-0 rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-zinc-200 dark:hover:bg-white/10"
                           >
                             Send Reminder
                           </button>

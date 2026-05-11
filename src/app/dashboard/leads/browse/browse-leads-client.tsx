@@ -757,7 +757,7 @@ export default function BrowseLeadsClient({
               type="button"
               onClick={scoreAllLeads}
               disabled={isScoringAll || filtered.length === 0}
-              className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-zinc-100 dark:hover:bg-white/5 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
                 borderColor: "rgb(139 92 246)",
                 color: "rgb(167 139 250)",
@@ -773,7 +773,7 @@ export default function BrowseLeadsClient({
             <button
               type="button"
               onClick={() => setAlertModalOpen(true)}
-              className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-white/5"
+              className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition hover:bg-zinc-100 dark:hover:bg-white/5"
               style={{
                 borderColor: "var(--accent-color)",
                 color: "var(--accent-color)",
@@ -1163,7 +1163,7 @@ function LeadDetailPanel({
 
   return (
     <div
-      className="fixed right-0 top-0 z-50 flex h-full w-full flex-col overflow-y-auto bg-[#1a2235] shadow-2xl md:w-96"
+      className="fixed right-0 top-0 z-50 flex h-full w-full flex-col overflow-y-auto bg-white dark:bg-[#1a2235] shadow-2xl md:w-96"
       style={{
         borderLeft: "1px solid var(--border)",
       }}
@@ -1203,7 +1203,7 @@ function LeadDetailPanel({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-1.5 hover:bg-white/10"
+          className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10"
           style={{ color: "var(--text-muted)" }}
         >
           <X size={16} />
@@ -1261,7 +1261,7 @@ function LeadDetailPanel({
 
         {/* Details grid */}
         <div
-          className="grid grid-cols-2 gap-3 rounded-xl border bg-[#161d2e] p-4"
+          className="grid grid-cols-2 gap-3 rounded-xl border bg-zinc-50 dark:bg-[#161d2e] p-4"
           style={{ borderColor: "var(--border)" }}
         >
           <PanelDetail label="Property type" value="Residential" />
@@ -1429,7 +1429,7 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border bg-[#1a2235] p-6 shadow-2xl"
+        className="relative w-full max-w-md rounded-2xl border bg-white dark:bg-[#1a2235] p-6 shadow-2xl"
         style={{
           borderColor: "var(--border)",
         }}
@@ -1438,7 +1438,7 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1.5 hover:bg-white/10"
+          className="absolute right-4 top-4 rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10"
           style={{ color: "var(--text-muted)" }}
         >
           <X size={16} />
@@ -1509,7 +1509,7 @@ function LeadAlertModal({ onClose }: { onClose: () => void }) {
                 value={suburb}
                 onChange={(e) => setSuburb(e.target.value)}
                 placeholder="e.g. Bondi, 2026"
-                className="w-full rounded-lg border bg-[#161d2e] px-3 py-2 text-sm"
+                className="w-full rounded-lg border bg-white dark:bg-[#161d2e] px-3 py-2 text-sm"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",

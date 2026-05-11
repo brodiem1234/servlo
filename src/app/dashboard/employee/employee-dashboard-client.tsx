@@ -63,7 +63,7 @@ const STATUS_STYLES: Record<string, string> = {
   scheduled:   "bg-blue-500/15 text-blue-400 border border-blue-500/20",
   in_progress: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
   completed:   "bg-green-500/15 text-green-400 border border-green-500/20",
-  cancelled:   "bg-white/5 text-[var(--text-muted)] border border-white/10",
+  cancelled:   "bg-zinc-100 dark:bg-white/5 text-[var(--text-muted)] border border-zinc-200 dark:border-white/10",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -341,7 +341,7 @@ export function EmployeeDashboardClient({
                           </p>
                         )}
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[status] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[status] ?? "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10"}`}>
                         {STATUS_LABEL[status] ?? status}
                       </span>
                     </div>
@@ -427,7 +427,7 @@ export function EmployeeDashboardClient({
                       {job.suburb ? ` · ${job.suburb}` : ""}
                     </p>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[job.status ?? "pending"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_STYLES[job.status ?? "pending"] ?? "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10"}`}>
                     {STATUS_LABEL[job.status ?? "pending"] ?? job.status}
                   </span>
                 </div>

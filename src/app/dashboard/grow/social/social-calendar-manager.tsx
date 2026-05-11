@@ -248,7 +248,7 @@ function CreatePostModal({ onClose, onCreated, showToast, businessName, suburb, 
               type="button"
               aria-label="Close modal"
               onClick={onClose}
-              className="rounded-lg p-1.5 transition-colors hover:bg-white/10"
+              className="rounded-lg p-1.5 transition-colors hover:bg-zinc-100 dark:hover:bg-white/10"
               style={{ color: "var(--text-muted)" }}
             >
               <X size={18} />
@@ -731,7 +731,7 @@ export default function SocialCalendarManager({
                 type="button"
                 aria-label="Previous month"
                 onClick={prevCal}
-                className="rounded-lg border p-1.5 transition-colors hover:bg-white/5"
+                className="rounded-lg border p-1.5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
                 style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
               >
                 <ChevronLeft size={16} />
@@ -743,7 +743,7 @@ export default function SocialCalendarManager({
                 type="button"
                 aria-label="Next month"
                 onClick={nextCal}
-                className="rounded-lg border p-1.5 transition-colors hover:bg-white/5"
+                className="rounded-lg border p-1.5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
                 style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
               >
                 <ChevronRight size={16} />
@@ -796,7 +796,7 @@ export default function SocialCalendarManager({
                       "relative min-h-[44px] sm:min-h-[68px] p-1 sm:p-1.5 text-left transition-colors",
                       isLastRow ? "" : "border-b",
                       isLastCol ? "" : "border-r",
-                      isSelected ? "bg-purple-500/10" : "hover:bg-white/5",
+                      isSelected ? "bg-purple-500/10" : "hover:bg-zinc-50 dark:hover:bg-white/5",
                     ].join(" ")}
                     style={{ borderColor: "var(--border)" }}
                   >

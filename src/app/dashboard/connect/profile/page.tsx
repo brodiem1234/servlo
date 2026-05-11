@@ -5,7 +5,7 @@ export default function ConnectProfilePage() {
     <div style={{ position: "relative", minHeight: "600px" }}>
       <div className="max-w-2xl space-y-6">
         <h1 className="text-2xl font-bold text-white">My Profile</h1>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-6">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 shrink-0 rounded-full bg-indigo-500/20 border-2 border-indigo-500/40 flex items-center justify-center text-2xl font-bold text-indigo-400 sm:w-20 sm:h-20">YB</div>
             <div className="min-w-0">
@@ -20,18 +20,18 @@ export default function ConnectProfilePage() {
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2 text-center sm:gap-4">
             {[["0", "Posts"], ["0", "Connections"], ["0", "Reviews"]].map(([val, label]) => (
-              <div key={label} className="rounded-lg bg-white/5 p-3">
+              <div key={label} className="rounded-lg bg-zinc-100 dark:bg-white/5 p-3">
                 <div className="text-xl font-bold text-white">{val}</div>
                 <div className="text-xs text-slate-500">{label}</div>
               </div>
             ))}
           </div>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
           <h3 className="font-semibold text-white mb-3">About</h3>
           <p className="text-sm text-slate-500 italic">No bio added yet.</p>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
           <h3 className="font-semibold text-white mb-3">Recent Posts</h3>
           <p className="text-sm text-slate-500 italic">No posts yet.</p>
         </div>

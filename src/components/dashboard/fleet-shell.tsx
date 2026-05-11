@@ -68,7 +68,7 @@ export default function FleetShell({
   return (
     <div
       data-product="fleet"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": FLEET_COLOR,

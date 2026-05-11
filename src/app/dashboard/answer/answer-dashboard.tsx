@@ -83,7 +83,7 @@ const OUTCOME_STYLE: Record<string, { label: string; className: string }> = {
 function OutcomeBadge({ outcome }: { outcome: string }) {
   const style = OUTCOME_STYLE[outcome] ?? {
     label: outcome,
-    className: "bg-white/10 text-slate-400 border border-white/10",
+    className: "bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-slate-400 border border-zinc-200 dark:border-white/10",
   };
   return (
     <span
@@ -153,8 +153,8 @@ function TranscriptModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#0f1117] shadow-2xl flex flex-col max-h-[80vh]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+      <div className="relative w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#0f1117] shadow-2xl flex flex-col max-h-[80vh]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-white/10 shrink-0">
           <div>
             <h2 id="transcript-title" className="text-sm font-semibold text-white">
               Call Transcript
@@ -166,7 +166,7 @@ function TranscriptModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+            className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors text-slate-400 dark:hover:text-white"
             aria-label="Close transcript"
           >
             <X size={16} />
@@ -184,10 +184,10 @@ function TranscriptModal({
             </div>
           )}
         </div>
-        <div className="px-5 py-4 border-t border-white/10 shrink-0">
+        <div className="px-5 py-4 border-t border-zinc-200 dark:border-white/10 shrink-0">
           <button
             onClick={onClose}
-            className="w-full rounded-lg py-2 text-sm font-semibold bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 transition-colors"
+            className="w-full rounded-lg py-2 text-sm font-semibold bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-slate-300 border border-zinc-200 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
           >
             Close
           </button>
@@ -242,7 +242,7 @@ function RecentCallsTab({
             className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               outcomeFilter === opt.value
                 ? "text-white border"
-                : "bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10"
+                : "bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-slate-400 border border-zinc-200 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-white/10"
             }`}
             style={
               outcomeFilter === opt.value
@@ -256,7 +256,7 @@ function RecentCallsTab({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] overflow-hidden">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] overflow-hidden">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4 text-center px-6">
             <div
@@ -272,7 +272,7 @@ function RecentCallsTab({
                 leads, and make bookings automatically.
               </p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-xs text-slate-400 font-mono text-left w-full max-w-sm">
+            <div className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-slate-400 font-mono text-left w-full max-w-sm">
               <p className="text-slate-500 mb-1"># Required environment variables</p>
               <p>TWILIO_ACCOUNT_SID=ACxxxxxxxx</p>
               <p>TWILIO_AUTH_TOKEN=xxxxxxxx</p>
@@ -283,7 +283,7 @@ function RecentCallsTab({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-zinc-200 dark:border-white/10">
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Date / Time
                   </th>
@@ -310,7 +310,7 @@ function RecentCallsTab({
                   return (
                     <tr
                       key={log.id}
-                      className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
+                      className="border-b border-zinc-100 dark:border-white/5 last:border-0 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors"
                     >
                       <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">
                         {formatDateTime(log.called_at)}
@@ -364,7 +364,7 @@ function RecentCallsTab({
                       <td className="px-4 py-3">
                         <button
                           onClick={() => onViewTranscript(log)}
-                          className="rounded-lg px-2.5 py-1 text-xs font-semibold border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors whitespace-nowrap"
+                          className="rounded-lg px-2.5 py-1 text-xs font-semibold border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-slate-400 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap"
                         >
                           View Transcript
                         </button>
@@ -397,7 +397,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Business Greeting */}
-      <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] p-5 space-y-3">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] p-5 space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-white">Business Greeting</h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -408,7 +408,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
           value={greeting}
           onChange={(e) => setGreeting(e.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 placeholder-slate-600 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+          className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 px-3 py-2 text-sm text-zinc-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500/40"
         />
         <button
           onClick={handleSave}
@@ -420,7 +420,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
       </div>
 
       {/* Call Recording */}
-      <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] p-5">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] p-5">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-white">Call Recording</h3>
@@ -432,7 +432,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
             </p>
           </div>
           <div
-            className="h-6 w-11 rounded-full bg-white/10 relative cursor-not-allowed"
+            className="h-6 w-11 rounded-full bg-zinc-200 dark:bg-white/10 relative cursor-not-allowed"
             title="Requires Twilio"
           >
             <div className="absolute top-1 left-1 h-4 w-4 rounded-full bg-slate-500" />
@@ -441,7 +441,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
       </div>
 
       {/* After-hours Handling */}
-      <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] p-5 space-y-3">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] p-5 space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-white">After-hours Handling</h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -452,7 +452,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
           value={afterHours}
           onChange={(e) => setAfterHours(e.target.value)}
           disabled
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-500 cursor-not-allowed focus:outline-none"
+          className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 px-3 py-2 text-sm text-zinc-500 dark:text-slate-500 cursor-not-allowed focus:outline-none"
         >
           <option value="voicemail">Voicemail</option>
           <option value="sms">SMS Callback</option>
@@ -462,7 +462,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
       </div>
 
       {/* Booking Integration */}
-      <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] p-5 space-y-3">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] p-5 space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-white">Booking Integration</h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -471,14 +471,14 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
         </div>
         <select
           disabled
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-600 cursor-not-allowed focus:outline-none"
+          className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 px-3 py-2 text-sm text-zinc-600 dark:text-slate-600 cursor-not-allowed focus:outline-none"
         >
           <option>Connect calendar (coming soon)</option>
         </select>
       </div>
 
       {/* AI Voice */}
-      <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] p-5 space-y-3">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] p-5 space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-white">AI Voice</h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -497,7 +497,7 @@ function SettingsTab({ onSave }: { onSave: (msg: string) => void }) {
               className={`rounded-lg px-4 py-2 text-xs font-semibold border transition-colors ${
                 aiVoice === opt.value
                   ? "text-white"
-                  : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+                  : "bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-slate-400 border-zinc-200 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-white/10"
               }`}
               style={
                 aiVoice === opt.value
@@ -549,7 +549,7 @@ function IntegrationCard({
   const [showSnippet, setShowSnippet] = useState(false);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-[var(--bg-card,#ffffff08)] p-5 space-y-3">
+    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-[var(--bg-card)] p-5 space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div
@@ -571,12 +571,12 @@ function IntegrationCard({
       <p className="text-xs text-slate-500">{helpText}</p>
       <button
         onClick={() => setShowSnippet((v) => !v)}
-        className="rounded-lg px-3 py-1.5 text-xs font-semibold border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+        className="rounded-lg px-3 py-1.5 text-xs font-semibold border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-slate-400 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
       >
         {showSnippet ? "Hide" : "Connect"}
       </button>
       {showSnippet && envSnippet && (
-        <pre className="rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+        <pre className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 px-4 py-3 text-xs font-mono text-zinc-700 dark:text-slate-300 whitespace-pre-wrap">
           {envSnippet}
         </pre>
       )}

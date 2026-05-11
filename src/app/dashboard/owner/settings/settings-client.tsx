@@ -1102,7 +1102,7 @@ export function IntegrationsTab({ stripeConnected, emailProvider, emailConnected
           {/* Gmail card */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-lg font-bold text-[var(--text-primary)] shrink-0">G</div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 text-lg font-bold text-[var(--text-primary)] shrink-0">G</div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[var(--text-primary)]">Gmail</p>
                 <p className="text-xs text-[var(--text-muted)] truncate">Send from your Gmail address</p>
@@ -1133,7 +1133,7 @@ export function IntegrationsTab({ stripeConnected, emailProvider, emailConnected
           {/* Outlook card */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-lg font-bold text-[var(--text-primary)] shrink-0">⊞</div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/5 text-lg font-bold text-[var(--text-primary)] shrink-0">⊞</div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[var(--text-primary)]">Outlook / Microsoft 365</p>
                 <p className="text-xs text-[var(--text-muted)] truncate">Send from your Outlook address</p>
@@ -1196,7 +1196,7 @@ export function IntegrationsTab({ stripeConnected, emailProvider, emailConnected
                         className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                           resolvedStatus === "Active"
                             ? "bg-emerald-900/40 text-emerald-300"
-                            : "bg-white/10 text-gray-400"
+                            : "bg-zinc-200 dark:bg-white/10 text-gray-600 dark:text-gray-400"
                         }`}
                       >
                         {resolvedStatus}
@@ -1429,7 +1429,7 @@ export function DangerZoneTab({ businessName, userEmail, isFoundingMember, commi
             <input
               value={deleteNameInput}
               onChange={(e) => setDeleteNameInput(e.target.value)}
-              className="w-full max-w-sm rounded-md border border-white/20 bg-[#161d2e] px-3 py-2 text-sm text-[var(--text-primary)]"
+              className="w-full max-w-sm rounded-md border border-zinc-300 dark:border-white/20 bg-white dark:bg-[#161d2e] px-3 py-2 text-sm text-[var(--text-primary)]"
               placeholder="Business name"
             />
           </div>

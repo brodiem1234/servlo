@@ -151,7 +151,7 @@ export function PricebookImport({ onImported }: Props) {
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Import pricebook items">
-        <div className="w-full max-w-3xl rounded-2xl bg-[#1e2433] shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="w-full max-w-3xl rounded-2xl bg-white dark:bg-[#1e2433] shadow-2xl flex flex-col max-h-[90vh]">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)] flex-shrink-0">
             <div>

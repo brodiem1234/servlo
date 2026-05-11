@@ -19,7 +19,7 @@ export default function AcademyDashboardPage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {COURSES.map((course) => (
-            <div key={course.title} className="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-5">
+            <div key={course.title} className="flex flex-col gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
               <div
                 className="flex h-28 items-center justify-center rounded-lg text-3xl font-black"
                 style={{ background: `linear-gradient(135deg, ${course.color}22 0%, ${course.color}11 100%)`, border: `1px solid ${course.color}33`, color: course.color }}

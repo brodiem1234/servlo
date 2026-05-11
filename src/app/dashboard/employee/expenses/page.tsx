@@ -233,7 +233,7 @@ export default function EmployeeExpensesPage() {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>${Number(e.amount).toFixed(2)}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[e.status] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[e.status] ?? "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10"}`}>
                   {e.status.charAt(0).toUpperCase() + e.status.slice(1)}
                 </span>
               </div>

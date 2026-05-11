@@ -54,7 +54,7 @@ function PlatformBadge({ platform }: { platform: string | null }) {
       </span>
     );
   return (
-    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-white/10 text-gray-400 border border-white/10">
+    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-zinc-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 border border-zinc-200 dark:border-white/10">
       {platform ?? "Other"}
     </span>
   );
@@ -105,7 +105,7 @@ function ReviewCard({
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 dark:bg-white/10 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             {(review.reviewer ?? "?")[0].toUpperCase()}
           </div>
           <div>

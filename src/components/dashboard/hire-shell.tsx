@@ -76,7 +76,7 @@ export default function HireShell({
   return (
     <div
       data-product="hire"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": HIRE_COLOR,

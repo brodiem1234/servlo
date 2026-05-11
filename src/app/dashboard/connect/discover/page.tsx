@@ -21,7 +21,7 @@ export default function DiscoverPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {DEMO_BUSINESSES.map((biz) => (
-            <div key={biz.name} className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20 transition-colors cursor-pointer">
+            <div key={biz.name} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 hover:border-zinc-300 dark:hover:border-white/20 transition-colors cursor-pointer">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: biz.color + "33", border: `1px solid ${biz.color}66` }}>{biz.initials}</div>
                 <div>

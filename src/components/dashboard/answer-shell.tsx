@@ -80,7 +80,7 @@ export default function AnswerShell({
   return (
     <div
       data-product="answer"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": ANSWER_COLOR,

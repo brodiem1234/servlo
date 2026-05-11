@@ -804,7 +804,7 @@ export function FinanceHubDashboard({
                     {transactions.map((tx) => (
                       <tr
                         key={tx.id}
-                        className="border-b last:border-0 transition-colors hover:bg-white/5"
+                        className="border-b last:border-0 transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
                         style={{ borderColor: "var(--border)" }}
                       >
                         <td
@@ -856,14 +856,14 @@ export function FinanceHubDashboard({
                               <button
                                 onClick={() => saveCategory(tx.id)}
                                 aria-label="Save category"
-                                className="rounded p-1 hover:bg-white/10"
+                                className="rounded p-1 hover:bg-zinc-100 dark:hover:bg-white/10"
                               >
                                 <Check size={12} style={{ color: "#059669" }} />
                               </button>
                               <button
                                 onClick={() => setEditingCatId(null)}
                                 aria-label="Cancel edit"
-                                className="rounded p-1 hover:bg-white/10"
+                                className="rounded p-1 hover:bg-zinc-100 dark:hover:bg-white/10"
                               >
                                 <X
                                   size={12}
@@ -875,7 +875,7 @@ export function FinanceHubDashboard({
                             <button
                               onClick={() => startEditCat(tx)}
                               aria-label={`Edit category for ${tx.description}`}
-                              className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-white/10"
+                              className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors hover:bg-zinc-100 dark:hover:bg-white/10"
                               style={{ color: "var(--text-secondary)" }}
                             >
                               {tx.category ?? (

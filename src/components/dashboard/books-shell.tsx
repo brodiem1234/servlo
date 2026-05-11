@@ -62,7 +62,7 @@ export default function BooksShell({ children }: { children: React.ReactNode }) 
   return (
     <div
       data-product="books"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": BOOKS_COLOR,

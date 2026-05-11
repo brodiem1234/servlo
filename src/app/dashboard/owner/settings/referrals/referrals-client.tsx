@@ -113,7 +113,7 @@ export function ReferralsClient({ code, referralUrl, stats }: Props) {
         ) : (
           <div className="divide-y divide-[var(--border)]">
             {stats.map((s, i) => {
-              const statusInfo = STATUS_LABELS[s.status] ?? { label: s.status, color: "text-[var(--text-secondary)] bg-white/5 border-white/10" };
+              const statusInfo = STATUS_LABELS[s.status] ?? { label: s.status, color: "text-[var(--text-secondary)] bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10" };
               return (
                 <div key={i} className="flex items-center justify-between px-5 py-3 gap-3">
                   <p className="text-sm text-[var(--text-primary)] truncate">{s.referred_email}</p>

@@ -15,7 +15,7 @@ export default function BooksDashboardPage() {
             { label: "BAS Owing", Icon: Receipt },
             { label: "Net Profit", Icon: DollarSign },
           ].map(({ label, Icon }) => (
-            <div key={label} className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-5">
+            <div key={label} className="flex flex-col gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
@@ -28,7 +28,7 @@ export default function BooksDashboardPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-32 rounded-xl bg-white/5 border border-white/10" />
+            <div key={i} className="h-32 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10" />
           ))}
         </div>
       </div>

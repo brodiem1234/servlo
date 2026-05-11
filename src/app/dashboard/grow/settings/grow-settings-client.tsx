@@ -60,7 +60,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/10">
+      <div className="flex gap-1 border-b border-zinc-200 dark:border-white/10">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -79,7 +79,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
       {/* Tab content */}
       {activeTab === "general" && (
         <div className="space-y-6">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
             <h2 className="text-base font-semibold text-white mb-4">Ad Preferences</h2>
             <div className="space-y-4">
               <div>
@@ -88,7 +88,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
                   type="number"
                   value={adBudget}
                   onChange={(e) => setAdBudget(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
                   placeholder="500"
                   min="1"
                 />
@@ -97,7 +97,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
             <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2"><Megaphone size={16} className="text-purple-400" />Content Preferences</h2>
             <div className="space-y-3">
               {[
@@ -126,7 +126,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
 
       {activeTab === "integrations" && (
         <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
             <h2 className="text-base font-semibold text-white mb-4">Social Media Connections</h2>
             <div className="space-y-4">
               <div>
@@ -137,7 +137,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
                   type="text"
                   value={fbPage}
                   onChange={(e) => setFbPage(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
                   placeholder="e.g. 123456789012345"
                 />
               </div>
@@ -147,7 +147,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
                   type="text"
                   value={igHandle}
                   onChange={(e) => setIgHandle(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
                   placeholder="@yourbusiness"
                 />
               </div>
@@ -159,7 +159,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
                   type="text"
                   value={googlePlaceId}
                   onChange={(e) => setGooglePlaceId(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-500 focus:outline-none"
                   placeholder="ChIJ..."
                 />
                 <p className="text-xs text-slate-500 mt-1">Used to pull Google reviews automatically</p>
@@ -178,7 +178,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
       )}
 
       {activeTab === "notifications" && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
           <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2"><Bell size={16} className="text-purple-400" />Notification Preferences</h2>
           <div className="space-y-3">
             {[
@@ -198,7 +198,7 @@ export default function GrowSettingsClient({ business, profile }: Props) {
       )}
 
       {activeTab === "billing" && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
           <h2 className="text-base font-semibold text-white mb-2 flex items-center gap-2"><CreditCard size={16} className="text-purple-400" />Billing</h2>
           <p className="text-sm text-slate-400 mb-4">SERVLO GROW billing is managed through your SERVLO CORE subscription.</p>
           <a

@@ -183,7 +183,7 @@ export default function OwnerShell({
     <ToastProvider>
     <div
         data-product="core"
-        className="dark dashboard-theme min-h-screen bg-[var(--product-main)] text-[var(--text-primary)]"
+        className="dashboard-theme min-h-screen bg-[var(--product-main)] text-[var(--text-primary)]"
         style={{ "--sidebar-active-bg": CORE_COLOR, "--sidebar-ring": CORE_COLOR } as React.CSSProperties}
       >
         <aside
@@ -236,7 +236,7 @@ export default function OwnerShell({
             <form action={signOutAction} className="mt-1 md:hidden">
               <button
                 type="submit"
-                className="w-full rounded-md px-3 py-2 text-left text-sm text-[var(--sidebar-text)] transition-colors hover:bg-white/10"
+                className="w-full rounded-md px-3 py-2 text-left text-sm text-[var(--sidebar-text)] transition-colors hover:bg-zinc-100 dark:hover:bg-white/10"
               >
                 Sign Out
               </button>
@@ -254,7 +254,7 @@ export default function OwnerShell({
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10 md:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-zinc-100 dark:hover:bg-white/10 md:hidden"
                 aria-label="Open menu"
               >
                 <Menu size={18} />
@@ -266,7 +266,7 @@ export default function OwnerShell({
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("servlo:start-tour"))}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-zinc-100 dark:hover:bg-white/10"
                 aria-label="Start tour"
               >
                 <Compass size={18} />
@@ -275,7 +275,7 @@ export default function OwnerShell({
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("servlo:open-help"))}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-white/10"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-zinc-100 dark:hover:bg-white/10"
                 aria-label="Help"
               >
                 <HelpCircle size={18} />
@@ -325,7 +325,7 @@ export default function OwnerShell({
           <button
             type="button"
             onClick={() => setAppsOpen((v) => !v)}
-            className={`flex min-h-[52px] flex-1 min-w-0 flex-col items-center justify-center px-1 py-2 text-[10px] text-[var(--sidebar-text)] ${appsOpen ? "bg-white/10" : ""}`}
+            className={`flex min-h-[52px] flex-1 min-w-0 flex-col items-center justify-center px-1 py-2 text-[10px] text-[var(--sidebar-text)] ${appsOpen ? "bg-zinc-100 dark:bg-white/10" : ""}`}
           >
             <LayoutGrid size={20} className="shrink-0" />
             <span className="mt-0.5 leading-tight truncate">Apps</span>
@@ -352,7 +352,7 @@ export default function OwnerShell({
           >
             {/* Drag handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="h-1 w-10 rounded-full bg-white/20" />
+              <div className="h-1 w-10 rounded-full bg-zinc-300 dark:bg-white/20" />
             </div>
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2">
@@ -374,7 +374,7 @@ export default function OwnerShell({
                     key={app.href}
                     href={app.href}
                     onClick={() => setAppsOpen(false)}
-                    className="flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors hover:bg-white/10"
+                    className="flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors hover:bg-zinc-100 dark:hover:bg-white/10"
                   >
                     <div
                       className="flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white"

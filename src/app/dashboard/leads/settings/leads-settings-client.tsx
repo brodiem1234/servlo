@@ -33,7 +33,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
         <p className="text-slate-400 mt-1">Configure your lead preferences and notifications</p>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b border-white/10">
+      <div className="flex gap-1 overflow-x-auto border-b border-zinc-200 dark:border-white/10">
         {["preferences", "notifications", "billing"].map((tab) => (
           <button
             key={tab}
@@ -49,7 +49,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
 
       {activeTab === "preferences" && (
         <div className="space-y-5">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
             <h2 className="text-base font-semibold text-white mb-4">Trade Categories</h2>
             <p className="text-sm text-slate-400 mb-3">Select the trades you want to receive leads for:</p>
             <div className="flex flex-wrap gap-2">
@@ -60,7 +60,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors border ${
                     selectedTrades.includes(trade)
                       ? "border-yellow-500/60 bg-yellow-500/20 text-yellow-400"
-                      : "border-white/10 bg-white/5 text-slate-400 hover:border-white/20"
+                      : "border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-slate-400 hover:border-zinc-300 dark:hover:border-white/20"
                   }`}
                 >
                   {trade}
@@ -69,7 +69,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
             <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2"><MapPin size={15} className="text-yellow-400" />Location &amp; Budget</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -78,7 +78,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
                   type="number"
                   value={radius}
                   onChange={(e) => setRadius(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-yellow-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:border-yellow-500 focus:outline-none"
                   min="5"
                   max="200"
                 />
@@ -89,7 +89,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
                   type="number"
                   value={maxBudget}
                   onChange={(e) => setMaxBudget(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-yellow-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:border-yellow-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -105,7 +105,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
       )}
 
       {activeTab === "notifications" && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
           <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2"><Bell size={16} className="text-yellow-400" />Lead Notifications</h2>
           <div className="space-y-3">
             {[
@@ -124,7 +124,7 @@ export default function LeadsSettingsClient({ business, profile }: Props) {
       )}
 
       {activeTab === "billing" && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5">
           <h2 className="text-base font-semibold text-white mb-2 flex items-center gap-2"><CreditCard size={16} className="text-yellow-400" />Billing</h2>
           <p className="text-sm text-slate-400 mb-4">SERVLO LEADS billing is managed through your SERVLO CORE subscription.</p>
           <a

@@ -80,7 +80,7 @@ export default function AcademyShell({
   return (
     <div
       data-product="academy"
-      className="dark dashboard-theme min-h-screen"
+      className="dashboard-theme min-h-screen"
       style={{
         background: "var(--product-main)",
         "--sidebar-active-bg": ACADEMY_COLOR,

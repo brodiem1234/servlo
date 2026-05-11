@@ -181,7 +181,7 @@ export function LoginExperience({
                 type="button"
                 disabled={anyOauthLoading}
                 onClick={onGoogleSignIn}
-                className="flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-zinc-200 bg-white text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
+                className="flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-zinc-300 bg-white text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 hover:border-zinc-400 disabled:opacity-50 dark:border-white/[0.15] dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.12]"
               >
                 {oauthLoading === "google" ? <Loader2 size={18} className="animate-spin" /> : <GoogleLogo />}
                 Continue with Google
@@ -190,7 +190,7 @@ export function LoginExperience({
                 type="button"
                 disabled={anyOauthLoading}
                 onClick={onMicrosoftSignIn}
-                className="flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-zinc-200 bg-white text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
+                className="flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-zinc-300 bg-white text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 hover:border-zinc-400 disabled:opacity-50 dark:border-white/[0.15] dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.12]"
               >
                 {oauthLoading === "microsoft" ? <Loader2 size={18} className="animate-spin" /> : <MicrosoftLogo />}
                 Continue with Microsoft

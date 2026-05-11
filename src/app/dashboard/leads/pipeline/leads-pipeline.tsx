@@ -665,7 +665,7 @@ function AddLeadModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 hover:bg-white/10"
+            className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10"
             style={{ color: "var(--text-muted)" }}
           >
             <X size={16} />
@@ -892,7 +892,7 @@ function LeadDetailPanel({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 hover:bg-white/10"
+            className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10"
             style={{ color: "var(--text-muted)" }}
           >
             <X size={16} />
@@ -1030,7 +1030,7 @@ function LeadDetailPanel({
                   onClick={() =>
                     onStatusChange(lead.id, s.value as LeadPipelineItem["status"])
                   }
-                  className="rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition hover:bg-white/10"
+                  className="rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition hover:bg-zinc-100 dark:hover:bg-white/10"
                   style={{
                     borderColor: "var(--border)",
                     color: "var(--text-secondary)",

@@ -194,7 +194,7 @@ export default function MyLeadsClient({
               return (
                 <Fragment key={lead.id}>
                   <tr
-                    className="border-b transition-colors hover:bg-white/5"
+                    className="border-b transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
                     style={{ borderColor: "var(--border)" }}
                   >
                     <td
@@ -274,7 +274,7 @@ export default function MyLeadsClient({
                         </button>
                         {isOpen && (
                           <div
-                            className="absolute left-0 top-full z-20 mt-1 w-36 rounded-lg border py-1 shadow-lg bg-[#1a2235]"
+                            className="absolute left-0 top-full z-20 mt-1 w-36 rounded-lg border py-1 shadow-lg bg-white dark:bg-[#1a2235]"
                             style={{
                               borderColor: "var(--border)",
                             }}
@@ -284,7 +284,7 @@ export default function MyLeadsClient({
                                 key={s}
                                 type="button"
                                 onClick={() => handleStatusChange(lead.id, s)}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-white/5"
+                                className="flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-white/5"
                                 style={{ color: "var(--text-primary)" }}
                               >
                                 <span
@@ -304,7 +304,7 @@ export default function MyLeadsClient({
                         <button
                           type="button"
                           onClick={() => toggleNotesRow(lead.id)}
-                          className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition hover:bg-white/5"
+                          className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-100 dark:hover:bg-white/5"
                           style={{
                             borderColor: "var(--border)",
                             color: "var(--text-secondary)",
@@ -315,7 +315,7 @@ export default function MyLeadsClient({
                         <button
                           type="button"
                           onClick={() => setConvertModalLead(lead)}
-                          className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition hover:bg-white/5"
+                          className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-100 dark:hover:bg-white/5"
                           style={{
                             borderColor: "var(--accent-color)",
                             color: "var(--accent-color)",
@@ -336,7 +336,7 @@ export default function MyLeadsClient({
                     >
                       <td
                         colSpan={8}
-                        className="bg-white/[0.02] px-4 py-3"
+                        className="bg-zinc-50 dark:bg-white/[0.02] px-4 py-3"
                       >
                         <div className="flex flex-col gap-1.5">
                           <label
@@ -353,7 +353,7 @@ export default function MyLeadsClient({
                             onBlur={() => handleNotesBlur(lead.id)}
                             placeholder="Add notes about this lead…"
                             rows={3}
-                            className="w-full max-w-2xl resize-none rounded-lg border bg-[#161d2e] p-3 text-sm"
+                            className="w-full max-w-2xl resize-none rounded-lg border bg-white dark:bg-[#161d2e] p-3 text-sm"
                             style={{
                               borderColor: "var(--border)",
                               color: "var(--text-primary)",
@@ -442,7 +442,7 @@ function ConvertToClientModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border bg-[#1a2235] p-6 shadow-2xl"
+        className="relative w-full max-w-md rounded-2xl border bg-white dark:bg-[#1a2235] p-6 shadow-2xl"
         style={{
           borderColor: "var(--border)",
         }}
@@ -451,7 +451,7 @@ function ConvertToClientModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1.5 hover:bg-white/10"
+          className="absolute right-4 top-4 rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10"
           style={{ color: "var(--text-muted)" }}
         >
           <X size={16} />
@@ -533,7 +533,7 @@ function ConvertToClientModal({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Full name"
-                className="w-full rounded-lg border px-3 py-2 text-sm bg-[#161d2e]"
+                className="w-full rounded-lg border px-3 py-2 text-sm bg-white dark:bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",
@@ -554,7 +554,7 @@ function ConvertToClientModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="client@example.com"
-                className="w-full rounded-lg border px-3 py-2 text-sm bg-[#161d2e]"
+                className="w-full rounded-lg border px-3 py-2 text-sm bg-white dark:bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",
@@ -575,7 +575,7 @@ function ConvertToClientModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="04xx xxx xxx"
-                className="w-full rounded-lg border px-3 py-2 text-sm bg-[#161d2e]"
+                className="w-full rounded-lg border px-3 py-2 text-sm bg-white dark:bg-[#161d2e]"
                 style={{
                   borderColor: "var(--border)",
                   color: "var(--text-primary)",

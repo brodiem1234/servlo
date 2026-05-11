@@ -347,7 +347,7 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
                     {filteredTx.map((t) => (
                       <tr
                         key={t.id}
-                        className="transition-colors hover:bg-white/5"
+                        className="transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
                         style={{ borderBottom: "1px solid var(--border)" }}
                       >
                         <td className="px-5 py-3 text-xs tabular-nums" style={{ color: "var(--text-muted)" }}>
@@ -409,7 +409,7 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
                       return (
                         <tr
                           key={inv.id}
-                          className="transition-colors hover:bg-white/5"
+                          className="transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
                           style={{ borderBottom: "1px solid var(--border)" }}
                         >
                           <td className="px-5 py-3 font-mono text-xs" style={{ color: "#22C55E" }}>

@@ -465,7 +465,7 @@ export function EmailCampaignsManager({
                             <button
                               type="button"
                               title="Edit"
-                              className="rounded p-1 transition-colors hover:bg-white/10"
+                              className="rounded p-1 transition-colors hover:bg-zinc-100 dark:hover:bg-white/10"
                               style={{ color: "var(--text-muted)" }}
                             >
                               <Pencil size={14} />
@@ -474,7 +474,7 @@ export function EmailCampaignsManager({
                               type="button"
                               title="Duplicate"
                               onClick={() => handleDuplicate(c)}
-                              className="rounded p-1 transition-colors hover:bg-white/10"
+                              className="rounded p-1 transition-colors hover:bg-zinc-100 dark:hover:bg-white/10"
                               style={{ color: "var(--text-muted)" }}
                             >
                               <Copy size={14} />

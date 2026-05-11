@@ -10,8 +10,8 @@ const STATUS_BADGE: Record<string, string> = {
   scheduled:   "bg-blue-500/15 text-blue-400 border border-blue-500/20",
   in_progress: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
   completed:   "bg-green-500/15 text-green-400 border border-green-500/20",
-  cancelled:   "bg-white/5 text-[var(--text-muted)] border border-white/10",
-  draft:       "bg-white/5 text-[var(--text-secondary)] border border-white/10",
+  cancelled:   "bg-zinc-100 dark:bg-white/5 text-[var(--text-muted)] border border-zinc-200 dark:border-white/10",
+  draft:       "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10",
   sent:        "bg-blue-500/15 text-blue-400 border border-blue-500/20",
   accepted:    "bg-green-500/15 text-green-400 border border-green-500/20",
   declined:    "bg-red-500/15 text-red-400 border border-red-500/20",
@@ -109,7 +109,7 @@ export default async function ClientDashboardPage() {
                 <div key={job.id} className="rounded-lg p-2.5" style={{ background: "var(--bg-secondary)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{job.title ?? "Untitled"}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[job.status ?? "scheduled"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[job.status ?? "scheduled"] ?? "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10"}`}>
                       {job.status ?? "scheduled"}
                     </span>
                   </div>
@@ -134,7 +134,7 @@ export default async function ClientDashboardPage() {
                 <div key={quote.id} className="rounded-lg p-2.5" style={{ background: "var(--bg-secondary)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{quote.quote_number ?? "Quote"}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[quote.status ?? "draft"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[quote.status ?? "draft"] ?? "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10"}`}>
                       {quote.status ?? "draft"}
                     </span>
                   </div>
@@ -165,7 +165,7 @@ export default async function ClientDashboardPage() {
                 <div key={invoice.id} className="rounded-lg p-2.5" style={{ background: "var(--bg-secondary)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{invoice.invoice_number ?? "Invoice"}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[invoice.status ?? "unpaid"] ?? "bg-white/5 text-[var(--text-secondary)] border border-white/10"}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE[invoice.status ?? "unpaid"] ?? "bg-zinc-100 dark:bg-white/5 text-[var(--text-secondary)] border border-zinc-200 dark:border-white/10"}`}>
                       {invoice.status ?? "unpaid"}
                     </span>
                   </div>

@@ -16,7 +16,7 @@ export default function GroupsPage() {
         <h1 className="text-2xl font-bold text-white">Groups</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {DEMO_GROUPS.map((g) => (
-            <div key={g.name} className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20 transition-colors cursor-pointer">
+            <div key={g.name} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 hover:border-zinc-300 dark:hover:border-white/20 transition-colors cursor-pointer">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: g.color + "22", border: `1px solid ${g.color}44` }}>

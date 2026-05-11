@@ -106,7 +106,7 @@ function getStatusBadgeInfo(invoice: Invoice) {
   if (overdue)
     return { label: "Overdue", className: "border border-red-600/70 bg-red-100 text-red-900 dark:border-red-400 dark:bg-red-950 dark:text-red-100" };
   if (status === "draft")
-    return { label: "Draft", className: "border border-slate-600 bg-slate-800 text-slate-200" };
+    return { label: "Draft", className: "border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200" };
   return { label: "Unpaid", className: "border border-orange-300 bg-orange-100 text-orange-900 dark:border-orange-600 dark:bg-orange-950 dark:text-orange-100" };
 }
 
@@ -662,7 +662,7 @@ export default function InvoicesManager({
 
       {open ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-black/50 md:flex-row md:justify-end">
-          <div className="relative ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-[#1e2433] p-6 shadow-2xl">
+          <div className="relative ml-auto h-full w-full max-w-3xl overflow-y-auto border-l border-[var(--border)] bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {editingId ? `Edit Invoice ${editingInvoice?.invoice_number ?? ""}` : "New Invoice"}
@@ -919,7 +919,7 @@ export default function InvoicesManager({
       {/* Quick-create client modal */}
       {newClientOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[#1e2433] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
             <h3 className="mb-4 text-base font-semibold text-[var(--text-primary)]">Add New Client</h3>
             <div className="space-y-3">
               <div>
@@ -982,7 +982,7 @@ export default function InvoicesManager({
       {/* Partial payment modal */}
       {partialPaymentInvoice ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Record partial payment">
-          <div className="w-full max-w-md rounded-2xl bg-[#1e2433] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#1e2433] p-6 shadow-2xl">
             <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Record Payment</h2>
             <p className="mb-4 text-sm text-[var(--text-secondary)]">
               Invoice {partialPaymentInvoice.invoice_number ?? ""} — Total:{" "}
