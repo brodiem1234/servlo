@@ -241,6 +241,42 @@ export default function JobsManager({
   const [selectedJobIds, setSelectedJobIds] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState("");
   const [bulkProcessing, setBulkProcessing] = useState(false);
+  // Smart scheduling
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [smartSlots, setSmartSlots] = useState<Array<{ date: string; start: string; end: string; score: number; reason: string }>>([]);
+  const [showSlots, setShowSlots] = useState(false);
+
+  const handleFindSlots = async () => {
+    setLoadingSlots(true);
+    setSmartSlots([]);
+    setShowSlots(false);
+    try {
+      const res = await fetch("/api/jobs/smart-schedule", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          employee_id: values.employee_id || undefined,
+          preferred_date: values.scheduled_date || undefined,
+          suburb: values.suburb || undefined,
+          job_duration_hours: 2,
+        }),
+      });
+      if (!res.ok) throw new Error("Could not load slots");
+      const data = await res.json();
+      setSmartSlots((data.slots ?? []).slice(0, 5));
+      setShowSlots(true);
+    } catch {
+      // silently ignore — user keeps manual fields
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const applySmartSlot = (slot: { date: string; start: string; end: string }) => {
+    setValues((p) => ({ ...p, scheduled_date: slot.date, scheduled_start: slot.start, scheduled_end: slot.end }));
+    setShowSlots(false);
+    setSmartSlots([]);
+  };
 
   const toggleSelectJob = (id: string) => setSelectedJobIds((prev) => {
     const next = new Set(prev);
@@ -1574,10 +1610,57 @@ export default function JobsManager({
                 </option>
                 <option value={ADD_NEW_EMPLOYEE}>+ Add new employee</option>
               </select>
-              <input type="date" name="scheduled_date" value={values.scheduled_date} onChange={(e) => setValues((p) => ({ ...p, scheduled_date: e.target.value }))} className="h-10 rounded border px-3" />
-              <select name="priority" value={values.priority} onChange={(e) => setValues((p) => ({ ...p, priority: e.target.value }))} className="h-10 rounded border px-3"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option></select>
-              <input type="time" name="scheduled_start" value={values.scheduled_start} onChange={(e) => setValues((p) => ({ ...p, scheduled_start: e.target.value }))} className="h-10 rounded border px-3" />
-              <input type="time" name="scheduled_end" value={values.scheduled_end} onChange={(e) => setValues((p) => ({ ...p, scheduled_end: e.target.value }))} className="h-10 rounded border px-3" />
+              {/* Date / time row with smart scheduling */}
+              <div className="sm:col-span-2 space-y-2">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <input type="date" name="scheduled_date" value={values.scheduled_date} onChange={(e) => setValues((p) => ({ ...p, scheduled_date: e.target.value }))} className="h-10 rounded border px-3" />
+                  <input type="time" name="scheduled_start" value={values.scheduled_start} onChange={(e) => setValues((p) => ({ ...p, scheduled_start: e.target.value }))} className="h-10 rounded border px-3" />
+                  <input type="time" name="scheduled_end" value={values.scheduled_end} onChange={(e) => setValues((p) => ({ ...p, scheduled_end: e.target.value }))} className="h-10 rounded border px-3" />
+                  <select name="priority" value={values.priority} onChange={(e) => setValues((p) => ({ ...p, priority: e.target.value }))} className="h-10 rounded border px-3"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option></select>
+                  <button
+                    type="button"
+                    onClick={handleFindSlots}
+                    disabled={loadingSlots}
+                    className="flex items-center gap-1.5 h-10 rounded border border-sky-500/50 bg-sky-500/10 px-3 text-sm font-medium text-sky-400 hover:bg-sky-500/20 disabled:opacity-50 transition-colors"
+                    title="AI suggests the best available time slots"
+                  >
+                    {loadingSlots ? (
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"/></svg>
+                    ) : (
+                      <span aria-hidden>⚡</span>
+                    )}
+                    Find best slot
+                  </button>
+                </div>
+                {showSlots && smartSlots.length > 0 && (
+                  <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-sky-400 uppercase tracking-wide">Suggested slots</p>
+                      <button type="button" onClick={() => setShowSlots(false)} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕ Close</button>
+                    </div>
+                    <div className="grid gap-1.5">
+                      {smartSlots.map((slot, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => applySmartSlot(slot)}
+                          className="flex items-center justify-between rounded-lg border border-sky-500/20 bg-[var(--bg-card)] px-3 py-2 text-left hover:border-sky-500/50 hover:bg-sky-500/10 transition-colors group"
+                        >
+                          <div>
+                            <span className="text-sm font-medium text-[var(--text-primary)]">
+                              {new Date(slot.date + "T12:00:00").toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}
+                              {" · "}
+                              {slot.start.slice(0, 5)}–{slot.end.slice(0, 5)}
+                            </span>
+                            <span className="ml-2 text-xs text-[var(--text-muted)]">{slot.reason}</span>
+                          </div>
+                          <span className="text-xs font-semibold text-sky-400 group-hover:text-sky-300">Pick →</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <input name="address" value={values.address} onChange={(e) => setValues((p) => ({ ...p, address: e.target.value }))} placeholder="Address" className="h-10 rounded border px-3" />
               <input name="suburb" value={values.suburb} onChange={(e) => setValues((p) => ({ ...p, suburb: e.target.value }))} placeholder="Suburb" className="h-10 rounded border px-3" />
               <input name="state" value={values.state} onChange={(e) => setValues((p) => ({ ...p, state: e.target.value }))} placeholder="State" className="h-10 rounded border px-3" />

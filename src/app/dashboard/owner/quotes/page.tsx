@@ -81,9 +81,15 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     try {
       lineItems = JSON.parse(String(formData.get("line_items") ?? "[]"));
     } catch { lineItems = []; }
-    const subTotal = lineItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
-    const gst = lineItems.reduce((sum, i) => sum + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0);
+    const discountPct = Math.max(0, Math.min(100, Number(formData.get("discount_percent") ?? "0") || 0));
+    const discountMultiplier = 1 - discountPct / 100;
+    const lineSubTotal = lineItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
+    const lineGst = lineItems.reduce((sum, i) => sum + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0);
+    const subTotal = lineSubTotal * discountMultiplier;
+    const gst = lineGst * discountMultiplier;
     const total = subTotal + gst;
+    const expiryDate = String(formData.get("expiry_date") ?? "") || null;
+    const terms = String(formData.get("terms") ?? "") || null;
     const { data: existingNumbers } = await sb.from("quotes").select("quote_number").eq("owner_id", owner.id);
     const quoteNumber = getNextNumber(existingNumbers ?? [], "quote_number", "QTE");
     const requestedClientId = String(formData.get("client_id") ?? "") || null;
@@ -102,6 +108,9 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
         subtotal: subTotal,
         gst,
         total,
+        discount_percent: discountPct > 0 ? discountPct : null,
+        expiry_date: expiryDate,
+        terms,
         status: sendImmediately ? "sent" : "draft",
         notes
       })
@@ -159,16 +168,28 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     try {
       lineItems = JSON.parse(String(formData.get("line_items") ?? "[]"));
     } catch { lineItems = []; }
-    const subTotal = lineItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
-    const gst = lineItems.reduce((sum, i) => sum + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0);
+    const discountPct = Math.max(0, Math.min(100, Number(formData.get("discount_percent") ?? "0") || 0));
+    const discountMultiplier = 1 - discountPct / 100;
+    const lineSubTotal = lineItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
+    const lineGst = lineItems.reduce((sum, i) => sum + (i.gst_applicable ? i.quantity * i.unit_price * 0.1 : 0), 0);
+    const subTotal = lineSubTotal * discountMultiplier;
+    const gst = lineGst * discountMultiplier;
     const total = subTotal + gst;
+    const expiryDate = String(formData.get("expiry_date") ?? "") || null;
+    const terms = String(formData.get("terms") ?? "") || null;
     const requestedClientId = String(formData.get("client_id") ?? "") || null;
     const ownedClient = requestedClientId
       ? (await sb.from("clients").select("id").eq("id", requestedClientId).eq("owner_id", owner.id).maybeSingle()).data
       : null;
     const clientId = ownedClient?.id ?? null;
     const notes = String(formData.get("notes") ?? "") || null;
-    const payload: Record<string, unknown> = { client_id: clientId, notes };
+    const payload: Record<string, unknown> = {
+      client_id: clientId,
+      notes,
+      discount_percent: discountPct > 0 ? discountPct : null,
+      expiry_date: expiryDate,
+      terms
+    };
     if (lineItems.length > 0) { payload.subtotal = subTotal; payload.gst = gst; payload.total = total; }
     const { error } = await sb.from("quotes").update(payload).eq("id", id).eq("owner_id", owner.id);
     if (error) throw new Error(error.message);

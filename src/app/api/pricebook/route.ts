@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("pricebook_items")
-    .select("id, name, description, sku, unit_price, cost_price, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
+    .select("id, name, description, sku, unit_price, cost_price, supplier, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
     .eq("owner_id", user.id)
     .is("deleted_at", null)
     .order("name");
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { name, description, sku, unit_price, cost_price, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active } = body;
+  const { name, description, sku, unit_price, cost_price, supplier, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active } = body;
 
   if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
   if (unit_price == null || isNaN(Number(unit_price))) return NextResponse.json({ error: "Valid unit_price required" }, { status: 400 });
@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       sku: sku ?? null,
       unit_price: Number(unit_price),
       cost_price: cost_price != null ? Number(cost_price) : null,
+      supplier: supplier ?? null,
       unit: unit ?? "each",
       category: category ?? null,
       is_service: is_service ?? false,
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
       reorder_threshold: reorder_threshold != null ? Number(reorder_threshold) : 5,
       is_active: is_active ?? true,
     })
-    .select("id, name, description, sku, unit_price, cost_price, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
+    .select("id, name, description, sku, unit_price, cost_price, supplier, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
     .single();
 
   if (error) {

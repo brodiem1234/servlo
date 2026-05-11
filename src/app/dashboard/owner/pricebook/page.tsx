@@ -11,7 +11,7 @@ export default async function PricebookPage() {
 
   const { data: items, error } = await supabase
     .from("pricebook_items")
-    .select("id, name, description, sku, unit_price, cost_price, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
+    .select("id, name, description, sku, unit_price, cost_price, supplier, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
     .eq("owner_id", user.id)
     .is("deleted_at", null)
     .order("name");

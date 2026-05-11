@@ -14,6 +14,7 @@ type PricebookItem = {
   sku: string | null;
   unit_price: number;
   cost_price: number | null;
+  supplier: string | null;
   unit: string;
   category: string | null;
   is_service: boolean;
@@ -36,6 +37,7 @@ const emptyForm = {
   sku: "",
   unit_price: "",
   cost_price: "",
+  supplier: "",
   unit: "each",
   category: "",
   is_service: false,
@@ -93,6 +95,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
       sku: item.sku ?? "",
       unit_price: String(item.unit_price),
       cost_price: item.cost_price != null ? String(item.cost_price) : "",
+      supplier: item.supplier ?? "",
       unit: item.unit ?? "each",
       category: item.category ?? "",
       is_service: item.is_service,
@@ -116,6 +119,7 @@ export default function PricebookManager({ initialItems, categories }: Props) {
         sku: form.sku || null,
         unit_price: Number(form.unit_price),
         cost_price: form.cost_price ? Number(form.cost_price) : null,
+        supplier: form.supplier || null,
         unit: form.unit,
         category: form.category || null,
         is_service: form.is_service,
@@ -413,9 +417,15 @@ export default function PricebookManager({ initialItems, categories }: Props) {
                   <datalist id="pb-cats">{categories.map(c => <option key={c} value={c} />)}</datalist>
                 </div>
               </div>
-              <div>
-                <label htmlFor="pb-sku" className="block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">SKU / Product Code</label>
-                <input id="pb-sku" type="text" value={form.sku} onChange={e => setForm(f => ({ ...f, sku: e.target.value }))} placeholder="Optional" className={inputCls} />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="pb-sku" className="block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">SKU / Product Code</label>
+                  <input id="pb-sku" type="text" value={form.sku} onChange={e => setForm(f => ({ ...f, sku: e.target.value }))} placeholder="Optional" className={inputCls} />
+                </div>
+                <div>
+                  <label htmlFor="pb-supplier" className="block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">Supplier</label>
+                  <input id="pb-supplier" type="text" value={form.supplier} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} placeholder="Optional" className={inputCls} />
+                </div>
               </div>
               {!form.is_service && (
                 <div className="grid grid-cols-2 gap-3">

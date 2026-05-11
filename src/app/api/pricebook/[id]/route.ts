@@ -13,7 +13,7 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { name, description, sku, unit_price, cost_price, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active } = body;
+  const { name, description, sku, unit_price, cost_price, supplier, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active } = body;
 
   const { data, error } = await supabase
     .from("pricebook_items")
@@ -23,6 +23,7 @@ export async function PATCH(
       sku: sku ?? null,
       unit_price: unit_price != null ? Number(unit_price) : undefined,
       cost_price: cost_price != null ? Number(cost_price) : null,
+      supplier: supplier ?? null,
       unit: unit ?? "each",
       category: category ?? null,
       is_service: is_service ?? false,
@@ -33,7 +34,7 @@ export async function PATCH(
     })
     .eq("id", id)
     .eq("owner_id", user.id)
-    .select("id, name, description, sku, unit_price, cost_price, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
+    .select("id, name, description, sku, unit_price, cost_price, supplier, unit, category, is_service, quantity_on_hand, reorder_threshold, is_active, created_at")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
