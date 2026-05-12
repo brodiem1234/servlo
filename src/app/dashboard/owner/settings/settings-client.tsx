@@ -520,20 +520,18 @@ type PlanRow = {
 };
 
 const PLAN_ROWS: PlanRow[] = [
-  { key: "solo", label: "Solo", price: "$49/mo", users: "1", jobs: "50", clients: "5" },
-  { key: "team", label: "Team", price: "$119/mo", users: "5", jobs: "Unlimited", clients: "50" },
-  { key: "business", label: "Business", price: "$249/mo", users: "15", jobs: "Unlimited", clients: "Unlimited" },
-  { key: "enterprise", label: "Enterprise", price: "$499/mo", users: "Unlimited", jobs: "Unlimited", clients: "Unlimited + dedicated support" },
+  { key: "solo",     label: "Solo",     price: "$29/mo",  users: "1",         jobs: "Unlimited", clients: "Unlimited" },
+  { key: "team",     label: "Team",     price: "$79/mo",  users: "Unlimited", jobs: "Unlimited", clients: "Unlimited" },
+  { key: "business", label: "Business", price: "$149/mo", users: "Unlimited", jobs: "Unlimited", clients: "Unlimited" },
 ];
 
 const PLAN_FEATURES: Record<string, { price: string; features: string[] }> = {
-  solo: { price: "$29/mo", features: ["1 user", "Unlimited clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"] },
-  team: { price: "$79/mo", features: ["Unlimited users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"] },
-  business: { price: "$149/mo", features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB"] },
-  enterprise: { price: "$299/mo", features: ["Everything in Business", "2000 AI uses/mo", "Dedicated support"] },
+  solo:     { price: "$29/mo",  features: ["1 user", "Unlimited clients", "Core + Grow included", "AI (50 uses/mo)", "Jobs, invoices, quotes"] },
+  team:     { price: "$79/mo",  features: ["Unlimited users", "Core + Grow included", "AI (200 uses/mo)", "Timesheets & team scheduling"] },
+  business: { price: "$149/mo", features: ["Unlimited users", "Core + Grow included", "AI (500 uses/mo)", "Xero/MYOB sync"] },
 };
 
-const PLAN_ORDER_LOCAL: Record<string, number> = { free: 0, trial: 0, solo: 1, team: 2, business: 3, enterprise: 4 };
+const PLAN_ORDER_LOCAL: Record<string, number> = { free: 0, trial: 0, solo: 1, team: 2, business: 3 };
 
 export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }: BillingTabProps) {
   const [portalLoading, setPortalLoading] = useState(false);
@@ -624,14 +622,12 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
               <p className="text-2xl font-bold capitalize text-[var(--text-primary)]">{currentPlan}</p>
               <p className="text-sm text-[var(--text-secondary)]">
                 {currentPlan === "solo"
-                  ? "$49/mo · 1 user · 50 jobs/mo · 5 clients"
+                  ? "$29/mo · 1 user · Core + Grow included"
                   : currentPlan === "team"
-                    ? "$119/mo · 5 users · Unlimited jobs"
+                    ? "$79/mo · Unlimited team members · Core + Grow included"
                     : currentPlan === "business"
-                      ? "$249/mo · 15 users · Unlimited jobs"
-                      : currentPlan === "enterprise"
-                        ? "$499/mo · Unlimited users · dedicated support"
-                        : "Active subscription"}
+                      ? "$149/mo · Unlimited users · Core + Grow included"
+                      : "Active subscription"}
               </p>
               <span className="mt-1 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
                 Active

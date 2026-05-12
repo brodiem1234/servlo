@@ -96,7 +96,7 @@ export default function MigrateFromSimproPage() {
         </h2>
         <p style={{ color: "#475569", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
           simPRO pricing starts at several hundred dollars per month and scales with modules and users.
-          SERVLO starts at <strong>$49/month</strong> (Solo) with a flat Team plan at <strong>$99/month</strong> — everything included, no add-ons.
+          SERVLO starts at <strong>$29/month</strong> (Solo) with a flat Team plan at <strong>$79/month</strong> — everything included, no add-ons.
         </p>
       </section>
 

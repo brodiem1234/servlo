@@ -197,7 +197,7 @@ const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
     gradient: "linear-gradient(135deg, #120a2e 0%, #2d1b69 100%)",
     glow: "rgba(139,92,246,0.2)",
     desc: "AI ads, reviews and social content",
-    price: "From $59/mo", badge: "Coming Q3 2026", available: false,
+    price: "Included in all plans", badge: "Available now", available: true,
   },
   {
     id: "leads", name: "SERVLO Leads", color: "#F59E0B",
@@ -213,17 +213,17 @@ const BUNDLE_PAIRS: BundlePair[] = [
   {
     id: "core+grow", name: "Core + Grow", colors: ["#3B82F6", "#8B5CF6"],
     gradient: "linear-gradient(135deg, #0d1b36 0%, #2d1b69 100%)",
-    subtitle: "Essential Bundle", price: "$149/mo", savings: "Save $29/mo", comingSoon: false,
+    subtitle: "Both included", price: "From $29/mo", savings: "Grow included free", comingSoon: false,
   },
   {
     id: "core+leads", name: "Core + Leads", colors: ["#3B82F6", "#F59E0B"],
     gradient: "linear-gradient(135deg, #0d1b36 0%, #3d2000 100%)",
-    subtitle: "Starter Bundle", price: "$99/mo", savings: "Save $12/mo", comingSoon: false,
+    subtitle: "Coming Q4 2026", price: "TBA", savings: "Leads coming soon", comingSoon: true,
   },
   {
     id: "grow+leads", name: "Grow + Leads", colors: ["#8B5CF6", "#F59E0B"],
     gradient: "linear-gradient(135deg, #120a2e 0%, #3d2000 100%)",
-    subtitle: "Growth Bundle", price: "$199/mo", savings: "Coming 2026", comingSoon: true,
+    subtitle: "Coming Q4 2026", price: "TBA", savings: "Leads coming soon", comingSoon: true,
   },
 ];
 
@@ -231,8 +231,8 @@ const FULL_PLATFORM = {
   id: "core+grow+leads",
   name: "SERVLO Full Platform",
   subtitle: "Everything included. All products. One login.",
-  price: "$249/mo",
-  badge: "⭐ Best Value — Save $58/mo",
+  price: "TBA — Coming Q4 2026",
+  badge: "⭐ Core + Grow available now · Leads coming Q4 2026",
   features: [
     "Jobs, scheduling, invoicing & client management",
     "Team management, timesheets & GPS clock-in",
