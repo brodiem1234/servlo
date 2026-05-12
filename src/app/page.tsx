@@ -11,11 +11,6 @@ import {
   Mic,
   Receipt,
   Lightbulb,
-  Phone,
-  CreditCard,
-  Briefcase,
-  Truck,
-  BarChart2,
 } from "lucide-react";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingPricing } from "@/components/landing/landing-pricing";
@@ -284,7 +279,7 @@ export default async function HomePage() {
         </div>
         <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">Three products, one login</h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
-          Start with Core to run your business. Add Grow to market it. Use Leads to fill your pipeline.
+          Core + Grow are live now. Leads marketplace coming Q4 2026.
         </p>
         <div className="mt-10 grid gap-5 md:mt-14 md:gap-6 md:grid-cols-3">
           {[
@@ -313,8 +308,8 @@ export default async function HomePage() {
               logoGlow: "drop-shadow-[0_0_16px_rgba(139,92,246,0.4)]",
               name: "SERVLO Grow",
               color: "#8B5CF6",
-              badge: "Coming Q3 2026",
-              badgeStyle: "bg-purple-500/20 text-purple-700 dark:text-purple-300 ring-purple-500/30",
+              badge: "Available now",
+              badgeStyle: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-emerald-500/30",
               perfectFor: "Businesses wanting more jobs without paying for ads manually",
               desc: "AI-powered marketing — ads, review automation and social content so your phone keeps ringing.",
               features: [
@@ -373,176 +368,6 @@ export default async function HomePage() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── FULL PLATFORM (5 COMING PRODUCTS) ────────────────────────────── */}
-      <section id="roadmap" className="border-y border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.015] py-16 md:py-32">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="mb-4 text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Roadmap</span>
-          </div>
-          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">The full platform</h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
-            Start with Core. Add products as you grow. One login, one bill.
-          </p>
-          {/* Row 1 — ANSWER, PAY, HIRE */}
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 md:mt-14 md:gap-6 lg:grid-cols-3">
-            {[
-              {
-                Icon: Phone,
-                name: "ANSWER",
-                tagline: "AI Phone Receptionist",
-                color: "#14B8A6",
-                badge: "Coming Q3 2026",
-                badgeStyle: "bg-teal-500/20 text-teal-700 dark:text-teal-300 ring-teal-500/30",
-                desc: "Never miss a call again. ANSWER picks up every call, books jobs into your calendar, quotes from your pricebook, and texts you a summary — all in your business name.",
-                features: [
-                  "Books jobs while you're on the tools",
-                  "Answers in your business voice",
-                  "Two-way SMS conversations",
-                  "After-hours and holiday modes",
-                  "Call transcripts and recordings",
-                  "Missed call revenue tracking"
-                ]
-              },
-              {
-                Icon: CreditCard,
-                name: "PAY",
-                tagline: "Payments Built for Tradies",
-                color: "#10B981",
-                badge: "Coming Q4 2026",
-                badgeStyle: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-emerald-500/30",
-                desc: "Get paid faster with tap-to-pay, PayID, payment links via SMS, and buy now pay later for bigger jobs. No separate terminal needed.",
-                features: [
-                  "Tap to pay on any Android phone",
-                  "PayID instant bank transfers",
-                  "SMS payment links in one tap",
-                  "Afterpay for jobs over $1,000",
-                  "Auto payment reminders",
-                  "Surcharging built in (AU compliant)"
-                ]
-              },
-              {
-                Icon: Briefcase,
-                name: "HIRE",
-                tagline: "Recruit and Onboard Tradies",
-                color: "#7C3AED",
-                badge: "Coming Q1 2027",
-                badgeStyle: "bg-violet-500/20 text-violet-700 dark:text-violet-300 ring-violet-500/30",
-                desc: "Post jobs, screen applicants with AI phone interviews, send digital contracts, and onboard new starters — without touching paper.",
-                features: [
-                  "AI phone screening of applicants",
-                  "Post to Seek and Indeed in one click",
-                  "Digital employment contracts",
-                  "Super and TFN declaration flow",
-                  "Award rate calculator",
-                  "Training compliance tracker"
-                ]
-              },
-            ].map(({ Icon, name, tagline, color, badge, badgeStyle, desc, features }) => (
-              <div
-                key={name}
-                className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
-              >
-                <div className="h-1 w-full" style={{ backgroundColor: color }} />
-                <div className="flex flex-1 flex-col p-5 md:p-6">
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                      style={{ background: `${color}20` }}
-                    >
-                      <Icon size={16} style={{ color }} />
-                    </div>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
-                      {badge}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">{name}</h3>
-                  <p className="mt-0.5 text-xs font-semibold text-gray-400 dark:text-slate-500">{tagline}</p>
-                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{desc}</p>
-                  <ul className="mt-5 flex-1 space-y-2">
-                    {features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                        <Check size={13} className="shrink-0 text-blue-400" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Row 2 — FLEET + FINANCE HUB, centred */}
-          <div className="mt-5 flex flex-wrap justify-center gap-5 md:mt-6 md:gap-6">
-            {[
-              {
-                Icon: Truck,
-                name: "FLEET",
-                tagline: "Vehicle and Asset Management",
-                color: "#F97316",
-                badge: "Coming Q2 2027",
-                badgeStyle: "bg-orange-500/20 text-orange-700 dark:text-orange-300 ring-orange-500/30",
-                desc: "Every van, every tool, every service interval — tracked in one place. Get rego reminders, fuel reports, and asset health scores before things break.",
-                features: [
-                  "Rego and insurance renewal alerts",
-                  "Fuel tracking and cost-per-km",
-                  "QR code tool tracking",
-                  "Service history per vehicle",
-                  "Asset health score",
-                  "GPS tracking ready"
-                ]
-              },
-              {
-                Icon: BarChart2,
-                name: "FINANCE HUB",
-                tagline: "Accounting Built for Tradies",
-                color: "#06B6D4",
-                badge: "Coming Q3 2027",
-                badgeStyle: "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 ring-cyan-500/30",
-                desc: "Cash flow forecasting, BAS prep, bank reconciliation, and Xero sync — without paying an accountant $4,000 a year to do what software can.",
-                features: [
-                  "90-day cash flow forecast",
-                  "BAS prep in one click",
-                  "Bank feed reconciliation",
-                  "Xero and MYOB two-way sync",
-                  "Tax estimator",
-                  "Year-end accountant pack"
-                ]
-              }
-            ].map(({ Icon, name, tagline, color, badge, badgeStyle, desc, features }) => (
-              <div
-                key={name}
-                className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20 sm:w-[calc(50%-10px)] md:sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
-              >
-                <div className="h-1 w-full" style={{ backgroundColor: color }} />
-                <div className="flex flex-1 flex-col p-5 md:p-6">
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                      style={{ background: `${color}20` }}
-                    >
-                      <Icon size={16} style={{ color }} />
-                    </div>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
-                      {badge}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">{name}</h3>
-                  <p className="mt-0.5 text-xs font-semibold text-gray-400 dark:text-slate-500">{tagline}</p>
-                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{desc}</p>
-                  <ul className="mt-5 flex-1 space-y-2">
-                    {features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                        <Check size={13} className="shrink-0 text-blue-400" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -839,7 +664,6 @@ export default async function HomePage() {
               <ul className="space-y-2.5 text-sm text-gray-500 dark:text-slate-400">
                 <li><a href="#platform" className="transition hover:text-gray-900 dark:hover:text-white">Platform overview</a></li>
                 <li><a href="#pricing" className="transition hover:text-gray-900 dark:hover:text-white">Pricing</a></li>
-                <li><a href="#roadmap" className="transition hover:text-gray-900 dark:hover:text-white">Roadmap</a></li>
                 <li><Link href="/status" className="transition hover:text-gray-900 dark:hover:text-white">System status</Link></li>
               </ul>
             </div>

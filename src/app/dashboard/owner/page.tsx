@@ -62,7 +62,13 @@ function getStatusBadgeStyle(status: string | null): { bg: string; text: string 
   return { bg: "bg-blue-100 dark:bg-blue-950", text: "text-blue-700 dark:text-blue-300" };
 }
 
-export default async function OwnerDashboardPage() {
+export default async function OwnerDashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ notice?: string }>;
+}) {
+  const resolvedParams = await (searchParams ?? Promise.resolve({}));
+  const noticeComingSoon = (resolvedParams as { notice?: string })?.notice === "coming_soon";
   const sb = await createClient();
   const {
     data: { user }
@@ -268,6 +274,11 @@ export default async function OwnerDashboardPage() {
 
   return (
     <section className="space-y-6">
+      {noticeComingSoon && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-300">
+          <strong>Coming soon</strong> — that product isn&apos;t available yet. Core + Grow are live now. Leads launches Q4 2026.
+        </div>
+      )}
       <OnboardingChecklist />
       {/* Trial banner */}
       {trialDaysRemaining > 0 ? (

@@ -1,13 +1,7 @@
-import FinanceHubShell from "@/components/dashboard/finance-hub-shell";
+import { redirect } from "next/navigation";
 
-export default function FinanceHubLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ backgroundColor: "#07071a", minHeight: "100vh" }}>
-      <FinanceHubShell>{children}</FinanceHubShell>
-    </div>
-  );
+// Finance Hub is not yet publicly available.
+// Remove this redirect when Finance Hub launches and restore the shell.
+export default function FinanceHubLayout() {
+  redirect("/dashboard/owner?notice=coming_soon");
 }

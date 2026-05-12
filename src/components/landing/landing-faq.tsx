@@ -43,6 +43,10 @@ const FAQS = [
   {
     q: "Is my data stored in Australia?",
     a: "Yes. SERVLO uses Supabase with Australian data residency. Your data never leaves AU. We comply with the Australian Privacy Act and the Privacy (Enhancing Online Safety) Act."
+  },
+  {
+    q: "When are the other products coming?",
+    a: "Core and Grow are live now. Leads launches Q4 2026. Other products on the roadmap will follow as our customer base grows — we want to nail each product before launching the next."
   }
 ];
 

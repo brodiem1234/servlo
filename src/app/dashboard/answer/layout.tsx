@@ -1,13 +1,7 @@
-import AnswerShell from "@/components/dashboard/answer-shell";
+import { redirect } from "next/navigation";
 
-export default function AnswerLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ backgroundColor: "#030f0e", minHeight: "100vh" }}>
-      <AnswerShell>{children}</AnswerShell>
-    </div>
-  );
+// Answer is not yet publicly available.
+// Remove this redirect when Answer launches and restore the shell.
+export default function AnswerLayout() {
+  redirect("/dashboard/owner?notice=coming_soon");
 }

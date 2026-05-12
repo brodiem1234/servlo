@@ -1,13 +1,7 @@
-import PayShell from "@/components/dashboard/pay-shell";
+import { redirect } from "next/navigation";
 
-export default function PayLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ backgroundColor: "#041209", minHeight: "100vh" }}>
-      <PayShell>{children}</PayShell>
-    </div>
-  );
+// Pay is not yet publicly available.
+// Remove this redirect when Pay launches and restore the shell.
+export default function PayLayout() {
+  redirect("/dashboard/owner?notice=coming_soon");
 }

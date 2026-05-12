@@ -1,13 +1,7 @@
-import FleetShell from "@/components/dashboard/fleet-shell";
+import { redirect } from "next/navigation";
 
-export default function FleetLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ backgroundColor: "#020c11", minHeight: "100vh" }}>
-      <FleetShell>{children}</FleetShell>
-    </div>
-  );
+// Fleet is not yet publicly available.
+// Remove this redirect when Fleet launches and restore the shell.
+export default function FleetLayout() {
+  redirect("/dashboard/owner?notice=coming_soon");
 }

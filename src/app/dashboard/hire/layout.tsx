@@ -1,13 +1,7 @@
-import HireShell from "@/components/dashboard/hire-shell";
+import { redirect } from "next/navigation";
 
-export default function HireLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ backgroundColor: "#0f0700", minHeight: "100vh" }}>
-      <HireShell>{children}</HireShell>
-    </div>
-  );
+// Hire is not yet publicly available.
+// Remove this redirect when Hire launches and restore the shell.
+export default function HireLayout() {
+  redirect("/dashboard/owner?notice=coming_soon");
 }

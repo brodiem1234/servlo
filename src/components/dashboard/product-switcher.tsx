@@ -40,48 +40,6 @@ const ACTIVE_PRODUCTS: Array<{
     href: "/dashboard/grow",
     color: "#7C3AED",
   },
-  {
-    id: "leads",
-    label: "Leads",
-    sub: "Lead Marketplace",
-    href: "/dashboard/leads",
-    color: "#F59E0B",
-  },
-  {
-    id: "answer",
-    label: "Answer",
-    sub: "AI Phone Agent",
-    href: "/dashboard/answer",
-    color: "#14B8A6",
-  },
-  {
-    id: "pay",
-    label: "Pay",
-    sub: "Payment Processing",
-    href: "/dashboard/pay",
-    color: "#10B981",
-  },
-  {
-    id: "fleet",
-    label: "Fleet",
-    sub: "Vehicle & Assets",
-    href: "/dashboard/fleet",
-    color: "#F97316",
-  },
-  {
-    id: "finance-hub",
-    label: "Finance Hub",
-    sub: "Accounting & BAS",
-    href: "/dashboard/finance-hub",
-    color: "#06B6D4",
-  },
-  {
-    id: "hire",
-    label: "Hire",
-    sub: "Recruitment & HR",
-    href: "/dashboard/hire",
-    color: "#EA580C",
-  },
 ];
 
 const COMING_SOON_PRODUCTS: Array<{
@@ -93,44 +51,12 @@ const COMING_SOON_PRODUCTS: Array<{
   launch: string;
 }> = [
   {
-    id: "connect",
-    label: "Connect",
-    sub: "Trades Community",
-    href: "/dashboard/connect",
-    color: "#6B7280",
-    launch: "Q2 2026",
-  },
-  {
-    id: "insurance",
-    label: "Insurance",
-    sub: "Embedded Insurance",
-    href: "/dashboard/insurance",
-    color: "#6B7280",
-    launch: "Q4 2027",
-  },
-  {
-    id: "safe",
-    label: "Safe",
-    sub: "Safety & Compliance",
-    href: "/dashboard/safe",
-    color: "#6B7280",
-    launch: "Q2 2027",
-  },
-  {
-    id: "books",
-    label: "Books",
-    sub: "Bookkeeping & BAS",
-    href: "/dashboard/books",
-    color: "#6B7280",
-    launch: "Q3 2027",
-  },
-  {
-    id: "academy",
-    label: "Academy",
-    sub: "Trade Training",
-    href: "/dashboard/academy",
-    color: "#6B7280",
-    launch: "Q1 2028",
+    id: "leads",
+    label: "Leads",
+    sub: "Lead Marketplace",
+    href: "/dashboard/leads",
+    color: "#F59E0B",
+    launch: "Q4 2026",
   },
 ];
 
@@ -173,7 +99,7 @@ export function ProductSwitcher({
           className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums"
           style={{ background: "rgb(59 130 246 / 0.2)", color: "#93C5FD" }}
         >
-          8 / 13
+          2 of 3
         </span>
       </button>
 
@@ -277,13 +203,11 @@ export function ProductSwitcher({
             </p>
             <div className="flex flex-col gap-1">
               {COMING_SOON_PRODUCTS.map((product) => (
-                <Link
+                <div
                   key={product.id}
-                  href={product.href as any}
-                  onClick={() => setOpen(false)}
                   title={`Launching ${product.launch}`}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors no-underline"
-                  style={{ opacity: 0.45 }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 cursor-default"
+                  style={{ opacity: 0.55 }}
                 >
                   <Lock size={11} className="shrink-0" style={{ color: product.color }} />
                   <span className="flex flex-col">
@@ -309,7 +233,7 @@ export function ProductSwitcher({
                   >
                     {product.launch}
                   </span>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
@@ -323,7 +247,7 @@ export function ProductSwitcher({
               color: "var(--text-muted, #6b7280)",
             }}
           >
-            SERVLO Platform — 8 of 13 products active
+            SERVLO Platform — 2 of 3 products active. More coming soon.
           </div>
           </div>
         </>
