@@ -1,7 +1,5 @@
-// Stripe Price IDs (CLAUDE.md canonical):
-// Solo:     price_1TTiL8K1tzStyRcJQAfbuJ5n
-// Team:     price_1TTiLaK1tzStyRcJNOgCeg0X
-// Business: price_1TTiLyK1tzStyRcJ4BVJz0o8
+// Stripe price IDs are managed via env vars — see STRIPE_PRICE_IDS.md (gitignored).
+// Do not hardcode price IDs here.
 
 export const PLANS = {
   free: {

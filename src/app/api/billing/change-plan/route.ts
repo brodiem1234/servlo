@@ -4,11 +4,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const PRICE_IDS: Record<string, string> = {
-  solo: "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-  team: "price_1TTiLaK1tzStyRcJNOgCeg0X",
-  business: "price_1TTiLyK1tzStyRcJ4BVJz0o8",
-  // enterprise: TODO — add price ID when available
+const PRICE_IDS: Record<string, string | undefined> = {
+  solo:     process.env.STRIPE_SOLO_PRICE_ID,
+  team:     process.env.STRIPE_TEAM_PRICE_ID,
+  business: process.env.STRIPE_BUSINESS_PRICE_ID,
 };
 
 const PLAN_ORDER: Record<string, number> = {
@@ -32,7 +31,8 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); } catch { body = {}; }
 
   const targetPlan = (body.targetPlan ?? "").toLowerCase();
-  if (!PRICE_IDS[targetPlan]) {
+  const targetPriceId = PRICE_IDS[targetPlan];
+  if (!targetPriceId) {
     return NextResponse.json(
       { error: "targetPlan must be one of: solo, team, business" },
       { status: 400 }
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     if (isUpgrade) {
       // Upgrade: prorate immediately
       const updated = await stripe.subscriptions.update(profile.stripe_subscription_id, {
-        items: [{ id: subscriptionItemId, price: PRICE_IDS[targetPlan] }],
+        items: [{ id: subscriptionItemId, price: targetPriceId }],
         proration_behavior: "always_invoice",
       });
       effectiveDate = new Date().toISOString();
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Downgrade: takes effect at period end
       const updated = await stripe.subscriptions.update(profile.stripe_subscription_id, {
-        items: [{ id: subscriptionItemId, price: PRICE_IDS[targetPlan] }],
+        items: [{ id: subscriptionItemId, price: targetPriceId }],
         proration_behavior: "none",
         billing_cycle_anchor: "unchanged",
       });

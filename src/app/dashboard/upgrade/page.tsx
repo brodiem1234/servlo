@@ -4,32 +4,31 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-const PLANS = [
-  {
-    name: "Solo",
-    price: "$29/mo",
-    priceId: "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-    features: ["1 user", "Unlimited clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"],
-    accent: "#3B82F6",
-  },
-  {
-    name: "Team",
-    price: "$79/mo",
-    priceId: "price_1TTiLaK1tzStyRcJNOgCeg0X",
-    features: ["Unlimited users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"],
-    accent: "#7c3aed",
-    popular: true,
-  },
-  {
-    name: "Business",
-    price: "$149/mo",
-    priceId: "price_1TTiLyK1tzStyRcJ4BVJz0o8",
-    features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB", "White-label"],
-    accent: "#059669",
-  },
-];
-
 export default async function UpgradePage() {
+  const PLANS = [
+    {
+      name: "Solo",
+      price: "$29/mo",
+      priceId: process.env.STRIPE_SOLO_PRICE_ID ?? "",
+      features: ["1 user", "Unlimited clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"],
+      accent: "#3B82F6",
+    },
+    {
+      name: "Team",
+      price: "$79/mo",
+      priceId: process.env.STRIPE_TEAM_PRICE_ID ?? "",
+      features: ["Unlimited users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"],
+      accent: "#7c3aed",
+      popular: true,
+    },
+    {
+      name: "Business",
+      price: "$149/mo",
+      priceId: process.env.STRIPE_BUSINESS_PRICE_ID ?? "",
+      features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB", "White-label"],
+      accent: "#059669",
+    },
+  ];
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");

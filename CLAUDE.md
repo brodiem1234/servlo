@@ -4,10 +4,13 @@ Supabase project: isqnfuvgovzhyhkuynma
 Supabase URL: https://isqnfuvgovzhyhkuynma.supabase.co
 
 ## Stripe price IDs
-Solo: price_1TTiL8K1tzStyRcJQAfbuJ5n
-Team: price_1TTiLaK1tzStyRcJNOgCeg0X
-Business: price_1TTiLyK1tzStyRcJ4BVJz0o8
-Grow add-on: not yet created — create recurring $15/mo AUD price in Stripe dashboard, then set STRIPE_GROW_PRICE_ID in env
+All price IDs are in STRIPE_PRICE_IDS.md (gitignored, local only — never commit).
+Env vars expected by the codebase:
+STRIPE_SOLO_PRICE_ID, STRIPE_SOLO_ANNUAL_PRICE_ID, STRIPE_SOLO_FOUNDING_PRICE_ID
+STRIPE_TEAM_PRICE_ID, STRIPE_TEAM_ANNUAL_PRICE_ID, STRIPE_TEAM_FOUNDING_PRICE_ID
+STRIPE_BUSINESS_PRICE_ID, STRIPE_BUSINESS_ANNUAL_PRICE_ID, STRIPE_BUSINESS_FOUNDING_PRICE_ID
+STRIPE_GROW_PRICE_ID (flat $15/mo add-on, all tiers; Business includes it free)
+STRIPE_LEADS_10_PRICE_ID, STRIPE_LEADS_25_PRICE_ID, STRIPE_LEADS_60_PRICE_ID, STRIPE_LEADS_150_PRICE_ID
 
 ## Standing rules
 - Never add schema-fallback branches — fix the schema with a migration instead

@@ -570,9 +570,9 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             isOnTrial={isOnTrial}
             email={user.email ?? ""}
             priceIds={{
-              solo: process.env.STRIPE_SOLO_PRICE_ID ?? "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-              team: process.env.STRIPE_TEAM_PRICE_ID ?? "price_1TTiLaK1tzStyRcJNOgCeg0X",
-              business: process.env.STRIPE_BUSINESS_PRICE_ID ?? "price_1TTiLyK1tzStyRcJ4BVJz0o8"
+              solo: process.env.STRIPE_SOLO_PRICE_ID ?? "",
+              team: process.env.STRIPE_TEAM_PRICE_ID ?? "",
+              business: process.env.STRIPE_BUSINESS_PRICE_ID ?? ""
             }}
             success={resolvedParams?.success === "true"}
             growAddonEnabled={(businessRow as { grow_addon_enabled?: boolean } | null)?.grow_addon_enabled ?? false}

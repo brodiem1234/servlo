@@ -43,11 +43,14 @@ import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
 
+// Note: price IDs here are used client-side for Stripe.js only.
+// The server (create-trial route) independently maps tier → price ID via env vars
+// and never trusts client-supplied price IDs.
 function getPriceId(tier: string): string | null {
   const ids: Record<string, string> = {
-    solo:     "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-    team:     "price_1TTiLaK1tzStyRcJNOgCeg0X",
-    business: "price_1TTiLyK1tzStyRcJ4BVJz0o8",
+    solo:     "price_1TWSCUK1tzStyRcJDK8SsYJK",
+    team:     "price_1TWSG3K1tzStyRcJdZxYYK2z",
+    business: "price_1TWSGwK1tzStyRcJ3cAmG86B",
   };
   return ids[tier] ?? null;
 }

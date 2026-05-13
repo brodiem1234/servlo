@@ -3,10 +3,10 @@ import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Server-side price ID map — never trust client-supplied IDs */
-const CORE_PRICE_IDS: Record<string, string> = {
-  solo:     "price_1TTiL8K1tzStyRcJQAfbuJ5n",
-  team:     "price_1TTiLaK1tzStyRcJNOgCeg0X",
-  business: "price_1TTiLyK1tzStyRcJ4BVJz0o8",
+const CORE_PRICE_IDS: Record<string, string | undefined> = {
+  solo:     process.env.STRIPE_SOLO_PRICE_ID,
+  team:     process.env.STRIPE_TEAM_PRICE_ID,
+  business: process.env.STRIPE_BUSINESS_PRICE_ID,
 };
 
 export async function POST(request: Request) {
