@@ -95,12 +95,6 @@ export function ProductSwitcher({
       >
         <LayoutGrid size={14} aria-hidden />
         <span>Products</span>
-        <span
-          className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums"
-          style={{ background: "rgb(59 130 246 / 0.2)", color: "#93C5FD" }}
-        >
-          2 of 3
-        </span>
       </button>
 
       {/* Dropdown panel */}
@@ -238,17 +232,6 @@ export function ProductSwitcher({
             </div>
           </div>
 
-          {/* Footer */}
-          <div
-            className="px-4 py-2 text-center text-[10px]"
-            style={{
-              background: "rgba(0,0,0,0.04)",
-              borderTop: "1px solid var(--panel-border, rgba(255,255,255,0.08))",
-              color: "var(--text-muted, #6b7280)",
-            }}
-          >
-            SERVLO Platform — 2 of 3 products active. More coming soon.
-          </div>
           </div>
         </>
       )}
