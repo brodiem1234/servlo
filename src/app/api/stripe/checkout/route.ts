@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
+      allow_promotion_codes: true,
       success_url: `${appUrl}/dashboard/owner/settings?success=true`,
       cancel_url: `${appUrl}/dashboard/owner/settings`
     });

@@ -26,9 +26,10 @@ export async function POST(request: Request) {
       paymentMethodId: string;
       selectedProductCombo: string;
       selectedPlanTier: string;
+      promoCode?: string;
     };
 
-    const { paymentMethodId, selectedProductCombo, selectedPlanTier } = body;
+    const { paymentMethodId, selectedProductCombo, selectedPlanTier, promoCode } = body;
 
     const priceId = CORE_PRICE_IDS[selectedPlanTier];
     if (!priceId) {
@@ -54,12 +55,24 @@ export async function POST(request: Request) {
     const card_last4 = pm.card?.last4 ?? null;
     const card_brand = pm.card?.brand ?? null;
 
+    // Resolve promotion code if provided (accept any active Stripe promo code)
+    let resolvedPromoCodeId: string | undefined;
+    if (promoCode) {
+      const promoCodes = await stripe.promotionCodes.list({ code: promoCode, active: true, limit: 1 });
+      if (promoCodes.data.length > 0) {
+        resolvedPromoCodeId = promoCodes.data[0].id;
+      } else {
+        console.warn(`[create-trial] promo code "${promoCode}" not found or inactive — ignoring`);
+      }
+    }
+
     // Create subscription with 30-day trial
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       trial_period_days: 30,
       default_payment_method: paymentMethodId,
+      ...(resolvedPromoCodeId ? { discounts: [{ promotion_code: resolvedPromoCodeId }] } : {}),
       metadata: {
         supabase_user_id: user.id,
         selected_products: selectedProductCombo,

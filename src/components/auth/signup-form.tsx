@@ -947,6 +947,7 @@ export function SignupForm() {
               paymentMethodId: paymentMethod!.id,
               selectedProductCombo,
               selectedPlanTier,
+              ...(promoCode ? { promoCode } : {}),
             }),
           });
 
