@@ -26,7 +26,6 @@ const QUICK_ACTIONS: Result[] = [
   { id: "nav-settings",    label: "Settings",    sub: "Account & billing",    href: "/dashboard/owner/settings",  icon: "nav" },
   { id: "nav-pricebook",   label: "Pricebook",   sub: "Products & services",  href: "/dashboard/owner/pricebook", icon: "nav" },
   { id: "nav-compliance",  label: "Compliance",  sub: "Documents & certs",    href: "/dashboard/owner/compliance", icon: "nav" },
-  { id: "nav-hire",        label: "Hire",        sub: "Recruiting & onboarding", href: "/dashboard/hire",         icon: "nav" },
 ];
 
 export function CommandPalette() {
