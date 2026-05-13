@@ -1,5 +1,8 @@
 ## Project identity
 SERVLO — business management SaaS for Australian service businesses.
+Production app: https://servlo.app (NEXT_PUBLIC_APP_URL)
+Marketing site: https://servlo.com.au (future — not yet deployed; do NOT use as app URL)
+Contact/support email domain stays servlo.com.au (hello@servlo.com.au, support@servlo.com.au)
 Supabase project: isqnfuvgovzhyhkuynma
 Supabase URL: https://isqnfuvgovzhyhkuynma.supabase.co
 

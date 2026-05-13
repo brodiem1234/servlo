@@ -54,7 +54,7 @@ export default async function SurveyPage({ params }: PageProps) {
       </div>
 
       <p className="mt-8 text-xs text-gray-600">
-        Powered by SERVLO &middot; servlo.com.au
+        Powered by SERVLO &middot; servlo.app
       </p>
     </div>
   );

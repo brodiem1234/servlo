@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       const { data: ownerAuth } = await admin.auth.admin.getUserById(owner_id);
       const ownerEmail = ownerAuth?.user?.email;
       if (ownerEmail) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
         await sendEmail(
           ownerEmail,
           `New booking request from ${name}`,

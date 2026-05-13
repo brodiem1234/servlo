@@ -19,7 +19,7 @@ export default function ReferralsDocPage() {
       <h2>Your referral link</h2>
       <p>
         Your referral link appears in the <strong>Referral Widget</strong> on your dashboard.
-        The format is: <code>https://servlo.com.au?ref=YOURCODE</code>
+        The format is: <code>https://servlo.app?ref=YOURCODE</code>
       </p>
       <p>
         Share your referral link with:

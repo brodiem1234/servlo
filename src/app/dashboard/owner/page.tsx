@@ -133,10 +133,10 @@ export default async function OwnerDashboardPage({
   const { metrics, chaseInvoices, recentActivity, jobsScheduledThisWeek } = dashboardData;
 
   // Referral URL (non-blocking — fallback on error)
-  let referralUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}`;
+  let referralUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}`;
   try {
     const refCode = await ensureReferralCode(user.id);
-    referralUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}?ref=${refCode}`;
+    referralUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}?ref=${refCode}`;
   } catch {
     // Non-blocking — referral widget just won't show the code
   }
@@ -259,7 +259,7 @@ export default async function OwnerDashboardPage({
             dueDate: invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-AU") : "-",
             payNowUrl:
               process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK ||
-              `${process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au"}/dashboard/client`
+              `${process.env.NEXT_PUBLIC_APP_URL || "https://servlo.app"}/dashboard/client`
           })
         );
       }

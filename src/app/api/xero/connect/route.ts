@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 const XERO_CLIENT_ID = process.env.XERO_CLIENT_ID ?? "";
-const XERO_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/api/xero/callback`;
+const XERO_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}/api/xero/callback`;
 const XERO_SCOPES = "openid profile email accounting.transactions accounting.contacts offline_access";
 
 /**

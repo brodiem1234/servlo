@@ -191,7 +191,7 @@ Include any error messages you saw.`}
               type="text"
               value={pageUrl}
               onChange={e => setPageUrl(e.target.value)}
-              placeholder="https://servlo.com.au/dashboard/..."
+              placeholder="https://servlo.app/dashboard/..."
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             />
           </div>

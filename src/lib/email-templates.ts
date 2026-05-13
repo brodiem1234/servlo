@@ -213,7 +213,7 @@ export function invoiceEmailHtml(args: {
       `<p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">Secure payment processed via Stripe.</p>`
     : "";
 
-  const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
+  const portalUrl = `${args.appUrl ?? "https://servlo.app"}/dashboard/client`;
   const viewSection = !args.payNowUrl
     ? ctaButton("View Invoice", portalUrl, accent)
     : `<p style="margin:8px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">
@@ -294,7 +294,7 @@ export function quoteEmailHtml(args: {
       </p>`
     : "";
 
-  const ctaUrl = args.viewUrl ?? "https://servlo.com.au/dashboard/client";
+  const ctaUrl = args.viewUrl ?? "https://servlo.app/dashboard/client";
   const ctaSection =
     ctaButton("View &amp; Accept Your Quote", ctaUrl, accent) +
     `<p style="margin:4px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;">Or copy this link: ${escHtml(ctaUrl)}</p>`;

@@ -18,7 +18,7 @@ import { LandingNav } from "@/components/landing/landing-nav";
 
 async function getFounderCount(): Promise<number> {
   try {
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
     const res = await fetch(`${base}/api/founders/count`, {
       next: { revalidate: 60 }
     });

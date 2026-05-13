@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing email" }, { status: 400 });
   }
 
-  const referralLink = `https://servlo.com.au/ref/${referralCode ?? ""}`;
+  const referralLink = `https://servlo.app/ref/${referralCode ?? ""}`;
 
   const subject = `Just checking in — have you had a chance to try SERVLO?`;
 

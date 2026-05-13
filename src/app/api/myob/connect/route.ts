@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 const MYOB_CLIENT_ID = process.env.MYOB_CLIENT_ID ?? "";
-const MYOB_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/api/myob/callback`;
+const MYOB_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}/api/myob/callback`;
 const MYOB_SCOPES = "CompanyFile";
 
 /**

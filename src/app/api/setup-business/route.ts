@@ -373,7 +373,7 @@ export async function POST(request: Request) {
 
   try {
     const welcomeFrom = process.env.RESEND_WELCOME_FROM ?? "SERVLO <hello@servlo.com.au>";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
     await sendEmail(
       email,
       `Welcome to SERVLO${businessName ? `, ${businessName}` : ""}!`,

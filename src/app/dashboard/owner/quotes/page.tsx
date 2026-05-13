@@ -137,7 +137,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
       ]);
       const client = clientRes.data;
       if (client?.email && !client.is_demo) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
         await sendEmail(
           client.email,
           `Quote ${quoteNumber} from ${bizRes.data?.business_name ?? "SERVLO"}`,
@@ -366,7 +366,7 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     }
     const client = clientRes.data;
     const biz = bizRes.data;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
     const subtotal = Number(quote.subtotal ?? 0);
     const gst = Number(quote.gst ?? 0);
     const total = Number(quote.total ?? 0);

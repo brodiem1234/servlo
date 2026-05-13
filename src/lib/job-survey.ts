@@ -40,7 +40,7 @@ export async function sendJobCompletionSurvey(
     await admin.from("jobs").update({ survey_token: token }).eq("id", jobId);
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
   const surveyUrl = `${appUrl}/survey/${token}?job=${jobId}`;
 
   const brand = await getBusinessBrand(ownerId);

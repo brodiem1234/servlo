@@ -54,7 +54,7 @@ export default async function ReferralProgramPage() {
     // fall back to user.id-derived code
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
   const referralUrl = `${appUrl}/ref/${referralCode}`;
 
   return <ReferralManager referrals={referrals} stats={stats} referralUrl={referralUrl} referralCode={referralCode} freeMonthsBalance={freeMonthsBalance} />;

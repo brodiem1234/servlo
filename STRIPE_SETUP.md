@@ -75,7 +75,7 @@ Go to https://dashboard.stripe.com and log in.
 ## Step 5 — Create Webhook
 
 1. Go to **Webhooks** → **Add endpoint**
-2. Endpoint URL: `https://servlo.com.au/api/stripe/webhook`
+2. Endpoint URL: `https://servlo.app/api/stripe/webhook`
 3. Select these events:
    - `checkout.session.completed`
    - `customer.subscription.created`
@@ -136,7 +136,7 @@ STRIPE_BUSINESS_PRICE_ID=price_1TTiLyK1tzStyRcJ4BVJz0o8
 
 ## Referral Program Flow
 
-1. Owner gets referral link: `https://servlo.com.au/ref/{code}`
+1. Owner gets referral link: `https://servlo.app/ref/{code}`
 2. New user signs up via referral link
 3. `setup-business` API records `businesses.referred_by_code`
 4. When referred user subscribes (first payment), the referrer earns 1 free month

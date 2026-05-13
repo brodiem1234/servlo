@@ -3,8 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const MYOB_CLIENT_ID = process.env.MYOB_CLIENT_ID ?? "";
 const MYOB_CLIENT_SECRET = process.env.MYOB_CLIENT_SECRET ?? "";
-const MYOB_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/api/myob/callback`;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+const MYOB_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}/api/myob/callback`;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
 
 /**
  * GET /api/myob/callback

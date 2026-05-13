@@ -58,7 +58,7 @@ export async function POST(
 
   const businessName = business?.business_name ?? "Your service provider";
   const clientName = client.full_name ?? "there";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
   const payUrl = `${appUrl}/pay/${invoice.id}`;
 
   const amountFormatted = formatCurrencyFromDollars(invoice.total ?? 0);

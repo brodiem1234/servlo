@@ -3,8 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const XERO_CLIENT_ID = process.env.XERO_CLIENT_ID ?? "";
 const XERO_CLIENT_SECRET = process.env.XERO_CLIENT_SECRET ?? "";
-const XERO_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/api/xero/callback`;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+const XERO_REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}/api/xero/callback`;
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
 
 /**
  * GET /api/xero/callback

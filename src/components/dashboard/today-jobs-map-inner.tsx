@@ -26,7 +26,7 @@ async function geocodeAddress(addressLine: string): Promise<{ lat: number; lng: 
     headers: {
       Accept: "application/json",
       "Accept-Language": "en-AU",
-      "User-Agent": "ServloDashboard/1.0 (+https://servlo.com.au)"
+      "User-Agent": "ServloDashboard/1.0 (+https://servlo.app)"
     }
   });
   if (!res.ok) return null;

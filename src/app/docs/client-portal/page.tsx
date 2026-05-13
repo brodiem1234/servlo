@@ -29,7 +29,7 @@ export default function ClientPortalDocPage() {
         to view it.
       </p>
       <p>
-        The portal URL format is: <code>https://servlo.com.au/portal/[token]</code>
+        The portal URL format is: <code>https://servlo.app/portal/[token]</code>
       </p>
 
       <h2>Token security</h2>

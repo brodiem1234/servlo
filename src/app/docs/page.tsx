@@ -71,7 +71,7 @@ export default function DocsIndex() {
       <h2>Getting Started</h2>
       <ol>
         <li>
-          <strong>Sign up</strong> at <a href="https://servlo.com.au">servlo.com.au</a> and choose your
+          <strong>Sign up</strong> at <a href="https://servlo.app">servlo.app</a> and choose your
           industry during onboarding. SERVLO will recommend the right features for your business type.
         </li>
         <li>

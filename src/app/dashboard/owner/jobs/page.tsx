@@ -390,7 +390,7 @@ export default async function OwnerJobsPage({ searchParams }: JobsPageProps) {
         {
           const now2 = new Date();
           const addDays2 = (d: Date, n: number) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
-          const appUrl2 = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+          const appUrl2 = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
           const clientNameForSeq = job.client_id
             ? (await sb.from("clients").select("full_name").eq("id", job.client_id).maybeSingle()).data?.full_name ?? "there"
             : "there";

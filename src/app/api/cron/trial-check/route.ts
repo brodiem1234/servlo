@@ -134,7 +134,7 @@ function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
               Choose a plan →
             </a>
           </div>
-          <p style="color:#94a3b8;font-size:13px;">Questions? Reply to this email or visit <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="color:#3B82F6;">servlo.com.au</a></p>
+          <p style="color:#94a3b8;font-size:13px;">Questions? Reply to this email or visit <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="color:#3B82F6;">servlo.app</a></p>
         </td></tr>
       </table>
     </td></tr>

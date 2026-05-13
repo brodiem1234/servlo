@@ -40,7 +40,7 @@ export async function POST(
     .update({ tracking_token: trackingToken })
     .eq("id", jobId);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
   const trackingUrl = `${appUrl}/track/${trackingToken}`;
 
   // Send SMS to client if they have a phone

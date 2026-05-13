@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing priceId or email" }, { status: 400 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://servlo.app";
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

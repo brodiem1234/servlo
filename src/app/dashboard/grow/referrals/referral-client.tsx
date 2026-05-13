@@ -224,7 +224,7 @@ export default function ReferralClient({
   const [chasingId, setChasingId] = useState<string | null>(null);
   const [chasedIds, setChasedIds] = useState<Set<string>>(new Set());
 
-  const referralLink = `https://servlo.com.au/ref/${referralCode}`;
+  const referralLink = `https://servlo.app/ref/${referralCode}`;
 
   // Generate QR code
   useEffect(() => {

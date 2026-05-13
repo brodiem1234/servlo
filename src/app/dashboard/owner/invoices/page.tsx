@@ -73,7 +73,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
   }
   const clients = clientsResult.data ?? [];
   const businessRow = businessResult.data;
-  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
 
   async function createInvoiceAction(formData: FormData) {
     "use server";
@@ -154,7 +154,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
           metadata: { invoice_id: created.data.id, owner_id: owner.id },
           after_completion: {
             type: "redirect",
-            redirect: { url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/dashboard/client` }
+            redirect: { url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}/dashboard/client` }
           }
         });
         stripePaymentLink = paymentLink.url;
@@ -175,7 +175,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
       ]);
       const client = clientRes.data;
       if (client?.email && !client.is_demo) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
         await sendEmail(
           client.email,
           `Invoice ${invoiceNumber} from ${bizRes.data?.business_name ?? "SERVLO"}`,
@@ -300,7 +300,7 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     }
     const client = clientRes.data;
     const biz = bizRes.data;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
     const subtotal = Number(inv.subtotal ?? 0);
     const gst = Number(inv.gst ?? 0);
     const total = Number(inv.total ?? 0);

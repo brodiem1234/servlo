@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient();
   const todayKey = new Date().toISOString().slice(0, 10);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
 
   const { data: profiles, error } = await admin.from("profiles").select("id, email_digest_enabled, role").eq("role", "owner");
 

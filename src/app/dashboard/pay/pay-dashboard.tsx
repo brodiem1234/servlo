@@ -185,7 +185,7 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
       return;
     }
     const shortId = Math.random().toString(36).slice(2, 10);
-    const url = `https://pay.servlo.com.au/link/${shortId}`;
+    const url = `https://pay.servlo.app/link/${shortId}`;
     const link: PaymentLink = {
       id: shortId,
       url,
@@ -444,7 +444,7 @@ export function PayDashboard({ transactions, outstandingInvoices, stats }: Props
                               </button>
                               <button
                                 onClick={() => {
-                                  const url = `https://pay.servlo.com.au/inv/${inv.id.slice(0, 8)}`;
+                                  const url = `https://pay.servlo.app/inv/${inv.id.slice(0, 8)}`;
                                   navigator.clipboard.writeText(url).catch(() => {});
                                   show(`Link copied: ${url}`);
                                 }}

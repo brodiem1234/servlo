@@ -55,7 +55,7 @@ export default function BookingSettingsPage() {
     }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
   const bookingUrl = slug ? `${appUrl}/book/${slug}` : null;
   const embedCode = bookingUrl
     ? `<iframe src="${bookingUrl}" width="100%" height="680" frameborder="0" style="border-radius:12px;"></iframe>`

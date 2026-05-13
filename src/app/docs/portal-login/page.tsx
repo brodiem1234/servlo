@@ -23,7 +23,7 @@ export default function PortalLoginDocPage() {
       <ol>
         <li>
           The client visits{" "}
-          <Link href="/portal/login">servlo.com.au/portal/login</Link>
+          <Link href="/portal/login">servlo.app/portal/login</Link>
         </li>
         <li>They enter their email address and click <strong>Send magic link</strong></li>
         <li>They receive an email with a secure link</li>

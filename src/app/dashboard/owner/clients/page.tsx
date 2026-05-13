@@ -407,7 +407,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
       .maybeSingle();
     if (client?.is_demo) return;
     if (!client?.email || !client.portal_token) return;
-    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au"}/portal/${client.portal_token}`;
+    const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app"}/portal/${client.portal_token}`;
     await sendEmail(
       client.email,
       "Your SERVLO Client Portal",
@@ -419,7 +419,7 @@ export default async function OwnerClientsPage({ searchParams }: ClientsPageProp
     revalidateOwnerWorkspaceRoutes();
   }
 
-  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
 
   return (
     <>

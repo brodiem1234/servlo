@@ -19,7 +19,7 @@ export async function POST() {
     return NextResponse.json({ error: "No billing account found. Please start a subscription first." }, { status: 400 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://servlo.app";
 
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,

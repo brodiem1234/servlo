@@ -14,7 +14,7 @@ const FAQS = [
   },
   {
     q: "Does it work on mobile?",
-    a: "Yes — open servlo.com.au in your phone browser and add it to your home screen. It works like an app. Native iOS App Store and Android Play Store apps are coming Q3 2026."
+    a: "Yes — open servlo.app in your phone browser and add it to your home screen. It works like an app. Native iOS App Store and Android Play Store apps are coming Q3 2026."
   },
   {
     q: "Can I connect Xero?",

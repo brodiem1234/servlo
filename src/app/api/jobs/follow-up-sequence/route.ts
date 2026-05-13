@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   const now = new Date();
   const jobTitle = job.title ?? "your recent job";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.com.au";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://servlo.app";
 
   // Build the 4-step sequence
   type FollowUpMessage = {

@@ -97,7 +97,7 @@ export function invoiceSentEmailTemplate(args: {
   payNowUrl?: string | null;
 }) {
   const accent = args.accentHex ?? "#3B82F6";
-  const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
+  const portalUrl = `${args.appUrl ?? "https://servlo.app"}/dashboard/client`;
   const issueDateCol = args.issueDate
     ? `<td width="33%" style="padding:12px 16px;border-right:1px solid #e2e8f0;">
         <p style="margin:0 0 2px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Issue Date</p>
@@ -178,7 +178,7 @@ export function quoteSentEmailTemplate(args: {
   appUrl?: string;
 }) {
   const accent = args.accentHex ?? "#3B82F6";
-  const portalUrl = `${args.appUrl ?? "https://servlo.com.au"}/dashboard/client`;
+  const portalUrl = `${args.appUrl ?? "https://servlo.app"}/dashboard/client`;
   const colCount = args.issueDate && args.expiryDate ? 3 : args.issueDate ? 2 : 1;
   const colWidth = colCount === 3 ? "33%" : colCount === 2 ? "50%" : "100%";
   const issueDateCol = args.issueDate
@@ -368,7 +368,7 @@ export function welcomeOwnerEmailTemplate(args: {
   highlightFeatures?: string[];
   businessName?: string;
 }) {
-  const appUrl = args.dashboardUrl.replace(/\/dashboard\/owner$/, "").replace(/\/dashboard$/, "") || "https://servlo.com.au";
+  const appUrl = args.dashboardUrl.replace(/\/dashboard\/owner$/, "").replace(/\/dashboard$/, "") || "https://servlo.app";
   const clientsUrl = `${appUrl}/dashboard/owner/clients`;
   const jobsUrl = `${appUrl}/dashboard/owner/jobs`;
   const financeUrl = `${appUrl}/dashboard/owner/finance`;

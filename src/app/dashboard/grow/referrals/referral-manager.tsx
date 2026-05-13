@@ -246,7 +246,7 @@ export default function ReferralManager({
   const [copied, setCopied] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const referralUrl = propReferralUrl ?? "https://servlo.com.au/ref/YOUR-CODE";
+  const referralUrl = propReferralUrl ?? "https://servlo.app/ref/YOUR-CODE";
 
   function addToast(message: string, type: "success" | "error") {
     const id = Date.now();

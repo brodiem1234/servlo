@@ -37,7 +37,7 @@ Team = $19.75/mo for 3 months, then $79/mo.
 
 That's the cheapest SERVLO will ever be. After the 100 founding spots are gone, it's full price only.
 
-👉 servlo.com.au
+👉 servlo.app
 
 ---
 
@@ -50,7 +50,7 @@ I'm Brodie McDonald, built this in Adelaide SA. ABN 88 688 301 684.
 
 If you know a tradie, cleaner, landscaper, plumber, electrician, or any service business — please share this. It would mean the world.
 
-🔗 servlo.com.au
+🔗 servlo.app
 
 ---
 
@@ -67,7 +67,7 @@ Solo from $7.25/mo. Team from $19.75/mo.
 
 100 spots. First in, best dressed.
 
-👉 servlo.com.au
+👉 servlo.app
 
 ---
 
@@ -107,7 +107,7 @@ There are 100 founding spots. After that it's full price.
 
 Honest question — is there anything missing that would make you switch from your current setup? I'm actively building based on feedback.
 
-👉 servlo.com.au
+👉 servlo.app
 
 ---
 
@@ -130,13 +130,13 @@ Use code **EARLYACCESS** at signup for 75% off your first 3 months:
 
 After 100 spots are taken, the discount is gone for good.
 
-Get started at **servlo.com.au**
+Get started at **servlo.app**
 
 30-day money-back guarantee. No contracts.
 
 Brodie McDonald
 Founder, SERVLO
-hello@servlo.com.au
+hello@servlo.app
 
 ---
 

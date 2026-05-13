@@ -11,7 +11,7 @@ export function getAuthSiteOrigin(): string {
     .trim()
     .replace(/\/$/, "");
   if (fromEnv) return fromEnv;
-  return "https://servlo.com.au";
+  return "https://servlo.app";
 }
 
 export function authUrl(path: string): string {
