@@ -575,7 +575,7 @@ function GrowAddonCard({
             CRM pipeline, email marketing, lead capture, and review management. Adds marketing muscle to your Core subscription.
           </p>
           {growPriceAvailable && !isOnTrial && (
-            <p className="mt-1.5 text-sm font-semibold text-[var(--text-primary)]">$10/mo</p>
+            <p className="mt-1.5 text-sm font-semibold text-[var(--text-primary)]">$15/mo</p>
           )}
           {isOnTrial && (
             <p className="mt-1.5 text-xs text-[var(--text-muted)]">Subscribe to a paid plan to add Grow.</p>
@@ -609,7 +609,7 @@ function GrowAddonCard({
                 disabled={loading}
                 className="rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
               >
-                {loading ? "Adding…" : "Add Grow — $10/mo"}
+                {loading ? "Adding…" : "Add Grow — $15/mo"}
               </button>
             )}
           </div>
