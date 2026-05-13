@@ -507,7 +507,138 @@ type BillingTabProps = {
   email: string;
   priceIds: { solo: string; team: string; business: string };
   success: boolean;
+  growAddonEnabled: boolean;
+  growPriceAvailable: boolean;
 };
+
+// ── Grow Add-on Card ────────────────────────────────────────────────────────
+
+function GrowAddonCard({
+  growAddonEnabled,
+  growPriceAvailable,
+  isOnTrial,
+}: {
+  growAddonEnabled: boolean;
+  growPriceAvailable: boolean;
+  isOnTrial: boolean;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ success?: boolean; message?: string; error?: string } | null>(null);
+
+  async function handleAdd() {
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/billing/add-grow", { method: "POST" });
+      const data = await res.json() as { success?: boolean; message?: string; error?: string };
+      setResult(data);
+      if (data.success) window.setTimeout(() => window.location.reload(), 2000);
+    } catch {
+      setResult({ error: "Request failed. Please try again." });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRemove() {
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/billing/add-grow", { method: "DELETE" });
+      const data = await res.json() as { success?: boolean; message?: string; error?: string };
+      setResult(data);
+      if (data.success) window.setTimeout(() => window.location.reload(), 2500);
+    } catch {
+      setResult({ error: "Request failed. Please try again." });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">SERVLO Grow</h2>
+            {growAddonEnabled ? (
+              <span className="inline-flex items-center rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-800 dark:bg-violet-900/40 dark:text-violet-300">
+                Active
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
+                Not active
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            CRM pipeline, email marketing, lead capture, and review management. Adds marketing muscle to your Core subscription.
+          </p>
+          {growPriceAvailable && !isOnTrial && (
+            <p className="mt-1.5 text-sm font-semibold text-[var(--text-primary)]">$10/mo</p>
+          )}
+          {isOnTrial && (
+            <p className="mt-1.5 text-xs text-[var(--text-muted)]">Subscribe to a paid plan to add Grow.</p>
+          )}
+          {!growPriceAvailable && !isOnTrial && (
+            <p className="mt-1.5 text-xs text-[var(--text-muted)]">
+              Grow is included in all plans during early access.{" "}
+              <a href="mailto:support@servlo.com.au" className="text-[var(--product-accent)] hover:underline">
+                Contact us
+              </a>{" "}
+              to manage your add-on.
+            </p>
+          )}
+        </div>
+
+        {growPriceAvailable && !isOnTrial && (
+          <div className="shrink-0">
+            {growAddonEnabled ? (
+              <button
+                type="button"
+                onClick={handleRemove}
+                disabled={loading}
+                className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+              >
+                {loading ? "Removing…" : "Remove Grow"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={loading}
+                className="rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
+              >
+                {loading ? "Adding…" : "Add Grow — $10/mo"}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {result ? (
+        <div
+          className={`mt-3 rounded-lg px-4 py-3 text-sm ${
+            result.success
+              ? "border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/20 dark:text-green-300"
+              : "border border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/20 dark:text-red-300"
+          }`}
+        >
+          {result.message ?? result.error}
+        </div>
+      ) : null}
+
+      <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)]">
+        <li>· CRM pipeline &amp; deal tracking</li>
+        <li>· Email marketing campaigns</li>
+        <li>· Lead capture forms</li>
+        <li>· Google review requests</li>
+        <li>· Client portal (branded)</li>
+        <li>· Re-engagement automations</li>
+      </ul>
+    </div>
+  );
+}
 
 type PlanRow = {
   key: "solo" | "team" | "business" | "enterprise";
@@ -533,7 +664,7 @@ const PLAN_FEATURES: Record<string, { price: string; features: string[] }> = {
 
 const PLAN_ORDER_LOCAL: Record<string, number> = { free: 0, trial: 0, solo: 1, team: 2, business: 3 };
 
-export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }: BillingTabProps) {
+export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, growAddonEnabled, growPriceAvailable }: BillingTabProps) {
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string>("");
@@ -729,7 +860,14 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
         </div>
       )}
 
-      {/* B. Plan comparison table */}
+      {/* B. Grow add-on card */}
+      <GrowAddonCard
+        growAddonEnabled={growAddonEnabled}
+        growPriceAvailable={growPriceAvailable}
+        isOnTrial={isOnTrial}
+      />
+
+      {/* C. Plan comparison table */}
       <div id="plans" className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Plans</h2>
         {checkoutError ? (
@@ -792,7 +930,7 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
         </div>
       </div>
 
-      {/* C. Invoice history note */}
+      {/* D. Invoice history note */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
         <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2">Invoice history</h2>
         <p className="text-sm text-[var(--text-secondary)]">
@@ -809,7 +947,7 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success }:
         </p>
       </div>
 
-      {/* D. Footer note */}
+      {/* E. Footer note */}
       <p className="text-xs text-[var(--text-muted)]">
         Billing powered by Stripe. Changes may take a moment to reflect.
       </p>

@@ -7,6 +7,7 @@ Supabase URL: https://isqnfuvgovzhyhkuynma.supabase.co
 Solo: price_1TTiL8K1tzStyRcJQAfbuJ5n
 Team: price_1TTiLaK1tzStyRcJNOgCeg0X
 Business: price_1TTiLyK1tzStyRcJ4BVJz0o8
+Grow add-on: not yet created — create recurring $10/mo AUD price in Stripe dashboard, then set STRIPE_GROW_PRICE_ID in env
 
 ## Standing rules
 - Never add schema-fallback branches — fix the schema with a migration instead

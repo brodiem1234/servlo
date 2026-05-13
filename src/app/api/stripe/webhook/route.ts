@@ -11,6 +11,27 @@ function getPlanFromPriceId(priceId: string | null | undefined) {
   return "trial";
 }
 
+/** Returns the base plan price ID from a list of subscription items (ignores Grow add-on). */
+function getBasePriceId(
+  items: Array<{ price?: { id?: string } | null }>
+): string | null {
+  const growId = process.env.STRIPE_GROW_PRICE_ID;
+  const base = items.find((item) => {
+    const id = item.price?.id;
+    return id && id !== growId;
+  });
+  return base?.price?.id ?? null;
+}
+
+/** Returns true if the subscription includes the Grow add-on. */
+function hasGrowAddon(
+  items: Array<{ price?: { id?: string } | null }>
+): boolean {
+  const growId = process.env.STRIPE_GROW_PRICE_ID;
+  if (!growId) return false;
+  return items.some((item) => item.price?.id === growId);
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("stripe-signature");
@@ -110,9 +131,11 @@ export async function POST(req: Request) {
     if (event.type === "customer.subscription.updated") {
       const subscription = event.data.object;
       const customerId = typeof subscription.customer === "string" ? subscription.customer : null;
-      const priceId = subscription.items.data[0]?.price?.id ?? null;
-      const plan = getPlanFromPriceId(priceId);
+      const items = subscription.items.data as Array<{ price?: { id?: string } | null }>;
+      const basePriceId = getBasePriceId(items);
+      const plan = getPlanFromPriceId(basePriceId);
       const status = subscription.status === "active" ? "active" : subscription.status;
+      const growEnabled = hasGrowAddon(items);
 
       if (customerId) {
         await admin
@@ -121,9 +144,22 @@ export async function POST(req: Request) {
             subscription_status: status,
             stripe_customer_id: customerId,
             plan,
-            subscription_tier: plan
+            subscription_tier: plan,
           })
           .eq("stripe_customer_id", customerId);
+
+        // Sync Grow add-on state to businesses table
+        const { data: prof } = await admin
+          .from("profiles")
+          .select("id")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle();
+        if (prof?.id) {
+          await admin
+            .from("businesses")
+            .update({ grow_addon_enabled: growEnabled })
+            .eq("owner_id", prof.id);
+        }
       }
     }
 

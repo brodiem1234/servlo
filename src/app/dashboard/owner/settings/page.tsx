@@ -127,7 +127,7 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       .maybeSingle(),
     supabase
       .from("businesses")
-      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered, email_provider, email_connected_address")
+      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered, email_provider, email_connected_address, grow_addon_enabled")
       .eq("owner_id", user.id)
       .maybeSingle()
   ]);
@@ -575,6 +575,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
               business: process.env.STRIPE_BUSINESS_PRICE_ID ?? "price_1TTiLyK1tzStyRcJ4BVJz0o8"
             }}
             success={resolvedParams?.success === "true"}
+            growAddonEnabled={(businessRow as { grow_addon_enabled?: boolean } | null)?.grow_addon_enabled ?? false}
+            growPriceAvailable={Boolean(process.env.STRIPE_GROW_PRICE_ID)}
           />
         </div>
       ) : null}
