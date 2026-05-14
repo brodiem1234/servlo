@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Switching from Tradify to SERVLO",
-  description: "A clear guide to migrating from Tradify to SERVLO — Australian service business management software.",
+  description: "A clear guide to migrating from Tradify to SERVLO: Australian service business management software.",
 };
 
 export default function MigrateFromTradifyPage() {
@@ -29,8 +29,8 @@ export default function MigrateFromTradifyPage() {
           You can download your customers, jobs, and invoices as CSV files.
         </p>
         <p style={{ color: "#64748b", fontSize: 14 }}>
-          If you can&apos;t find the export option, contact Tradify support directly —
-          all SaaS providers are required to provide your data on request.
+          If you can&apos;t find the export option, contact Tradify support directly.
+          All SaaS providers are required to provide your data on request.
         </p>
       </section>
 
@@ -43,10 +43,10 @@ export default function MigrateFromTradifyPage() {
           Here&apos;s what comes across easily and what to plan for:
         </p>
         <ul style={{ color: "#334155", lineHeight: 2, paddingLeft: 20 }}>
-          <li><strong>Clients</strong> — import via CSV in Settings &rarr; Import/Export, or add them as they come up</li>
-          <li><strong>Jobs</strong> — historical jobs can be imported as reference; active jobs are re-created in SERVLO</li>
-          <li><strong>Quotes &amp; Invoices</strong> — we recommend a clean slate in SERVLO for billing clarity</li>
-          <li><strong>Team members</strong> — re-invite from Team &rarr; Employees (takes 2 minutes each)</li>
+          <li><strong>Clients</strong>: import via CSV in Settings &rarr; Import/Export, or add them as they come up</li>
+          <li><strong>Jobs</strong>: historical jobs can be imported as reference; active jobs are re-created in SERVLO</li>
+          <li><strong>Quotes &amp; Invoices</strong>: we recommend a clean slate in SERVLO for billing clarity</li>
+          <li><strong>Team members</strong>: re-invite from Team &rarr; Employees (takes 2 minutes each)</li>
         </ul>
         <p style={{ color: "#64748b", fontSize: 14, marginTop: 12 }}>
           <strong>Bulk Tradify import coming soon.</strong> Email{" "}

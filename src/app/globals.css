@@ -105,6 +105,12 @@
   --sidebar-ring: var(--brand-accent);
 }
 
+/* ── Core product blue (real blue, used ONLY for Core product card) ──────── */
+:root {
+  --core-blue: #2563eb;
+  --core-blue-bg: #1e3a8a;
+}
+
 html.dark {
   --brand-accent: #3B82F6;
   --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);

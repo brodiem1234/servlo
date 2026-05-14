@@ -65,7 +65,7 @@ export default function PortalLoginPage() {
             <p className="text-sm text-[#64748b]">
               We&apos;ve sent a magic link to{" "}
               <span className="font-medium text-[#1e293b]">{email}</span>.
-              Click the link to sign in — no password needed.
+              Click the link to sign in. No password needed.
             </p>
             <p className="text-xs text-[#94a3b8]">
               The link expires in 1 hour. Check your spam folder if you don&apos;t see it.

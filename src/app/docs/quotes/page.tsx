@@ -1,13 +1,13 @@
 import Link from "next/link";
 
-export const metadata = { title: "Quotes — SERVLO Docs" };
+export const metadata = { title: "Quotes · SERVLO Docs" };
 
 export default function QuotesDocPage() {
   return (
     <article className="prose prose-slate max-w-none">
       <h1>Quotes</h1>
       <p className="lead">
-        Send professional quotes that clients can accept or decline online — with digital signature support.
+        Send professional quotes that clients can accept or decline online, with digital signature support.
       </p>
 
       <h2>Creating a quote</h2>
@@ -20,7 +20,7 @@ export default function QuotesDocPage() {
       <h2>Sharing a quote</h2>
       <p>
         Click the <strong>🔗 Share</strong> button on any quote to generate a unique public link.
-        The link is copied to your clipboard. Send it to your client via email or SMS — they can
+        The link is copied to your clipboard. Send it to your client via email or SMS. They can
         view the full quote, accept it, and sign digitally without logging in.
       </p>
 
@@ -47,7 +47,7 @@ export default function QuotesDocPage() {
 
       <h2>Quote expiry</h2>
       <p>
-        Set an expiry date on your quote. Clients cannot accept an expired quote — they&apos;ll see an
+        Set an expiry date on your quote. Clients cannot accept an expired quote. They&apos;ll see an
         expiry notice on the public link and be prompted to contact you for a revised quote.
       </p>
 

@@ -155,14 +155,14 @@ export function PwaInstallPrompt() {
               Install SERVLO on your iPhone
             </h2>
             <p className="mt-1 text-sm text-zinc-400">
-              Add to your home screen for the full app experience — works offline too.
+              Add to your home screen for the full app experience. Works offline too.
             </p>
 
             <ol className="mt-5 space-y-3">
               {[
                 { Icon: Share, text: "Tap the Share button in Safari's toolbar" },
                 { Icon: Plus, text: "Scroll down and tap \"Add to Home Screen\"" },
-                { Icon: null, text: "Tap \"Add\" in the top right — done!" },
+                { Icon: null, text: "Tap \"Add\" in the top right. Done!" },
               ].map(({ Icon, text }, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-xs font-bold text-blue-300">

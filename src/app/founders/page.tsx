@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "SERVLO Founding Members",
-  description: "The first 100 businesses to join SERVLO — locked-in pricing, early access, and a direct line to the team.",
+  description: "The first 100 businesses to join SERVLO: locked-in pricing, early access, and a direct line to the team.",
 };
 
 export default async function FoundersPage() {
@@ -23,7 +23,7 @@ export default async function FoundersPage() {
     { emoji: "🗺️", title: "Priority roadmap input", desc: "Your feature requests go to the top of the list." },
     { emoji: "🚀", title: "Early access to everything", desc: "First to try every new feature before public launch." },
     { emoji: "🏅", title: "Permanent recognition", desc: "Your business listed on this page forever." },
-    { emoji: "📞", title: "Direct line to the team", desc: "Email us anytime — we respond personally." },
+    { emoji: "📞", title: "Direct line to the team", desc: "Email us anytime. We respond personally." },
   ];
 
   return (
@@ -99,7 +99,7 @@ export default async function FoundersPage() {
               textDecoration: "none", fontSize: 16
             }}
           >
-            Claim your spot — {remaining} left
+            Claim your spot: {remaining} left
           </a>
         </div>
       )}

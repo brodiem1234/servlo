@@ -80,7 +80,7 @@ export function SurveyForm({ jobId, token }: SurveyFormProps) {
             <button
               key={star}
               type="button"
-              aria-label={`${star} star${star !== 1 ? "s" : ""} — ${STAR_LABELS[star - 1]}`}
+              aria-label={`${star} star${star !== 1 ? "s" : ""}: ${STAR_LABELS[star - 1]}`}
               aria-pressed={rating === star}
               onClick={() => setRating(star)}
               onMouseEnter={() => setHovered(star)}

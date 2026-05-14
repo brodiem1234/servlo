@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Switching from ServiceM8 to SERVLO",
-  description: "A clear guide to migrating from ServiceM8 to SERVLO — Australian service business management software.",
+  description: "A clear guide to migrating from ServiceM8 to SERVLO: Australian service business management software.",
 };
 
 export default function MigrateFromServiceM8Page() {
@@ -29,7 +29,7 @@ export default function MigrateFromServiceM8Page() {
           in your ServiceM8 account. Download your clients, jobs, and financial records.
         </p>
         <p style={{ color: "#64748b", fontSize: 14 }}>
-          For detailed steps, refer to ServiceM8&apos;s own documentation — they make this straightforward.
+          For detailed steps, refer to ServiceM8&apos;s own documentation. They make this straightforward.
         </p>
       </section>
 
@@ -42,13 +42,13 @@ export default function MigrateFromServiceM8Page() {
           What to expect during import:
         </p>
         <ul style={{ color: "#334155", lineHeight: 2, paddingLeft: 20 }}>
-          <li>Client records map directly — name, phone, email, address all come across</li>
+          <li>Client records map directly: name, phone, email, address all come across</li>
           <li>Job history can be entered manually or via our CSV import (in Settings &rarr; Import/Export)</li>
           <li>Invoices and quotes: we recommend starting fresh in SERVLO for a clean history</li>
           <li>Employee details can be re-entered in Team &rarr; Employees</li>
         </ul>
         <p style={{ color: "#64748b", fontSize: 14, marginTop: 12 }}>
-          <strong>Bulk import coming soon</strong> — we&apos;re building a direct ServiceM8 CSV import tool.
+          <strong>Bulk import coming soon</strong>: we&apos;re building a direct ServiceM8 CSV import tool.
           If you&apos;d like early access, email <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a>.
         </p>
       </section>

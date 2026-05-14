@@ -6,7 +6,6 @@ import type { FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
-import { authUrl } from "@/lib/auth/site-origin";
 import { immediateOwnerUpsert } from "@/app/auth/signup/owner-signup-action";
 import { lookupABN, type AbnLookupResult } from "@/app/auth/signup/lookup-abn";
 import {
@@ -22,6 +21,7 @@ import {
   AlertTriangle,
   Check,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { EnterpriseModal } from "@/components/marketing/enterprise-modal";
 import { Button } from "@/components/ui/button";
@@ -29,12 +29,9 @@ import type { IndustrySlug } from "@/lib/industries";
 import { formatIndustryLabels } from "@/lib/industries";
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
 import { DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
-import { WorkspaceSetupPreview } from "@/components/auth/workspace-setup-preview";
 import {
   buildInitialEnabledFeatures,
-  optionalFeaturesForIndustry,
-  primaryIndustrySlug,
-  recommendedFeaturesForIndustry
+  primaryIndustrySlug
 } from "@/lib/workspace-features";
 import type { Stripe, StripeCardElement } from "@stripe/stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -80,171 +77,194 @@ function isValidAustralianPhone(phone: string): boolean {
   return /^(04\d{8}|\+614\d{8}|0[2-9]\d{8}|\+61[2-9]\d{8})$/.test(stripped);
 }
 
-// ── Industry chips ───────────────────────────────────────────────────────────
+// ── Industry chips (categorised) ─────────────────────────────────────────────
 
 type IndustryChip = {
   id: string;
   label: string;
-  category: string;
   slug: IndustrySlug;
 };
 
-const INDUSTRY_CHIPS: IndustryChip[] = [
-  // Trades
-  { id: "electrician",  label: "Electrician",       category: "Trades",                slug: "trades"         },
-  { id: "plumber",      label: "Plumber",            category: "Trades",                slug: "trades"         },
-  { id: "builder",      label: "Builder",            category: "Trades",                slug: "trades"         },
-  { id: "carpenter",    label: "Carpenter",          category: "Trades",                slug: "trades"         },
-  { id: "concreter",    label: "Concreter",          category: "Trades",                slug: "trades"         },
-  { id: "painter",      label: "Painter",            category: "Trades",                slug: "trades"         },
-  { id: "tiler",        label: "Tiler",              category: "Trades",                slug: "trades"         },
-  { id: "roofer",       label: "Roofer",             category: "Trades",                slug: "trades"         },
-  { id: "hvac",         label: "HVAC",               category: "Trades",                slug: "trades"         },
-  { id: "gas-fitter",   label: "Gas Fitter",         category: "Trades",                slug: "trades"         },
-  { id: "welder",       label: "Welder",             category: "Trades",                slug: "trades"         },
-  { id: "fabricator",   label: "Fabricator",         category: "Trades",                slug: "trades"         },
-  // Cleaning
-  { id: "residential-cleaning",  label: "Residential Cleaning",  category: "Cleaning",        slug: "cleaning"       },
-  { id: "commercial-cleaning",   label: "Commercial Cleaning",   category: "Cleaning",        slug: "cleaning"       },
-  { id: "ndis-cleaning",         label: "NDIS Cleaning",         category: "Cleaning",        slug: "cleaning"       },
-  { id: "end-of-lease",          label: "End of Lease",          category: "Cleaning",        slug: "cleaning"       },
-  { id: "industrial-cleaning",   label: "Industrial Cleaning",   category: "Cleaning",        slug: "cleaning"       },
-  // Field Services
-  { id: "pest-control",  label: "Pest Control",  category: "Field Services", slug: "field_services" },
-  { id: "security",      label: "Security",      category: "Field Services", slug: "field_services" },
-  { id: "inspections",   label: "Inspections",   category: "Field Services", slug: "field_services" },
-  { id: "maintenance",   label: "Maintenance",   category: "Field Services", slug: "field_services" },
-  { id: "locksmith",     label: "Locksmith",     category: "Field Services", slug: "field_services" },
-  // Landscaping
-  { id: "garden",        label: "Garden",        category: "Landscaping", slug: "trades" },
-  { id: "irrigation",    label: "Irrigation",    category: "Landscaping", slug: "trades" },
-  { id: "tree-services", label: "Tree Services", category: "Landscaping", slug: "trades" },
-  { id: "pool-spa",      label: "Pool & Spa",    category: "Landscaping", slug: "trades" },
-  // Health & Wellness
-  { id: "physio",           label: "Physio",           category: "Health & Wellness", slug: "health" },
-  { id: "chiropractic",     label: "Chiropractic",     category: "Health & Wellness", slug: "health" },
-  { id: "massage",          label: "Massage",          category: "Health & Wellness", slug: "health" },
-  { id: "nutrition",        label: "Nutrition",        category: "Health & Wellness", slug: "health" },
-  { id: "personal-training",label: "Personal Training",category: "Health & Wellness", slug: "health" },
-  // Events & Hire
-  { id: "av",                label: "AV",                category: "Events & Hire", slug: "events" },
-  { id: "equipment-hire",    label: "Equipment Hire",    category: "Events & Hire", slug: "events" },
-  { id: "catering",          label: "Catering",          category: "Events & Hire", slug: "events" },
-  { id: "photography",       label: "Photography",       category: "Events & Hire", slug: "events" },
-  { id: "event-coordination",label: "Event Coordination",category: "Events & Hire", slug: "events" },
-  // Transport & Logistics
-  { id: "courier",   label: "Courier",   category: "Transport & Logistics", slug: "field_services" },
-  { id: "removals",  label: "Removals",  category: "Transport & Logistics", slug: "field_services" },
-  { id: "freight",   label: "Freight",   category: "Transport & Logistics", slug: "field_services" },
-  // Beauty & Personal Care
-  { id: "hair",   label: "Hair",   category: "Beauty & Personal Care", slug: "other" },
-  { id: "skin",   label: "Skin",   category: "Beauty & Personal Care", slug: "other" },
-  { id: "nails",  label: "Nails",  category: "Beauty & Personal Care", slug: "other" },
-  { id: "barber", label: "Barber", category: "Beauty & Personal Care", slug: "other" },
-  // Professional Services
-  { id: "consulting",        label: "Consulting",        category: "Professional Services", slug: "marketing" },
-  { id: "it-support",        label: "IT Support",        category: "Professional Services", slug: "marketing" },
-  { id: "marketing-agency",  label: "Marketing Agency",  category: "Professional Services", slug: "marketing" },
-  { id: "accounting",        label: "Accounting",        category: "Professional Services", slug: "marketing" },
-  // Home Services
-  { id: "home-cleaning",     label: "Home Cleaning",     category: "Home Services", slug: "cleaning" },
-  { id: "gardening",         label: "Gardening",         category: "Home Services", slug: "trades"   },
-  { id: "handyman",          label: "Handyman",          category: "Home Services", slug: "trades"   },
-  { id: "appliance-repair",  label: "Appliance Repair",  category: "Home Services", slug: "field_services" },
-  // Education
-  { id: "tutoring",       label: "Tutoring",        category: "Education", slug: "other" },
-  { id: "music-lessons",  label: "Music Lessons",   category: "Education", slug: "other" },
-  { id: "coaching",       label: "Coaching",        category: "Education", slug: "other" },
-  // Other — special: triggers custom text input
-  { id: "other", label: "Other", category: "Other", slug: "other" },
+type IndustryCategory = {
+  name: string;
+  chips: IndustryChip[];
+};
+
+const INDUSTRY_CATEGORIES: IndustryCategory[] = [
+  {
+    name: "Construction & Trades",
+    chips: [
+      { id: "electrician",  label: "Electrician", slug: "trades" },
+      { id: "plumber",      label: "Plumber",     slug: "trades" },
+      { id: "builder",      label: "Builder",     slug: "trades" },
+      { id: "carpenter",    label: "Carpenter",   slug: "trades" },
+      { id: "concreter",    label: "Concreter",   slug: "trades" },
+      { id: "painter",      label: "Painter",     slug: "trades" },
+      { id: "tiler",        label: "Tiler",       slug: "trades" },
+      { id: "roofer",       label: "Roofer",      slug: "trades" },
+      { id: "hvac",         label: "HVAC",        slug: "trades" },
+      { id: "gas-fitter",   label: "Gas Fitter",  slug: "trades" },
+      { id: "welder",       label: "Welder",      slug: "trades" },
+      { id: "fabricator",   label: "Fabricator",  slug: "trades" },
+      { id: "locksmith",    label: "Locksmith",   slug: "field_services" },
+    ],
+  },
+  {
+    name: "Cleaning & Maintenance",
+    chips: [
+      { id: "residential-cleaning", label: "Residential Cleaning", slug: "cleaning" },
+      { id: "commercial-cleaning",  label: "Commercial Cleaning",  slug: "cleaning" },
+      { id: "ndis-cleaning",        label: "NDIS Cleaning",        slug: "cleaning" },
+      { id: "end-of-lease",         label: "End of Lease",         slug: "cleaning" },
+      { id: "industrial-cleaning",  label: "Industrial Cleaning",  slug: "cleaning" },
+      { id: "pest-control",         label: "Pest Control",         slug: "field_services" },
+      { id: "maintenance",          label: "Maintenance",          slug: "field_services" },
+    ],
+  },
+  {
+    name: "Outdoor & Property",
+    chips: [
+      { id: "garden",         label: "Garden",         slug: "trades" },
+      { id: "irrigation",     label: "Irrigation",     slug: "trades" },
+      { id: "tree-services",  label: "Tree Services",  slug: "trades" },
+      { id: "pool-spa",       label: "Pool & Spa",     slug: "trades" },
+      { id: "equipment-hire", label: "Equipment Hire", slug: "events" },
+    ],
+  },
+  {
+    name: "Inspections & Security",
+    chips: [
+      { id: "security",    label: "Security",    slug: "field_services" },
+      { id: "inspections", label: "Inspections", slug: "field_services" },
+    ],
+  },
+  {
+    name: "Health & Wellness",
+    chips: [
+      { id: "physio",            label: "Physio",            slug: "health" },
+      { id: "chiropractic",      label: "Chiropractic",      slug: "health" },
+      { id: "massage",           label: "Massage",           slug: "health" },
+      { id: "nutrition",         label: "Nutrition",         slug: "health" },
+      { id: "personal-training", label: "Personal Training", slug: "health" },
+    ],
+  },
+  {
+    name: "Events & Creative",
+    chips: [
+      { id: "av",                 label: "AV",                 slug: "events" },
+      { id: "catering",           label: "Catering",           slug: "events" },
+      { id: "photography",        label: "Photography",        slug: "events" },
+      { id: "event-coordination", label: "Event Coordination", slug: "events" },
+      { id: "music-lessons",      label: "Music Lessons",      slug: "other" },
+    ],
+  },
+  {
+    name: "Logistics & Transport",
+    chips: [
+      { id: "courier",  label: "Courier",  slug: "field_services" },
+      { id: "removals", label: "Removals", slug: "field_services" },
+      { id: "freight",  label: "Freight",  slug: "field_services" },
+    ],
+  },
+  {
+    name: "Personal Services",
+    chips: [
+      { id: "hair",   label: "Hair",   slug: "other" },
+      { id: "skin",   label: "Skin",   slug: "other" },
+      { id: "nails",  label: "Nails",  slug: "other" },
+      { id: "barber", label: "Barber", slug: "other" },
+    ],
+  },
+  {
+    name: "Professional & Business",
+    chips: [
+      { id: "consulting",       label: "Consulting",       slug: "marketing" },
+      { id: "it-support",       label: "IT Support",       slug: "marketing" },
+      { id: "marketing-agency", label: "Marketing Agency", slug: "marketing" },
+      { id: "accounting",       label: "Accounting",       slug: "marketing" },
+    ],
+  },
+  {
+    name: "Home Services",
+    chips: [
+      { id: "home-cleaning",    label: "Home Cleaning",    slug: "cleaning" },
+      { id: "gardening",        label: "Gardening",        slug: "trades" },
+      { id: "handyman",         label: "Handyman",         slug: "trades" },
+      { id: "appliance-repair", label: "Appliance Repair", slug: "field_services" },
+    ],
+  },
+  {
+    name: "Education & Coaching",
+    chips: [
+      { id: "tutoring", label: "Tutoring", slug: "other" },
+      { id: "coaching", label: "Coaching", slug: "other" },
+    ],
+  },
+  {
+    name: "Other",
+    chips: [
+      { id: "other", label: "Other", slug: "other" },
+    ],
+  },
 ];
 
-// ── Product selection data ───────────────────────────────────────────────────
+// Flat list for lookup / validation
+const INDUSTRY_CHIPS: IndustryChip[] = INDUSTRY_CATEGORIES.flatMap((c) => c.chips);
 
-type IndividualProduct = {
+// ── Product selection data (4 cards: Core selectable, 3 locked) ──────────────
+
+type ProductCard = {
   id: string;
   name: string;
-  color: string;
-  nameColor: string;
-  gradient: string;
-  glow: string;
-  desc: string;
+  description: string;
   price: string;
-  badge: string;
+  badgeText: string;
+  badgeTone: "green" | "amber" | "neutral";
   available: boolean;
+  tooltip?: string;
 };
 
-type BundlePair = {
-  id: string;
-  name: string;
-  colors: [string, string];
-  gradient: string;
-  subtitle: string;
-  price: string;
-  savings: string;
-  comingSoon: boolean;
-};
-
-const INDIVIDUAL_PRODUCTS: IndividualProduct[] = [
+const PRODUCT_CARDS: ProductCard[] = [
   {
-    id: "core", name: "SERVLO Core", color: "#3B82F6",
-    nameColor: "#93C5FD",
-    gradient: "linear-gradient(135deg, #0d1b36 0%, #1a3a6b 100%)",
-    glow: "rgba(59,130,246,0.2)",
-    desc: "Job management, invoicing, scheduling",
-    price: "From $29/mo", badge: "Available now", available: true,
+    id: "core",
+    name: "SERVLO Core",
+    description: "Job management, invoicing, scheduling",
+    price: "From $29/mo",
+    badgeText: "Available now",
+    badgeTone: "green",
+    available: true,
   },
   {
-    id: "grow", name: "SERVLO Grow", color: "#8B5CF6",
-    nameColor: "#C4B5FD",
-    gradient: "linear-gradient(135deg, #120a2e 0%, #2d1b69 100%)",
-    glow: "rgba(139,92,246,0.2)",
-    desc: "AI ads, reviews and social content",
-    price: "Included in all plans", badge: "Available now", available: true,
+    id: "core+grow",
+    name: "Core + Grow",
+    description: "Job management plus AI marketing tools",
+    price: "From $29/mo + $15/mo Grow",
+    badgeText: "Grow launching soon",
+    badgeTone: "amber",
+    available: false,
+    tooltip: "Grow add-on launching in 4 to 6 weeks. Founding members get 1 month free.",
   },
   {
-    id: "leads", name: "SERVLO Leads", color: "#F59E0B",
-    nameColor: "#FCD34D",
-    gradient: "linear-gradient(135deg, #1f1200 0%, #3d2000 100%)",
-    glow: "rgba(245,158,11,0.2)",
-    desc: "Verified job leads marketplace",
-    price: "From $12/lead", badge: "Coming Q4 2026", available: false,
+    id: "core+leads",
+    name: "Core + Leads",
+    description: "Job management plus verified job leads",
+    price: "From $29/mo + $12/lead",
+    badgeText: "Leads coming Q4 2026",
+    badgeTone: "amber",
+    available: false,
+    tooltip: "Leads marketplace launching Q4 2026.",
+  },
+  {
+    id: "core+grow+leads",
+    name: "Full Platform",
+    description: "Core + Grow + Leads, all included",
+    price: "Coming Q4 2026",
+    badgeText: "Launching with Leads",
+    badgeTone: "neutral",
+    available: false,
+    tooltip: "Full platform launches with Leads in Q4 2026.",
   },
 ];
-
-const BUNDLE_PAIRS: BundlePair[] = [
-  {
-    id: "core+grow", name: "Core + Grow", colors: ["#3B82F6", "#8B5CF6"],
-    gradient: "linear-gradient(135deg, #0d1b36 0%, #2d1b69 100%)",
-    subtitle: "Both included", price: "From $29/mo", savings: "Grow included free", comingSoon: false,
-  },
-  {
-    id: "core+leads", name: "Core + Leads", colors: ["#3B82F6", "#F59E0B"],
-    gradient: "linear-gradient(135deg, #0d1b36 0%, #3d2000 100%)",
-    subtitle: "Coming Q4 2026", price: "TBA", savings: "Leads coming soon", comingSoon: true,
-  },
-  {
-    id: "grow+leads", name: "Grow + Leads", colors: ["#8B5CF6", "#F59E0B"],
-    gradient: "linear-gradient(135deg, #120a2e 0%, #3d2000 100%)",
-    subtitle: "Coming Q4 2026", price: "TBA", savings: "Leads coming soon", comingSoon: true,
-  },
-];
-
-const FULL_PLATFORM = {
-  id: "core+grow+leads",
-  name: "SERVLO Full Platform",
-  subtitle: "Everything included. All products. One login.",
-  price: "TBA — Coming Q4 2026",
-  badge: "⭐ Core + Grow available now · Leads coming Q4 2026",
-  features: [
-    "Jobs, scheduling, invoicing & client management",
-    "Team management, timesheets & GPS clock-in",
-    "AI-powered ads and social content generation",
-    "Google review automation and referral tracking",
-    "Verified job leads matched to your trade",
-    "30-day free trial — no charge until it ends",
-  ],
-};
 
 // ── Plan tier options ───────────────────────────────────────────────────────
 
@@ -257,80 +277,19 @@ type PlanTier = {
   recommended?: boolean;
 };
 
-const GROW_TIERS: PlanTier[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: "$59",
-    description: "Get started with marketing",
-    features: ["1 business", "AI ad creation", "5 campaigns/mo"],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$119",
-    description: "Scale your reach",
-    features: ["Up to 3 businesses", "Unlimited campaigns", "Google review automation"],
-    recommended: true,
-  },
-  {
-    id: "agency",
-    name: "Agency",
-    price: "$299",
-    description: "Manage all your clients",
-    features: ["Unlimited businesses", "White-label reports", "Priority support"],
-  },
-];
-
-const LEADS_TIERS: PlanTier[] = [
-  {
-    id: "payg",
-    name: "Pay-as-you-go",
-    price: "$12/lead",
-    description: "Pay only for leads you accept",
-    features: ["No subscription required", "Verified trade leads", "Accept or decline each lead"],
-  },
-  {
-    id: "verified",
-    name: "Verified",
-    price: "$39/mo",
-    description: "Regular verified leads included",
-    features: ["5 leads/month included", "Lead alerts via SMS & email", "Priority placement"],
-    recommended: true,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$89/mo",
-    description: "Maximum lead volume",
-    features: ["15 leads/month included", "Exclusive territory options", "Dedicated account support"],
-  },
-];
-
-function tiersForCombo(combo: string): PlanTier[] {
-  if (combo === "leads") return LEADS_TIERS;
-  if (combo === "grow") return GROW_TIERS;
-
-  const priceMap: Record<string, [number, number, number, number]> = {
-    "core":             [29,  79, 149, 0],
-    "core+grow":        [89, 129, 219, 0],
-    "core+leads":       [69, 109, 189, 0],
-    "grow+leads":       [129, 179, 269, 0],
-    "core+grow+leads":  [179, 229, 319, 0],
-  };
-  const [p0, p1, p2] = priceMap[combo] ?? [29, 79, 149];
+function tiersForCore(): PlanTier[] {
   return [
     {
       id: "solo",
       name: "Solo",
-      price: `$${p0}`,
+      price: "$29",
       description: "Perfect for sole traders",
       features: ["1 user", "Unlimited jobs", "50 AI generations/mo"],
     },
     {
       id: "team",
       name: "Team",
-      price: `$${p1}`,
+      price: "$79",
       description: "For growing businesses",
       features: ["Unlimited team members", "Team timesheets & scheduling", "200 AI generations/mo"],
       recommended: true,
@@ -338,7 +297,7 @@ function tiersForCombo(combo: string): PlanTier[] {
     {
       id: "business",
       name: "Business",
-      price: `$${p2}`,
+      price: "$149",
       description: "Scaling operations",
       features: ["Unlimited users", "Xero & MYOB integration", "500 AI generations/mo"],
     },
@@ -350,19 +309,6 @@ function tiersForCombo(combo: string): PlanTier[] {
       features: ["Custom integrations", "White-glove onboarding", "SLA guarantee"],
     },
   ];
-}
-
-function comboLabel(combo: string): string {
-  const names: Record<string, string> = {
-    "core":            "SERVLO Core",
-    "grow":            "SERVLO Grow",
-    "leads":           "SERVLO Leads",
-    "core+grow":       "Core + Grow — Essential Bundle",
-    "core+leads":      "Core + Leads — Starter Bundle",
-    "grow+leads":      "Grow + Leads — Growth Bundle",
-    "core+grow+leads": "SERVLO Full Platform",
-  };
-  return names[combo] ?? combo;
 }
 
 // ── SVG icons ───────────────────────────────────────────────────────────────
@@ -426,8 +372,8 @@ export function SignupForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Step 1=credentials, 2=industries, 3=products, 4=plan tier, 5=workspace, 6=trial
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  // Step 1=credentials, 2=industries, 3=products, 4=plan tier, 5=trial
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   // Credential fields
   const [nameInput, setNameInput] = useState("");
@@ -445,7 +391,7 @@ export function SignupForm() {
   // Phone (AU-only)
   const [phoneInput, setPhoneInput] = useState("");
 
-  // Industry selection — chip-based
+  // Industry selection
   const [selectedChipIds, setSelectedChipIds] = useState<Set<string>>(new Set());
   const [industrySearch, setIndustrySearch] = useState("");
   const [otherNote, setOtherNote] = useState("");
@@ -460,24 +406,24 @@ export function SignupForm() {
     return [...slugSet];
   }, [selectedChipIds]);
 
-  // Product + plan
-  const [selectedProductCombo, setSelectedProductCombo] = useState("core");
+  // Product + plan — Core is the ONLY selectable product in signup
+  const [selectedProductCombo] = useState("core");
   const [selectedPlanTier, setSelectedPlanTier] = useState("solo");
-
-  // Feature toggles (step 5)
-  const [optionalFeatureOn, setOptionalFeatureOn] = useState<Record<string, boolean>>({});
 
   // Stripe refs
   const stripeRef = useRef<Stripe | null>(null);
   const cardElementRef = useRef<StripeCardElement | null>(null);
   const cardMountRef = useRef<HTMLDivElement>(null);
 
+  // Terms acceptance
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   // UI state
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
-  const [productTooltip, setProductTooltip] = useState<string | null>(null);
+  const [lockedTooltipId, setLockedTooltipId] = useState<string | null>(null);
   const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
 
   const onGoogleSignUp = useCallback(async () => {
@@ -490,7 +436,7 @@ export function SignupForm() {
         options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (e) { setError(e.message || "Unable to connect to Google."); setOauthLoading(null); }
-      // On success the browser redirects — don't reset loading state
+      // On success the browser redirects, so do not reset loading state.
     } catch (e) { setError(e instanceof Error ? e.message : "Google sign-up failed."); setOauthLoading(null); }
   }, []);
 
@@ -522,16 +468,21 @@ export function SignupForm() {
     () => primaryIndustrySlug(selected.length ? selected : ["other"]),
     [selected]
   );
-  const signupRecommendedIds = useMemo(() => recommendedFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
-  const signupOptionalIds    = useMemo(() => optionalFeaturesForIndustry(signupPrimaryIndustry), [signupPrimaryIndustry]);
-  const signupIndustryHeadline = formatIndustryLabels([signupPrimaryIndustry]) || "SERVLO";
+  const _signupIndustryHeadline = formatIndustryLabels([signupPrimaryIndustry]) || "SERVLO";
 
-  const filteredChips = useMemo(() => {
+  // Filtered categories: each category keeps only chips matching the search;
+  // categories with no remaining chips are hidden.
+  const filteredCategories = useMemo(() => {
     const q = industrySearch.trim().toLowerCase();
-    if (!q) return INDUSTRY_CHIPS;
-    return INDUSTRY_CHIPS.filter(
-      (c) => c.label.toLowerCase().includes(q) || c.category.toLowerCase().includes(q)
-    );
+    if (!q) return INDUSTRY_CATEGORIES;
+    return INDUSTRY_CATEGORIES
+      .map((cat) => ({
+        ...cat,
+        chips: cat.chips.filter(
+          (c) => c.label.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q)
+        ),
+      }))
+      .filter((cat) => cat.chips.length > 0);
   }, [industrySearch]);
 
   function toggleChip(id: string) {
@@ -555,7 +506,7 @@ export function SignupForm() {
     if (fieldErrors.abn) clearFieldError("abn");
   }, [abnInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ABN lookup — fires whenever abnDigits changes and the checksum is valid
+  // ABN lookup: fires whenever abnDigits changes and the checksum is valid.
   useEffect(() => {
     if (!abnValid) return;
     let cancelled = false;
@@ -577,9 +528,9 @@ export function SignupForm() {
     return () => { cancelled = true; };
   }, [abnDigits, abnValid]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mount Stripe card element when reaching step 6 (for Core-containing products)
+  // Mount Stripe card element when reaching step 5 (trial) for Core-containing products.
   useEffect(() => {
-    if (step !== 6) return;
+    if (step !== 5) return;
     const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
     const priceId = getPriceId(selectedPlanTier);
     if (!hasCore || !priceId) return;
@@ -613,7 +564,7 @@ export function SignupForm() {
       cardElementRef.current?.destroy();
       cardElementRef.current = null;
     };
-    // Re-mount if product/tier changes while on step 6
+    // Re-mount if product/tier changes while on step 5.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, selectedProductCombo, selectedPlanTier]);
 
@@ -666,7 +617,6 @@ export function SignupForm() {
       setFieldError("phone", "Phone number is required.");
       return;
     }
-    // Build testable E.164-equivalent strings from the local input
     const localDigits = phoneLocalDigits(phoneInput);
     const withZero = `0${localDigits}`;
     const e164 = `+61${localDigits}`;
@@ -696,7 +646,7 @@ export function SignupForm() {
     if (!allPasswordRequirementsMet(passwordRules)) return "Please meet every password requirement before continuing.";
     if (!isPhoneValid(phoneInput)) return "Enter a valid Australian phone number (9 digits).";
     if (!abnHas11) return "ABN must be 11 digits.";
-    if (!abnValid) return "Invalid ABN — please re-enter your 11-digit ABN.";
+    if (!abnValid) return "Invalid ABN. Please re-enter your 11-digit ABN.";
     if (!abnConfirmed) return "Please confirm your ABN before continuing.";
     return null;
   }
@@ -705,7 +655,6 @@ export function SignupForm() {
 
   function handleContinue(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    // Run all field validations and collect errors
     const newErrors: { [key: string]: string } = {};
     if (!nameInput.trim()) newErrors.name = "Full name is required.";
     if (!emailInput.trim()) newErrors.email = "Email is required.";
@@ -726,35 +675,31 @@ export function SignupForm() {
 
   function handleContinueFromProducts(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    // Reset plan tier to sensible default for the selected product
-    const tiers = tiersForCombo(selectedProductCombo);
-    setSelectedPlanTier(tiers[0].id);
+    setSelectedPlanTier("solo");
     setStep(4);
   }
 
   function handleContinueFromPlanTier(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    const nextOptional = Object.fromEntries(signupOptionalIds.map((id) => [id, false]));
-    setOptionalFeatureOn(nextOptional);
     setStep(5);
-  }
-
-  function handleContinueFromWorkspacePreview(e: MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
-    setStep(6);
   }
 
   function handleBack(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     setError(null);
-    setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
+    setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3 | 4 | 5);
   }
 
   // ── Core signup logic ────────────────────────────────────────────────────
 
   async function doSignup() {
-    if (step !== 6) return;
+    if (step !== 5) return;
     setError(null);
+
+    if (!termsAccepted) {
+      setError("Please accept the Terms of Service and Privacy Policy to continue.");
+      return;
+    }
 
     const gate = validateStep1();
     if (gate) { setError(gate); return; }
@@ -762,7 +707,6 @@ export function SignupForm() {
     setOwnerSubmitting(true);
 
     try {
-      // E.164 phone — AU only
       const phoneDigits = phoneInput.replace(/\s/g, "");
       const phoneLocal  = phoneDigits.startsWith("0") ? phoneDigits.slice(1) : phoneDigits;
       const phoneE164   = `+61${phoneLocal}`;
@@ -803,7 +747,7 @@ export function SignupForm() {
       const userId = authData.user?.id;
       if (!userId) {
         setError(
-          "Account signup did not return a user id. If email confirmation is required, check your inbox — otherwise contact support."
+          "Account signup did not return a user id. If email confirmation is required, check your inbox, otherwise contact support."
         );
         return;
       }
@@ -830,21 +774,18 @@ export function SignupForm() {
           selectedProducts: selectedProductCombo,
         });
       } catch (upsertErr) {
-        // Non-fatal — /api/setup-business will also upsert as a second pass
+        // Non-fatal: /api/setup-business will also upsert as a second pass.
         console.error("[signup/owner] immediateOwnerUpsert threw (non-fatal)", upsertErr);
       }
 
-      const optionalChosen = new Set(
-        signupOptionalIds.filter((id) => Boolean(optionalFeatureOn[id]))
-      );
-      const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, optionalChosen);
+      // Module toggles are no longer chosen during signup, so we initialise the
+      // workspace with the industry-recommended default set (no optional extras).
+      const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, new Set());
 
-      // Capture referral code from URL query param (e.g. /auth/signup?ref=ABC123)
       const params = typeof window !== "undefined"
         ? new URLSearchParams(window.location.search)
         : new URLSearchParams();
       const referralCode = params.get("ref") ?? undefined;
-      // Capture promo/discount code from URL (e.g. /auth/signup?code=EARLYACCESS)
       const promoCode = params.get("code") ?? undefined;
 
       const setupBody = {
@@ -877,13 +818,12 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
-        // Surface ABN duplicate error immediately — do NOT retry or continue
         if (res.status === 409 || (parsed.error && parsed.error.includes("ABN is already registered"))) {
           setError(parsed.error ?? "This ABN is already registered with SERVLO. Please sign in to your existing account.");
           setFieldErrors((prev) => ({ ...prev, abn: parsed.error ?? "ABN already registered" }));
           return;
         }
-        console.warn("[signup/owner] setup-business failed — retrying", res.status, parsed);
+        console.warn("[signup/owner] setup-business failed, retrying", res.status, parsed);
         res = await fetch("/api/setup-business", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
@@ -898,13 +838,12 @@ export function SignupForm() {
       }
 
       if (!res.ok || parsed.error) {
-        // Surface ABN duplicate error from retry too
         if (res.status === 409 || (parsed.error && parsed.error.includes("ABN is already registered"))) {
           setError(parsed.error ?? "This ABN is already registered with SERVLO. Please sign in to your existing account.");
           setFieldErrors((prev) => ({ ...prev, abn: parsed.error ?? "ABN already registered" }));
           return;
         }
-        console.error("[signup/owner] setup-business failed after retry — continuing to dashboard", parsed);
+        console.error("[signup/owner] setup-business failed after retry, continuing to dashboard", parsed);
         router.push("/dashboard/owner");
         router.refresh();
         return;
@@ -925,7 +864,7 @@ export function SignupForm() {
         }
       }
 
-      // ── Stripe trial (Core-containing products with a known price tier) ─
+      // Stripe trial (Core-containing products with a known price tier).
       const hasCore  = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
       const priceId  = getPriceId(selectedPlanTier);
 
@@ -956,7 +895,7 @@ export function SignupForm() {
             console.warn("[signup/owner] trial setup failed", trialErr);
           }
         } catch (stripeErr) {
-          console.warn("[signup/owner] stripe trial error — proceeding anyway", stripeErr);
+          console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
         }
       }
 
@@ -977,7 +916,8 @@ export function SignupForm() {
 
   // ── Derived ──────────────────────────────────────────────────────────────
 
-  const accentBtn = "bg-[#3B82F6] text-white hover:bg-blue-500";
+  // Primary button: black with white text. Used for all primary CTAs.
+  const primaryBtn = "bg-black text-white border border-white/40 hover:bg-neutral-900 hover:border-white/60";
 
   const step1Disabled =
     !allPasswordRequirementsMet(passwordRules) ||
@@ -990,15 +930,19 @@ export function SignupForm() {
   const priceId  = getPriceId(selectedPlanTier);
   const needsCard = hasCore && !!priceId;
 
-  const currentTiers = tiersForCombo(selectedProductCombo);
+  const currentTiers = tiersForCore();
 
-  // ABN confirm checkbox visibility
   const showConfirmCheckbox = abnValid && !abnLookupLoading && (
     abnLookup?.status === "active" ||
     abnLookup?.status === "skipped" ||
     abnLookup?.status === "error" ||
     abnLookup === null
   );
+
+  function showLockedTooltip(id: string) {
+    setLockedTooltipId(id);
+    setTimeout(() => setLockedTooltipId((curr) => (curr === id ? null : curr)), 3500);
+  }
 
   // ── Render ───────────────────────────────────────────────────────────────
 
@@ -1016,26 +960,26 @@ export function SignupForm() {
             <Image src="/servlo-mark-white.svg" alt="SERVLO" width={44} height={44} unoptimized
               className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </div>
-          <h1 className="text-xl font-bold sm:text-3xl" style={{ color: "#f8fafc" }}>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-3xl">
             Create your account
           </h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-zinc-600 dark:text-slate-400">
             Start your 30-day free trial and set up your business in minutes.
           </p>
 
-          {/* Step indicator */}
+          {/* Step indicator: 5 segments */}
           <div className="mt-4 flex items-center gap-1">
-            {([1, 2, 3, 4, 5, 6] as const).map((s) => (
+            {([1, 2, 3, 4, 5] as const).map((s) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  s < step ? "bg-[#3B82F6]" : s === step ? "bg-[#3B82F6] opacity-60" : "bg-slate-700"
+                  s < step ? "bg-white" : s === step ? "bg-white/60" : "bg-neutral-700"
                 }`}
               />
             ))}
           </div>
 
-          {/* OAuth — only on step 1 */}
+          {/* OAuth, only on step 1 */}
           {step === 1 ? (
             <div className="mt-5 flex flex-col gap-2">
               <Button
@@ -1043,7 +987,7 @@ export function SignupForm() {
                 variant="outline"
                 disabled={oauthLoading !== null}
                 onClick={onGoogleSignUp}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-600 bg-slate-800 font-medium text-slate-200 shadow-sm hover:bg-slate-700 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-neutral-700 bg-black font-medium text-white shadow-sm hover:bg-neutral-900 disabled:opacity-60"
               >
                 {oauthLoading === "google" ? (
                   <Loader2 size={18} className="animate-spin shrink-0" />
@@ -1057,7 +1001,7 @@ export function SignupForm() {
                 variant="outline"
                 disabled={oauthLoading !== null}
                 onClick={onMicrosoftSignUp}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-slate-600 bg-slate-800 font-medium text-slate-200 shadow-sm hover:bg-slate-700 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-neutral-700 bg-black font-medium text-white shadow-sm hover:bg-neutral-900 disabled:opacity-60"
               >
                 {oauthLoading === "microsoft" ? (
                   <Loader2 size={18} className="animate-spin shrink-0" />
@@ -1070,9 +1014,9 @@ export function SignupForm() {
                 Make sure pop-ups are enabled in your browser for Google and Microsoft sign-in to work.
               </p>
               <div className="flex items-center gap-3">
-                <span className="h-px flex-1 bg-slate-700" />
+                <span className="h-px flex-1 bg-neutral-700" />
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">or sign up with email</span>
-                <span className="h-px flex-1 bg-slate-700" />
+                <span className="h-px flex-1 bg-neutral-700" />
               </div>
             </div>
           ) : null}
@@ -1105,7 +1049,7 @@ export function SignupForm() {
                   onChange={(e) => { setNameInput(e.target.value); if (fieldErrors.name) clearFieldError("name"); }}
                   onBlur={handleNameBlur}
                   required
-                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.name ? "border-red-500 focus:border-red-500" : "border-slate-600 focus:border-[#3B82F6]"}`}
+                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.name ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-white"}`}
                 />
                 {fieldErrors.name ? <p className="mt-1 text-xs text-red-400">{fieldErrors.name}</p> : null}
               </div>
@@ -1119,7 +1063,7 @@ export function SignupForm() {
                   onChange={(e) => { setEmailInput(e.target.value); if (fieldErrors.email) clearFieldError("email"); }}
                   onBlur={handleEmailBlur}
                   required
-                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.email ? "border-red-500 focus:border-red-500" : "border-slate-600 focus:border-[#3B82F6]"}`}
+                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.email ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-white"}`}
                 />
                 {fieldErrors.email ? <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p> : null}
               </div>
@@ -1131,7 +1075,7 @@ export function SignupForm() {
                   id="password" name="password" type="password" autoComplete="new-password"
                   value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)}
                   required
-                  className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                  className="h-10 w-full rounded-md border border-neutral-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-white focus:outline-none"
                 />
                 <PasswordStrengthHints rules={passwordRules} />
               </div>
@@ -1155,7 +1099,7 @@ export function SignupForm() {
                   onBlur={handleBusinessNameBlur}
                   maxLength={100}
                   required
-                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.businessName ? "border-red-500 focus:border-red-500" : "border-slate-600 focus:border-[#3B82F6]"}`}
+                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.businessName ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-white"}`}
                 />
                 {fieldErrors.businessName ? <p className="mt-1 text-xs text-red-400">{fieldErrors.businessName}</p> : null}
               </div>
@@ -1176,7 +1120,7 @@ export function SignupForm() {
                       "h-10 w-full rounded-md border bg-slate-800 px-3 pr-9 text-sm text-slate-200 transition-colors focus:outline-none",
                       abnHas11
                         ? abnValid ? "border-emerald-500" : "border-red-500"
-                        : "border-slate-600"
+                        : "border-neutral-600"
                     ].join(" ")}
                     required
                   />
@@ -1196,7 +1140,7 @@ export function SignupForm() {
                 ) : abnInput.trim() && !abnHas11 ? (
                   <p className="mt-1 text-xs font-medium text-amber-400">ABN must be 11 digits</p>
                 ) : abnHas11 && !abnValid ? (
-                  <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN — please check the number</p>
+                  <p className="mt-1 text-xs font-medium text-red-400">Invalid ABN. Please check the number.</p>
                 ) : null}
 
                 {/* ABN lookup result box */}
@@ -1211,50 +1155,49 @@ export function SignupForm() {
                     {abnLookupLoading ? (
                       <span className="flex items-center gap-2 text-slate-400">
                         <Loader2 size={14} className="animate-spin shrink-0" aria-hidden />
-                        Looking up ABN in the Australian Business Register…
+                        Looking up ABN in the Australian Business Register.
                       </span>
                     ) : abnLookup?.status === "active" ? (
                       <span className="font-semibold text-emerald-400">
-                        ✓ {abnLookup.entityName} — ABN active
+                        ✓ {abnLookup.entityName}. ABN active.
                       </span>
                     ) : abnLookup?.status === "inactive" ? (
                       <span className="text-amber-400">
-                        ⚠ {abnLookup.entityName} — this ABN is not currently active.
+                        ⚠ {abnLookup.entityName}. This ABN is not currently active.
                       </span>
                     ) : abnLookup?.status === "not_found" ? (
                       <span className="text-amber-400">
                         ⚠ ABN not found in the Australian Business Register.
                       </span>
                     ) : (
-                      /* skipped, error, or null — fallback */
                       <span className="font-semibold text-emerald-400">
-                        ✓ Valid ABN — enter your registered business name above to confirm
+                        ✓ Valid ABN. Enter your registered business name above to confirm.
                       </span>
                     )}
                   </div>
                 ) : null}
 
-                {/* Confirm checkbox — only when box shows active or fallback text */}
+                {/* Confirm checkbox, only when box shows active or fallback text */}
                 {showConfirmCheckbox ? (
                   <label className="mt-2 flex cursor-pointer items-start gap-2">
                     <input
                       type="checkbox"
                       checked={abnConfirmed}
                       onChange={(e) => setAbnConfirmed(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#3B82F6]"
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-white"
                     />
                     <span className="text-xs text-slate-300">I confirm this is my business ABN</span>
                   </label>
                 ) : null}
               </div>
 
-              {/* Phone — AU only with static prefix */}
+              {/* Phone, AU only with static prefix */}
               <div className="sm:col-span-2">
                 <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
                   Phone number
                 </label>
-                <div className={`flex h-10 items-center overflow-hidden rounded-md border bg-slate-800 ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-slate-600 focus-within:border-[#3B82F6]"}`}>
-                  <span className="select-none border-r border-slate-600 bg-slate-700 px-3 text-sm text-slate-300 h-full flex items-center gap-1.5 shrink-0">
+                <div className={`flex h-10 items-center overflow-hidden rounded-md border bg-slate-800 ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-neutral-600 focus-within:border-white"}`}>
+                  <span className="select-none border-r border-neutral-600 bg-slate-700 px-3 text-sm text-slate-300 h-full flex items-center gap-1.5 shrink-0">
                     🇦🇺 +61
                   </span>
                   <input
@@ -1284,21 +1227,21 @@ export function SignupForm() {
                   type="button"
                   onClick={handleContinue}
                   disabled={step1Disabled}
-                  className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                  className={`w-full sm:w-auto ${primaryBtn} disabled:pointer-events-none disabled:opacity-50`}
                 >
                   Continue
                 </Button>
               </div>
             </div>
 
-            {/* ── Step 2: Industries ────────────────────────────────────── */}
+            {/* ── Step 2: Industries (categorised) ───────────────────────── */}
             <div className={step === 2 ? "space-y-4" : "hidden"} aria-hidden={step !== 2}>
               <div>
-                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                <h2 className="text-lg font-semibold text-white">
                   What industries do you serve?
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Select all that apply — we&apos;ll tailor your workspace. You can change this later.
+                  Select all that apply. We&apos;ll tailor your workspace. You can change this later.
                 </p>
               </div>
 
@@ -1308,7 +1251,7 @@ export function SignupForm() {
                 placeholder="Search your industry..."
                 value={industrySearch}
                 onChange={(e) => setIndustrySearch(e.target.value)}
-                className="h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-[#3B82F6] focus:outline-none"
+                className="h-10 w-full rounded-md border border-neutral-600 bg-slate-800 px-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-white focus:outline-none"
               />
 
               {/* Selected counter */}
@@ -1318,31 +1261,38 @@ export function SignupForm() {
                 </p>
               ) : null}
 
-              {/* Chip grid — scrollable, max height */}
-              <div className="max-h-64 overflow-y-auto rounded-lg border-2 border-slate-600 p-3">
-                {filteredChips.length === 0 ? (
+              {/* Categorised chip grid */}
+              <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border-2 border-neutral-600 p-4">
+                {filteredCategories.length === 0 ? (
                   <p className="text-sm text-slate-500">No industries match your search.</p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {filteredChips.map((chip) => {
-                      const on = selectedChipIds.has(chip.id);
-                      return (
-                        <button
-                          key={chip.id}
-                          type="button"
-                          onClick={() => toggleChip(chip.id)}
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                            on
-                              ? "border-[#3B82F6] bg-[#3B82F6]/15 text-[#93C5FD]"
-                              : "border-slate-600 bg-slate-800/60 text-slate-300 hover:border-slate-400"
-                          }`}
-                        >
-                          {on ? <Check size={10} strokeWidth={3} aria-hidden /> : null}
-                          {chip.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  filteredCategories.map((cat) => (
+                    <div key={cat.name} className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                        {cat.name}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {cat.chips.map((chip) => {
+                          const on = selectedChipIds.has(chip.id);
+                          return (
+                            <button
+                              key={chip.id}
+                              type="button"
+                              onClick={() => toggleChip(chip.id)}
+                              className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-medium transition ${
+                                on
+                                  ? "border-white bg-black text-white"
+                                  : "border-neutral-600 bg-slate-800/60 text-slate-300 hover:border-neutral-400"
+                              }`}
+                            >
+                              {on ? <Check size={10} strokeWidth={3} aria-hidden /> : null}
+                              {chip.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
 
@@ -1357,7 +1307,7 @@ export function SignupForm() {
                     value={otherNote}
                     onChange={(e) => setOtherNote(e.target.value)}
                     rows={3}
-                    className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-[#3B82F6] focus:outline-none"
+                    className="w-full rounded-md border border-neutral-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-white focus:outline-none"
                     placeholder="e.g. Plumbing and gas fitting across Adelaide"
                   />
                 </div>
@@ -1369,238 +1319,127 @@ export function SignupForm() {
                   <Button type="button" variant="dark-ghost" onClick={handleContinueFromIndustries} className="flex-1 text-slate-400 text-sm sm:flex-none">
                     Skip
                   </Button>
-                  <Button type="button" onClick={handleContinueFromIndustries} className={`flex-1 sm:flex-none ${accentBtn}`}>Continue</Button>
+                  <Button type="button" onClick={handleContinueFromIndustries} className={`flex-1 sm:flex-none ${primaryBtn}`}>Continue</Button>
                 </div>
               </div>
             </div>
 
-            {/* ── Step 3: Product selection ────────────────────────────── */}
+            {/* ── Step 3: Product selection (4 cards) ────────────────────── */}
             <div className={step === 3 ? "space-y-5" : "hidden"} aria-hidden={step !== 3}>
               <div>
-                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                <h2 className="text-lg font-semibold text-white">
                   Choose your products
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Start with what you need. You can add more later.
+                  Start with Core. Add Grow and Leads when they launch.
                 </p>
               </div>
 
-              {/* Row 1 — individual products */}
-              <div className="grid gap-3 sm:grid-cols-3">
-                {INDIVIDUAL_PRODUCTS.map((prod) => {
-                  const isSelected = selectedProductCombo.split("+").includes(prod.id);
+              <div className="grid gap-3 sm:grid-cols-2">
+                {PRODUCT_CARDS.map((card) => {
+                  const isCore = card.id === "core";
+                  const isSelected = isCore; // Only Core is selectable, and it is always selected.
+                  const badgeClass =
+                    card.badgeTone === "green"
+                      ? "bg-emerald-500/15 text-emerald-300"
+                      : card.badgeTone === "amber"
+                        ? "bg-amber-500/15 text-amber-300"
+                        : "bg-neutral-700 text-slate-300";
                   return (
-                    <button
-                      key={prod.id}
-                      type="button"
-                      onClick={() => {
-                        const hasProd = selectedProductCombo.split("+").includes(prod.id);
-                        if (prod.id === "core") {
-                          // Core is always the base — clicking it goes to solo core
-                          if (!selectedProductCombo.includes("grow") && !selectedProductCombo.includes("leads")) {
-                            setSelectedProductCombo("core");
+                    <div key={card.id} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!card.available) {
+                            showLockedTooltip(card.id);
+                            return;
                           }
-                          return;
-                        }
-                        // Grow / Leads require Core
-                        if (!selectedProductCombo.startsWith("core")) {
-                          setProductTooltip("SERVLO Core is required to use this product.");
-                          setTimeout(() => setProductTooltip(null), 3000);
-                          return;
-                        }
-                        setProductTooltip(null);
-                        const hasGrow  = selectedProductCombo.includes("grow");
-                        const hasLeads = selectedProductCombo.includes("leads");
-                        if (prod.id === "grow") {
-                          if (hasProd) setSelectedProductCombo(hasLeads ? "core+leads" : "core");
-                          else         setSelectedProductCombo(hasLeads ? "core+grow+leads" : "core+grow");
-                        } else if (prod.id === "leads") {
-                          if (hasProd) setSelectedProductCombo(hasGrow ? "core+grow" : "core");
-                          else         setSelectedProductCombo(hasGrow ? "core+grow+leads" : "core+leads");
-                        }
-                      }}
-                      className="relative flex flex-col overflow-hidden rounded-xl p-4 text-left transition"
-                      style={{
-                        background: prod.gradient,
-                        border: isSelected
-                          ? `1px solid ${prod.color}`
-                          : `1px solid rgba(255,255,255,0.08)`,
-                        borderLeft: `4px solid ${prod.color}`,
-                        boxShadow: isSelected
-                          ? `0 0 24px ${prod.glow}, 0 0 0 2px ${prod.color}44`
-                          : `0 0 20px ${prod.glow}`,
-                        transform: isSelected ? "scale(1.02)" : undefined,
-                      }}
-                    >
-                      <div className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl" style={{ background: prod.color }} />
-                      {isSelected ? (
-                        <span
-                          className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
-                          style={{ backgroundColor: prod.color }}
-                        >
-                          <Check size={11} strokeWidth={3} className="text-white" />
-                        </span>
-                      ) : null}
-                      <div className="pt-1">
-                        <p className="text-sm font-bold" style={{ color: prod.nameColor }}>{prod.name}</p>
-                        <p className="mt-1 text-xs text-slate-300">{prod.desc}</p>
-                        <p className="mt-3 text-xs font-semibold text-slate-200">{prod.price}</p>
-                        <span
-                          className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            prod.available
-                              ? "bg-emerald-500/15 text-emerald-300"
-                              : "bg-slate-700 text-slate-400"
-                          }`}
-                        >
-                          {prod.badge}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                          // Core is already selected, nothing else to do.
+                        }}
+                        disabled={!card.available}
+                        aria-disabled={!card.available}
+                        className={`relative flex w-full flex-col overflow-hidden rounded-xl p-4 text-left transition disabled:cursor-not-allowed ${
+                          card.available ? "" : "opacity-60"
+                        }`}
+                        style={{
+                          background: isCore
+                            ? "linear-gradient(135deg, #0a1224 0%, #16264a 100%)"
+                            : "linear-gradient(135deg, #111111 0%, #1a1a1a 100%)",
+                          border: isSelected
+                            ? "2px solid var(--core-blue, #2563eb)"
+                            : "2px solid rgba(255,255,255,0.18)",
+                          boxShadow: isSelected
+                            ? "0 0 24px rgba(37,99,235,0.25), 0 0 0 2px rgba(37,99,235,0.28)"
+                            : undefined,
+                        }}
+                      >
+                        {/* Top accent bar (core-blue for Core, neutral for locked) */}
+                        <div
+                          className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl"
+                          style={{ background: isCore ? "var(--core-blue, #2563eb)" : "rgba(255,255,255,0.18)" }}
+                        />
 
-              {/* Row 2 — bundle pairs */}
-              <div className="grid gap-3 sm:grid-cols-3">
-                {BUNDLE_PAIRS.map((bundle) => {
-                  const isActive = selectedProductCombo === bundle.id;
-                  return (
-                    <button
-                      key={bundle.id}
-                      type="button"
-                      onClick={() => {
-                        if (bundle.comingSoon) return;
-                        setSelectedProductCombo(bundle.id);
-                        setProductTooltip(null);
-                      }}
-                      disabled={bundle.comingSoon}
-                      className="relative flex flex-col overflow-hidden rounded-xl p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-50"
-                      style={{
-                        background: bundle.gradient,
-                        border: isActive
-                          ? `1px solid ${bundle.colors[0]}`
-                          : `1px solid rgba(255,255,255,0.08)`,
-                        boxShadow: isActive
-                          ? `0 0 20px color-mix(in srgb, ${bundle.colors[0]} 30%, ${bundle.colors[1]} 30%)`
-                          : undefined,
-                        transform: isActive ? "scale(1.02)" : undefined,
-                      }}
-                    >
-                      <div
-                        className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl"
-                        style={{ background: `linear-gradient(90deg, ${bundle.colors[0]}, ${bundle.colors[1]})` }}
-                      />
-                      {isActive ? (
-                        <span
-                          className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
-                          style={{ backgroundColor: bundle.colors[0] }}
-                        >
-                          <Check size={11} strokeWidth={3} className="text-white" />
-                        </span>
-                      ) : null}
-                      <div className="pt-1">
-                        <p className="text-sm font-bold text-slate-100">{bundle.name}</p>
-                        <p className="text-xs text-slate-400">{bundle.subtitle}</p>
-                        <p className="mt-3 text-xs font-semibold text-slate-300">{bundle.price}</p>
-                        <span
-                          className={`mt-1.5 self-start rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            bundle.comingSoon
-                              ? "bg-slate-700 text-slate-400"
-                              : "bg-emerald-500/15 text-emerald-300"
-                          }`}
-                        >
-                          {bundle.savings}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Row 3 — full platform (full width, most prominent) */}
-              {(() => {
-                const isActive = selectedProductCombo === FULL_PLATFORM.id;
-                return (
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedProductCombo(FULL_PLATFORM.id); setProductTooltip(null); }}
-                    className="relative w-full overflow-hidden rounded-xl border p-5 text-left transition"
-                    style={
-                      isActive
-                        ? { borderColor: "#8B5CF6", boxShadow: "0 0 0 2px #8B5CF644, 0 8px 24px -4px rgba(139,92,246,0.25)", background: "linear-gradient(135deg, #3B82F612, #8B5CF612, #F59E0B12)" }
-                        : { borderColor: "#4B5563", background: "linear-gradient(135deg, #3B82F608, #8B5CF608, #F59E0B08)" }
-                    }
-                  >
-                    {/* Triple gradient top bar */}
-                    <div
-                      className="absolute left-0 right-0 top-0 h-1.5 rounded-t-xl"
-                      style={{ background: "linear-gradient(90deg, #3B82F6, #8B5CF6, #F59E0B)" }}
-                    />
-                    <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-base font-bold text-white">{FULL_PLATFORM.name}</p>
-                          <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-500/30">
-                            {FULL_PLATFORM.badge}
+                        {isSelected ? (
+                          <span
+                            className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
+                            style={{ backgroundColor: "var(--core-blue, #2563eb)" }}
+                          >
+                            <Check size={11} strokeWidth={3} className="text-white" />
                           </span>
-                        </div>
-                        <p className="mt-1 text-sm text-slate-400">{FULL_PLATFORM.subtitle}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-xl font-bold text-white">{FULL_PLATFORM.price}</p>
-                          <p className="text-xs text-emerald-400">30-day trial free</p>
-                        </div>
-                        {isActive ? (
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#8B5CF6]">
-                            <Check size={14} strokeWidth={3} className="text-white" />
+                        ) : !card.available ? (
+                          <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-700 text-slate-300">
+                            <Lock size={11} aria-hidden />
                           </span>
                         ) : null}
-                      </div>
-                    </div>
-                    <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                      {FULL_PLATFORM.features.map((f) => (
-                        <li key={f} className="flex items-center gap-2 text-xs text-slate-300">
-                          <Check size={11} strokeWidth={3} className="shrink-0 text-emerald-400" aria-hidden />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-4 text-xs font-semibold text-slate-400">
-                      Most businesses choose this
-                    </p>
-                  </button>
-                );
-              })()}
 
-              {/* Core requirement tooltip */}
-              {productTooltip ? (
-                <p className="rounded-md border border-amber-700/40 bg-amber-950/30 px-3 py-2 text-xs font-medium text-amber-300">
-                  {productTooltip}
-                </p>
-              ) : null}
+                        <div className="pt-1">
+                          <p className="text-sm font-bold text-white">{card.name}</p>
+                          <p className="mt-1 text-xs text-slate-300">{card.description}</p>
+                          <p className="mt-3 text-xs font-semibold text-slate-200">{card.price}</p>
+                          <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${badgeClass}`}>
+                            {card.badgeText}
+                          </span>
+                        </div>
+                      </button>
+
+                      {/* Locked tooltip */}
+                      {!card.available && lockedTooltipId === card.id && card.tooltip ? (
+                        <div className="absolute left-1/2 top-full z-10 mt-2 w-64 -translate-x-1/2 rounded-md border border-amber-700/40 bg-neutral-900 px-3 py-2 text-xs font-medium text-amber-200 shadow-lg">
+                          {card.tooltip}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
-                <Button type="button" onClick={handleContinueFromProducts} className={`w-full sm:w-auto ${accentBtn}`}>Continue</Button>
+                <Button type="button" onClick={handleContinueFromProducts} className={`w-full sm:w-auto ${primaryBtn}`}>Continue</Button>
               </div>
             </div>
 
             {/* ── Step 4: Plan tier ────────────────────────────────────── */}
             <div className={step === 4 ? "space-y-4" : "hidden"} aria-hidden={step !== 4}>
               <div>
-                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                <h2 className="text-lg font-semibold text-white">
                   Choose your plan
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  All plans include a 30-day free trial — no charge until your trial ends.
+                  All plans include a 30-day free trial. No charge until your trial ends.
                 </p>
               </div>
 
-              {/* Product summary banner */}
-              <div className="rounded-lg border-2 border-slate-600 bg-slate-800/40 px-4 py-2.5">
-                <p className="text-xs text-slate-400">Selected product</p>
-                <p className="text-sm font-semibold text-slate-100">{comboLabel(selectedProductCombo)}</p>
+              {/* Selected product banner (Core only; uses core-blue accent) */}
+              <div
+                className="rounded-lg border-2 px-4 py-2.5"
+                style={{
+                  background: "linear-gradient(135deg, rgba(37,99,235,0.10), rgba(37,99,235,0.04))",
+                  borderColor: "var(--core-blue, #2563eb)",
+                }}
+              >
+                <p className="text-xs text-slate-300">Selected product</p>
+                <p className="text-sm font-semibold text-white">SERVLO Core</p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -1612,7 +1451,7 @@ export function SignupForm() {
                       <button
                         key={tier.id} type="button"
                         onClick={() => setEnterpriseModalOpen(true)}
-                        className="relative flex flex-col items-start gap-2 rounded-lg border-2 border-slate-500 p-4 text-left transition hover:border-slate-400"
+                        className="relative flex flex-col items-start gap-2 rounded-lg border-2 border-neutral-500 p-4 text-left transition hover:border-neutral-400"
                       >
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-slate-100">{tier.price}</span>
@@ -1622,12 +1461,12 @@ export function SignupForm() {
                         <ul className="mt-1 space-y-0.5">
                           {tier.features.map((f) => (
                             <li key={f} className="flex items-center gap-1.5 text-xs text-slate-300">
-                              <Check size={11} className="shrink-0 text-[#3B82F6]" strokeWidth={3} aria-hidden />
+                              <Check size={11} className="shrink-0 text-white" strokeWidth={3} aria-hidden />
                               {f}
                             </li>
                           ))}
                         </ul>
-                        <span className="mt-1 text-xs font-semibold text-blue-400">Contact us →</span>
+                        <span className="mt-1 text-xs font-semibold text-white">Contact us →</span>
                       </button>
                     );
                   }
@@ -1637,12 +1476,12 @@ export function SignupForm() {
                       onClick={() => setSelectedPlanTier(tier.id)}
                       className={`relative flex flex-col items-start gap-2 rounded-lg border-2 p-4 text-left transition ${
                         on
-                          ? "border-[#3B82F6] ring-2 ring-[#3B82F6]/40"
-                          : "border-slate-500 hover:border-slate-400"
+                          ? "border-white bg-black/60 ring-2 ring-white/30"
+                          : "border-neutral-500 hover:border-neutral-400"
                       }`}
                     >
                       {tier.recommended ? (
-                        <span className="absolute right-3 top-2 rounded-full bg-[#3B82F6]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#93C5FD]">
+                        <span className="absolute right-3 top-2 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                           Most popular
                         </span>
                       ) : null}
@@ -1655,7 +1494,7 @@ export function SignupForm() {
                       <ul className="mt-1 space-y-0.5">
                         {tier.features.map((f) => (
                           <li key={f} className="flex items-center gap-1.5 text-xs text-slate-300">
-                            <Check size={11} className="shrink-0 text-[#3B82F6]" strokeWidth={3} aria-hidden />
+                            <Check size={11} className="shrink-0 text-white" strokeWidth={3} aria-hidden />
                             {f}
                           </li>
                         ))}
@@ -1667,52 +1506,35 @@ export function SignupForm() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
-                <Button type="button" onClick={handleContinueFromPlanTier} className={`w-full sm:w-auto ${accentBtn}`}>Continue</Button>
+                <Button type="button" onClick={handleContinueFromPlanTier} className={`w-full sm:w-auto ${primaryBtn}`}>Continue</Button>
               </div>
             </div>
 
-            {/* ── Step 5: Workspace preview ────────────────────────────── */}
-            <div className={step === 5 ? "space-y-4" : "hidden"} aria-hidden={step !== 5}>
-              <WorkspaceSetupPreview
-                primaryIndustryLabel={signupIndustryHeadline}
-                recommendedIds={signupRecommendedIds}
-                optionalIds={signupOptionalIds}
-                optionalOn={optionalFeatureOn}
-                setOptionalOn={(id, on) => setOptionalFeatureOn((prev) => ({ ...prev, [id]: on }))}
-                onBack={handleBack}
-                onContinue={handleContinueFromWorkspacePreview}
-                submitting={false}
-              />
-            </div>
-
-            {/* ── Step 6: Trial / Stripe ───────────────────────────────── */}
-            <div className={step === 6 ? "space-y-5" : "hidden"} aria-hidden={step !== 6}>
+            {/* ── Step 5: Trial / Stripe ───────────────────────────────── */}
+            <div className={step === 5 ? "space-y-5" : "hidden"} aria-hidden={step !== 5}>
               <div>
-                <h2 className="text-lg font-semibold" style={{ color: "#f8fafc" }}>
+                <h2 className="text-lg font-semibold text-white">
                   {needsCard ? "Start your 30-day free trial" : "Reserve your spot"}
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
                   {needsCard
-                    ? "Enter your card details — you won't be charged until your trial ends."
+                    ? "Enter your card details. You won't be charged until your trial ends."
                     : "This product is coming soon. Reserve your spot and we'll notify you at launch."}
                 </p>
               </div>
 
               {/* Summary */}
-              <div className="rounded-lg border-2 border-slate-600 bg-slate-800/60 px-4 py-3">
+              <div className="rounded-lg border-2 border-neutral-600 bg-slate-800/60 px-4 py-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-200">
-                      {(INDIVIDUAL_PRODUCTS.find((p) => p.id === selectedProductCombo) ?? BUNDLE_PAIRS.find((p) => p.id === selectedProductCombo) ?? (FULL_PLATFORM.id === selectedProductCombo ? FULL_PLATFORM : null))?.name ?? selectedProductCombo}
-                    </p>
+                    <p className="text-sm font-semibold text-slate-200">SERVLO Core</p>
                     <p className="text-xs text-slate-400 capitalize">{selectedPlanTier} plan</p>
                   </div>
                   <div className="text-right">
                     {(() => {
                       const tier = currentTiers.find((t) => t.id === selectedPlanTier);
-                      const tierPrice = tier?.price ?? "—";
-                      // Leads tiers already include unit in price string
-                      const hasUnit = tierPrice.includes("/") || selectedProductCombo === "leads";
+                      const tierPrice = tier?.price ?? "TBA";
+                      const hasUnit = tierPrice.includes("/");
                       return (
                         <p className="text-sm font-bold text-slate-100">
                           {tierPrice}{!hasUnit ? <span className="text-xs font-normal text-slate-400">/mo</span> : null}
@@ -1722,7 +1544,7 @@ export function SignupForm() {
                     {needsCard ? (
                       <p className="text-xs text-emerald-400">30-day trial free</p>
                     ) : (
-                      <p className="text-xs text-slate-400">Reserve — no charge</p>
+                      <p className="text-xs text-slate-400">Reserve. No charge.</p>
                     )}
                   </div>
                 </div>
@@ -1734,7 +1556,7 @@ export function SignupForm() {
                   <label className="mb-2 block text-sm font-medium text-slate-300">Card details</label>
                   <div
                     ref={cardMountRef}
-                    className="rounded-md border border-slate-600 bg-slate-800 px-3 py-3 focus-within:border-[#3B82F6]"
+                    className="rounded-md border border-neutral-600 bg-slate-800 px-3 py-3 focus-within:border-white"
                     style={{ minHeight: "40px" }}
                   />
                   <p className="mt-1.5 text-xs text-slate-500">
@@ -1743,6 +1565,27 @@ export function SignupForm() {
                 </div>
               ) : null}
 
+              {/* Terms of Service + Privacy Policy checkbox */}
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-neutral-700 bg-neutral-900/40 px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+                />
+                <span className="text-xs text-slate-300">
+                  I agree to the{" "}
+                  <Link href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-white underline hover:text-neutral-300">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-white underline hover:text-neutral-300">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack} disabled={ownerSubmitting} className="w-full sm:w-auto">
                   Back
@@ -1750,11 +1593,11 @@ export function SignupForm() {
                 <Button
                   type="button"
                   onClick={() => doSignup()}
-                  disabled={ownerSubmitting}
-                  className={`w-full sm:w-auto ${accentBtn} disabled:pointer-events-none disabled:opacity-50`}
+                  disabled={ownerSubmitting || !termsAccepted}
+                  className={`w-full sm:w-auto ${primaryBtn} disabled:pointer-events-none disabled:opacity-50`}
                 >
                   {ownerSubmitting
-                    ? "Setting up…"
+                    ? "Setting up..."
                     : needsCard
                       ? "Start 30-Day Free Trial"
                       : "Reserve My Spot"}
@@ -1765,7 +1608,7 @@ export function SignupForm() {
 
           <p className="mt-5 text-sm text-slate-400">
             Already have an account?{" "}
-            <Link href="/auth/login" className="font-semibold text-[#3B82F6] hover:underline">
+            <Link href="/auth/login" className="font-semibold text-white hover:text-neutral-300">
               Sign in
             </Link>
           </p>

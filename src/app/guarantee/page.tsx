@@ -10,7 +10,7 @@ export default function GuaranteePage() {
   const guaranteePoints = [
     {
       title: "30-day full refund",
-      desc: "If you sign up, pay, and decide SERVLO isn't right for you within 30 days — email us and we'll refund every cent. No questions asked.",
+      desc: "If you sign up, pay, and decide SERVLO isn't right for you within 30 days, email us and we'll refund every cent. No questions asked.",
     },
     {
       title: "No lock-in contract",
@@ -18,7 +18,7 @@ export default function GuaranteePage() {
     },
     {
       title: "Your data, always",
-      desc: "Export a full ZIP of all your data — clients, jobs, invoices, quotes — whenever you want. Even if you cancel.",
+      desc: "Export a full ZIP of all your data: clients, jobs, invoices, quotes, whenever you want. Even if you cancel.",
     },
     {
       title: "We answer within 24 hours",
@@ -72,7 +72,7 @@ export default function GuaranteePage() {
             <a href="mailto:hello@servlo.com.au" className="font-semibold text-blue-600 dark:text-blue-400 underline">
               hello@servlo.com.au
             </a>{" "}
-            and receive a full refund — no questions, no hassle.
+            and receive a full refund. No questions, no hassle.
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export default function GuaranteePage() {
         {/* Founder note */}
         <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.03] p-6 mb-10">
           <p className="text-sm text-gray-600 dark:text-slate-300 italic leading-relaxed">
-            &ldquo;I built SERVLO because I wanted trade businesses to have software that actually works for them — not the other way around.
+            &ldquo;I built SERVLO because I wanted trade businesses to have software that actually works for them, not the other way around.
             If you try SERVLO and it&apos;s not the right fit, I&apos;d rather you tell me why and get your money back, than feel stuck.
             I believe the product speaks for itself.&rdquo;
           </p>
@@ -105,7 +105,7 @@ export default function GuaranteePage() {
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white">Brodie McDonald</p>
-              <p className="text-xs text-gray-500 dark:text-slate-500">Founder, SERVLO — Adelaide, South Australia</p>
+              <p className="text-xs text-gray-500 dark:text-slate-500">Founder, SERVLO. Adelaide, South Australia</p>
             </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function GuaranteePage() {
             href="/auth/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-4 text-base font-semibold text-white hover:bg-blue-600 transition"
           >
-            Start free trial — 30 days free
+            Start free trial. 30 days free
             <ArrowRight size={18} />
           </Link>
           <p className="mt-3 text-sm text-gray-400 dark:text-slate-500">

@@ -79,7 +79,7 @@ export default function ForgotPasswordPage({ searchParams }: Props) {
                 type="email"
                 defaultValue={emailValue}
                 required
-                className="h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 dark:focus:border-blue-500"
+                className="h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 dark:focus:border-white dark:focus:ring-white/20"
               />
             </div>
             <Button type="submit" className="w-full bg-[var(--accent-color)] text-white transition hover:bg-[var(--accent-hover)]">

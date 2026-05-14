@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Stripe Payments — SERVLO Docs" };
+export const metadata = { title: "Stripe Payments · SERVLO Docs" };
 
 export default function StripeDocPage() {
   return (
@@ -49,7 +49,7 @@ export default function StripeDocPage() {
       <h2>Stripe fees</h2>
       <p>
         Stripe charges a per-transaction fee for card payments (varies by country and card type).
-        These fees are charged by Stripe directly — SERVLO does not add any additional payment
+        These fees are charged by Stripe directly. SERVLO does not add any additional payment
         processing fees.
       </p>
 

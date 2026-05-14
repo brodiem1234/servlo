@@ -55,7 +55,7 @@ function buildFooter(opts: {
       <tr>
         <td style="padding:20px 32px;">
           ${contactHtml}
-          <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:#94a3b8;">Powered by <strong>SERVLO</strong> — business management software for Australian service businesses.</p>
+          <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:#94a3b8;">Powered by <strong>SERVLO</strong>. Business management software for Australian service businesses.</p>
         </td>
       </tr>
     </table>`;
@@ -340,7 +340,7 @@ export function invoiceReminderEmailHtml(args: {
     <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Friendly Payment Reminder</h1>
     <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
     <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">
-      Just a friendly reminder — <strong>Invoice ${escHtml(args.invoiceNumber)}</strong> from ${escHtml(args.businessName)} is due on <strong>${escHtml(args.dueDate)}</strong>.
+      Just a friendly reminder. <strong>Invoice ${escHtml(args.invoiceNumber)}</strong> from ${escHtml(args.businessName)} is due on <strong>${escHtml(args.dueDate)}</strong>.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
       <tr>
@@ -405,7 +405,7 @@ export function invoiceOverdueEmailHtml(args: {
         </td>
       </tr>
     </table>
-    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Overdue Invoice — Action Required</h1>
+    <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Overdue Invoice: Action Required</h1>
     <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
     <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">
       Our records show that <strong>Invoice ${escHtml(args.invoiceNumber)}</strong> from ${escHtml(args.businessName)} was due on <strong>${escHtml(args.dueDate)}</strong> and remains unpaid.
@@ -454,7 +454,7 @@ export function welcomeOwnerEmailHtml(args: {
     {
       icon: "&#x1F3E2;",
       title: "Add your first client",
-      desc: "Build your client list — all their details in one place.",
+      desc: "Build your client list. All their details in one place.",
       url: `${args.dashboardUrl}/clients`,
       label: "Add a Client",
     },
@@ -468,7 +468,7 @@ export function welcomeOwnerEmailHtml(args: {
     {
       icon: "&#x1F4B0;",
       title: "Send your first invoice",
-      desc: "Professional invoices with online payment — get paid faster.",
+      desc: "Professional invoices with online payment. Get paid faster.",
       url: `${args.dashboardUrl}/finance`,
       label: "Send an Invoice",
     },
@@ -509,7 +509,7 @@ export function welcomeOwnerEmailHtml(args: {
     ${ctaButton("Go to your dashboard &rarr;", args.dashboardUrl, accent)}
 
     <p style="margin:24px 0 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;line-height:1.6;">
-      We are here to help you grow your business. Reply to this email any time — a real person will get back to you.
+      We are here to help you grow your business. Reply to this email any time. A real person will get back to you.
     </p>
     <p style="margin:12px 0 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;">Welcome aboard,<br><strong>The SERVLO Team</strong></p>`;
 
@@ -573,9 +573,9 @@ export function trialEndingEmailHtml(args: {
         <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#dc2626;">Your trial ends tomorrow. Upgrade now to keep access.</td></tr>
       </table>`;
     heading = "Your trial ends tomorrow";
-    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder — your SERVLO free trial expires <strong>tomorrow</strong>.`;
+    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder. Your SERVLO free trial expires <strong>tomorrow</strong>.`;
     mainContent = `
-      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Upgrade now to keep access to all your SERVLO data — clients, jobs, invoices, quotes, and everything you have built over your trial.</p>
+      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Upgrade now to keep access to all your SERVLO data: clients, jobs, invoices, quotes, and everything you have built over your trial.</p>
       <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Plans start from a low monthly fee with no lock-in contract.</p>`;
   }
 

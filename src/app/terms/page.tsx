@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LandingHeader } from "@/components/landing-header";
 
 export const metadata = {
-  title: "Terms of Service — SERVLO",
+  title: "Terms of Service | SERVLO",
   description: "SERVLO Terms of Service for Australian service businesses.",
 };
 
@@ -44,13 +44,13 @@ export default function TermsPage() {
               <p>The platform is offered as three distinct products:</p>
               <ul className="ml-5 list-disc space-y-2">
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">SERVLO Core</strong> — the operational foundation of the platform, covering jobs and scheduling, client management, invoices and quotes, team timesheets, and purchase orders.
+                  <strong className="text-[#1e3a5f] dark:text-white">SERVLO Core</strong>:the operational foundation of the platform, covering jobs and scheduling, client management, invoices and quotes, team timesheets, and purchase orders.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">SERVLO Grow</strong> — AI-powered marketing tools including ad creation, social content generation, review automation, and referral tracking (launching soon).
+                  <strong className="text-[#1e3a5f] dark:text-white">SERVLO Grow</strong>:AI-powered marketing tools including ad creation, social content generation, review automation, and referral tracking (launching soon).
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">SERVLO Leads</strong> — a marketplace for purchasing qualified leads matched to your industry and location (launching soon).
+                  <strong className="text-[#1e3a5f] dark:text-white">SERVLO Leads</strong>:a marketplace for purchasing qualified leads matched to your industry and location (launching soon).
                 </li>
               </ul>
               <p>
@@ -152,7 +152,7 @@ export default function TermsPage() {
                 <Link href="/privacy" className="text-[var(--accent-color)] underline hover:opacity-80 dark:text-cyan-400">
                   Privacy Policy
                 </Link>
-                , which is incorporated into these Terms by reference. Please read the Privacy Policy carefully — it describes how we collect, use, store, and share your personal information.
+                , which is incorporated into these Terms by reference. Please read the Privacy Policy carefully. It describes how we collect, use, store, and share your personal information.
               </p>
               <p>
                 We are committed to handling your personal information in accordance with the <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs).

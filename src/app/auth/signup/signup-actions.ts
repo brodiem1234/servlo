@@ -105,7 +105,7 @@ export async function signUpAction(_prevState: SignupFormState, formData: FormDa
     });
     return {
       error:
-        "Account signup did not return a user id. If email confirmation is required, check your inbox — otherwise contact support."
+        "Account signup did not return a user id. If email confirmation is required, check your inbox, otherwise contact support."
     };
   }
 

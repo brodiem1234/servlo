@@ -97,7 +97,7 @@ export async function seedOwnerDemoData(
       suburb: "Adelaide",
       state: "SA",
       postcode: "5000",
-      notes: "Demo client — replace with your real clients",
+      notes: "Demo client: replace with your real clients",
       client_type: "customer",
       status: "active",
       source: "referral",
@@ -128,7 +128,7 @@ export async function seedOwnerDemoData(
       suburb: "Sydney",
       state: "NSW",
       postcode: "2000",
-      notes: "Demo lead — follow up this week",
+      notes: "Demo lead: follow up this week",
       client_type: "lead",
       status: "active",
       source: "website"
@@ -200,7 +200,7 @@ export async function seedOwnerDemoData(
       client_id: c1Id,
       employee_id: emp1Id,
       title: "Residential Service Call",
-      description: "Demo job — inspect and service main unit",
+      description: "Demo job: inspect and service main unit",
       status: "in_progress",
       priority: "normal",
       scheduled_date: today
@@ -211,7 +211,7 @@ export async function seedOwnerDemoData(
       client_id: c1Id,
       employee_id: emp2Id,
       title: "Annual Maintenance Visit",
-      description: "Demo job — scheduled annual check",
+      description: "Demo job: scheduled annual check",
       status: "scheduled",
       priority: "normal",
       scheduled_date: tomorrowKey
@@ -221,7 +221,7 @@ export async function seedOwnerDemoData(
       owner_id: ownerId,
       client_id: c3Id,
       title: "New Client Assessment",
-      description: "Demo job — initial site assessment",
+      description: "Demo job: initial site assessment",
       status: "completed",
       priority: "high",
       scheduled_date: overdueKey
@@ -303,7 +303,7 @@ export async function seedOwnerDemoData(
           job_id: job1Id ?? null,
           status: "sent",
           total: 320.00,
-          notes: "Demo PO — materials for residential service call",
+          notes: "Demo PO: materials for residential service call",
           is_demo: true
         });
       } catch {

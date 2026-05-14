@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { SurveyForm } from "./survey-form";
 
 export const metadata: Metadata = {
-  title: "Job Satisfaction Survey — SERVLO",
+  title: "Job Satisfaction Survey · SERVLO",
   description: "Share your feedback about the service you received.",
 };
 

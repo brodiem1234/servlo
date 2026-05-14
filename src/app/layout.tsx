@@ -8,8 +8,8 @@ import "./globals.css";
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "SERVLO — Trade Business Management Software",
-  description: "Jobs, clients, invoices, quotes and employees — all in one place. Built for Australian tradies.",
+  title: "SERVLO | Trade Business Management Software",
+  description: "Jobs, clients, invoices, quotes and employees, all in one place. Built for Australian tradies.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

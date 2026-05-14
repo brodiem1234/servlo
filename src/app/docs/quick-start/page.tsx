@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Quick Start — SERVLO Docs",
+  title: "Quick Start · SERVLO Docs",
 };
 
 export default function QuickStartPage() {
@@ -17,7 +17,7 @@ export default function QuickStartPage() {
         </p>
       </div>
 
-      <h2>Step 1 — Set up your business profile</h2>
+      <h2>Step 1: Set up your business profile</h2>
       <p>
         Go to <Link href="/dashboard/owner/settings?tab=profile">Settings → Business Profile</Link> and fill in:
       </p>
@@ -32,7 +32,7 @@ export default function QuickStartPage() {
         your invoices and quotes look professional.
       </p>
 
-      <h2>Step 2 — Add your first client</h2>
+      <h2>Step 2: Add your first client</h2>
       <p>
         Go to <Link href="/dashboard/owner/clients">Clients</Link> and click{" "}
         <strong>Add Client</strong>. Fill in:
@@ -44,7 +44,7 @@ export default function QuickStartPage() {
         <li>Address (pre-fills job location)</li>
       </ul>
 
-      <h2>Step 3 — Create a job</h2>
+      <h2>Step 3: Create a job</h2>
       <p>
         Go to <Link href="/dashboard/owner/jobs">Jobs</Link> and click <strong>New Job</strong>.
         Assign the job to your client, set a scheduled date, and add any relevant notes or address.
@@ -54,7 +54,7 @@ export default function QuickStartPage() {
         <code>pending → scheduled → in_progress → completed</code>.
       </p>
 
-      <h2>Step 4 — Send an invoice</h2>
+      <h2>Step 4: Send an invoice</h2>
       <p>
         From the job detail, click <strong>Create Invoice</strong>. SERVLO will pre-fill the client
         and job details. Add your line items (or import from your{" "}
@@ -64,7 +64,7 @@ export default function QuickStartPage() {
         The invoice is emailed to your client with a payment link (if you've connected Stripe).
       </p>
 
-      <h2>Step 5 — Mark as paid</h2>
+      <h2>Step 5: Mark as paid</h2>
       <p>
         When payment is received, go to <Link href="/dashboard/owner/invoices">Invoices</Link> and
         click <strong>Mark Paid</strong> on the invoice. Your revenue metrics update instantly.

@@ -68,7 +68,7 @@ function wrapEmail(content: string, accentHex = "#3B82F6", options?: { businessN
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-top:1px solid #e2e8f0;">
                 <tr>
                   <td style="padding:20px 32px;">
-                    <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:#94a3b8;">Powered by <strong>SERVLO</strong> — business management software for Australian service businesses. This email was sent on behalf of your service provider.</p>
+                    <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:#94a3b8;">Powered by <strong>SERVLO</strong>. Business management software for Australian service businesses. This email was sent on behalf of your service provider.</p>
                   </td>
                 </tr>
               </table>
@@ -265,7 +265,7 @@ export function invoiceReminderEmailTemplate(args: {
     <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Friendly Payment Reminder</h1>
     <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
     <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">
-      Just a friendly reminder — <strong>Invoice ${escHtml(args.invoiceNumber)}</strong> is due on <strong>${escHtml(args.dueDate)}</strong>.
+      Just a friendly reminder. <strong>Invoice ${escHtml(args.invoiceNumber)}</strong> is due on <strong>${escHtml(args.dueDate)}</strong>.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
       <tr>
@@ -356,7 +356,7 @@ export function portalShareEmailTemplate(args: {
       </tr>
     </table>
     <p style="margin:8px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;word-break:break-all;">${escHtml(args.portalUrl)}</p>
-    <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Bookmark this link to access your portal anytime — no login required.</p>
+    <p style="margin:20px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#64748b;">Bookmark this link to access your portal anytime. No login required.</p>
   `, accent, args.businessName ? { businessName: args.businessName } : undefined);
 }
 
@@ -463,7 +463,7 @@ export function purchaseOrderEmailTemplate(args: {
     </div>
     ${notesBlock}
     <p style="color:#334155;margin:16px 0;">Please confirm receipt and proceed with the order. Contact us if you have any questions.</p>
-    <p style="color:#64748b;">— ${args.businessName}</p>
+    <p style="color:#64748b;">${args.businessName}</p>
   `,
     accent
   );
@@ -531,7 +531,7 @@ export function jobCompletionEmailTemplate(args: {
   return wrapEmail(`
     <h1 style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:22px;font-weight:700;color:#0f172a;">Your job is complete!</h1>
     <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;color:#475569;">Dear ${escHtml(args.clientName)},</p>
-    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Great news — the following job has been completed by <strong>${escHtml(args.businessName)}</strong>.</p>
+    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Great news. The following job has been completed by <strong>${escHtml(args.businessName)}</strong>.</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
       <tr>
         <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#64748b;border-bottom:1px solid #f1f5f9;">Job</td>
@@ -578,7 +578,7 @@ export function trialEndingEmailTemplate(args: {
   } else if (d >= 3) {
     urgencyBanner = `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:#fef3c7;border-radius:6px;border:1px solid #fde68a;">
-        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#92400e;">Your trial ends in ${d} days — upgrade to keep your data.</td></tr>
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#92400e;">Your trial ends in ${d} days. Upgrade to keep your data.</td></tr>
       </table>`;
     heading = `Your trial ends in ${d} days`;
     intro = `Hi ${escHtml(args.firstName)}, your SERVLO free trial ends in <strong>${d} days</strong>. After that, you will lose access to:`;
@@ -596,9 +596,9 @@ export function trialEndingEmailTemplate(args: {
         <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#dc2626;">Your trial ends tomorrow. Upgrade now to keep access.</td></tr>
       </table>`;
     heading = "Your trial ends tomorrow";
-    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder — your SERVLO free trial expires <strong>tomorrow</strong>.`;
+    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder. Your SERVLO free trial expires <strong>tomorrow</strong>.`;
     mainContent = `
-      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Upgrade now to keep access to all your SERVLO data — clients, jobs, invoices, quotes, and everything you have built over your trial.</p>
+      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Upgrade now to keep access to all your SERVLO data: clients, jobs, invoices, quotes, and everything you have built over your trial.</p>
       <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Plans start from a low monthly fee with no lock-in contract.</p>`;
   }
 

@@ -75,10 +75,10 @@ export function formatIndustryLabels(tags: IndustrySlug[] | null | undefined): s
 export function ownerWelcomeLine(tags: IndustrySlug[] | null | undefined): string | null {
   if (!tags?.length) return null;
   if (tags.length === 1) {
-    return `You've told us you're in ${INDUSTRY_LABELS[tags[0]]} — here's your snapshot.`;
+    return `You've told us you're in ${INDUSTRY_LABELS[tags[0]]}. Here's your snapshot.`;
   }
   const listed = tags.map((s) => INDUSTRY_LABELS[s]).join(" and ");
-  return `You've told us you work across ${listed} — here's your snapshot.`;
+  return `You've told us you work across ${listed}. Here's your snapshot.`;
 }
 
 export type ChecklistItem = { href: string; label: string; optional?: boolean };

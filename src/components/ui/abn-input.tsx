@@ -70,7 +70,7 @@ export function ABNInput({
       />
       {validation !== null && (
         <p className={`text-xs ${validation.valid ? "text-green-500" : "text-red-500"}`}>
-          {validation.valid ? `✓ Valid ABN — ${validation.formatted}` : `✗ ${validation.error}`}
+          {validation.valid ? `✓ Valid ABN: ${validation.formatted}` : `✗ ${validation.error}`}
         </p>
       )}
     </div>

@@ -52,11 +52,11 @@ export async function sendJobCompletionSurvey(
 
   await sendEmail(
     client.email,
-    `How did we do? — ${title}`,
+    `How did we do? ${title}`,
     `<p style="font-family:Arial,sans-serif;font-size:15px;color:#0f172a;">Hi ${clientFirstName},</p>
 <p style="font-family:Arial,sans-serif;font-size:15px;color:#0f172a;">
   Thank you for choosing ${businessName}! We hope ${title} went well.
-  We'd love to hear your feedback — it only takes 30 seconds.
+  We'd love to hear your feedback. It only takes 30 seconds.
 </p>
 <p style="text-align:center;margin:24px 0;">
   <a href="${surveyUrl}" style="background:${brand.accentColour ?? "#3B82F6"};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-family:Arial,sans-serif;font-size:15px;font-weight:600;display:inline-block;">

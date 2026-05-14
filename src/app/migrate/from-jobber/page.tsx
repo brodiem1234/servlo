@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Switching from Jobber to SERVLO",
-  description: "Migrate from Jobber to SERVLO — Australian-built job management software designed for service businesses. No per-user pricing.",
+  description: "Migrate from Jobber to SERVLO: Australian-built job management software designed for service businesses. No per-user pricing.",
 };
 
 export default function MigrateFromJobberPage() {
@@ -16,7 +16,7 @@ export default function MigrateFromJobberPage() {
         Switching from Jobber to SERVLO
       </h1>
       <p style={{ fontSize: 16, color: "#64748b", marginBottom: 40 }}>
-        Jobber is a solid tool — but it charges per user and is built for the North American market. SERVLO is built for Australian service businesses with flat pricing.
+        Jobber is a solid tool, but it charges per user and is built for the North American market. SERVLO is built for Australian service businesses with flat pricing.
       </p>
 
       {/* Why switch */}
@@ -25,11 +25,11 @@ export default function MigrateFromJobberPage() {
           Why Australian businesses switch from Jobber
         </h2>
         <ul style={{ color: "#0c4a6e", lineHeight: 2, paddingLeft: 20, margin: 0 }}>
-          <li>Jobber pricing grows as you hire — SERVLO plans are flat-rate</li>
+          <li>Jobber pricing grows as you hire. SERVLO plans are flat-rate</li>
           <li>SERVLO includes Australian GST (10%) on all invoices and quotes automatically</li>
           <li>ABN lookup, Australian suburbs autocomplete, and ATO-ready BAS helper</li>
           <li>Australian-hosted data (Supabase Sydney region)</li>
-          <li>Local support team — no international timezone delays</li>
+          <li>Local support team. No international timezone delays</li>
         </ul>
       </section>
 
@@ -98,7 +98,7 @@ export default function MigrateFromJobberPage() {
           Step 3: Start your free trial
         </h2>
         <p style={{ color: "#334155", lineHeight: 1.7, marginBottom: 16 }}>
-          SERVLO offers a 30-day free trial — no credit card required. Run both systems side-by-side until you&apos;re confident, then cancel Jobber when you&apos;re ready.
+          SERVLO offers a 30-day free trial. No credit card required. Run both systems side-by-side until you&apos;re confident, then cancel Jobber when you&apos;re ready.
         </p>
         <a
           href="/auth/signup"

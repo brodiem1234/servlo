@@ -85,7 +85,7 @@ export default function CompareSM8Page() {
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-slate-400">
             An honest, side-by-side comparison. SERVLO wins on price at 51+ jobs/month.
-            ServiceM8 wins on maturity and integrations — we say that openly.
+            ServiceM8 wins on maturity and integrations. We say that openly.
           </p>
         </div>
 
@@ -144,11 +144,11 @@ export default function CompareSM8Page() {
           {jobs <= 50 ? (
             <div className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
               At {jobs} jobs/mo, ServiceM8 {sm8.price === 0 ? "Free tier" : sm8.name} (${sm8.price}) is cheaper than SERVLO Solo (${SERVLO_SOLO}).
-              SERVLO becomes the better deal at 51+ jobs — plus you get AI tools that ServiceM8 doesn&apos;t have.
+              SERVLO becomes the better deal at 51+ jobs. Plus you get AI tools that ServiceM8 doesn&apos;t have.
             </div>
           ) : (
             <div className="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-              At {jobs} jobs/mo you need ServiceM8 {sm8.name} (${sm8.price}/mo). SERVLO Solo costs ${SERVLO_SOLO}/mo — you save{" "}
+              At {jobs} jobs/mo you need ServiceM8 {sm8.name} (${sm8.price}/mo). SERVLO Solo costs ${SERVLO_SOLO}/mo. You save{" "}
               <strong>${monthlySaving}/mo (${annualSaving}/yr)</strong> and get AI tools on top.
             </div>
           )}
@@ -189,7 +189,7 @@ export default function CompareSM8Page() {
             {[
               "More reviews and a proven track record across thousands of Australian tradies",
               "Larger compliance forms library (250+ forms vs our 20)",
-              "Native iOS app with full offline mode — critical for rural areas",
+              "Native iOS app with full offline mode, critical for rural areas",
               "Larger ecosystem of third-party integrations",
             ].map((point) => (
               <li key={point} className="flex items-start gap-3 text-sm text-slate-300">
@@ -200,13 +200,13 @@ export default function CompareSM8Page() {
           </ul>
           <p className="mt-5 text-sm text-slate-400">
             If offline mode or a large forms library is critical to your workflow today, ServiceM8 may be the right call.
-            If you&apos;re prioritising AI features, price, and a platform being built for the next 10 years — try SERVLO.
+            If you&apos;re prioritising AI features, price, and a platform being built for the next 10 years, try SERVLO.
           </p>
         </section>
 
         {/* CTA */}
         <section className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-10 text-center">
-          <h2 className="text-2xl font-bold text-white">Try SERVLO free — cancel anytime in one click</h2>
+          <h2 className="text-2xl font-bold text-white">Try SERVLO free. Cancel anytime in one click</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
             30-day free trial. No credit card required. If you don&apos;t love it, cancel from Settings → Billing.
             One click. No phone call.

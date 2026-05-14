@@ -1,12 +1,12 @@
 import { MapPin, DollarSign, Clock, Briefcase } from "lucide-react";
 
 const DEMO_JOBS = [
-  { title: "Apprentice Plumber", company: "Mike's Plumbing Co", location: "Norwood, SA", type: "Full-time", pay: "$22–26/hr", posted: "Today", color: "#3B82F6" },
-  { title: "Qualified Electrician", company: "Sparks Electrical", location: "Prospect, SA", type: "Full-time", pay: "$45–55/hr", posted: "Today", color: "#F59E0B" },
-  { title: "Solar Installer (CEC Accredited)", company: "SA Solar Experts", location: "Adelaide Metro", type: "Contract", pay: "$65–80/hr", posted: "Yesterday", color: "#22C55E" },
-  { title: "Tiler — Commercial Projects", company: "Adelaide Tiling Solutions", location: "Adelaide CBD", type: "Full-time", pay: "$50–60/hr", posted: "2 days ago", color: "#8B5CF6" },
-  { title: "Painter & Decorator", company: "ProPaint Adelaide", location: "Eastern Suburbs, SA", type: "Casual", pay: "$35–45/hr", posted: "3 days ago", color: "#F97316" },
-  { title: "Roof Plumber", company: "Total Roofing SA", location: "SA-wide", type: "Contract", pay: "$55–70/hr", posted: "4 days ago", color: "#EF4444" },
+  { title: "Apprentice Plumber", company: "Mike's Plumbing Co", location: "Norwood, SA", type: "Full-time", pay: "$22 to $26/hr", posted: "Today", color: "#3B82F6" },
+  { title: "Qualified Electrician", company: "Sparks Electrical", location: "Prospect, SA", type: "Full-time", pay: "$45 to $55/hr", posted: "Today", color: "#F59E0B" },
+  { title: "Solar Installer (CEC Accredited)", company: "SA Solar Experts", location: "Adelaide Metro", type: "Contract", pay: "$65 to $80/hr", posted: "Yesterday", color: "#22C55E" },
+  { title: "Tiler — Commercial Projects", company: "Adelaide Tiling Solutions", location: "Adelaide CBD", type: "Full-time", pay: "$50 to $60/hr", posted: "2 days ago", color: "#8B5CF6" },
+  { title: "Painter & Decorator", company: "ProPaint Adelaide", location: "Eastern Suburbs, SA", type: "Casual", pay: "$35 to $45/hr", posted: "3 days ago", color: "#F97316" },
+  { title: "Roof Plumber", company: "Total Roofing SA", location: "SA-wide", type: "Contract", pay: "$55 to $70/hr", posted: "4 days ago", color: "#EF4444" },
 ];
 
 export default function TradeJobsPage() {

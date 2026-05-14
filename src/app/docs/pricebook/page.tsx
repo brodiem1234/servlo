@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Pricebook — SERVLO Docs" };
+export const metadata = { title: "Pricebook · SERVLO Docs" };
 
 export default function PricebookDocPage() {
   return (
@@ -15,8 +15,8 @@ export default function PricebookDocPage() {
         The Pricebook is a catalogue of everything you charge for. It can contain:
       </p>
       <ul>
-        <li><strong>Services</strong> — labour, callouts, hourly rates, fixed-price services</li>
-        <li><strong>Products</strong> — materials, parts, consumables you supply</li>
+        <li><strong>Services</strong>: labour, callouts, hourly rates, fixed-price services</li>
+        <li><strong>Products</strong>: materials, parts, consumables you supply</li>
       </ul>
       <p>
         When creating an invoice or quote, click <strong>Import from Pricebook</strong> to add

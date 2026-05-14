@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${businessName} referred you to SERVLO`,
     description:
-      "Business management software for Australian service businesses. Manage jobs, quotes, invoices and your team — all in one place.",
+      "Business management software for Australian service businesses. Manage jobs, quotes, invoices and your team: all in one place.",
   };
 }
 
@@ -81,7 +81,7 @@ export default async function ReferralLandingPage({ params }: Props) {
         </h1>
         <p className="text-slate-300 text-center text-sm mb-8 leading-relaxed">
           SERVLO is the all-in-one platform built for Australian tradies and
-          service businesses. Jobs, quotes, invoices, clients and your team —
+          service businesses. Jobs, quotes, invoices, clients and your team,
           managed in one place.
         </p>
 
@@ -92,7 +92,7 @@ export default async function ReferralLandingPage({ params }: Props) {
             "Schedule jobs and manage your whole team",
             "Get paid faster with online payment links",
             "Automate follow-ups, reminders & status updates",
-            "No lock-in — cancel any time",
+            "No lock-in. Cancel any time",
           ].map((feat) => (
             <li key={feat} className="flex items-start gap-3 text-sm text-slate-200">
               <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-violet-500/30 border border-violet-400/40 flex items-center justify-center text-violet-300 text-xs">

@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "Is there really no lock-in?",
-    a: "No contracts, no minimum terms. Cancel any time from Settings → Billing in one click. Your data exports as a full ZIP file whenever you want it. We even have migration guides to competing platforms — we're that confident you'll stay."
+    a: "No contracts, no minimum terms. Cancel any time from Settings → Billing in one click. Your data exports as a full ZIP file whenever you want it. We even have migration guides to competing platforms. We're that confident you'll stay."
   },
   {
     q: "What's the difference between the 30-day trial and early adopter pricing?",
@@ -14,11 +14,11 @@ const FAQS = [
   },
   {
     q: "Does it work on mobile?",
-    a: "Yes — open servlo.app in your phone browser and add it to your home screen. It works like an app. Native iOS App Store and Android Play Store apps are coming Q3 2026."
+    a: "Yes. Open servlo.app in your phone browser and add it to your home screen. It works like an app. Native iOS App Store and Android Play Store apps are coming Q3 2026."
   },
   {
     q: "Can I connect Xero?",
-    a: "Yes — connect Xero in Settings → Integrations. Invoices, clients, and payments sync automatically. MYOB integration is in beta."
+    a: "Yes. Connect Xero in Settings → Integrations. Invoices, clients, and payments sync automatically. MYOB integration is in beta."
   },
   {
     q: "How does my team access it?",
@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     q: "What trades does SERVLO work for?",
-    a: "Any service business that does job-based work: plumbers, electricians, cleaners, landscapers, HVAC, pest control, handymen, builders, and more. If you quote jobs, schedule crew, and invoice clients — SERVLO is built for you."
+    a: "Any service business that does job-based work: plumbers, electricians, cleaners, landscapers, HVAC, pest control, handymen, builders, and more. If you quote jobs, schedule crew, and invoice clients, SERVLO is built for you."
   },
   {
     q: "Do I need to sign a contract?",
@@ -38,7 +38,7 @@ const FAQS = [
   },
   {
     q: "Can my team use it?",
-    a: "Yes. The Solo plan is 1 user. Team and Business plans include unlimited users. Each team member gets their own login with role-based permissions — employees see jobs and timesheets; only you see financials and reports."
+    a: "Yes. The Solo plan is 1 user. Team and Business plans include unlimited users. Each team member gets their own login with role-based permissions: employees see jobs and timesheets; only you see financials and reports."
   },
   {
     q: "Is my data stored in Australia?",
@@ -46,7 +46,7 @@ const FAQS = [
   },
   {
     q: "When are the other products coming?",
-    a: "Core and Grow are live now. Leads launches Q4 2026. Other products on the roadmap will follow as our customer base grows — we want to nail each product before launching the next."
+    a: "Core and Grow are live now. Leads launches Q4 2026. Other products on the roadmap will follow as our customer base grows. We want to nail each product before launching the next."
   }
 ];
 

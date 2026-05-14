@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Team & Timesheets — SERVLO Docs" };
+export const metadata = { title: "Team & Timesheets · SERVLO Docs" };
 
 export default function TeamDocPage() {
   return (
@@ -33,11 +33,11 @@ export default function TeamDocPage() {
       </p>
       <ul>
         <li>
-          <strong>Manual</strong> — go to the Timesheets tab on the Team page and add a timesheet
+          <strong>Manual</strong>: go to the Timesheets tab on the Team page and add a timesheet
           record directly.
         </li>
         <li>
-          <strong>Geofenced clock-in</strong> — on the{" "}
+          <strong>Geofenced clock-in</strong>: on the{" "}
           <Link href="/docs/jobs">job detail Sign-off tab</Link>, employees can clock in when they
           arrive at the job site. GPS verifies they&apos;re within range.
         </li>
@@ -61,7 +61,7 @@ export default function TeamDocPage() {
       <h2>Leave management</h2>
       <p>
         Team members can submit leave requests from the Performance tab. You&apos;ll see a
-        pending badge on the Leave sub-tab. Approve or decline requests — the decision is
+        pending badge on the Leave sub-tab. Approve or decline requests. The decision is
         recorded and the employee is notified.
       </p>
 

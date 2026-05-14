@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Switching from simPRO to SERVLO",
-  description: "Migrate from simPRO to SERVLO — a simpler, more affordable Australian job management platform for growing service businesses.",
+  description: "Migrate from simPRO to SERVLO: a simpler, more affordable Australian job management platform for growing service businesses.",
 };
 
 export default function MigrateFromSimproPage() {
@@ -16,7 +16,7 @@ export default function MigrateFromSimproPage() {
         Switching from simPRO to SERVLO
       </h1>
       <p style={{ fontSize: 16, color: "#64748b", marginBottom: 40 }}>
-        simPRO is a powerful enterprise platform — but for many small to mid-sized Australian service businesses, it&apos;s more complexity and cost than you need. SERVLO gives you the essentials, done right.
+        simPRO is a powerful enterprise platform, but for many small to mid-sized Australian service businesses, it&apos;s more complexity and cost than you need. SERVLO gives you the essentials, done right.
       </p>
 
       {/* Why switch */}
@@ -25,10 +25,10 @@ export default function MigrateFromSimproPage() {
           Why businesses switch from simPRO
         </h2>
         <ul style={{ color: "#0c4a6e", lineHeight: 2, paddingLeft: 20, margin: 0 }}>
-          <li>simPRO implementation costs are significant — SERVLO is self-serve, no setup fees</li>
-          <li>SERVLO is designed for 1–30 person service businesses, not enterprise contractors</li>
+          <li>simPRO implementation costs are significant. SERVLO is self-serve, no setup fees</li>
+          <li>SERVLO is designed for 1 to 30 person service businesses, not enterprise contractors</li>
           <li>Flat monthly pricing with no per-user fees or module add-ons</li>
-          <li>Modern mobile-first interface — no training required for your team</li>
+          <li>Modern mobile-first interface. No training required for your team</li>
           <li>30-day free trial with demo data pre-loaded so you can evaluate immediately</li>
         </ul>
       </section>
@@ -68,7 +68,7 @@ export default function MigrateFromSimproPage() {
         </h2>
         <ul style={{ color: "#334155", lineHeight: 2, paddingLeft: 20 }}>
           <li>Use <strong>Settings &rarr; Import/Export</strong> to bulk-import your client list</li>
-          <li>Re-enter your pricebook rates in <strong>Pricebook</strong> — these are quick to add</li>
+          <li>Re-enter your pricebook rates in <strong>Pricebook</strong>: these are quick to add</li>
           <li>Historical jobs can be added manually or left archived in simPRO for reference</li>
           <li>Connect your accounting software (Xero or MYOB) in <strong>Settings &rarr; Integrations</strong></li>
         </ul>
@@ -96,7 +96,7 @@ export default function MigrateFromSimproPage() {
         </h2>
         <p style={{ color: "#475569", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
           simPRO pricing starts at several hundred dollars per month and scales with modules and users.
-          SERVLO starts at <strong>$29/month</strong> (Solo) with a flat Team plan at <strong>$79/month</strong> — everything included, no add-ons.
+          SERVLO starts at <strong>$29/month</strong> (Solo) with a flat Team plan at <strong>$79/month</strong>: everything included, no add-ons.
         </p>
       </section>
 

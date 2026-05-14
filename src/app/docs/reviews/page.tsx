@@ -1,13 +1,13 @@
 import Link from "next/link";
 
-export const metadata = { title: "Review Requests — SERVLO Docs" };
+export const metadata = { title: "Review Requests · SERVLO Docs" };
 
 export default function ReviewsDocPage() {
   return (
     <article className="prose prose-slate max-w-none">
       <h1>Review Hub</h1>
       <p className="lead">
-        Collect more Google reviews automatically and respond to feedback — all from SERVLO.
+        Collect more Google reviews automatically and respond to feedback, all from SERVLO.
       </p>
 
       <h2>Why reviews matter</h2>
@@ -47,14 +47,14 @@ export default function ReviewsDocPage() {
         an AI-assisted response draft tailored to the review&apos;s sentiment and content.
       </p>
       <p>
-        Responding to reviews — especially negative ones — signals to Google that you&apos;re an
+        Responding to reviews, especially negative ones, signals to Google that you&apos;re an
         engaged business owner and improves your local ranking.
       </p>
 
       <h2>Satisfaction surveys</h2>
       <p>
         SERVLO also sends a private satisfaction survey via a unique link. The survey collects a
-        1–5 star rating and open text feedback. Negative feedback goes to you privately rather
+        1 to 5 star rating and open text feedback. Negative feedback goes to you privately rather
         than becoming a public Google review, letting you address issues before they escalate.
       </p>
     </article>

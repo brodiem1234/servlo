@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Jobs & Scheduling — SERVLO Docs" };
+export const metadata = { title: "Jobs & Scheduling · SERVLO Docs" };
 
 export default function JobsDocPage() {
   return (
@@ -20,17 +20,17 @@ export default function JobsDocPage() {
 
       <h2>Job statuses</h2>
       <ul>
-        <li><strong>Pending</strong> — created but not yet scheduled</li>
-        <li><strong>Scheduled</strong> — has a date; appears on the schedule view</li>
-        <li><strong>In Progress</strong> — actively being worked</li>
-        <li><strong>Completed</strong> — work done; ready to invoice</li>
-        <li><strong>Cancelled</strong> — job will not proceed</li>
+        <li><strong>Pending</strong>: created but not yet scheduled</li>
+        <li><strong>Scheduled</strong>: has a date; appears on the schedule view</li>
+        <li><strong>In Progress</strong>: actively being worked</li>
+        <li><strong>Completed</strong>: work done; ready to invoice</li>
+        <li><strong>Cancelled</strong>: job will not proceed</li>
       </ul>
 
       <h2>Week view & drag-to-reschedule</h2>
       <p>
         Switch to the <Link href="/dashboard/schedule?view=week">Week view</Link> to see all jobs
-        laid out across Monday–Sunday. Drag a job card to a different day to reschedule it — SERVLO
+        laid out across Monday to Sunday. Drag a job card to a different day to reschedule it. SERVLO
         updates the scheduled date instantly.
       </p>
 
@@ -45,7 +45,7 @@ export default function JobsDocPage() {
       <p>
         On the job detail <strong>Photos</strong> tab, upload before/after photos. SERVLO stores them
         securely in your business storage. You can draw annotations on photos using the built-in
-        annotation tool — useful for marking defects or areas of work.
+        annotation tool, useful for marking defects or areas of work.
       </p>
 
       <h2>Client sign-off</h2>

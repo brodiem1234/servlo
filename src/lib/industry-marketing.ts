@@ -12,7 +12,7 @@ export const LANDING_INDUSTRY_COPY: Record<
     bullets: [
       "Dispatch jobs with calendar views your techs actually open on-site.",
       "Photo log progress and materials so disputes disappear.",
-      "Quote → job → invoice in one thread — GST-ready PDFs in seconds."
+      "Quote → job → invoice in one thread: GST-ready PDFs in seconds."
     ]
   },
   cleaning: {
@@ -38,7 +38,7 @@ export const LANDING_INDUSTRY_COPY: Record<
   marketing: {
     tileHint: "Studios & agencies",
     headline: "Marketing & agencies",
-    tagline: "Retainers, milestones and approvals — without another agency stack.",
+    tagline: "Retainers, milestones and approvals, without another agency stack.",
     bullets: [
       "Turn scopes of work into quotes clients can approve digitally.",
       "Track creative phases as jobs with deadlines your team sees daily.",
@@ -48,7 +48,7 @@ export const LANDING_INDUSTRY_COPY: Record<
   health: {
     tileHint: "Clinics, studios, mobile practitioners",
     headline: "Health & wellness",
-    tagline: "Sessions, rosters and billing — built for appointment-heavy teams.",
+    tagline: "Sessions, rosters and billing, built for appointment-heavy teams.",
     bullets: [
       "Book recurring sessions alongside one-off visits.",
       "Keep practitioner notes next to each booking.",

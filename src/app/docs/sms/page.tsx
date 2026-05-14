@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "SMS (Twilio) — SERVLO Docs" };
+export const metadata = { title: "SMS (Twilio) · SERVLO Docs" };
 
 export default function SmsDocPage() {
   return (
@@ -19,7 +19,7 @@ export default function SmsDocPage() {
       <ul>
         <li><code>TWILIO_ACCOUNT_SID</code></li>
         <li><code>TWILIO_AUTH_TOKEN</code></li>
-        <li><code>TWILIO_FROM_NUMBER</code> — your Twilio phone number (must be Australian-capable)</li>
+        <li><code>TWILIO_FROM_NUMBER</code>: your Twilio phone number (must be Australian-capable)</li>
       </ul>
       <p>
         Contact your SERVLO administrator or support to configure these. Self-serve Twilio configuration

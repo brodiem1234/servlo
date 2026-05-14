@@ -23,7 +23,7 @@ const FEATURES: Array<{
   { label: "Job management",               servlo: true,              tradify: true },
   { label: "Quoting & invoicing",          servlo: true,              tradify: true },
   { label: "Client management",           servlo: true,              tradify: true },
-  { label: "Unlimited users — all plans", servlo: true,              tradify: false, servloWins: true },
+  { label: "Unlimited users, all plans", servlo: true,              tradify: false, servloWins: true },
   { label: "Australian GST/BAS support",  servlo: true,              tradify: true },
   { label: "AI ad generation",            servlo: true,              tradify: false, servloWins: true },
   { label: "AI receipt scanning",         servlo: true,              tradify: false, servloWins: true },
@@ -108,7 +108,7 @@ export default function CompareTradifyPage() {
           <div className="grid gap-5 md:grid-cols-3">
             <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
               <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-500">Tradify</p>
-              <p className="text-sm font-medium text-slate-300">{tradify.name} — {users} user{users > 1 ? "s" : ""}</p>
+              <p className="text-sm font-medium text-slate-300">{tradify.name}, {users} user{users > 1 ? "s" : ""}</p>
               <p className="mt-2 text-3xl font-extrabold tabular-nums text-white">~${tradify.price}</p>
               <p className="text-xs text-slate-400">/mo (approx)</p>
             </div>
@@ -133,7 +133,7 @@ export default function CompareTradifyPage() {
           </div>
 
           <div className="mt-6 rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-sm text-blue-200">
-            With SERVLO Team you can add unlimited employees, contractors and admins with no per-seat charge — ever.
+            With SERVLO Team you can add unlimited employees, contractors and admins with no per-seat charge, ever.
           </div>
         </section>
 
@@ -182,7 +182,7 @@ export default function CompareTradifyPage() {
 
         {/* CTA */}
         <section className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-10 text-center">
-          <h2 className="text-2xl font-bold text-white">Try SERVLO free — cancel anytime in one click</h2>
+          <h2 className="text-2xl font-bold text-white">Try SERVLO free. Cancel anytime in one click</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
             30-day free trial. No credit card. If it&apos;s not right, cancel from Settings → Billing. One click.
           </p>

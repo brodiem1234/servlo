@@ -36,7 +36,7 @@ const PROVIDERS = [
     rate: "1.9%",
     fixed: "10¢",
     monthly: "$0",
-    payout: "1–2 days",
+    payout: "1 to 2 days",
     refunds: "Fee kept",
     highlight: false,
   },
@@ -46,7 +46,7 @@ const PROVIDERS = [
     rate: "2.6%",
     fixed: "30¢",
     monthly: "$0",
-    payout: "3–5 days",
+    payout: "3 to 5 days",
     refunds: "Partial fee",
     highlight: false,
   },
@@ -161,7 +161,7 @@ export default async function PayRatesPage() {
         </h2>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
           On <span className="font-semibold" style={{ color: "var(--text-primary)" }}>$10,000/month</span> in card payments, SERVLO Pay saves you approximately{" "}
-          <span className="font-bold" style={{ color: COLOR }}>$45–$120</span> compared to Stripe, Square and PayPal — that&apos;s up to{" "}
+          <span className="font-bold" style={{ color: COLOR }}>$45 to $120</span> compared to Stripe, Square and PayPal. That&apos;s up to{" "}
           <span className="font-bold" style={{ color: COLOR }}>$1,440 per year</span> staying in your pocket.
         </p>
       </div>

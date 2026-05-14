@@ -120,7 +120,7 @@ const BUNDLES: BundleCard[] = [
 const FAQ_ITEMS = [
   {
     q: "Is there really no credit card required for the free trial?",
-    a: "Correct — you start your 30-day trial the moment you sign up. We only ask for payment details when you're ready to continue after the trial ends.",
+    a: "Correct. You start your 30-day trial the moment you sign up. We only ask for payment details when you're ready to continue after the trial ends.",
   },
   {
     q: "Can I switch plans at any time?",
@@ -128,7 +128,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What happens after the 30-day trial?",
-    a: "You'll receive a reminder before your trial ends. If you don't add payment details your account is paused — your data stays safe and you can resume whenever you're ready.",
+    a: "You'll receive a reminder before your trial ends. If you don't add payment details your account is paused: your data stays safe and you can resume whenever you're ready.",
   },
   {
     q: "Is annual billing cheaper?",
@@ -136,11 +136,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is SERVLO built specifically for Australian businesses?",
-    a: "Yes — we're based in Adelaide, SA. GST, ABN, Australian date formats and local phone formatting are built in from day one, not bolted on.",
+    a: "Yes. We're based in Adelaide, SA. GST, ABN, Australian date formats and local phone formatting are built in from day one, not bolted on.",
   },
   {
     q: "Can I add Grow or Leads to my Core plan later?",
-    a: "Grow and Leads are launching in Q3–Q4 2026. Join the waitlist below and we'll email you when combo bundles become available — existing subscribers get priority access.",
+    a: "Grow and Leads are launching in Q3 to Q4 2026. Join the waitlist below and we'll email you when combo bundles become available. Existing subscribers get priority access.",
   },
 ];
 
@@ -219,13 +219,13 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
         <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
           <div>
             <p className="font-semibold text-amber-800 dark:text-amber-300">
-              Early adopter offer — use code{" "}
+              Early adopter offer. Use code{" "}
               <span className="rounded bg-amber-200 px-1.5 py-0.5 font-mono text-sm dark:bg-amber-800/50">
                 {EARLY_ADOPTER_DISCOUNT.code}
               </span>
             </p>
             <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-400">
-              Get {EARLY_ADOPTER_DISCOUNT.discountPercent}% off for the first {EARLY_ADOPTER_DISCOUNT.months} months —{" "}
+              Get {EARLY_ADOPTER_DISCOUNT.discountPercent}% off for the first {EARLY_ADOPTER_DISCOUNT.months} months.{" "}
               Solo from ${EARLY_ADOPTER_DISCOUNT.plans.solo.discountedMonthly}/mo,{" "}
               Team from ${EARLY_ADOPTER_DISCOUNT.plans.team.discountedMonthly}/mo,{" "}
               Business from ${EARLY_ADOPTER_DISCOUNT.plans.business.discountedMonthly}/mo
@@ -463,7 +463,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
             href="/auth/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-3.5 text-base font-semibold text-white hover:bg-blue-600"
           >
-            Upgrade to Team — $79/mo
+            Upgrade to Team: $79/mo
           </Link>
         </div>
       </div>
@@ -594,7 +594,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
                 disabled
                 className="cursor-not-allowed rounded-xl border border-amber-300 bg-amber-100 px-6 py-3 text-sm font-semibold text-amber-700 dark:border-amber-600/40 dark:bg-amber-500/10 dark:text-amber-400"
               >
-                Coming soon — join waitlist below
+                Coming soon. Join waitlist below
               </button>
             </div>
           </div>
@@ -666,7 +666,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
             </div>
           </div>
           <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
-            AI-powered marketing for service businesses — ads, social content, review automation and referral tracking.
+            AI-powered marketing for service businesses: ads, social content, review automation and referral tracking.
           </p>
           <a
             href="mailto:hello@servlo.com.au?subject=Waitlist%3A%20SERVLO%20Grow"
@@ -688,7 +688,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
             </div>
           </div>
           <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
-            Qualified leads matched to your industry and location — pay per lead or subscribe for a monthly bundle.
+            Qualified leads matched to your industry and location. Pay per lead or subscribe for a monthly bundle.
           </p>
           <a
             href="mailto:hello@servlo.com.au?subject=Waitlist%3A%20SERVLO%20Leads"

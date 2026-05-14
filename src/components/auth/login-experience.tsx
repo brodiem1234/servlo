@@ -51,9 +51,9 @@ function mapSignInError(raw: string): string {
 
 const inputCls =
   "h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition " +
-  "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 " +
-  "dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 " +
-  "dark:focus:border-blue-500 dark:focus:ring-blue-500/20";
+  "focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 " +
+  "dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 " +
+  "dark:focus:border-white dark:focus:ring-white/20";
 
 export function LoginExperience({
   emailValue,
@@ -231,7 +231,7 @@ export function LoginExperience({
                   <button
                     type="button"
                     onClick={() => { setMode("reset"); setResetStatus(null); }}
-                    className="text-xs font-semibold text-blue-500 hover:text-blue-400"
+                    className="text-xs font-semibold text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-neutral-300"
                   >
                     Forgot password?
                   </button>
@@ -262,7 +262,7 @@ export function LoginExperience({
                   name="remember_me"
                   type="checkbox"
                   defaultChecked={rememberMeChecked}
-                  className="h-4 w-4 rounded border-zinc-300 accent-blue-500 dark:border-zinc-600"
+                  className="h-4 w-4 rounded border-zinc-300 accent-black dark:accent-white dark:border-zinc-600"
                 />
                 Remember me
               </label>
@@ -277,9 +277,9 @@ export function LoginExperience({
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex h-11 w-full items-center justify-center rounded-lg bg-blue-500 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center rounded-lg border border-zinc-900 bg-zinc-900 text-sm font-semibold text-white transition hover:bg-black dark:border-white/40 dark:bg-black dark:hover:bg-neutral-900 dark:hover:border-white/60 disabled:opacity-60"
               >
-                {submitting ? <><Loader2 size={16} className="mr-2 animate-spin" />Signing in&hellip;</> : "Sign in"}
+                {submitting ? <><Loader2 size={16} className="mr-2 animate-spin" />Signing in...</> : "Sign in"}
               </button>
             </form>
           </>
@@ -289,7 +289,7 @@ export function LoginExperience({
             <button
               type="button"
               onClick={() => { setMode("login"); setResetStatus(null); }}
-              className="text-sm font-semibold text-blue-500 hover:text-blue-400"
+              className="text-sm font-semibold text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-neutral-300"
             >
               &larr; Back to sign in
             </button>
@@ -318,7 +318,7 @@ export function LoginExperience({
               )}
               <button
                 type="submit"
-                className="flex h-11 w-full items-center justify-center rounded-lg bg-blue-500 text-sm font-semibold text-white transition hover:bg-blue-600"
+                className="flex h-11 w-full items-center justify-center rounded-lg border border-zinc-900 bg-zinc-900 text-sm font-semibold text-white transition hover:bg-black dark:border-white/40 dark:bg-black dark:hover:bg-neutral-900 dark:hover:border-white/60"
               >
                 Send reset link
               </button>
@@ -328,7 +328,7 @@ export function LoginExperience({
 
         <p className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
           New to SERVLO?{" "}
-          <Link href="/auth/signup" className="font-semibold text-blue-500 hover:text-blue-400">
+          <Link href="/auth/signup" className="font-semibold text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-neutral-300">
             Create an account
           </Link>
         </p>

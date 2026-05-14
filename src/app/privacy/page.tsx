@@ -3,8 +3,8 @@ import Link from "next/link";
 import { LandingHeader } from "@/components/landing-header";
 
 export const metadata = {
-  title: "Privacy Policy — SERVLO",
-  description: "SERVLO Privacy Policy — how we collect, use, and protect your information under Australian law.",
+  title: "Privacy Policy | SERVLO",
+  description: "SERVLO Privacy Policy. How we collect, use, and protect your information under Australian law.",
 };
 
 export default function PrivacyPage() {
@@ -28,16 +28,16 @@ export default function PrivacyPage() {
               <p>We collect information that is necessary to provide you with the Service. This includes:</p>
               <ul className="ml-5 list-disc space-y-3">
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Account information</strong> — your name, email address, phone number, business name, ABN, and address provided during signup and onboarding.
+                  <strong className="text-[#1e3a5f] dark:text-white">Account information</strong>:your name, email address, phone number, business name, ABN, and address provided during signup and onboarding.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Business data</strong> — information you enter into the platform in the course of running your business, including client details, job records, invoices, quotes, timesheets, and purchase orders. This may include personal information about your own clients, employees, and contractors.
+                  <strong className="text-[#1e3a5f] dark:text-white">Business data</strong>:information you enter into the platform in the course of running your business, including client details, job records, invoices, quotes, timesheets, and purchase orders. This may include personal information about your own clients, employees, and contractors.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Usage data</strong> — information about how you interact with the platform, including pages visited, features used, browser type, device type, IP address, and timestamps. This data is collected automatically and used in aggregate to improve the Service.
+                  <strong className="text-[#1e3a5f] dark:text-white">Usage data</strong>:information about how you interact with the platform, including pages visited, features used, browser type, device type, IP address, and timestamps. This data is collected automatically and used in aggregate to improve the Service.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Payment information</strong> — billing details such as your card type and last four digits are handled directly by Stripe, our payment processor. SERVLO does not store full card numbers or sensitive financial data on our own servers.
+                  <strong className="text-[#1e3a5f] dark:text-white">Payment information</strong>:billing details such as your card type and last four digits are handled directly by Stripe, our payment processor. SERVLO does not store full card numbers or sensitive financial data on our own servers.
                 </li>
               </ul>
               <p>
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
               <ul className="ml-5 list-disc space-y-2">
                 <li>Provide, operate, and maintain the SERVLO platform and its features.</li>
                 <li>Process subscription payments and manage your billing relationship with us.</li>
-                <li>Send transactional emails — including account verification, password resets, invoice delivery, and subscription receipts — via our email service provider Resend.</li>
+                <li>Send transactional emails, including account verification, password resets, invoice delivery, and subscription receipts, via our email service provider Resend.</li>
                 <li>Send service-related communications such as product updates, maintenance notices, and changes to these policies.</li>
                 <li>Improve and personalise the platform, including developing new features and analysing usage patterns.</li>
                 <li>Provide customer support and respond to your enquiries.</li>
@@ -75,9 +75,9 @@ export default function PrivacyPage() {
                 Your data is stored using Supabase, which provides a managed PostgreSQL database and authentication service. Our infrastructure is configured as follows:
               </p>
               <ul className="ml-5 list-disc space-y-2">
-                <li><strong className="text-[#1e3a5f] dark:text-white">Primary servers</strong> — US-East region (Virginia, United States).</li>
-                <li><strong className="text-[#1e3a5f] dark:text-white">Backup servers</strong> — AU-East region (Sydney, Australia).</li>
-                <li><strong className="text-[#1e3a5f] dark:text-white">Encryption</strong> — all data is encrypted at rest and in transit. Connections to the platform are secured using TLS.</li>
+                <li><strong className="text-[#1e3a5f] dark:text-white">Primary servers</strong>:US-East region (Virginia, United States).</li>
+                <li><strong className="text-[#1e3a5f] dark:text-white">Backup servers</strong>:AU-East region (Sydney, Australia).</li>
+                <li><strong className="text-[#1e3a5f] dark:text-white">Encryption</strong>:all data is encrypted at rest and in transit. Connections to the platform are secured using TLS.</li>
               </ul>
               <p>
                 By using SERVLO, you acknowledge that some of your data may be stored and processed in the United States. We take reasonable steps to ensure that any overseas transfer of personal information is handled in accordance with the APPs, including ensuring that recipients are subject to comparable privacy protections.
@@ -94,22 +94,22 @@ export default function PrivacyPage() {
               </p>
               <ul className="ml-5 list-disc space-y-3">
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Stripe</strong> — payment processing. Stripe handles all credit card and billing data. Stripe is PCI DSS compliant. See{" "}
+                  <strong className="text-[#1e3a5f] dark:text-white">Stripe</strong>:payment processing. Stripe handles all credit card and billing data. Stripe is PCI DSS compliant. See{" "}
                   <a href="https://stripe.com/au/privacy" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-color)] underline hover:opacity-80 dark:text-cyan-400">
                     stripe.com/au/privacy
                   </a>.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Resend</strong> — transactional email delivery. Resend processes email addresses and message content for the purpose of delivering emails on our behalf.
+                  <strong className="text-[#1e3a5f] dark:text-white">Resend</strong>:transactional email delivery. Resend processes email addresses and message content for the purpose of delivering emails on our behalf.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Supabase</strong> — database hosting and authentication. Supabase stores and manages your account data and business records.
+                  <strong className="text-[#1e3a5f] dark:text-white">Supabase</strong>:database hosting and authentication. Supabase stores and manages your account data and business records.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Anthropic</strong> — AI features. Where AI-powered features are used within the platform, your prompts and relevant context may be processed by Anthropic&rsquo;s AI models. We do not share identifiable personal data with Anthropic beyond what is necessary to fulfil the specific AI feature you are using.
+                  <strong className="text-[#1e3a5f] dark:text-white">Anthropic</strong>:AI features. Where AI-powered features are used within the platform, your prompts and relevant context may be processed by Anthropic&rsquo;s AI models. We do not share identifiable personal data with Anthropic beyond what is necessary to fulfil the specific AI feature you are using.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Twilio</strong> — SMS notifications, when configured. If you enable SMS features, Twilio processes phone numbers and message content for delivery purposes.
+                  <strong className="text-[#1e3a5f] dark:text-white">Twilio</strong>:SMS notifications, when configured. If you enable SMS features, Twilio processes phone numbers and message content for delivery purposes.
                 </li>
               </ul>
               <p>
@@ -127,16 +127,16 @@ export default function PrivacyPage() {
               </p>
               <ul className="ml-5 list-disc space-y-3">
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Right of access</strong> — you may request access to the personal information we hold about you. We will respond to access requests within a reasonable time and provide the information in a format that is accessible to you.
+                  <strong className="text-[#1e3a5f] dark:text-white">Right of access</strong>:you may request access to the personal information we hold about you. We will respond to access requests within a reasonable time and provide the information in a format that is accessible to you.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Right to correction</strong> — if you believe that personal information we hold about you is inaccurate, out of date, incomplete, or misleading, you may request that we correct it. You can update most information directly within your account settings.
+                  <strong className="text-[#1e3a5f] dark:text-white">Right to correction</strong>:if you believe that personal information we hold about you is inaccurate, out of date, incomplete, or misleading, you may request that we correct it. You can update most information directly within your account settings.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Right to deletion</strong> — you may request that we delete your personal information. Subject to our legal obligations and the data retention requirements described below, we will take reasonable steps to comply with deletion requests.
+                  <strong className="text-[#1e3a5f] dark:text-white">Right to deletion</strong>:you may request that we delete your personal information. Subject to our legal obligations and the data retention requirements described below, we will take reasonable steps to comply with deletion requests.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Right to opt out of marketing</strong> — you may opt out of receiving direct marketing communications from us at any time by clicking the unsubscribe link in any marketing email or by contacting us directly.
+                  <strong className="text-[#1e3a5f] dark:text-white">Right to opt out of marketing</strong>:you may opt out of receiving direct marketing communications from us at any time by clicking the unsubscribe link in any marketing email or by contacting us directly.
                 </li>
               </ul>
               <p>
@@ -193,10 +193,10 @@ export default function PrivacyPage() {
               </p>
               <ul className="ml-5 list-disc space-y-3">
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Essential session cookies</strong> — these are required for authentication and to keep you securely logged in. They are set by our authentication provider (Supabase) and cannot be disabled without preventing you from accessing your account.
+                  <strong className="text-[#1e3a5f] dark:text-white">Essential session cookies</strong>:these are required for authentication and to keep you securely logged in. They are set by our authentication provider (Supabase) and cannot be disabled without preventing you from accessing your account.
                 </li>
                 <li>
-                  <strong className="text-[#1e3a5f] dark:text-white">Analytics cookies</strong> — these are used to collect aggregated information about how visitors use the platform, such as which pages are visited most frequently and how users navigate the application. This helps us improve the Service.
+                  <strong className="text-[#1e3a5f] dark:text-white">Analytics cookies</strong>:these are used to collect aggregated information about how visitors use the platform, such as which pages are visited most frequently and how users navigate the application. This helps us improve the Service.
                 </li>
               </ul>
               <p>
@@ -213,7 +213,7 @@ export default function PrivacyPage() {
                 If you have any questions, concerns, or complaints about this Privacy Policy or about how we handle your personal information, please contact our Privacy Officer:
               </p>
               <address className="not-italic space-y-1">
-                <p><strong className="text-[#1e3a5f] dark:text-white">SERVLO — Privacy Officer</strong></p>
+                <p><strong className="text-[#1e3a5f] dark:text-white">SERVLO Privacy Officer</strong></p>
                 <p>Adelaide SA, Australia</p>
                 <p>
                   Email:{" "}
