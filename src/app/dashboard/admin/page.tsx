@@ -86,7 +86,7 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Total Users" value={totalUsers} />
         <StatCard label="Active Subscriptions" value={activeSubscriptions} />
-        <StatCard label="Founding Members" value={`${founders}/100`} />
+        <StatCard label="Founding Members" value={`${founders}/50`} />
         <StatCard
           label="AI Usage (30d)"
           value={totalAICalls}

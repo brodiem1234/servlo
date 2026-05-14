@@ -184,7 +184,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Founding Member 100 check — on first subscription, assign founder number if < 100 slots filled
+    // Founding Member 50 check — on first subscription, assign founder number if < 50 slots filled
     if (event.type === "customer.subscription.created") {
       const subscription = event.data.object;
       const customerId = typeof subscription.customer === "string" ? subscription.customer : null;
@@ -204,7 +204,7 @@ export async function POST(req: Request) {
             .eq("is_founding_member", true);
 
           const founderCount = count ?? 0;
-          if (founderCount < 100) {
+          if (founderCount < 50) {
             const founderNumber = founderCount + 1;
             await admin.from("profiles").update({
               is_founding_member: true,
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
               `Welcome, SERVLO Founding Member #${founderNumber}!`,
               `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
                 <h2 style="color:#d97706">🏅 You are Founding Member #${founderNumber}</h2>
-                <p>Thank you for being one of the first 100 businesses to subscribe to SERVLO.</p>
+                <p>Thank you for being one of the first 50 businesses to subscribe to SERVLO.</p>
                 <p>As a Founding Member, you receive:</p>
                 <ul>
                   <li>Founder badge on your dashboard</li>

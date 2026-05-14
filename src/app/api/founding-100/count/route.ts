@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * Returns count of founding members from businesses table.
  * Public endpoint — no auth required.
  */
-const FOUNDING_LIMIT = 100;
+const FOUNDING_LIMIT = 50;
 
 export async function GET(_req: NextRequest) {
   try {

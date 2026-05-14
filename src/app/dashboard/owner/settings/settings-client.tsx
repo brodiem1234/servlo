@@ -869,7 +869,12 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
 
       {/* C. Plan comparison table */}
       <div id="plans" className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Plans</h2>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+          {isOnTrial ? "Activate your subscription" : currentPlan.toLowerCase() === "business" ? "You're on our best plan" : "Plans"}
+        </h2>
+        {isOnTrial && (
+          <p className="mb-4 text-sm text-[var(--text-secondary)]">Choose a plan to continue after your trial. Your data and settings are preserved.</p>
+        )}
         {checkoutError ? (
           <p className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{checkoutError}</p>
         ) : null}
@@ -911,16 +916,26 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
                         >
                           Contact us
                         </a>
-                      ) : (
-                        <button
-                          type="button"
-                          disabled={checkoutLoading === plan.key}
-                          onClick={() => startCheckout(planPriceIds[plan.key] ?? "", plan.key)}
-                          className="rounded-md bg-[var(--product-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--brand-accent-hover)] disabled:opacity-60"
-                        >
-                          {checkoutLoading === plan.key ? "Redirecting…" : "Upgrade"}
-                        </button>
-                      )}
+                      ) : (() => {
+                        const targetOrder = PLAN_ORDER_LOCAL[plan.key] ?? 0;
+                        const currentOrder3 = PLAN_ORDER_LOCAL[currentPlan?.toLowerCase() ?? "trial"] ?? 0;
+                        const isUp = targetOrder > currentOrder3;
+                        const label = isOnTrial ? "Activate" : isUp ? "Upgrade" : "Downgrade";
+                        return (
+                          <button
+                            type="button"
+                            disabled={checkoutLoading === plan.key}
+                            onClick={() => startCheckout(planPriceIds[plan.key] ?? "", plan.key)}
+                            className={`rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60 ${
+                              isUp || isOnTrial
+                                ? "bg-[var(--product-accent)] hover:bg-[var(--brand-accent-hover)]"
+                                : "border border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+                            }`}
+                          >
+                            {checkoutLoading === plan.key ? "Redirecting…" : label}
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                 );

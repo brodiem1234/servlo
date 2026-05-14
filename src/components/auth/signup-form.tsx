@@ -413,6 +413,8 @@ export function SignupForm() {
   const stripeRef = useRef<Stripe | null>(null);
   const cardElementRef = useRef<StripeCardElement | null>(null);
   const cardMountRef = useRef<HTMLDivElement>(null);
+  const [stripeReady, setStripeReady] = useState(false);
+  const [stripeInitError, setStripeInitError] = useState(false);
 
   // Terms acceptance
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -534,9 +536,17 @@ export function SignupForm() {
     const priceId = getPriceId(selectedPlanTier);
     if (!hasCore || !priceId) return;
 
+    setStripeReady(false);
+    setStripeInitError(false);
+
     let mounted = true;
     stripePromise.then((stripeInstance) => {
-      if (!stripeInstance || !cardMountRef.current || !mounted) return;
+      if (!mounted) return;
+      if (!stripeInstance) {
+        setStripeInitError(true);
+        return;
+      }
+      if (!cardMountRef.current) return;
       if (cardElementRef.current) {
         cardElementRef.current.destroy();
         cardElementRef.current = null;
@@ -546,14 +556,17 @@ export function SignupForm() {
         style: {
           base: {
             color: "#e2e8f0",
+            backgroundColor: "#1e293b",
             fontFamily: "system-ui, -apple-system, sans-serif",
             fontSize: "14px",
             "::placeholder": { color: "#64748b" },
+            iconColor: "#94a3b8",
           },
-          invalid: { color: "#ef4444" },
+          invalid: { color: "#ef4444", iconColor: "#ef4444" },
         },
       });
       card.mount(cardMountRef.current);
+      card.on("ready", () => { if (mounted) setStripeReady(true); });
       stripeRef.current = stripeInstance;
       cardElementRef.current = card;
     });
@@ -562,6 +575,7 @@ export function SignupForm() {
       mounted = false;
       cardElementRef.current?.destroy();
       cardElementRef.current = null;
+      setStripeReady(false);
     };
     // Re-mount if product/tier changes while on step 5.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1553,11 +1567,25 @@ export function SignupForm() {
               {needsCard ? (
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-300">Card details</label>
-                  <div
-                    ref={cardMountRef}
-                    className="rounded-md border border-neutral-600 bg-slate-800 px-3 py-3 focus-within:border-white"
-                    style={{ minHeight: "40px" }}
-                  />
+                  {stripeInitError ? (
+                    <div className="rounded-md border border-red-700/50 bg-red-950/30 px-3 py-3 text-sm text-red-300">
+                      Card input failed to load. Please refresh the page or contact{" "}
+                      <a href="mailto:support@servlo.com.au" className="underline">support@servlo.com.au</a>.
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div
+                        ref={cardMountRef}
+                        className="rounded-md border border-neutral-600 bg-slate-800 px-3 py-3.5 focus-within:border-white"
+                        style={{ minHeight: "44px" }}
+                      />
+                      {!stripeReady && (
+                        <div className="pointer-events-none absolute inset-0 flex items-center px-3">
+                          <span className="text-sm text-slate-500">Loading card input…</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <p className="mt-1.5 text-xs text-slate-500">
                     Secured by Stripe. Your card will not be charged during the trial.
                   </p>

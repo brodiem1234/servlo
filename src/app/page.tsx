@@ -45,7 +45,7 @@ function Sparkline() {
 
 export default async function HomePage() {
   const founderCount = await getFounderCount();
-  const spotsRemaining = Math.max(0, 100 - founderCount);
+  const spotsRemaining = Math.max(0, 50 - founderCount);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
@@ -615,12 +615,12 @@ export default async function HomePage() {
               href="/auth/signup?plan=solo&code=EARLYACCESS"
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-6 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20 sm:w-auto sm:px-8"
             >
-              Claim 75% off, Founding 100
+              Claim 75% off, Founding 50
             </Link>
           </div>
           {spotsRemaining > 0 && (
             <p className="mt-5 text-sm font-medium text-gray-500 dark:text-slate-400">
-              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 100</span> founding spots remain.
+              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 50</span> founding spots remain.
               After that, full price only.
             </p>
           )}
@@ -652,6 +652,10 @@ export default async function HomePage() {
                 The operating system for Australian service businesses.
               </p>
               <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">ABN: 88 688 301 684</p>
+              <p className="mt-4 text-xs leading-relaxed text-gray-400 dark:text-slate-500">
+                Plans from $29/mo. 30-day free trial.<br />
+                Founding members: use code <span className="font-mono font-semibold text-amber-500 dark:text-amber-400">EARLYACCESS</span> for 75% off first 3 months.
+              </p>
             </div>
 
             {/* Link columns — 2-col grid on mobile, slot into parent grid at md+ */}

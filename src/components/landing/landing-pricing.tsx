@@ -80,7 +80,7 @@ export function LandingPricing() {
           <Zap size={18} className="mt-0.5 shrink-0 fill-amber-400 text-amber-400" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-amber-300 md:text-base">
-              Founding 100 offer: 75% off your first 3 months
+              Founding 50 offer: 75% off your first 3 months
             </p>
             <p className="mt-1 text-xs text-amber-200/80 md:text-sm">
               Use code <span className="font-mono font-bold text-amber-300">EARLYACCESS</span> at checkout.{" "}
