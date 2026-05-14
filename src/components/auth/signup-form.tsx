@@ -1010,7 +1010,7 @@ export function SignupForm() {
         className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16"
       >
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.18] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-mark-white.svg" alt="SERVLO" width={44} height={44} unoptimized
@@ -1319,7 +1319,7 @@ export function SignupForm() {
               ) : null}
 
               {/* Chip grid — scrollable, max height */}
-              <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-700 p-3">
+              <div className="max-h-64 overflow-y-auto rounded-lg border-2 border-slate-600 p-3">
                 {filteredChips.length === 0 ? (
                   <p className="text-sm text-slate-500">No industries match your search.</p>
                 ) : (
@@ -1598,7 +1598,7 @@ export function SignupForm() {
               </div>
 
               {/* Product summary banner */}
-              <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-4 py-2.5">
+              <div className="rounded-lg border-2 border-slate-600 bg-slate-800/40 px-4 py-2.5">
                 <p className="text-xs text-slate-400">Selected product</p>
                 <p className="text-sm font-semibold text-slate-100">{comboLabel(selectedProductCombo)}</p>
               </div>
@@ -1612,7 +1612,7 @@ export function SignupForm() {
                       <button
                         key={tier.id} type="button"
                         onClick={() => setEnterpriseModalOpen(true)}
-                        className="relative flex flex-col items-start gap-2 rounded-lg border border-slate-600 p-4 text-left transition hover:border-slate-500"
+                        className="relative flex flex-col items-start gap-2 rounded-lg border-2 border-slate-500 p-4 text-left transition hover:border-slate-400"
                       >
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-slate-100">{tier.price}</span>
@@ -1635,10 +1635,10 @@ export function SignupForm() {
                     <button
                       key={tier.id} type="button"
                       onClick={() => setSelectedPlanTier(tier.id)}
-                      className={`relative flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition ${
+                      className={`relative flex flex-col items-start gap-2 rounded-lg border-2 p-4 text-left transition ${
                         on
                           ? "border-[#3B82F6] ring-2 ring-[#3B82F6]/40"
-                          : "border-slate-600 hover:border-slate-500"
+                          : "border-slate-500 hover:border-slate-400"
                       }`}
                     >
                       {tier.recommended ? (
@@ -1699,7 +1699,7 @@ export function SignupForm() {
               </div>
 
               {/* Summary */}
-              <div className="rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-3">
+              <div className="rounded-lg border-2 border-slate-600 bg-slate-800/60 px-4 py-3">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-200">

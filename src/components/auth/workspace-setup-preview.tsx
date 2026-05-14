@@ -39,7 +39,7 @@ export function WorkspaceSetupPreview({
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-600 bg-slate-900/40 p-4">
+      <div className="rounded-xl border-2 border-slate-500 bg-slate-900/40 p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Recommended (always on)</p>
         <ul className="mt-3 space-y-2">
           {recommendedIds.map((id) => (
@@ -52,7 +52,7 @@ export function WorkspaceSetupPreview({
       </div>
 
       {optionalIds.length > 0 ? (
-        <div className="rounded-xl border border-slate-600 bg-slate-900/40 p-4">
+        <div className="rounded-xl border-2 border-slate-500 bg-slate-900/40 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Optional — toggle on or off</p>
           <ul className="mt-3 space-y-3">
             {optionalIds.map((id) => (

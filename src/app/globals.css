@@ -115,7 +115,7 @@ html.dark {
   --text-primary: #CBD5E1;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
-  --border: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.15);
   --input-bg: #0d1420;
   --sidebar-bg: #0f1623;
   --sidebar-text: #f8fafc;
@@ -173,13 +173,13 @@ html.dark {
 :root.dark .dashboard-theme .dashboard-card,
 :root.dark .dashboard-theme .dashboard-panel,
 :root.dark .auth-theme .auth-card {
-  border-color: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.15) !important;
 }
 
 :root.dark .dashboard-theme .border-white,
 :root.dark .dashboard-theme .border-slate-100,
 :root.dark .dashboard-theme .border-slate-200 {
-  border-color: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.15) !important;
 }
 
 .dashboard-theme input,
@@ -393,11 +393,11 @@ html.dark {
   color: var(--product-accent, var(--brand-accent)) !important;
 }
 
-/* Modal / slide-over cards — subtle border in dark mode */
+/* Modal / slide-over cards — improved border visibility in dark mode */
 :root.dark .dashboard-theme .rounded-xl.border,
 :root.dark .dashboard-theme .rounded-lg.border,
 :root.dark .dashboard-theme .border.border-slate-700 {
-  border-color: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.15) !important;
 }
 
 /* ── Monochromatic product theme tokens ─────────────────────────────────── */
@@ -546,14 +546,14 @@ html.dark [data-product] {
   --bg-tertiary: #0d0d0d;
   --bg-card: #111111;
   --card-bg: #111111;
-  --card-border: rgba(255,255,255,0.06);
-  --border: rgba(255,255,255,0.06);
+  --card-border: rgba(255,255,255,0.15);
+  --border: rgba(255,255,255,0.15);
   --input-bg: #0d0d0d;
-  --input-border: rgba(255,255,255,0.10);
+  --input-border: rgba(255,255,255,0.12);
   --modal-bg: #111111;
   --modal-shadow: 0 25px 50px rgba(0,0,0,0.6);
   --panel-bg: #111111;
-  --panel-border: rgba(255,255,255,0.10);
+  --panel-border: rgba(255,255,255,0.15);
   --panel-shadow: 0 25px 50px rgba(0,0,0,0.6);
   --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
   --sidebar-divider: rgba(255, 255, 255, 0.06);

@@ -30,18 +30,20 @@ export function DarkModeToggle({ className }: { className?: string }) {
     applyTheme(next);
   }
 
-  return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${className ?? ""}`}
-      style={{ color: "var(--text-muted, #94a3b8)" }}
-    >
-      {dark
-        ? <Sun size={16} aria-hidden className="hover:text-yellow-400 transition-colors" />
-        : <Moon size={16} aria-hidden className="hover:text-blue-400 transition-colors" />
-      }
-    </button>
-  );
+  // v2 TODO: re-enable when light mode is re-introduced
+  // return (
+  //   <button
+  //     type="button"
+  //     onClick={toggle}
+  //     aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+  //     className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${className ?? ""}`}
+  //     style={{ color: "var(--text-muted, #94a3b8)" }}
+  //   >
+  //     {dark
+  //       ? <Sun size={16} aria-hidden className="hover:text-yellow-400 transition-colors" />
+  //       : <Moon size={16} aria-hidden className="hover:text-blue-400 transition-colors" />
+  //     }
+  //   </button>
+  // );
+  return null;
 }

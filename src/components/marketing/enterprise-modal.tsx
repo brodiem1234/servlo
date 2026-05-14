@@ -95,7 +95,7 @@ export function EnterpriseModal({ isOpen, onClose }: EnterpriseModalProps) {
       />
 
       {/* Modal panel */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#0f172a] dark:border dark:border-slate-700">
+      <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#0f172a] dark:border-2 dark:border-slate-500">
         {/* Close button */}
         <button
           onClick={onClose}

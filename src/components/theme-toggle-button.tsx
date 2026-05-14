@@ -20,14 +20,16 @@ export function ThemeToggleButton({ className = "" }: { className?: string }) {
     document.documentElement.classList.toggle("dark", next === "dark");
   };
 
-  return (
-    <button
-      type="button"
-      className={`rounded border border-[var(--border)] p-2 text-[var(--text-primary)] ${className}`}
-      onClick={toggleTheme}
-      aria-label="Toggle dark and light mode"
-    >
-      {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
-  );
+  // v2 TODO: re-enable when light mode is re-introduced
+  // return (
+  //   <button
+  //     type="button"
+  //     className={`rounded border border-[var(--border)] p-2 text-[var(--text-primary)] ${className}`}
+  //     onClick={toggleTheme}
+  //     aria-label="Toggle dark and light mode"
+  //   >
+  //     {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+  //   </button>
+  // );
+  return null;
 }

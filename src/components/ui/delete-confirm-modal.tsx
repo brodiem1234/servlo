@@ -37,7 +37,7 @@ export function DeleteConfirmModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-sm rounded-xl bg-[var(--bg-card)] border border-white/10 shadow-2xl p-6">
+      <div className="relative w-full max-w-sm rounded-xl bg-[var(--bg-card)] border-2 border-white/20 shadow-2xl p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 rounded-full bg-red-500/15 p-2.5">
             <AlertTriangle size={20} className="text-red-400" />
