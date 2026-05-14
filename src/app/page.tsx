@@ -118,7 +118,7 @@ export default async function HomePage() {
 
           {/* Right — dashboard mockup */}
           <div className="relative w-full max-w-full">
-            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-2xl md:-inset-6" />
+            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-white/5 via-white/[0.02] to-transparent blur-2xl md:-inset-6" />
             <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0c1525] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.7)]">
               {/* Chrome bar */}
               <div className="flex items-center gap-2 border-b border-white/10 bg-[#111f36]/90 px-3 py-2.5 md:px-4 md:py-3">
@@ -155,7 +155,7 @@ export default async function HomePage() {
                       <p className="truncate text-xs text-slate-400">Norwood, SA &nbsp;&middot;&nbsp; 9:00 AM &ndash; 2:00 PM</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-base font-extrabold tabular-nums text-blue-300 md:text-lg">$1,920</p>
+                      <p className="text-base font-extrabold tabular-nums text-white md:text-lg">$1,920</p>
                       <p className="text-[10px] text-slate-400">Inc. GST</p>
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default async function HomePage() {
                 <ul className="mt-5 flex-1 space-y-2">
                   {features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                      <Check size={13} className="shrink-0 text-blue-400" />
+                      <Check size={13} className="shrink-0 text-neutral-300" />
                       {f}
                     </li>
                   ))}
@@ -437,8 +437,8 @@ export default async function HomePage() {
               <div className="rounded-xl border border-white/10 bg-[#152238] p-4 text-sm text-slate-300">
                 <p className="text-slate-400 italic">&ldquo;Replace switchboard in commercial building, 3 phase, estimate 6 hours labour plus materials&rdquo;</p>
               </div>
-              <div className="mt-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
-                <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">Generated quote</p>
+              <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.06] p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Generated quote</p>
                 <div className="mt-3 space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-300">Labour (6 hrs @ $95/hr)</span>
@@ -454,11 +454,11 @@ export default async function HomePage() {
                   </div>
                   <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-bold">
                     <span className="text-white">Total inc. GST</span>
-                    <span className="text-blue-300">$2,189.00</span>
+                    <span className="text-white">$2,189.00</span>
                   </div>
                 </div>
               </div>
-              <button className="mt-4 w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400">
+              <button className="mt-4 w-full rounded-lg bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-neutral-100">
                 Send to client &rarr;
               </button>
             </div>
