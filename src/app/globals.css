@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Dark-mode tokens applied at :root because light mode is disabled for launch */
+    /* Dark mode only — light mode is permanently disabled */
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
     --card: 0 0% 5%;
@@ -24,7 +24,7 @@
     --border: 0 0% 20%;
     --input: 0 0% 8%;
     --ring: 0 0% 100%;
-    --radius: 0.75rem;
+    --radius: 0.5rem;
   }
 
   * {
@@ -83,41 +83,12 @@
   }
 }
 
-/* globals.css — public/light page defaults */
+/* Brand + sidebar tokens — dark mode only */
 :root {
   --brand-accent: #3B82F6;
   --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
-  /* Alias for public/landing pages only — dashboard components use var(--product-accent) */
   --accent-color: var(--brand-accent);
   --accent-hover: var(--brand-accent-hover);
-  --bg-primary: #F0F4F8;
-  --bg-secondary: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --card-bg: #FFFFFF;
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
-  --border: #e2e8f0;
-  --input-bg: #FFFFFF;
-  --sidebar-bg: #eef2f7;
-  --sidebar-text: #0f172a;
-  --sidebar-text-muted: #475569;
-  --sidebar-divider: #cbd5e1;
-  --sidebar-hover-bg: #e2e8f0;
-  --sidebar-active-bg: var(--brand-accent);
-  --sidebar-active-text: #ffffff;
-  --sidebar-ring: var(--brand-accent);
-}
-
-/* ── Core product blue (real blue, used ONLY for Core product card) ──────── */
-:root {
-  --core-blue: #2563eb;
-  --core-blue-bg: #1e3a8a;
-}
-
-html.dark {
-  --brand-accent: #3B82F6;
-  --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
   --bg-primary: #080d18;
   --bg-secondary: #0f1623;
   --bg-card: #0f1623;
@@ -135,6 +106,9 @@ html.dark {
   --sidebar-active-bg: var(--brand-accent);
   --sidebar-active-text: #ffffff;
   --sidebar-ring: var(--brand-accent);
+  /* Core product blue (used ONLY for Core product card) */
+  --core-blue: #2563eb;
+  --core-blue-bg: #1e3a8a;
 }
 
 .dashboard-theme {
@@ -147,7 +121,6 @@ html.dark {
   color: var(--text-secondary);
 }
 
-/* Light mode: headings navy; dark mode: headings light */
 .dashboard-theme h1,
 .dashboard-theme h2,
 .dashboard-theme h3,
@@ -156,13 +129,6 @@ html.dark {
 .auth-theme h2,
 .auth-theme h3,
 .auth-theme h4 {
-  color: var(--text-primary) !important;
-}
-
-:root.dark .dashboard-theme h1,
-:root.dark .dashboard-theme h2,
-:root.dark .dashboard-theme h3,
-:root.dark .dashboard-theme h4 {
   color: var(--text-primary) !important;
 }
 
@@ -180,15 +146,9 @@ html.dark {
   border-color: var(--border) !important;
 }
 
-:root.dark .dashboard-theme .dashboard-card,
-:root.dark .dashboard-theme .dashboard-panel,
-:root.dark .auth-theme .auth-card {
-  border-color: rgba(255,255,255,0.15) !important;
-}
-
-:root.dark .dashboard-theme .border-white,
-:root.dark .dashboard-theme .border-slate-100,
-:root.dark .dashboard-theme .border-slate-200 {
+.dashboard-theme .border-white,
+.dashboard-theme .border-slate-100,
+.dashboard-theme .border-slate-200 {
   border-color: rgba(255,255,255,0.15) !important;
 }
 
@@ -199,17 +159,8 @@ html.dark {
 .auth-theme select,
 .auth-theme textarea {
   background: var(--input-bg) !important;
-  border-color: var(--border) !important;
-  color: var(--text-primary) !important;
-}
-
-:root.dark .dashboard-theme input,
-:root.dark .dashboard-theme select,
-:root.dark .dashboard-theme textarea,
-:root.dark .auth-theme input,
-:root.dark .auth-theme select,
-:root.dark .auth-theme textarea {
   border-color: rgba(255,255,255,0.10) !important;
+  color: var(--text-primary) !important;
 }
 
 .dashboard-theme input::placeholder,
@@ -224,28 +175,19 @@ html.dark {
 }
 
 .dashboard-theme thead tr {
-  background: color-mix(in oklab, var(--bg-card) 88%, #000 12%);
-}
-
-:root.dark .dashboard-theme thead tr {
   background: color-mix(in oklab, var(--bg-card) 85%, #000 15%);
   color: #cbd5e1;
 }
 
-/* Table borders — subtle accent tint in dark mode */
-:root.dark .dashboard-theme table,
-:root.dark .dashboard-theme th,
-:root.dark .dashboard-theme td {
+/* Table borders */
+.dashboard-theme table,
+.dashboard-theme th,
+.dashboard-theme td {
   border-color: rgba(255,255,255,0.07) !important;
 }
 
 .dashboard-theme label,
 .auth-theme label {
-  color: var(--text-secondary) !important;
-}
-
-:root.dark .dashboard-theme label,
-:root.dark .auth-theme label {
   color: #cbd5e1 !important;
 }
 
@@ -255,20 +197,11 @@ html.dark {
 .dashboard-theme th,
 .auth-theme p,
 .auth-theme span {
-  color: var(--text-secondary);
-}
-
-:root.dark .dashboard-theme p,
-:root.dark .dashboard-theme span,
-:root.dark .dashboard-theme td,
-:root.dark .dashboard-theme th,
-:root.dark .auth-theme p,
-:root.dark .auth-theme span {
   color: #cbd5e1;
 }
 
-:root.dark .dashboard-theme .text-muted,
-:root.dark .auth-theme .text-muted {
+.dashboard-theme .text-muted,
+.auth-theme .text-muted {
   color: #94a3b8 !important;
 }
 
@@ -372,13 +305,13 @@ html.dark {
   color: var(--text-secondary) !important;
 }
 
-:root.dark .dashboard-theme .text-slate-300,
-:root.dark .dashboard-theme .text-slate-400 {
+.dashboard-theme .text-slate-300,
+.dashboard-theme .text-slate-400 {
   color: #cbd5e1 !important;
 }
 
-:root.dark .dashboard-theme .text-slate-500,
-:root.dark .dashboard-theme .text-slate-600 {
+.dashboard-theme .text-slate-500,
+.dashboard-theme .text-slate-600 {
   color: #94a3b8 !important;
 }
 
@@ -388,10 +321,6 @@ html.dark {
 }
 
 .dashboard-theme .text-accent-strong {
-  color: var(--product-accent, var(--brand-accent));
-}
-
-:root.dark .dashboard-theme .text-accent-strong {
   color: color-mix(in srgb, var(--product-accent, var(--brand-accent)) 82%, white);
 }
 
@@ -399,14 +328,10 @@ html.dark {
   color: var(--product-accent, var(--brand-accent)) !important;
 }
 
-:root.dark .dashboard-theme .dashboard-stat-value {
-  color: var(--product-accent, var(--brand-accent)) !important;
-}
-
-/* Modal / slide-over cards — improved border visibility in dark mode */
-:root.dark .dashboard-theme .rounded-xl.border,
-:root.dark .dashboard-theme .rounded-lg.border,
-:root.dark .dashboard-theme .border.border-slate-700 {
+/* Modal / slide-over cards — improved border visibility */
+.dashboard-theme .rounded-xl.border,
+.dashboard-theme .rounded-lg.border,
+.dashboard-theme .border.border-slate-700 {
   border-color: rgba(255,255,255,0.15) !important;
 }
 
@@ -543,8 +468,8 @@ html.dark {
   --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
 }
 
-/* Dark mode: product shells get dark CSS vars */
-html.dark [data-product] {
+/* Product shells — dark mode only */
+[data-product] {
   --product-rgb: 59,130,246;
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
@@ -568,78 +493,29 @@ html.dark [data-product] {
   --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
   --sidebar-divider: rgba(255, 255, 255, 0.06);
 }
-html.dark [data-product] .owner-sidebar {
+[data-product] .owner-sidebar {
   --sidebar-text: rgba(255, 255, 255, 0.85);
   --sidebar-text-muted: rgba(255, 255, 255, 0.45);
 }
 
-/* Light mode: product shells get light CSS vars */
-[data-product] {
-  --sidebar-text: #18181b;
-  --sidebar-text-muted: #6b7280;
-  --sidebar-hover-bg: #f4f4f5;
-  --sidebar-divider: #e4e4e7;
-  --text-primary: #0F172A;
-  --text-secondary: #374151;
-  --text-muted: #6B7280;
-  --bg-primary: #F8FAFC;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --bg-card: #ffffff;
-  --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --border: #e2e8f0;
-  --input-bg: #ffffff;
-  --input-border: #d1d5db;
-  --modal-bg: #ffffff;
-  --modal-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  --panel-bg: #ffffff;
-  --panel-border: #e2e8f0;
-  --panel-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-[data-product] .owner-sidebar {
-  --sidebar-text: #18181b;
-  --sidebar-text-muted: #6b7280;
-}
-
-/* Dark mode: product sidebar nav */
-html.dark [data-product] .owner-sidebar nav a[data-active="true"] {
+/* Product sidebar nav */
+[data-product] .owner-sidebar nav a[data-active="true"] {
   background: rgba(var(--product-rgb), 0.15) !important;
   color: #ffffff !important;
   font-weight: 600;
   border-left: 3px solid var(--product-accent) !important;
 }
-html.dark [data-product] .owner-sidebar nav a[data-active="true"]:hover {
+[data-product] .owner-sidebar nav a[data-active="true"]:hover {
   background: rgba(var(--product-rgb), 0.20) !important;
   color: #ffffff !important;
 }
-html.dark [data-product] .owner-sidebar nav a:not([data-active="true"]) {
+[data-product] .owner-sidebar nav a:not([data-active="true"]) {
   color: rgba(255, 255, 255, 0.6) !important;
   border-left: 3px solid transparent !important;
 }
-html.dark [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
+[data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
   background-color: rgba(255, 255, 255, 0.04) !important;
   color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Light mode: product sidebar nav */
-[data-product] .owner-sidebar nav a[data-active="true"] {
-  background: rgba(var(--product-rgb), 0.08) !important;
-  color: var(--product-accent) !important;
-  font-weight: 600;
-  border-left: 3px solid var(--product-accent) !important;
-}
-[data-product] .owner-sidebar nav a[data-active="true"]:hover {
-  background: rgba(var(--product-rgb), 0.12) !important;
-  color: var(--product-accent) !important;
-}
-[data-product] .owner-sidebar nav a:not([data-active="true"]) {
-  color: #374151 !important;
-  border-left: 3px solid transparent !important;
-}
-[data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
-  background-color: #f4f4f5 !important;
-  color: #18181b !important;
 }
 
 /* ── Custom scrollbars (product-scoped) ─────────────────────────────────── */
@@ -661,218 +537,6 @@ html.dark [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--product-accent) 35%, transparent) transparent;
 }
-html.light-mode [data-product] ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--product-accent) 30%, #e2e8f0);
-}
-html.light-mode [data-product] * {
-  scrollbar-color: color-mix(in srgb, var(--product-accent) 30%, #e2e8f0) transparent;
-}
-
-/* ── Light mode overrides for product shells ──────────────────────────────── */
-/* The dashboard is always dark — sidebar stays dark even in html.light-mode.
-   Only the main content area may use light tokens if light mode is active. */
-html.light-mode [data-product] {
-  --text-primary: #0F172A;
-  --text-secondary: #374151;
-  --text-muted: #6B7280;
-  --bg-primary: #F8FAFC;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --card-bg: #ffffff;
-  --border: #e2e8f0;
-  --card-border: #e2e8f0;
-  --input-bg: #ffffff;
-  --panel-bg: #ffffff;
-  --panel-border: #e2e8f0;
-  --panel-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  --modal-bg: #ffffff;
-  --modal-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  --sidebar-text: #18181b;
-  --sidebar-text-muted: #6b7280;
-  --sidebar-hover-bg: #f4f4f5;
-  --sidebar-divider: #e4e4e7;
-}
-
-/* In light mode, product shell main-content areas get a light tint;
-   sidebar uses white background via --product-sidebar. */
-html.light-mode [data-product="core"] {
-  background-color: #EEF4FF !important;
-  --product-main: #EEF4FF;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(199deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(59,130,246,0.5));
-}
-
-html.light-mode [data-product="grow"] {
-  background-color: #F0EEFF !important;
-  --product-main: #F0EEFF;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(33%) sepia(97%) saturate(1300%) hue-rotate(250deg) brightness(95%) drop-shadow(0 0 8px rgba(139,92,246,0.5));
-}
-
-html.light-mode [data-product="leads"] {
-  background-color: #FFF4E0 !important;
-  --product-main: #FFF4E0;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(70%) sepia(90%) saturate(900%) hue-rotate(5deg) brightness(102%) drop-shadow(0 0 8px rgba(245,158,11,0.5));
-}
-
-html.light-mode [data-product="answer"] {
-  background-color: #E6FAF8 !important;
-  --product-main: #E6FAF8;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(155deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(20,184,166,0.5));
-}
-
-html.light-mode [data-product="pay"] {
-  background-color: #E8FAF0 !important;
-  --product-main: #E8FAF0;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(115deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(34,197,94,0.5));
-}
-
-html.light-mode [data-product="hire"] {
-  background-color: #FEF3EB !important;
-  --product-main: #FEF3EB;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(355deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(249,115,22,0.5));
-}
-
-html.light-mode [data-product="fleet"] {
-  background-color: #E6F6FE !important;
-  --product-main: #E6F6FE;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(175deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(14,165,233,0.5));
-}
-
-html.light-mode [data-product="finance-hub"] {
-  background-color: #EEEEFF !important;
-  --product-main: #EEEEFF;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(215deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(99,102,241,0.5));
-}
-
-html.light-mode [data-product="insurance"] {
-  background-color: #FEE8EC !important;
-  --product-main: #FEE8EC;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(325deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(244,63,94,0.5));
-}
-
-html.light-mode [data-product="safe"] {
-  background-color: #FEE8E8 !important;
-  --product-main: #FEE8E8;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(0deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(239,68,68,0.5));
-}
-
-html.light-mode [data-product="books"] {
-  background-color: #E6FAF4 !important;
-  --product-main: #E6FAF4;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(135deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(5,150,105,0.5));
-}
-
-html.light-mode [data-product="academy"] {
-  background-color: #FEFAE6 !important;
-  --product-main: #FEFAE6;
-  --product-sidebar: #ffffff;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(20deg) brightness(103%) contrast(96%) drop-shadow(0 0 8px rgba(234,179,8,0.5));
-}
-
-/* Light mode: sidebar background white, nav items follow theme */
-html.light-mode [data-product] .owner-sidebar {
-  background: #ffffff !important;
-  border-right-color: #e4e4e7 !important;
-}
-html.light-mode [data-product] .owner-sidebar nav a[data-active="true"] {
-  background: rgba(var(--product-rgb), 0.08) !important;
-  color: var(--product-accent) !important;
-  font-weight: 600;
-  border-left: 3px solid var(--product-accent) !important;
-}
-html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]) {
-  color: #374151 !important;
-  border-left: 3px solid transparent !important;
-}
-html.light-mode [data-product] .owner-sidebar nav a:not([data-active="true"]):hover {
-  background-color: #f4f4f5 !important;
-  color: #18181b !important;
-}
-
-/* Light mode cards */
-html.light-mode [data-product] .rounded-xl.border,
-html.light-mode [data-product] .rounded-lg.border {
-  border-color: #e2e8f0 !important;
-}
-
-/* Light mode tables */
-html.light-mode [data-product] thead tr {
-  background: #f1f5f9 !important;
-}
-
-html.light-mode [data-product] table tbody tr:hover {
-  background: #f8fafc !important;
-}
-
-/* Light mode header */
-html.light-mode [data-product] header {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-/* Light mode inputs */
-html.light-mode [data-product] input,
-html.light-mode [data-product] select,
-html.light-mode [data-product] textarea {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  color: #0F172A !important;
-}
-
-/* Light mode text overrides */
-html.light-mode [data-product] .text-white,
-html.light-mode [data-product] .text-slate-100,
-html.light-mode [data-product] .text-slate-200 {
-  color: #0F172A !important;
-}
-
-html.light-mode [data-product] .text-slate-300,
-html.light-mode [data-product] .text-slate-400 {
-  color: #374151 !important;
-}
-
-html.light-mode [data-product] .text-slate-500,
-html.light-mode [data-product] .text-slate-600 {
-  color: #6B7280 !important;
-}
-
-/* Light mode — sidebar text stays light (sidebar is always dark) */
-html.light-mode [data-product] .owner-sidebar {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-html.light-mode [data-product] .owner-sidebar nav a {
-  color: rgba(255, 255, 255, 0.6) !important;
-}
-
-/* Light mode stat values */
-html.light-mode [data-product] .dashboard-stat-value {
-  color: var(--product-accent) !important;
-}
-
-/* Public page light mode restore */
-html.light-mode:not(:has([data-product])) {
-  --bg-primary: #F0F4F8;
-  --bg-secondary: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --card-bg: #FFFFFF;
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
-  --input-bg: #FFFFFF;
-  --border: #e2e8f0;
-}
-
 /* ── Mobile card list — tables become stacked cards on small screens ─────── */
 @media (max-width: 767px) {
   .mobile-card-list table,

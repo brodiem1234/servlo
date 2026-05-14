@@ -19,7 +19,6 @@ import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
-import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 
 const PAY_COLOR = "#10B981";
@@ -208,7 +207,6 @@ export default function PayShell({ children }: { children: React.ReactNode }) {
               >
                 <HelpCircle size={18} />
               </button>
-              <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}

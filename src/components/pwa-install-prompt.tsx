@@ -140,7 +140,7 @@ export function PwaInstallPrompt() {
         {/* Logo */}
         <div className="mb-5 flex items-center gap-3">
           <Image
-            src="/servlo-mark-white.svg"
+            src="/icons/icon-192.png"
             alt="SERVLO"
             width={48}
             height={48}

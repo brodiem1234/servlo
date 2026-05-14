@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
-import { ThemeScript } from "@/components/theme-script";
 import { SwRegister } from "@/components/pwa/sw-register";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import "./globals.css";
@@ -29,7 +28,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="dark">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0A0A0A" />
@@ -39,7 +38,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
       </head>
       <body className={montserrat.className}>
-        <ThemeScript />
         {children}
         <SwRegister />
         <PwaInstallPrompt />

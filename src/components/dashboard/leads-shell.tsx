@@ -8,7 +8,6 @@ import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
-import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 
 const LEADS_COLOR = "#F59E0B";
@@ -181,7 +180,6 @@ export default function LeadsShell({ children }: { children: React.ReactNode }) 
               >
                 <HelpCircle size={18} />
               </button>
-              <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}

@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { ThemeTogglePublic } from "@/components/theme-toggle-public";
 
 export function LandingHeader() {
   const [open, setOpen] = useState(false);
@@ -27,8 +26,7 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 border-b border-t-2 border-blue-500 border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#0A0A0A]/95">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2" onClick={close}>
-          <Image src="/servlo-mark-dark.svg" alt="SERVLO" width={36} height={36} unoptimized className="dark:hidden drop-shadow-[0_0_32px_rgba(0,0,0,0.35)]" />
-          <Image src="/servlo-mark-white.svg" alt="SERVLO" width={36} height={36} unoptimized className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
+          <Image src="/icons/icon-192.png" alt="SERVLO" width={36} height={36} unoptimized className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           <span className="text-lg font-bold tracking-wide text-[#1e3a5f] dark:text-white">SERVLO</span>
         </Link>
 
@@ -45,7 +43,6 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <ThemeTogglePublic />
           <div className="hidden items-center gap-2 md:flex">
             <Link
               href="/auth/login"

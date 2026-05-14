@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { ThemeTogglePublic } from "@/components/theme-toggle-public";
 
 export function LandingNav() {
   const [open, setOpen] = useState(false);
@@ -36,35 +35,17 @@ export function LandingNav() {
       <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link href="/" className="shrink-0" onClick={close}>
-          {/* Mobile: circle S mark */}
+          {/* Mobile: icon mark */}
           <Image
-            src="/servlo-mark-dark.svg"
+            src="/icons/icon-192.png"
             alt="SERVLO"
             width={32}
             height={32}
             priority
             unoptimized
-            className="block dark:hidden md:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)] h-7 w-7"
-          />
-          <Image
-            src="/servlo-mark-white.svg"
-            alt="SERVLO"
-            width={32}
-            height={32}
-            priority
-            unoptimized
-            className="hidden dark:block md:dark:hidden drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-7 w-7"
+            className="block md:hidden drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-7 w-7"
           />
           {/* Desktop: full wordmark */}
-          <Image
-            src="/servlo-master-dark.svg"
-            alt="SERVLO"
-            width={120}
-            height={32}
-            priority
-            unoptimized
-            className="hidden md:block md:dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)] h-8 w-auto"
-          />
           <Image
             src="/servlo-master-white.svg"
             alt="SERVLO"
@@ -72,7 +53,7 @@ export function LandingNav() {
             height={32}
             priority
             unoptimized
-            className="hidden md:dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
+            className="hidden md:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
           />
         </Link>
 
@@ -84,11 +65,7 @@ export function LandingNav() {
           <Link href="/status" className="transition hover:text-gray-900 dark:hover:text-white">Status</Link>
         </nav>
 
-        {/* Right side
-            Mobile order: ThemeToggle | Log in | Start free trial | Hamburger
-            Desktop order: Log in | Start free trial | ThemeToggle
-            ThemeToggle wrapper uses order-first (mobile) / md:order-last (desktop)
-        */}
+        {/* Right side */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Log in — always visible */}
           <Link
@@ -118,10 +95,6 @@ export function LandingNav() {
             {open ? <X size={18} aria-hidden /> : <Menu size={18} aria-hidden />}
           </button>
 
-          {/* Theme toggle — first on mobile (order-first), last on desktop (md:order-last) */}
-          <div className="order-first md:order-last">
-            <ThemeTogglePublic />
-          </div>
         </div>
       </div>
 

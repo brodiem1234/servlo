@@ -26,7 +26,6 @@ import { BackToTop } from "@/components/dashboard/back-to-top";
 import { InstallBanner } from "@/components/pwa/install-banner";
 import { QuickActionFab } from "@/components/dashboard/quick-action-fab";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
-import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 import { OnlineMembersIndicator } from "@/components/dashboard/online-members-indicator";
@@ -274,7 +273,6 @@ export default function OwnerShell({
               >
                 <HelpCircle size={18} />
               </button>
-              <DarkModeToggle />
               {businessId && currentUserId && currentUserName && (
                 <OnlineMembersIndicator
                   businessId={businessId}

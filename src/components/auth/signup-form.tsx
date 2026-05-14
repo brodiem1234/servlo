@@ -27,7 +27,6 @@ import { EnterpriseModal } from "@/components/marketing/enterprise-modal";
 import { Button } from "@/components/ui/button";
 import type { IndustrySlug } from "@/lib/industries";
 import { formatIndustryLabels } from "@/lib/industries";
-import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
 import { DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
 import {
   buildInitialEnabledFeatures,
@@ -943,7 +942,6 @@ export function SignupForm() {
 
   return (
     <>
-      <ThemeToggleCorner />
       <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
         className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16"
@@ -952,7 +950,7 @@ export function SignupForm() {
           className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.18] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
-            <Image src="/servlo-mark-white.svg" alt="SERVLO" width={44} height={44} unoptimized
+            <Image src="/icons/icon-192.png" alt="SERVLO" width={44} height={44} unoptimized
               className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
           </div>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-3xl">

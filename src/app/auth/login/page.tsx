@@ -1,7 +1,6 @@
 ﻿import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
 import { LoginExperience } from "@/components/auth/login-experience";
 
 type LoginPageProps = {
@@ -101,7 +100,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <>
-      <ThemeToggleCorner />
       <LoginExperience
         emailValue={emailValue}
         rememberMeChecked={rememberMeChecked}

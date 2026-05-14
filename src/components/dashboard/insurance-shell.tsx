@@ -19,7 +19,6 @@ import type { LucideIcon } from "lucide-react";
 import { ProductSwitcher } from "./product-switcher";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { HelpButton } from "./help-button";
-import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
 
 const INSURANCE_COLOR = "#6B7280";
@@ -231,7 +230,6 @@ export default function InsuranceShell({
               >
                 <HelpCircle size={18} />
               </button>
-              <DarkModeToggle />
             <button
               type="button"
               onClick={handleSignOut}

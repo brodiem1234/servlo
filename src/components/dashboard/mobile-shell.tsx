@@ -34,7 +34,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { MobileSidebarOverlay } from "@/components/dashboard/mobile-sidebar";
-import { DarkModeToggle } from "@/components/dashboard/dark-mode-toggle";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 // ── App switcher data ─────────────────────────────────────────────────────────
@@ -228,7 +227,6 @@ export default function MobileShell({
             >
               <HelpCircle size={18} />
             </button>
-            <DarkModeToggle />
           </div>
         </header>
 
