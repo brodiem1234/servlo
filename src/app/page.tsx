@@ -382,7 +382,7 @@ export default async function HomePage() {
               The only Australian trade platform with built-in AI.
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-500 dark:text-slate-400 md:mt-5 md:text-base">
-              SERVLO isn&apos;t just software &mdash; it uses AI to save you hours every week.
+              SERVLO isn&apos;t just software, it uses AI to save you hours every week.
               Smart features that work behind the scenes so you can stay on the tools.
             </p>
             <ul className="mt-8 space-y-5 md:mt-10">
@@ -530,17 +530,24 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Guarantee card */}
-          <div className="flex flex-col rounded-2xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-950/20 p-7">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-500/15">
-              <Shield size={18} className="text-blue-600 dark:text-blue-400" />
+          <div className="flex flex-col rounded-2xl border border-neutral-700 bg-neutral-900 p-7">
+            <div className="mb-3">
+              <Image
+                src="/icons/icon-192.png"
+                alt="SERVLO"
+                width={40}
+                height={40}
+                unoptimized
+                className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
+              />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">30-day money-back guarantee</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 flex-1">
+            <h3 className="text-lg font-bold text-white">30-day money-back guarantee</h3>
+            <p className="mt-2 text-sm text-slate-400 flex-1">
               Not happy in the first 30 days? We refund every cent. No questions, no phone call required. Email us and it&apos;s done.
             </p>
             <Link
               href="/guarantee"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white hover:underline"
             >
               Read the full guarantee <ArrowRight size={14} />
             </Link>
@@ -601,14 +608,14 @@ export default async function HomePage() {
               href="/auth/signup"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto sm:px-8"
             >
-              Start free &mdash; 30 days
+              Start free, 30 days
               <ArrowRight size={16} />
             </Link>
             <Link
               href="/auth/signup?plan=solo&code=EARLYACCESS"
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-6 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20 sm:w-auto sm:px-8"
             >
-              Claim 75% off &mdash; Founding 100
+              Claim 75% off, Founding 100
             </Link>
           </div>
           {spotsRemaining > 0 && (
@@ -638,15 +645,7 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
-                  className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
-                />
-                <Image
-                  src="/servlo-master-dark.svg"
-                  alt="SERVLO"
-                  width={100}
-                  height={28}
-                  unoptimized
-                  className="block dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)]"
+                  className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
                 />
               </Link>
               <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
