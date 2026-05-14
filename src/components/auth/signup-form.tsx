@@ -916,8 +916,15 @@ export function SignupForm() {
 
   // ── Derived ──────────────────────────────────────────────────────────────
 
-  // Primary button: black with white text. Used for all primary CTAs.
-  const primaryBtn = "bg-black text-white border border-white/40 hover:bg-neutral-900 hover:border-white/60";
+  // Primary button — matches sign-in page: white bg / black text
+  const primaryBtn = "bg-white text-black hover:bg-neutral-100";
+
+  // Input styling — matches sign-in page
+  const inputBase = "h-11 w-full rounded-lg border px-3 text-sm transition focus:outline-none " +
+    "bg-zinc-50 dark:bg-white/[0.06] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500";
+  const inputOk = "border-zinc-200 dark:border-white/15 focus:border-zinc-900 dark:focus:border-white " +
+    "focus:ring-2 focus:ring-zinc-900/20 dark:focus:ring-white/20";
+  const inputErr = "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20";
 
   const step1Disabled =
     !allPasswordRequirementsMet(passwordRules) ||
@@ -981,7 +988,7 @@ export function SignupForm() {
           Back to homepage
         </Link>
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.18] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} unoptimized
@@ -1027,7 +1034,7 @@ export function SignupForm() {
             {/* ── Step 1: Credentials ──────────────────────────────────── */}
             <div className={step === 1 ? "grid gap-4 sm:grid-cols-2" : "hidden"} aria-hidden={step !== 1}>
               <div>
-                <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-300">
+                <label htmlFor="name" className="mb-1 block text-sm font-medium text-zinc-300">
                   Full name
                 </label>
                 <input
@@ -1035,12 +1042,12 @@ export function SignupForm() {
                   onChange={(e) => { setNameInput(e.target.value); if (fieldErrors.name) clearFieldError("name"); }}
                   onBlur={handleNameBlur}
                   required
-                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.name ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-white"}`}
+                  className={`${inputBase} ${fieldErrors.name ? inputErr : inputOk}`}
                 />
                 {fieldErrors.name ? <p className="mt-1 text-xs text-red-400">{fieldErrors.name}</p> : null}
               </div>
               <div>
-                <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-300">
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-zinc-300">
                   Email
                 </label>
                 <input
@@ -1049,29 +1056,29 @@ export function SignupForm() {
                   onChange={(e) => { setEmailInput(e.target.value); if (fieldErrors.email) clearFieldError("email"); }}
                   onBlur={handleEmailBlur}
                   required
-                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.email ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-white"}`}
+                  className={`${inputBase} ${fieldErrors.email ? inputErr : inputOk}`}
                 />
                 {fieldErrors.email ? <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p> : null}
               </div>
               <div className="sm:col-span-2">
-                <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-300">
+                <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-300">
                   Password
                 </label>
                 <input
                   id="password" name="password" type="password" autoComplete="new-password"
                   value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)}
                   required
-                  className="h-10 w-full rounded-md border border-neutral-600 bg-slate-800 px-3 text-sm text-slate-200 focus:border-white focus:outline-none"
+                  className={`${inputBase} ${inputOk}`}
                 />
                 <PasswordStrengthHints rules={passwordRules} />
               </div>
 
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label htmlFor="business_name" className="block text-sm font-medium text-slate-300">
+                  <label htmlFor="business_name" className="block text-sm font-medium text-zinc-300">
                     Business name
                   </label>
-                  <span className={`text-xs ${businessNameInput.length > 80 ? (businessNameInput.length > 100 ? "text-red-400" : "text-amber-400") : "text-slate-500"}`}>
+                  <span className={`text-xs ${businessNameInput.length > 80 ? (businessNameInput.length > 100 ? "text-red-400" : "text-amber-400") : "text-zinc-500"}`}>
                     {businessNameInput.length}/100
                   </span>
                 </div>
@@ -1085,14 +1092,14 @@ export function SignupForm() {
                   onBlur={handleBusinessNameBlur}
                   maxLength={100}
                   required
-                  className={`h-10 w-full rounded-md border bg-slate-800 px-3 text-sm text-slate-200 focus:outline-none ${fieldErrors.businessName ? "border-red-500 focus:border-red-500" : "border-neutral-600 focus:border-white"}`}
+                  className={`${inputBase} ${fieldErrors.businessName ? inputErr : inputOk}`}
                 />
                 {fieldErrors.businessName ? <p className="mt-1 text-xs text-red-400">{fieldErrors.businessName}</p> : null}
               </div>
 
               {/* ABN */}
               <div>
-                <label htmlFor="abn" className="mb-1 block text-sm font-medium text-slate-300">
+                <label htmlFor="abn" className="mb-1 block text-sm font-medium text-zinc-300">
                   ABN
                 </label>
                 <div className="relative">
@@ -1103,10 +1110,10 @@ export function SignupForm() {
                     onKeyDown={blockAbnKeyDown}
                     onChange={(e) => setAbnInput(formatAbnDigits(e.target.value.replace(/\D/g, "")))}
                     className={[
-                      "h-10 w-full rounded-md border bg-slate-800 px-3 pr-9 text-sm text-slate-200 transition-colors focus:outline-none",
+                      `${inputBase} pr-9`,
                       abnHas11
                         ? abnValid ? "border-emerald-500" : "border-red-500"
-                        : "border-neutral-600"
+                        : "border-zinc-200 dark:border-white/15 focus:border-zinc-900 dark:focus:border-white"
                     ].join(" ")}
                     required
                   />
@@ -1179,11 +1186,11 @@ export function SignupForm() {
 
               {/* Phone, AU only with static prefix */}
               <div className="sm:col-span-2">
-                <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-slate-300">
+                <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-zinc-300">
                   Phone number
                 </label>
-                <div className={`flex h-10 items-center overflow-hidden rounded-md border bg-slate-800 ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-neutral-600 focus-within:border-white"}`}>
-                  <span className="select-none border-r border-neutral-600 bg-slate-700 px-3 text-sm text-slate-300 h-full flex items-center gap-1.5 shrink-0">
+                <div className={`flex h-11 items-center overflow-hidden rounded-lg border bg-zinc-50 dark:bg-white/[0.06] transition ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-zinc-200 dark:border-white/15 focus-within:border-zinc-900 dark:focus-within:border-white"}`}>
+                  <span className="select-none border-r border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.08] px-3 text-sm text-zinc-600 dark:text-zinc-300 h-full flex items-center gap-1.5 shrink-0">
                     🇦🇺 +61
                   </span>
                   <input
@@ -1198,7 +1205,7 @@ export function SignupForm() {
                     }}
                     onBlur={handlePhoneBlur}
                     required
-                    className="h-full flex-1 bg-transparent px-3 text-sm text-slate-200 outline-none placeholder:text-slate-500"
+                    className="h-full flex-1 bg-transparent px-3 text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   />
                 </div>
                 {fieldErrors.phone ? (
@@ -1237,7 +1244,7 @@ export function SignupForm() {
                 placeholder="Search your industry..."
                 value={industrySearch}
                 onChange={(e) => setIndustrySearch(e.target.value)}
-                className="h-10 w-full rounded-md border border-neutral-600 bg-slate-800 px-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-white focus:outline-none"
+                className={`${inputBase} ${inputOk}`}
               />
 
               {/* Selected counter */}
@@ -1248,7 +1255,7 @@ export function SignupForm() {
               ) : null}
 
               {/* Categorised chip grid */}
-              <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border-2 border-neutral-600 p-4">
+              <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-50 dark:bg-white/[0.03] p-4">
                 {filteredCategories.length === 0 ? (
                   <p className="text-sm text-slate-500">No industries match your search.</p>
                 ) : (
@@ -1267,8 +1274,8 @@ export function SignupForm() {
                               onClick={() => toggleChip(chip.id)}
                               className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-medium transition ${
                                 on
-                                  ? "border-white bg-black text-white"
-                                  : "border-neutral-600 bg-slate-800/60 text-slate-300 hover:border-neutral-400"
+                                  ? "border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-black"
+                                  : "border-zinc-200 dark:border-white/20 bg-white dark:bg-white/[0.04] text-zinc-700 dark:text-slate-300 hover:border-zinc-400 dark:hover:border-white/40"
                               }`}
                             >
                               {on ? <Check size={10} strokeWidth={3} aria-hidden /> : null}
@@ -1285,7 +1292,7 @@ export function SignupForm() {
               {/* Custom note for "Other" */}
               {needsOtherNote ? (
                 <div>
-                  <label htmlFor="industry_other_field" className="mb-1 block text-sm font-medium text-slate-300">
+                  <label htmlFor="industry_other_field" className="mb-1 block text-sm font-medium text-zinc-300">
                     Tell us about your business
                   </label>
                   <textarea
@@ -1293,7 +1300,7 @@ export function SignupForm() {
                     value={otherNote}
                     onChange={(e) => setOtherNote(e.target.value)}
                     rows={3}
-                    className="w-full rounded-md border border-neutral-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-white focus:outline-none"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none bg-zinc-50 dark:bg-white/[0.06] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 ${inputOk}`}
                     placeholder="e.g. Plumbing and gas fitting across Adelaide"
                   />
                 </div>
@@ -1407,7 +1414,7 @@ export function SignupForm() {
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
                 {/* Core is always selected — Continue is always enabled */}
-                <Button type="button" onClick={handleContinueFromProducts} className="w-full sm:w-auto">Continue</Button>
+                <Button type="button" onClick={handleContinueFromProducts} className={`w-full sm:w-auto ${primaryBtn}`}>Continue</Button>
               </div>
             </div>
 
@@ -1587,11 +1594,11 @@ export function SignupForm() {
               )}
 
               {/* Summary */}
-              <div className="rounded-lg border-2 border-neutral-600 bg-slate-800/60 px-4 py-3">
+              <div className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.04] px-4 py-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-200">SERVLO Core</p>
-                    <p className="text-xs text-slate-400 capitalize">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">SERVLO Core</p>
+                    <p className="text-xs text-zinc-500 dark:text-slate-400 capitalize">
                       {selectedPlanTier} · {isAnnual ? "Annual" : "Monthly"}
                     </p>
                   </div>
@@ -1601,8 +1608,8 @@ export function SignupForm() {
                       if (isAnnual && annualInfo) {
                         return (
                           <>
-                            <p className="text-sm font-bold text-slate-100">{annualInfo.mo}<span className="text-xs font-normal text-slate-400">/mo</span></p>
-                            <p className="text-xs text-slate-500">{annualInfo.yr}/yr billed annually</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white">{annualInfo.mo}<span className="text-xs font-normal text-zinc-500 dark:text-slate-400">/mo</span></p>
+                            <p className="text-xs text-zinc-500 dark:text-slate-500">{annualInfo.yr}/yr billed annually</p>
                           </>
                         );
                       }
@@ -1610,8 +1617,8 @@ export function SignupForm() {
                       const tierPrice = tier?.price ?? "TBA";
                       const hasUnit = tierPrice.includes("/");
                       return (
-                        <p className="text-sm font-bold text-slate-100">
-                          {tierPrice}{!hasUnit ? <span className="text-xs font-normal text-slate-400">/mo</span> : null}
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white">
+                          {tierPrice}{!hasUnit ? <span className="text-xs font-normal text-zinc-500 dark:text-slate-400">/mo</span> : null}
                         </p>
                       );
                     })()}
@@ -1637,7 +1644,7 @@ export function SignupForm() {
               {/* Stripe card element (Core + known price only) */}
               {needsCard ? (
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">Card details</label>
+                  <label className="mb-2 block text-sm font-medium text-zinc-300">Card details</label>
                   {stripeInitError ? (
                     <div className="rounded-md border border-red-700/50 bg-red-950/30 px-3 py-3 text-sm text-red-300">
                       Card input failed to load. Please refresh the page or contact{" "}
@@ -1647,7 +1654,7 @@ export function SignupForm() {
                     <div className="relative">
                       <div
                         ref={cardMountRef}
-                        className="rounded-md border border-neutral-600 bg-slate-800 px-3 py-3.5 focus-within:border-white"
+                        className="rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-50 dark:bg-white/[0.06] px-3 py-3.5 focus-within:border-zinc-900 dark:focus-within:border-white transition"
                         style={{ minHeight: "44px" }}
                       />
                       {!stripeReady && (
@@ -1682,7 +1689,7 @@ export function SignupForm() {
                             if (appliedPromoCode) setAppliedPromoCode("");
                           }}
                           placeholder="PROMO CODE"
-                          className="flex-1 rounded-md border border-neutral-600 bg-slate-800 px-3 py-2 text-sm font-mono uppercase text-slate-200 placeholder:text-slate-500 focus:border-white focus:outline-none"
+                          className={`flex-1 rounded-lg border px-3 py-2 text-sm font-mono uppercase transition focus:outline-none bg-zinc-50 dark:bg-white/[0.06] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 ${inputOk}`}
                         />
                         <button
                           type="button"
@@ -1711,7 +1718,7 @@ export function SignupForm() {
               ) : null}
 
               {/* Terms of Service + Privacy Policy checkbox */}
-              <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-neutral-700 bg-neutral-900/40 px-3 py-2.5">
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] px-3 py-2.5">
                 <input
                   type="checkbox"
                   checked={termsAccepted}
@@ -1751,9 +1758,9 @@ export function SignupForm() {
             </div>
           </form>
 
-          <p className="mt-5 text-sm text-slate-400">
+          <p className="mt-5 text-sm text-zinc-500 dark:text-slate-400">
             Already have an account?{" "}
-            <Link href="/auth/login" className="font-semibold text-white hover:text-neutral-300">
+            <Link href="/auth/login" className="font-semibold text-zinc-900 dark:text-white hover:text-zinc-700 dark:hover:text-neutral-300">
               Sign in
             </Link>
           </p>
