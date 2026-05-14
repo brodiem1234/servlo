@@ -35,17 +35,7 @@ export function LandingNav() {
       <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link href="/" className="shrink-0" onClick={close}>
-          {/* Mobile: icon mark */}
-          <Image
-            src="/icons/icon-192.png"
-            alt="SERVLO"
-            width={32}
-            height={32}
-            priority
-            unoptimized
-            className="block md:hidden drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-7 w-7"
-          />
-          {/* Desktop: full wordmark */}
+          {/* Mobile + desktop: full wordmark */}
           <Image
             src="/servlo-master-white.svg"
             alt="SERVLO"
@@ -53,7 +43,7 @@ export function LandingNav() {
             height={32}
             priority
             unoptimized
-            className="hidden md:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
+            className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
           />
         </Link>
 

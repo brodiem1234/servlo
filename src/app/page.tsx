@@ -533,12 +533,12 @@ export default async function HomePage() {
           <div className="flex flex-col rounded-2xl border border-neutral-700 bg-neutral-900 p-7">
             <div className="mb-3">
               <Image
-                src="/icons/icon-192.png"
+                src="/servlo-master-white.svg"
                 alt="SERVLO"
-                width={40}
-                height={40}
+                width={120}
+                height={32}
                 unoptimized
-                className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
+                className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
               />
             </div>
             <h3 className="text-lg font-bold text-white">30-day money-back guarantee</h3>

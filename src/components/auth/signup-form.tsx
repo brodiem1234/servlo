@@ -1029,8 +1029,8 @@ export function SignupForm() {
           className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.18] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
-            <Image src="/icons/icon-192.png" alt="SERVLO" width={44} height={44} unoptimized
-              className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]" />
+            <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} unoptimized
+              className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />
           </div>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-3xl">
             Create your account

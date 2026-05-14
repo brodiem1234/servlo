@@ -145,13 +145,13 @@ export function LoginExperience({
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <Image
-            src="/icons/icon-192.png"
+            src="/servlo-master-white.svg"
             alt="SERVLO"
-            width={44}
-            height={44}
+            width={140}
+            height={40}
             priority
             unoptimized
-            className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
+            className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto"
           />
         </div>
 
