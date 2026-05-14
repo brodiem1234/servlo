@@ -509,6 +509,12 @@ type BillingTabProps = {
   success: boolean;
   growAddonEnabled: boolean;
   growPriceAvailable: boolean;
+  isFoundingMember: boolean;
+  trialEndDate: string | null;
+  subscriptionStatus: string | null;
+  commitmentEndDate: string | null;
+  cancellationPending: boolean;
+  cancellationTakesEffectAt: string | null;
 };
 
 // ── Grow Add-on Card ────────────────────────────────────────────────────────
@@ -664,15 +670,44 @@ const PLAN_FEATURES: Record<string, { price: string; features: string[] }> = {
 
 const PLAN_ORDER_LOCAL: Record<string, number> = { free: 0, trial: 0, solo: 1, team: 2, business: 3 };
 
-export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, growAddonEnabled, growPriceAvailable }: BillingTabProps) {
+export function BillingTab({
+  currentPlan,
+  isOnTrial,
+  email,
+  priceIds,
+  success,
+  growAddonEnabled,
+  growPriceAvailable,
+  isFoundingMember,
+  trialEndDate,
+  subscriptionStatus,
+  commitmentEndDate,
+  cancellationPending,
+  cancellationTakesEffectAt,
+}: BillingTabProps) {
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string>("");
   const [checkoutError, setCheckoutError] = useState<string>("");
-  const [changePlanModal, setChangePlanModal] = useState(false);
-  const [changingTo, setChangingTo] = useState<string | null>(null);
-  const [changePlanLoading, setChangePlanLoading] = useState(false);
-  const [changePlanResult, setChangePlanResult] = useState<{ success?: boolean; message?: string; error?: string } | null>(null);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelResult, setCancelResult] = useState<{ ok?: boolean; cancellationDate?: string; error?: string } | null>(null);
+
+  const currentPlanNorm = currentPlan.toLowerCase();
+  const currentOrder = PLAN_ORDER_LOCAL[currentPlanNorm] ?? 0;
+
+  // Plans above the current tier (for upgrade section)
+  const upgradablePlans = PLAN_ROWS.filter(
+    (p) => (PLAN_ORDER_LOCAL[p.key] ?? 0) > currentOrder
+  );
+
+  // Is user within their founding member commitment period?
+  const inCommitmentPeriod = Boolean(
+    isFoundingMember &&
+    commitmentEndDate &&
+    new Date(commitmentEndDate) > new Date()
+  );
 
   async function openStripePortal() {
     setPortalLoading(true);
@@ -685,29 +720,6 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
     } catch {
       setPortalError("Contact support@servlo.com.au to manage your billing");
       setPortalLoading(false);
-    }
-  }
-
-  async function handleChangePlan() {
-    if (!changingTo) return;
-    setChangePlanLoading(true);
-    setChangePlanResult(null);
-    try {
-      const res = await fetch("/api/billing/change-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetPlan: changingTo }),
-      });
-      const data = await res.json() as { success?: boolean; message?: string; error?: string };
-      setChangePlanResult(data);
-      if (data.success) {
-        // Reload page after a moment to reflect plan change
-        window.setTimeout(() => window.location.reload(), 2000);
-      }
-    } catch {
-      setChangePlanResult({ error: "Failed to change plan. Please try again." });
-    } finally {
-      setChangePlanLoading(false);
     }
   }
 
@@ -730,16 +742,49 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
     }
   }
 
+  async function handleCancelSubscription() {
+    setCancelLoading(true);
+    setCancelResult(null);
+    try {
+      const res = await fetch("/api/billing/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: cancelReason }),
+      });
+      const data = await res.json() as { ok?: boolean; cancellationDate?: string; error?: string };
+      setCancelResult(data);
+      if (data.ok) {
+        window.setTimeout(() => window.location.reload(), 2500);
+      }
+    } catch {
+      setCancelResult({ error: "Request failed. Please try again." });
+    } finally {
+      setCancelLoading(false);
+    }
+  }
+
   const planPriceIds: Record<string, string> = {
     solo: priceIds.solo,
     team: priceIds.team,
     business: priceIds.business,
   };
 
+  const planPrice: Record<string, string> = {
+    solo: "$29/mo",
+    team: "$79/mo",
+    business: "$149/mo",
+  };
+
+  const planDesc: Record<string, string> = {
+    solo: "$29/mo · 1 user · Core + Grow included",
+    team: "$79/mo · Unlimited team members · Core + Grow included",
+    business: "$149/mo · Unlimited users · Core + Grow included",
+  };
+
   return (
     <div className="space-y-5">
       {success ? (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/20 dark:text-green-300">
           Subscription checkout completed successfully.
         </div>
       ) : null}
@@ -747,118 +792,69 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
       {/* A. Current plan card */}
       {!isOnTrial ? (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Current plan</h2>
-          <div className="mt-3 flex flex-wrap items-center gap-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-3">Current plan</h2>
+
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-2xl font-bold capitalize text-[var(--text-primary)]">{currentPlan}</p>
-              <p className="text-sm text-[var(--text-secondary)]">
-                {currentPlan === "solo"
-                  ? "$29/mo · 1 user · Core + Grow included"
-                  : currentPlan === "team"
-                    ? "$79/mo · Unlimited team members · Core + Grow included"
-                    : currentPlan === "business"
-                      ? "$149/mo · Unlimited users · Core + Grow included"
-                      : "Active subscription"}
+              {/* Plan name + founding badge */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-2xl font-bold capitalize text-[var(--text-primary)]">{currentPlanNorm}</p>
+                {isFoundingMember && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-400">
+                    ⭐ Founding Member
+                  </span>
+                )}
+              </div>
+
+              {/* Price description */}
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                {planDesc[currentPlanNorm] ?? "Active subscription"}
               </p>
-              <span className="mt-1 inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
-                Active
-              </span>
+              {isFoundingMember && (
+                <p className="mt-0.5 text-xs text-amber-400">
+                  Founding member discount active — your rate is locked in for life.
+                </p>
+              )}
+
+              {/* Status badges */}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {cancellationPending ? (
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                    Cancels {cancellationTakesEffectAt ? new Date(cancellationTakesEffectAt).toLocaleDateString("en-AU") : "soon"}
+                  </span>
+                ) : subscriptionStatus === "active" ? (
+                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    Active
+                  </span>
+                ) : subscriptionStatus === "paused" ? (
+                  <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-semibold text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300">
+                    Paused
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
+                    {subscriptionStatus ?? "Active"}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setChangePlanModal(true)}
-                className="rounded-md bg-[var(--product-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-              >
-                Change plan
-              </button>
+
+            <div className="flex flex-col gap-2 shrink-0">
               <button
                 type="button"
                 onClick={openStripePortal}
                 disabled={portalLoading}
                 className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] disabled:opacity-60"
               >
-                {portalLoading ? "Loading…" : "Manage subscription"}
+                {portalLoading ? "Loading…" : "Billing portal"}
               </button>
             </div>
           </div>
+
           {portalError ? (
             <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">{portalError}</p>
           ) : null}
         </div>
       ) : null}
-
-      {/* Change plan modal */}
-      {changePlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="relative w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
-            <button onClick={() => { setChangePlanModal(false); setChangingTo(null); setChangePlanResult(null); }} className="absolute right-4 top-4 text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
-            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-1">Change your plan</h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-5">
-              Upgrades take effect immediately with prorated charges. Downgrades take effect at the next billing date.
-            </p>
-            {changePlanResult ? (
-              <div className={`rounded-lg px-4 py-3 mb-4 text-sm ${changePlanResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
-                {changePlanResult.message ?? changePlanResult.error}
-              </div>
-            ) : null}
-            <div className="grid gap-3 sm:grid-cols-3 mb-5">
-              {(["solo", "team", "business"] as const).map((plan) => {
-                const info = PLAN_FEATURES[plan];
-                const isCurrent = currentPlan.toLowerCase() === plan;
-                const targetOrder = PLAN_ORDER_LOCAL[plan] ?? 0;
-                const currentOrder2 = PLAN_ORDER_LOCAL[currentPlan?.toLowerCase() ?? "free"] ?? 0;
-                const isUpgrade = targetOrder > currentOrder2;
-                return (
-                  <button
-                    key={plan}
-                    onClick={() => setChangingTo(plan)}
-                    disabled={isCurrent}
-                    className={`rounded-xl border p-4 text-left transition-all ${
-                      changingTo === plan
-                        ? "border-[var(--accent-color)] ring-1 ring-[var(--accent-color)]"
-                        : "border-[var(--border)]"
-                    } ${isCurrent ? "opacity-50 cursor-not-allowed" : "hover:border-[var(--accent-color)] cursor-pointer"}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-[var(--text-primary)] capitalize">{plan}</p>
-                      {isCurrent && <span className="text-[10px] font-bold text-[var(--accent-color)] uppercase">Current</span>}
-                      {!isCurrent && <span className={`text-[10px] font-bold uppercase ${isUpgrade ? "text-green-500" : "text-amber-500"}`}>{isUpgrade ? "Upgrade" : "Downgrade"}</span>}
-                    </div>
-                    <p className="mt-1 text-sm font-bold text-[var(--text-primary)]">{info.price}</p>
-                    <ul className="mt-2 space-y-0.5">
-                      {info.features.map((f) => (
-                        <li key={f} className="text-xs text-[var(--text-secondary)]">· {f}</li>
-                      ))}
-                    </ul>
-                  </button>
-                );
-              })}
-            </div>
-            {changingTo && !changePlanResult?.success && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-sm text-amber-800">
-                {PLAN_ORDER_LOCAL[changingTo] > PLAN_ORDER_LOCAL[currentPlan?.toLowerCase() ?? "free"]
-                  ? "Upgrading to " + changingTo + " — you'll be charged the prorated difference today."
-                  : "Downgrading to " + changingTo + " — your plan changes at the end of your current billing period."}
-              </div>
-            )}
-            {!changePlanResult?.success && (
-              <div className="flex justify-end gap-2">
-                <button onClick={() => { setChangePlanModal(false); setChangingTo(null); }} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleChangePlan}
-                  disabled={!changingTo || changePlanLoading}
-                  className="rounded-lg bg-[var(--product-accent)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
-                >
-                  {changePlanLoading ? "Changing…" : "Confirm change"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* B. Grow add-on card */}
       <GrowAddonCard
@@ -867,67 +863,77 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
         isOnTrial={isOnTrial}
       />
 
-      {/* C. Plan comparison table */}
+      {/* C. Upgrade options (only plans above current tier, or "activate" when on trial) */}
       <div id="plans" className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Plans</h2>
+        {isOnTrial ? (
+          <>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Activate your subscription</h2>
+            <p className="mb-4 text-sm text-[var(--text-secondary)]">Choose a plan to continue after your trial. Your data and settings are preserved.</p>
+          </>
+        ) : currentPlanNorm === "business" ? (
+          <>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">You&apos;re on our best plan</h2>
+            <p className="text-sm text-[var(--text-secondary)]">Business is our most powerful tier. Nothing to upgrade to.</p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Upgrade your plan</h2>
+            <p className="mb-4 text-sm text-[var(--text-secondary)]">Get more users, AI usage, and features.</p>
+          </>
+        )}
+
         {checkoutError ? (
-          <p className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{checkoutError}</p>
+          <p className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{checkoutError}</p>
         ) : null}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[var(--border)] text-left">
-                <th className="pb-3 pr-4 font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wide">Plan</th>
-                <th className="pb-3 pr-4 font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wide">Price</th>
-                <th className="pb-3 pr-4 font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wide">Users</th>
-                <th className="pb-3 pr-4 font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wide">Jobs/mo</th>
-                <th className="pb-3 pr-4 font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wide">Clients</th>
-                <th className="pb-3 font-semibold text-[var(--text-muted)] text-xs uppercase tracking-wide"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {PLAN_ROWS.map((plan) => {
-                const isCurrent = currentPlan.toLowerCase() === plan.key;
-                return (
-                  <tr
-                    key={plan.key}
-                    className={`border-b border-[var(--border)] last:border-0 ${isCurrent ? "bg-[color-mix(in_srgb,var(--product-accent)_8%,transparent)]" : ""}`}
-                  >
-                    <td className="py-3 pr-4 font-semibold text-[var(--text-primary)]">
-                      {plan.label}
-                      {isCurrent ? (
-                        <span className="ml-2 inline-flex items-center rounded-full bg-[var(--product-accent)] px-2 py-0.5 text-[10px] font-bold text-white">Current</span>
-                      ) : null}
-                    </td>
-                    <td className="py-3 pr-4 text-[var(--text-primary)]">{plan.price}</td>
-                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{plan.users}</td>
-                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{plan.jobs}</td>
-                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{plan.clients}</td>
-                    <td className="py-3">
-                      {isCurrent ? null : plan.key === "enterprise" ? (
-                        <a
-                          href="mailto:sales@servlo.com.au?subject=Enterprise%20Plan%20Enquiry"
-                          className="rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                        >
-                          Contact us
-                        </a>
-                      ) : (
-                        <button
-                          type="button"
-                          disabled={checkoutLoading === plan.key}
-                          onClick={() => startCheckout(planPriceIds[plan.key] ?? "", plan.key)}
-                          className="rounded-md bg-[var(--product-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--brand-accent-hover)] disabled:opacity-60"
-                        >
-                          {checkoutLoading === plan.key ? "Redirecting…" : "Upgrade"}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+
+        {/* Plans to show: all for trial, only upgrades for active subscribers */}
+        {(isOnTrial ? PLAN_ROWS : upgradablePlans).length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {(isOnTrial ? PLAN_ROWS : upgradablePlans).map((plan) => {
+              const isCurrent = currentPlanNorm === plan.key;
+              const info = PLAN_FEATURES[plan.key];
+              return (
+                <div
+                  key={plan.key}
+                  className={`rounded-xl border p-4 ${isCurrent ? "border-[var(--product-accent)] bg-[color-mix(in_srgb,var(--product-accent)_8%,transparent)]" : "border-[var(--border)]"}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-semibold text-[var(--text-primary)] capitalize">{plan.key}</p>
+                    {isCurrent && (
+                      <span className="text-[10px] font-bold uppercase text-[var(--product-accent)]">Current</span>
+                    )}
+                  </div>
+                  <p className="text-lg font-bold text-[var(--text-primary)]">{info?.price ?? plan.price}</p>
+                  <ul className="mt-2 mb-3 space-y-0.5">
+                    {(info?.features ?? []).map((f) => (
+                      <li key={f} className="text-xs text-[var(--text-secondary)]">· {f}</li>
+                    ))}
+                  </ul>
+                  {!isCurrent && (
+                    <button
+                      type="button"
+                      disabled={checkoutLoading === plan.key}
+                      onClick={() => startCheckout(planPriceIds[plan.key] ?? "", plan.key)}
+                      className="w-full rounded-md bg-[var(--product-accent)] px-3 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                    >
+                      {checkoutLoading === plan.key ? "Redirecting…" : isOnTrial ? "Activate" : "Upgrade"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {/* Downgrade note — show for active subscribers who are not on the lowest paid tier */}
+        {!isOnTrial && currentPlanNorm !== "solo" && (
+          <p className="mt-4 text-xs text-[var(--text-muted)]">
+            Need to downgrade?{" "}
+            <a href="mailto:hello@servlo.com.au?subject=Plan%20Downgrade%20Request" className="text-[var(--product-accent)] hover:underline">
+              Contact us at hello@servlo.com.au
+            </a>
+          </p>
+        )}
       </div>
 
       {/* D. Invoice history note */}
@@ -947,7 +953,106 @@ export function BillingTab({ currentPlan, isOnTrial, email, priceIds, success, g
         </p>
       </div>
 
-      {/* E. Footer note */}
+      {/* E. Cancel subscription */}
+      {!isOnTrial && !cancellationPending && subscriptionStatus === "active" && (
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-1">Cancel subscription</h2>
+          <p className="text-sm text-[var(--text-secondary)] mb-3">
+            Your access continues until the end of your current billing period.
+          </p>
+          <button
+            type="button"
+            onClick={() => setCancelModalOpen(true)}
+            className="text-sm text-red-500 hover:text-red-400 hover:underline"
+          >
+            Cancel subscription →
+          </button>
+        </div>
+      )}
+
+      {/* Cancel confirmation modal */}
+      {cancelModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="relative w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <button
+              onClick={() => { setCancelModalOpen(false); setCancelResult(null); setCancelReason(""); }}
+              className="absolute right-4 top-4 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            {inCommitmentPeriod ? (
+              <>
+                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">Founding Member commitment</h2>
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 mb-4 text-sm text-amber-300">
+                  <p className="font-semibold mb-1">⭐ You&apos;re in your founding member period</p>
+                  <p>
+                    As a founding member, your pricing is locked in for life and your commitment period runs until{" "}
+                    <strong>{new Date(commitmentEndDate!).toLocaleDateString("en-AU")}</strong>.
+                  </p>
+                  <p className="mt-2">
+                    Self-serve cancellation is not available during your commitment period. Please email us if you need to make changes.
+                  </p>
+                </div>
+                <a
+                  href="mailto:hello@servlo.com.au?subject=Subscription%20Cancellation%20Request"
+                  className="inline-flex items-center rounded-lg bg-[var(--product-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  Email hello@servlo.com.au
+                </a>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-1">Cancel your subscription?</h2>
+                <p className="text-sm text-[var(--text-secondary)] mb-4">
+                  Your access will continue until the end of your billing period. You can resubscribe at any time.
+                </p>
+
+                {cancelResult ? (
+                  <div className={`rounded-lg px-4 py-3 mb-4 text-sm ${cancelResult.ok ? "border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/20 dark:text-green-300" : "border border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/20 dark:text-red-300"}`}>
+                    {cancelResult.ok
+                      ? `Subscription cancelled. Access continues until ${cancelResult.cancellationDate ? new Date(cancelResult.cancellationDate).toLocaleDateString("en-AU") : "end of billing period"}.`
+                      : cancelResult.error}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
+                        Reason (optional)
+                      </label>
+                      <textarea
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        rows={3}
+                        placeholder="Let us know why you're cancelling..."
+                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => { setCancelModalOpen(false); setCancelReason(""); }}
+                        className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                      >
+                        Keep subscription
+                      </button>
+                      <button
+                        onClick={handleCancelSubscription}
+                        disabled={cancelLoading}
+                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {cancelLoading ? "Cancelling…" : "Confirm cancel"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* F. Footer note */}
       <p className="text-xs text-[var(--text-muted)]">
         Billing powered by Stripe. Changes may take a moment to reflect.
       </p>

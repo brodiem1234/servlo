@@ -102,7 +102,7 @@ export default function CompareTradifyPage() {
             max={20}
             value={users}
             onChange={(e) => setUsers(Number(e.target.value))}
-            className="mb-8 w-full accent-blue-500"
+            className="mb-8 w-full accent-white"
           />
 
           <div className="grid gap-5 md:grid-cols-3">
@@ -132,7 +132,7 @@ export default function CompareTradifyPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-sm text-blue-200">
+          <div className="mt-6 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-neutral-300">
             With SERVLO Team you can add unlimited employees, contractors and admins with no per-seat charge, ever.
           </div>
         </section>
@@ -145,7 +145,7 @@ export default function CompareTradifyPage() {
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.03]">
                   <th className="px-5 py-4 text-left font-semibold text-slate-300">Feature</th>
-                  <th className="px-5 py-4 text-center font-semibold text-blue-300">SERVLO</th>
+                  <th className="px-5 py-4 text-center font-semibold text-white">SERVLO</th>
                   <th className="px-5 py-4 text-center font-semibold text-slate-400">Tradify</th>
                 </tr>
               </thead>
@@ -181,7 +181,7 @@ export default function CompareTradifyPage() {
         </section>
 
         {/* CTA */}
-        <section className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-10 text-center">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
           <h2 className="text-2xl font-bold text-white">Try SERVLO free. Cancel anytime in one click</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
             30-day free trial. No credit card. If it&apos;s not right, cancel from Settings → Billing. One click.
@@ -194,7 +194,7 @@ export default function CompareTradifyPage() {
             <ArrowRight size={16} />
           </Link>
           <p className="mt-3 text-xs text-slate-500">
-            Or <Link href="/compare/servicem8" className="text-blue-400 hover:text-blue-300">compare SERVLO with ServiceM8</Link>
+            Or <Link href="/compare/servicem8" className="text-neutral-400 hover:text-white transition">compare SERVLO with ServiceM8</Link>
           </p>
         </section>
       </main>

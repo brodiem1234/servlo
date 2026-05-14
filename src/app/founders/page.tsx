@@ -54,7 +54,7 @@ export default async function FoundersPage() {
         <p style={{ margin: "10px 0 0", fontSize: 14, color: "#92400e" }}>
           {remaining > 0
             ? <><strong>{remaining} spots remaining.</strong> Once these are taken, the program is closed.</>
-            : <strong>The Founding Member program is now closed. Thank you to all 100 members!</strong>
+            : <strong>The Founding Member program is now closed. Thank you to all 50 members!</strong>
           }
         </p>
       </div>

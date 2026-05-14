@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const [phase, setPhase] = useState<"checking" | "ready" | "invalid">("checking");
@@ -79,6 +80,10 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16">
+        <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-neutral-400 transition hover:text-white">
+          <ArrowLeft size={15} />
+          Back to homepage
+        </Link>
         <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8">
           <div className="mb-6 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} priority unoptimized

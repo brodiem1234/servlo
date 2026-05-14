@@ -80,7 +80,7 @@ export function LandingPricing() {
           <Zap size={18} className="mt-0.5 shrink-0 fill-amber-400 text-amber-400" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-amber-300 md:text-base">
-              Founding 100 offer &mdash; 75% off your first 3 months
+              Founding 50 offer: 75% off your first 3 months
             </p>
             <p className="mt-1 text-xs text-amber-200/80 md:text-sm">
               Use code <span className="font-mono font-bold text-amber-300">EARLYACCESS</span> at checkout.{" "}
@@ -102,7 +102,7 @@ export function LandingPricing() {
         <span className={`text-sm font-medium ${!annual ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-slate-400"}`}>Monthly</span>
         <button
           onClick={() => setAnnual(!annual)}
-          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${annual ? "bg-blue-500" : "bg-slate-300 dark:bg-slate-600"}`}
+          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${annual ? "bg-neutral-400" : "bg-slate-300 dark:bg-slate-600"}`}
           aria-label="Toggle annual billing"
         >
           <span
@@ -127,7 +127,7 @@ export function LandingPricing() {
               key={tier.name}
               className={`relative flex flex-col rounded-2xl border p-6 md:p-8 ${
                 tier.highlight
-                  ? "border-blue-500 bg-blue-950/60 shadow-[0_0_40px_-8px_rgba(59,130,246,0.4)]"
+                  ? "border-white/40 bg-neutral-800 shadow-[0_0_40px_-8px_rgba(255,255,255,0.1)]"
                   : "border-white/10 bg-white/5"
               }`}
             >
@@ -135,7 +135,7 @@ export function LandingPricing() {
                 <div
                   className={`absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold ${
                     tier.highlight
-                      ? "bg-blue-500 text-white"
+                      ? "bg-white text-black"
                       : "border border-amber-500/30 bg-amber-500/20 text-amber-300"
                   }`}
                 >
@@ -158,7 +158,7 @@ export function LandingPricing() {
               <ul className="mb-6 flex-1 space-y-3 md:mb-8">
                 {tier.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-slate-300">
-                    <Check size={15} className="mt-0.5 shrink-0 text-blue-400" />
+                    <Check size={15} className="mt-0.5 shrink-0 text-emerald-400" />
                     <span>{f}</span>
                   </li>
                 ))}
@@ -167,7 +167,7 @@ export function LandingPricing() {
                 href={tier.href}
                 className={`block w-full rounded-xl py-3 text-center text-sm font-semibold transition ${
                   tier.highlight
-                    ? "bg-blue-500 text-white hover:bg-blue-400"
+                    ? "bg-white text-black hover:bg-neutral-100"
                     : "border border-white/20 text-white hover:border-white/40 hover:bg-white/5"
                 }`}
               >
@@ -186,7 +186,7 @@ export function LandingPricing() {
         </p>
         <Link
           href="/compare/servicem8"
-          className="mt-1 inline-block text-xs font-semibold text-blue-400 transition hover:text-blue-300"
+          className="mt-1 inline-block text-xs font-semibold text-white transition hover:text-white/70"
         >
           See full pricing comparison →
         </Link>

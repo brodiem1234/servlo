@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-/** Server-side price ID map — never trust client-supplied IDs */
-const CORE_PRICE_IDS: Record<string, string | undefined> = {
+/** Server-side price ID maps — never trust client-supplied IDs */
+const CORE_PRICE_IDS_MONTHLY: Record<string, string | undefined> = {
   solo:     process.env.STRIPE_SOLO_PRICE_ID,
   team:     process.env.STRIPE_TEAM_PRICE_ID,
   business: process.env.STRIPE_BUSINESS_PRICE_ID,
+};
+
+const CORE_PRICE_IDS_ANNUAL: Record<string, string | undefined> = {
+  solo:     process.env.STRIPE_SOLO_ANNUAL_PRICE_ID,
+  team:     process.env.STRIPE_TEAM_ANNUAL_PRICE_ID,
+  business: process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID,
 };
 
 export async function POST(request: Request) {
@@ -27,13 +33,18 @@ export async function POST(request: Request) {
       selectedProductCombo: string;
       selectedPlanTier: string;
       promoCode?: string;
+      annual?: boolean;
     };
 
-    const { paymentMethodId, selectedProductCombo, selectedPlanTier, promoCode } = body;
+    const { paymentMethodId, selectedProductCombo, selectedPlanTier, promoCode, annual } = body;
 
-    const priceId = CORE_PRICE_IDS[selectedPlanTier];
+    const priceMap = annual ? CORE_PRICE_IDS_ANNUAL : CORE_PRICE_IDS_MONTHLY;
+    const priceId = priceMap[selectedPlanTier];
     if (!priceId) {
-      return NextResponse.json({ error: "No price configured for this plan tier." }, { status: 400 });
+      return NextResponse.json(
+        { error: `No ${annual ? "annual" : "monthly"} price configured for plan "${selectedPlanTier}".` },
+        { status: 400 }
+      );
     }
 
     const email = user.email ?? "";
@@ -77,6 +88,7 @@ export async function POST(request: Request) {
         supabase_user_id: user.id,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
+        billing_frequency: annual ? "annual" : "monthly",
       },
     });
 

@@ -45,7 +45,7 @@ function Sparkline() {
 
 export default async function HomePage() {
   const founderCount = await getFounderCount();
-  const spotsRemaining = Math.max(0, 100 - founderCount);
+  const spotsRemaining = Math.max(0, 50 - founderCount);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
@@ -118,7 +118,7 @@ export default async function HomePage() {
 
           {/* Right — dashboard mockup */}
           <div className="relative w-full max-w-full">
-            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent blur-2xl md:-inset-6" />
+            <div aria-hidden className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-white/5 via-white/[0.02] to-transparent blur-2xl md:-inset-6" />
             <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0c1525] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.7)]">
               {/* Chrome bar */}
               <div className="flex items-center gap-2 border-b border-white/10 bg-[#111f36]/90 px-3 py-2.5 md:px-4 md:py-3">
@@ -155,7 +155,7 @@ export default async function HomePage() {
                       <p className="truncate text-xs text-slate-400">Norwood, SA &nbsp;&middot;&nbsp; 9:00 AM &ndash; 2:00 PM</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-base font-extrabold tabular-nums text-blue-300 md:text-lg">$1,920</p>
+                      <p className="text-base font-extrabold tabular-nums text-white md:text-lg">$1,920</p>
                       <p className="text-[10px] text-slate-400">Inc. GST</p>
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default async function HomePage() {
                 <ul className="mt-5 flex-1 space-y-2">
                   {features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                      <Check size={13} className="shrink-0 text-blue-400" />
+                      <Check size={13} className="shrink-0 text-neutral-300" />
                       {f}
                     </li>
                   ))}
@@ -382,7 +382,7 @@ export default async function HomePage() {
               The only Australian trade platform with built-in AI.
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-gray-500 dark:text-slate-400 md:mt-5 md:text-base">
-              SERVLO isn&apos;t just software &mdash; it uses AI to save you hours every week.
+              SERVLO isn&apos;t just software, it uses AI to save you hours every week.
               Smart features that work behind the scenes so you can stay on the tools.
             </p>
             <ul className="mt-8 space-y-5 md:mt-10">
@@ -437,8 +437,8 @@ export default async function HomePage() {
               <div className="rounded-xl border border-white/10 bg-[#152238] p-4 text-sm text-slate-300">
                 <p className="text-slate-400 italic">&ldquo;Replace switchboard in commercial building, 3 phase, estimate 6 hours labour plus materials&rdquo;</p>
               </div>
-              <div className="mt-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
-                <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">Generated quote</p>
+              <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.06] p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Generated quote</p>
                 <div className="mt-3 space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-300">Labour (6 hrs @ $95/hr)</span>
@@ -454,11 +454,11 @@ export default async function HomePage() {
                   </div>
                   <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-bold">
                     <span className="text-white">Total inc. GST</span>
-                    <span className="text-blue-300">$2,189.00</span>
+                    <span className="text-white">$2,189.00</span>
                   </div>
                 </div>
               </div>
-              <button className="mt-4 w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400">
+              <button className="mt-4 w-full rounded-lg bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-neutral-100">
                 Send to client &rarr;
               </button>
             </div>
@@ -530,17 +530,24 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Guarantee card */}
-          <div className="flex flex-col rounded-2xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-950/20 p-7">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-500/15">
-              <Shield size={18} className="text-blue-600 dark:text-blue-400" />
+          <div className="flex flex-col rounded-2xl border border-neutral-700 bg-neutral-900 p-7">
+            <div className="mb-3">
+              <Image
+                src="/servlo-master-white.svg"
+                alt="SERVLO"
+                width={120}
+                height={32}
+                unoptimized
+                className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto"
+              />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">30-day money-back guarantee</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 flex-1">
+            <h3 className="text-lg font-bold text-white">30-day money-back guarantee</h3>
+            <p className="mt-2 text-sm text-slate-400 flex-1">
               Not happy in the first 30 days? We refund every cent. No questions, no phone call required. Email us and it&apos;s done.
             </p>
             <Link
               href="/guarantee"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white hover:underline"
             >
               Read the full guarantee <ArrowRight size={14} />
             </Link>
@@ -601,19 +608,19 @@ export default async function HomePage() {
               href="/auth/signup"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto sm:px-8"
             >
-              Start free &mdash; 30 days
+              Start free, 30 days
               <ArrowRight size={16} />
             </Link>
             <Link
               href="/auth/signup?plan=solo&code=EARLYACCESS"
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-6 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20 sm:w-auto sm:px-8"
             >
-              Claim 75% off &mdash; Founding 100
+              Claim 75% off, Founding 50
             </Link>
           </div>
           {spotsRemaining > 0 && (
             <p className="mt-5 text-sm font-medium text-gray-500 dark:text-slate-400">
-              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 100</span> founding spots remain.
+              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 50</span> founding spots remain.
               After that, full price only.
             </p>
           )}
@@ -638,21 +645,17 @@ export default async function HomePage() {
                   width={100}
                   height={28}
                   unoptimized
-                  className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
-                />
-                <Image
-                  src="/servlo-master-dark.svg"
-                  alt="SERVLO"
-                  width={100}
-                  height={28}
-                  unoptimized
-                  className="block dark:hidden drop-shadow-[0_0_20px_rgba(0,0,0,0.12)]"
+                  className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)]"
                 />
               </Link>
               <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
                 The operating system for Australian service businesses.
               </p>
               <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">ABN: 88 688 301 684</p>
+              <p className="mt-4 text-xs leading-relaxed text-gray-400 dark:text-slate-500">
+                Plans from $29/mo. 30-day free trial.<br />
+                Founding members: use code <span className="font-mono font-semibold text-amber-500 dark:text-amber-400">EARLYACCESS</span> for 75% off first 3 months.
+              </p>
             </div>
 
             {/* Link columns — 2-col grid on mobile, slot into parent grid at md+ */}

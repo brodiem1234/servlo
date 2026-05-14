@@ -104,7 +104,7 @@ export default function CompareSM8Page() {
             max={500}
             value={jobs}
             onChange={(e) => setJobs(Number(e.target.value))}
-            className="mb-8 w-full accent-blue-500"
+            className="mb-8 w-full accent-white"
           />
 
           <div className="grid gap-5 md:grid-cols-3">
@@ -162,7 +162,7 @@ export default function CompareSM8Page() {
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.03]">
                   <th className="px-5 py-4 text-left font-semibold text-slate-300">Feature</th>
-                  <th className="px-5 py-4 text-center font-semibold text-blue-300">SERVLO</th>
+                  <th className="px-5 py-4 text-center font-semibold text-white">SERVLO</th>
                   <th className="px-5 py-4 text-center font-semibold text-slate-400">ServiceM8</th>
                 </tr>
               </thead>
@@ -205,7 +205,7 @@ export default function CompareSM8Page() {
         </section>
 
         {/* CTA */}
-        <section className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-10 text-center">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
           <h2 className="text-2xl font-bold text-white">Try SERVLO free. Cancel anytime in one click</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
             30-day free trial. No credit card required. If you don&apos;t love it, cancel from Settings → Billing.
@@ -219,7 +219,7 @@ export default function CompareSM8Page() {
             <ArrowRight size={16} />
           </Link>
           <p className="mt-3 text-xs text-slate-500">
-            Or <Link href="/compare" className="text-blue-400 hover:text-blue-300">compare SERVLO with Tradify</Link>
+            Or <Link href="/compare" className="text-neutral-400 hover:text-white transition">compare SERVLO with Tradify</Link>
           </p>
         </section>
       </main>

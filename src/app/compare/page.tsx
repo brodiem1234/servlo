@@ -34,7 +34,7 @@ export default function ComparePage() {
               title: "SERVLO vs ServiceM8",
               desc: "SERVLO wins on price at 51+ jobs/month. ServiceM8 wins on integrations and app maturity.",
               badge: "Most searched",
-              badgeStyle: "bg-blue-500/20 text-blue-300"
+              badgeStyle: "bg-white/10 text-neutral-300"
             },
             {
               href: "/compare/tradify",
@@ -56,7 +56,7 @@ export default function ComparePage() {
               )}
               <h2 className="text-base font-bold text-white">{title}</h2>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{desc}</p>
-              <div className="mt-5 flex items-center gap-1 text-sm font-semibold text-blue-400 transition group-hover:gap-2">
+              <div className="mt-5 flex items-center gap-1 text-sm font-semibold text-white transition group-hover:gap-2">
                 See comparison <ArrowRight size={14} />
               </div>
             </Link>
@@ -66,7 +66,7 @@ export default function ComparePage() {
         <div className="mt-14 rounded-2xl border border-white/10 bg-white/[0.02] p-8 text-center">
           <h2 className="text-xl font-bold text-white">Don&apos;t see your current tool?</h2>
           <p className="mt-2 text-sm text-slate-400">
-            Email us at <a href="mailto:hello@servlo.com.au" className="text-blue-400 hover:text-blue-300">hello@servlo.com.au</a> and
+            Email us at <a href="mailto:hello@servlo.com.au" className="text-neutral-400 hover:text-white transition">hello@servlo.com.au</a> and
             we&apos;ll help you understand if SERVLO is the right move for your business.
           </p>
         </div>
