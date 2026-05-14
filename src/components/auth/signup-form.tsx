@@ -981,23 +981,23 @@ export function SignupForm() {
     <>
       <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
-        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16"
+        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16"
       >
         <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-neutral-400 transition hover:text-white">
           <ArrowLeft size={15} />
           Back to homepage
         </Link>
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8"
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 shadow-none backdrop-blur-xl sm:p-8"
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} unoptimized
               className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />
           </div>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-3xl">
+          <h1 className="text-xl font-bold text-white sm:text-3xl">
             Create your account
           </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-slate-400">
+          <p className="mt-2 text-sm text-slate-400">
             Start your 30-day free trial and set up your business in minutes.
           </p>
 
@@ -1358,26 +1358,25 @@ export function SignupForm() {
                         style={{
                           background: "#0a0a0a",
                           border: isSelected
-                            ? "2px solid var(--core-blue, #2563eb)"
+                            ? "2px solid rgba(255,255,255,0.75)"
                             : "2px solid #262626",
                           boxShadow: isSelected
-                            ? "0 0 24px rgba(37,99,235,0.25)"
+                            ? "0 0 20px rgba(255,255,255,0.08)"
                             : undefined,
                         }}
                       >
                         {/* Top accent bar */}
                         <div
                           className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl"
-                          style={{ background: isSelected ? "var(--core-blue, #2563eb)" : "#262626" }}
+                          style={{ background: isSelected ? "rgba(255,255,255,0.8)" : "#262626" }}
                         />
 
                         {/* Status icon: checkmark for selected Core, lock for locked */}
                         {isSelected ? (
                           <span
-                            className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
-                            style={{ backgroundColor: "var(--core-blue, #2563eb)" }}
+                            className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-white"
                           >
-                            <Check size={11} strokeWidth={3} className="text-white" />
+                            <Check size={11} strokeWidth={3} className="text-black" />
                           </span>
                         ) : (
                           <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-600">
@@ -1431,11 +1430,7 @@ export function SignupForm() {
 
               {/* Selected product banner (Core only; uses core-blue accent) */}
               <div
-                className="rounded-lg border-2 px-4 py-2.5"
-                style={{
-                  background: "linear-gradient(135deg, rgba(37,99,235,0.10), rgba(37,99,235,0.04))",
-                  borderColor: "var(--core-blue, #2563eb)",
-                }}
+                className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5"
               >
                 <p className="text-xs text-slate-300">Selected product</p>
                 <p className="text-sm font-semibold text-white">SERVLO Core</p>
@@ -1758,9 +1753,9 @@ export function SignupForm() {
             </div>
           </form>
 
-          <p className="mt-5 text-sm text-zinc-500 dark:text-slate-400">
+          <p className="mt-5 text-sm text-slate-400">
             Already have an account?{" "}
-            <Link href="/auth/login" className="font-semibold text-zinc-900 dark:text-white hover:text-zinc-700 dark:hover:text-neutral-300">
+            <Link href="/auth/login" className="font-semibold text-white hover:text-neutral-300">
               Sign in
             </Link>
           </p>

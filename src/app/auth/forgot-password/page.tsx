@@ -46,54 +46,53 @@ type Props = {
 export default function ForgotPasswordPage({ searchParams }: Props) {
   const emailValue = searchParams?.email ?? "";
   return (
-    <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16">
-        <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-neutral-400 transition hover:text-white">
-          <ArrowLeft size={15} />
-          Back to homepage
-        </Link>
-        <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8">
-          <div className="mb-6 flex justify-center">
-            <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} priority unoptimized
-              className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />
-          </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Reset your password</h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Enter your email and we’ll send a reset link.
-          </p>
-
-          {searchParams?.success ? (
-            <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{searchParams.success}</p>
-          ) : null}
-          {searchParams?.error ? (
-            <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{searchParams.error}</p>
-          ) : null}
-
-          <form action={requestReset} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                defaultValue={emailValue}
-                required
-                className="h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 dark:focus:border-white dark:focus:ring-white/20"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-[var(--accent-color)] text-white transition hover:bg-[var(--accent-hover)]">
-              Send reset link
-            </Button>
-          </form>
-
-          <p className="mt-5 text-sm text-[var(--text-secondary)]">
-            <Link href="/auth/login" className="font-semibold text-[var(--accent-color)] hover:underline">
-              Back to sign in
-            </Link>
-          </p>
+    <main className="relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16">
+      <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm font-medium text-white/50 transition hover:text-white">
+        <ArrowLeft size={15} />
+        Back to homepage
+      </Link>
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-none backdrop-blur-xl sm:p-8">
+        <div className="mb-6 flex justify-center">
+          <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} priority unoptimized
+            className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />
         </div>
-      </main>
+        <h1 className="text-2xl font-bold text-white">Reset your password</h1>
+        <p className="mt-2 text-sm text-slate-400">
+          Enter your email and we&apos;ll send a reset link.
+        </p>
+
+        {searchParams?.success ? (
+          <p className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{searchParams.success}</p>
+        ) : null}
+        {searchParams?.error ? (
+          <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{searchParams.error}</p>
+        ) : null}
+
+        <form action={requestReset} className="mt-6 space-y-4">
+          <div>
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-400">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              defaultValue={emailValue}
+              required
+              className="h-11 w-full rounded-lg border border-white/15 bg-white/[0.06] px-3 text-sm text-white placeholder-zinc-500 transition focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+          </div>
+          <Button type="submit" className="w-full bg-white text-black hover:bg-neutral-100">
+            Send reset link
+          </Button>
+        </form>
+
+        <p className="mt-5 text-sm text-slate-400">
+          <Link href="/auth/login" className="font-semibold text-white hover:text-neutral-300 transition">
+            Back to sign in
+          </Link>
+        </p>
+      </div>
+    </main>
   );
 }
-
