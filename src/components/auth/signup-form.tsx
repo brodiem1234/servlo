@@ -238,31 +238,31 @@ const PRODUCT_CARDS: ProductCard[] = [
     id: "core+grow",
     name: "Core + Grow",
     description: "Job management plus AI marketing tools",
-    price: "From $29/mo + $15/mo Grow",
+    price: "From $29/mo + $15/mo add-on",
     badgeText: "Grow launching soon",
     badgeTone: "amber",
     available: false,
-    tooltip: "Grow add-on launching in 4 to 6 weeks. Founding members get 1 month free.",
+    tooltip: "Grow add-on launching in 4 to 6 weeks. Founding members get their first month free.",
   },
   {
     id: "core+leads",
     name: "Core + Leads",
     description: "Job management plus verified job leads",
     price: "From $29/mo + $12/lead",
-    badgeText: "Leads coming Q4 2026",
-    badgeTone: "amber",
+    badgeText: "Coming Q4 2026",
+    badgeTone: "neutral",
     available: false,
     tooltip: "Leads marketplace launching Q4 2026.",
   },
   {
     id: "core+grow+leads",
     name: "Full Platform",
-    description: "Core + Grow + Leads, all included",
+    description: "Everything included. One login.",
     price: "Coming Q4 2026",
     badgeText: "Launching with Leads",
     badgeTone: "neutral",
     available: false,
-    tooltip: "Full platform launches with Leads in Q4 2026.",
+    tooltip: "Full platform launches alongside Leads in Q4 2026.",
   },
 ];
 
@@ -423,7 +423,7 @@ export function SignupForm() {
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [ownerSubmitting, setOwnerSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
-  const [lockedTooltipId, setLockedTooltipId] = useState<string | null>(null);
+  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
 
   const onGoogleSignUp = useCallback(async () => {
@@ -939,11 +939,6 @@ export function SignupForm() {
     abnLookup === null
   );
 
-  function showLockedTooltip(id: string) {
-    setLockedTooltipId(id);
-    setTimeout(() => setLockedTooltipId((curr) => (curr === id ? null : curr)), 3500);
-  }
-
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -1324,11 +1319,11 @@ export function SignupForm() {
               </div>
             </div>
 
-            {/* ── Step 3: Product selection (4 cards) ────────────────────── */}
+            {/* ── Step 3: Product selection (4 cards, 2x2 grid) ─────────── */}
             <div className={step === 3 ? "space-y-5" : "hidden"} aria-hidden={step !== 3}>
               <div>
                 <h2 className="text-lg font-semibold text-white">
-                  Choose your products
+                  Choose your plan
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
                   Start with Core. Add Grow and Leads when they launch.
@@ -1338,47 +1333,47 @@ export function SignupForm() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {PRODUCT_CARDS.map((card) => {
                   const isCore = card.id === "core";
-                  const isSelected = isCore; // Only Core is selectable, and it is always selected.
+                  const isSelected = isCore; // Core is always selected; nothing else is selectable.
                   const badgeClass =
                     card.badgeTone === "green"
                       ? "bg-emerald-500/15 text-emerald-300"
                       : card.badgeTone === "amber"
                         ? "bg-amber-500/15 text-amber-300"
-                        : "bg-neutral-700 text-slate-300";
+                        : "bg-neutral-700 text-neutral-300";
                   return (
-                    <div key={card.id} className="relative">
+                    <div
+                      key={card.id}
+                      className="relative"
+                      onMouseEnter={() => { if (!card.available) setHoveredCardId(card.id); }}
+                      onMouseLeave={() => setHoveredCardId(null)}
+                    >
                       <button
                         type="button"
                         onClick={() => {
-                          if (!card.available) {
-                            showLockedTooltip(card.id);
-                            return;
-                          }
-                          // Core is already selected, nothing else to do.
+                          // Core is always selected; locked cards are not interactive.
                         }}
                         disabled={!card.available}
                         aria-disabled={!card.available}
                         className={`relative flex w-full flex-col overflow-hidden rounded-xl p-4 text-left transition disabled:cursor-not-allowed ${
-                          card.available ? "" : "opacity-60"
+                          !card.available ? "opacity-60" : ""
                         }`}
                         style={{
-                          background: isCore
-                            ? "linear-gradient(135deg, #0a1224 0%, #16264a 100%)"
-                            : "linear-gradient(135deg, #111111 0%, #1a1a1a 100%)",
+                          background: "#0a0a0a",
                           border: isSelected
                             ? "2px solid var(--core-blue, #2563eb)"
-                            : "2px solid rgba(255,255,255,0.18)",
+                            : "2px solid #262626",
                           boxShadow: isSelected
-                            ? "0 0 24px rgba(37,99,235,0.25), 0 0 0 2px rgba(37,99,235,0.28)"
+                            ? "0 0 24px rgba(37,99,235,0.25)"
                             : undefined,
                         }}
                       >
-                        {/* Top accent bar (core-blue for Core, neutral for locked) */}
+                        {/* Top accent bar */}
                         <div
                           className="absolute left-0 right-0 top-0 h-[3px] rounded-t-xl"
-                          style={{ background: isCore ? "var(--core-blue, #2563eb)" : "rgba(255,255,255,0.18)" }}
+                          style={{ background: isSelected ? "var(--core-blue, #2563eb)" : "#262626" }}
                         />
 
+                        {/* Status icon: checkmark for selected Core, lock for locked */}
                         {isSelected ? (
                           <span
                             className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full"
@@ -1386,13 +1381,18 @@ export function SignupForm() {
                           >
                             <Check size={11} strokeWidth={3} className="text-white" />
                           </span>
-                        ) : !card.available ? (
-                          <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-700 text-slate-300">
+                        ) : (
+                          <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-600">
                             <Lock size={11} aria-hidden />
                           </span>
+                        )}
+
+                        {/* Locked overlay */}
+                        {!card.available ? (
+                          <div className="absolute inset-0 rounded-xl bg-neutral-950/40" />
                         ) : null}
 
-                        <div className="pt-1">
+                        <div className="relative pt-1">
                           <p className="text-sm font-bold text-white">{card.name}</p>
                           <p className="mt-1 text-xs text-slate-300">{card.description}</p>
                           <p className="mt-3 text-xs font-semibold text-slate-200">{card.price}</p>
@@ -1402,9 +1402,9 @@ export function SignupForm() {
                         </div>
                       </button>
 
-                      {/* Locked tooltip */}
-                      {!card.available && lockedTooltipId === card.id && card.tooltip ? (
-                        <div className="absolute left-1/2 top-full z-10 mt-2 w-64 -translate-x-1/2 rounded-md border border-amber-700/40 bg-neutral-900 px-3 py-2 text-xs font-medium text-amber-200 shadow-lg">
+                      {/* Hover tooltip for locked cards */}
+                      {!card.available && hoveredCardId === card.id && card.tooltip ? (
+                        <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-xs font-medium text-slate-300 shadow-xl">
                           {card.tooltip}
                         </div>
                       ) : null}
@@ -1415,7 +1415,8 @@ export function SignupForm() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button type="button" variant="dark-ghost" onClick={handleBack} className="w-full sm:w-auto">Back</Button>
-                <Button type="button" onClick={handleContinueFromProducts} className={`w-full sm:w-auto ${primaryBtn}`}>Continue</Button>
+                {/* Core is always selected — Continue is always enabled */}
+                <Button type="button" onClick={handleContinueFromProducts} className="w-full sm:w-auto">Continue</Button>
               </div>
             </div>
 
