@@ -171,12 +171,12 @@ export default async function HomePage() {
                 </div>
 
                 {/* AI status indicator */}
-                <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-purple-500/25 bg-purple-500/10 px-3 py-2 md:px-3.5 md:py-2.5">
+                <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-2 md:px-3.5 md:py-2.5">
                   <span className="relative flex h-2 w-2 shrink-0">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-purple-400" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/60 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-white/80" />
                   </span>
-                  <span className="truncate text-[11px] font-medium text-purple-200 md:text-xs">AI generating ad for &ldquo;emergency electrician Adelaide&rdquo;&hellip;</span>
+                  <span className="truncate text-[11px] font-medium text-zinc-300 md:text-xs">AI generating ad for &ldquo;emergency electrician Adelaide&rdquo;&hellip;</span>
                 </div>
               </div>
             </div>
@@ -279,17 +279,15 @@ export default async function HomePage() {
         </div>
         <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl md:text-[52px]">Three products, one login</h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
-          Core + Grow are live now. Leads marketplace coming Q4 2026.
+          SERVLO Core is live now. Grow and Leads are coming soon.
         </p>
         <div className="mt-10 grid gap-5 md:mt-14 md:gap-6 md:grid-cols-3">
           {[
             {
               logo: "/core.png",
-              logoGlow: "drop-shadow-[0_0_16px_rgba(255,255,255,0.2)]",
               name: "SERVLO Core",
-              color: "#3B82F6",
               badge: "Available now",
-              badgeStyle: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-emerald-500/30",
+              badgeStyle: "bg-white/10 text-white ring-white/20",
               perfectFor: "Sole traders, small crews, growing trade businesses",
               desc: "The complete job management platform — scheduling, invoicing, quoting, clients, timesheets and more.",
               features: [
@@ -301,15 +299,14 @@ export default async function HomePage() {
                 "Digital signatures on site",
                 "Client portal for quotes + payments",
                 "Business dashboard"
-              ]
+              ],
+              dimmed: false,
             },
             {
               logo: "/grow.png",
-              logoGlow: "drop-shadow-[0_0_16px_rgba(139,92,246,0.4)]",
               name: "SERVLO Grow",
-              color: "#8B5CF6",
-              badge: "Available now",
-              badgeStyle: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-emerald-500/30",
+              badge: "Coming Soon",
+              badgeStyle: "bg-white/[0.06] text-zinc-400 ring-white/10",
               perfectFor: "Businesses wanting more jobs without paying for ads manually",
               desc: "AI-powered marketing — ads, review automation and social content so your phone keeps ringing.",
               features: [
@@ -318,15 +315,14 @@ export default async function HomePage() {
                 "Social content generator",
                 "Lead tracking",
                 "Competitor insights"
-              ]
+              ],
+              dimmed: true,
             },
             {
               logo: "/leads.png",
-              logoGlow: "drop-shadow-[0_0_16px_rgba(245,158,11,0.4)]",
               name: "SERVLO Leads",
-              color: "#F59E0B",
-              badge: "Coming Q4 2026",
-              badgeStyle: "bg-amber-500/20 text-amber-700 dark:text-amber-300 ring-amber-500/30",
+              badge: "Coming Soon",
+              badgeStyle: "bg-white/[0.06] text-zinc-400 ring-white/10",
               perfectFor: "Tradies who want a steady flow of qualified work",
               desc: "Verified local job leads sent directly to you — only pay for leads that match your trade and area.",
               features: [
@@ -335,32 +331,32 @@ export default async function HomePage() {
                 "No subscription required",
                 "Instant job alerts",
                 "Lead quality guarantee"
-              ]
+              ],
+              dimmed: true,
             }
-          ].map(({ logo, logoGlow, name, color, badge, badgeStyle, perfectFor, desc, features }) => (
+          ].map(({ logo, name, badge, badgeStyle, perfectFor, desc, features, dimmed }) => (
             <div
               key={name}
-              className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] transition hover:border-gray-300 dark:hover:border-white/20"
+              className={`flex flex-col overflow-hidden rounded-2xl border bg-[#0A0A0A] transition ${dimmed ? "border-white/[0.06] opacity-60" : "border-white/[0.12] ring-1 ring-white/[0.08]"}`}
             >
-              <div className="h-1 w-full" style={{ backgroundColor: color }} />
               <div className="flex flex-1 flex-col p-5 md:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="relative h-8 w-8 shrink-0">
-                    <Image src={logo} alt={name} fill sizes="32px" className={`object-contain ${logoGlow ?? ""}`} unoptimized />
+                    <Image src={logo} alt={name} fill sizes="32px" className="object-contain" unoptimized />
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
                     {badge}
                   </span>
                 </div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">{name}</h3>
-                <p className="mt-1 text-xs font-semibold text-gray-400 dark:text-slate-500">
+                <h3 className="text-base font-bold text-white">{name}</h3>
+                <p className="mt-1 text-xs font-semibold text-zinc-500">
                   Perfect for: {perfectFor}
                 </p>
-                <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{desc}</p>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-400">{desc}</p>
                 <ul className="mt-5 flex-1 space-y-2">
                   {features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                      <Check size={13} className="shrink-0 text-neutral-300" />
+                    <li key={f} className="flex items-center gap-2 text-sm text-zinc-300">
+                      <Check size={13} className="shrink-0 text-zinc-500" />
                       {f}
                     </li>
                   ))}
