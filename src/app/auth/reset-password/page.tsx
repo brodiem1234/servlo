@@ -78,84 +78,90 @@ export default function ResetPasswordPage() {
     window.location.href = "/auth/login?success=" + encodeURIComponent("Password updated successfully");
   }
 
+  const inputCls =
+    "h-11 w-full rounded-lg border border-white/15 bg-white/[0.06] px-3 text-sm text-white placeholder-zinc-500 transition " +
+    "focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20";
+
   return (
-    <main className="auth-theme relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16">
-        <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-neutral-400 transition hover:text-white">
-          <ArrowLeft size={15} />
-          Back to homepage
-        </Link>
-        <div className="auth-card mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-8">
-          <div className="mb-6 flex justify-center">
-            <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} priority unoptimized
-              className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />
-          </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Set a new password</h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Choose a strong password you haven&apos;t used elsewhere.
-          </p>
-
-          {phase === "checking" ? (
-            <p className="mt-8 text-sm text-[var(--text-muted)]">Verifying recovery link…</p>
-          ) : null}
-
-          {phase === "invalid" ? (
-            <div className="mt-6 space-y-4">
-              <p className="text-sm text-red-700 dark:text-red-300">
-                This reset link is invalid or has expired. Request a new one from sign in.
-              </p>
-              <Link href="/auth/login" className="inline-block font-semibold text-[var(--accent-color)] hover:underline">
-                Back to sign in
-              </Link>
-            </div>
-          ) : null}
-
-          {phase === "ready" ? (
-            <form onSubmit={submit} className="mt-6 space-y-4">
-              <div>
-                <label htmlFor="npw" className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
-                  New password
-                </label>
-                <input
-                  id="npw"
-                  type="password"
-                  value={password}
-                  onChange={(ev) => setPassword(ev.target.value)}
-                  autoComplete="new-password"
-                  required
-                  className="h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 dark:focus:border-white dark:focus:ring-white/20"
-                />
-              </div>
-              <div>
-                <label htmlFor="npw2" className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">
-                  Confirm password
-                </label>
-                <input
-                  id="npw2"
-                  type="password"
-                  value={confirm}
-                  onChange={(ev) => setConfirm(ev.target.value)}
-                  autoComplete="new-password"
-                  required
-                  className="h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 dark:focus:border-white dark:focus:ring-white/20"
-                />
-              </div>
-              {error ? <p className="text-sm text-red-700">{error}</p> : null}
-              <Button
-                type="submit"
-                disabled={working}
-                className="w-full bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)]"
-              >
-                {working ? "Updating…" : "Update password"}
-              </Button>
-            </form>
-          ) : null}
-
-          <p className="mt-6 text-sm text-[var(--text-secondary)]">
-            <Link href="/auth/login" className="font-semibold text-[var(--accent-color)] hover:underline">
-              Sign in instead
-            </Link>
-          </p>
+    <main className="relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16">
+      <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm font-medium text-white/50 transition hover:text-white">
+        <ArrowLeft size={15} />
+        Back to homepage
+      </Link>
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-none backdrop-blur-xl sm:p-8">
+        <div className="mb-6 flex justify-center">
+          <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} priority unoptimized
+            className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />
         </div>
-      </main>
+        <h1 className="text-2xl font-bold text-white">Set a new password</h1>
+        <p className="mt-2 text-sm text-slate-400">
+          Choose a strong password you haven&apos;t used elsewhere.
+        </p>
+
+        {phase === "checking" ? (
+          <p className="mt-8 text-sm text-slate-500">Verifying recovery link…</p>
+        ) : null}
+
+        {phase === "invalid" ? (
+          <div className="mt-6 space-y-4">
+            <p className="text-sm text-red-400">
+              This reset link is invalid or has expired. Request a new one from sign in.
+            </p>
+            <Link href="/auth/login" className="inline-block font-semibold text-white hover:text-neutral-300 transition">
+              Back to sign in
+            </Link>
+          </div>
+        ) : null}
+
+        {phase === "ready" ? (
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            <div>
+              <label htmlFor="npw" className="mb-1 block text-sm font-medium text-slate-400">
+                New password
+              </label>
+              <input
+                id="npw"
+                type="password"
+                value={password}
+                onChange={(ev) => setPassword(ev.target.value)}
+                autoComplete="new-password"
+                required
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label htmlFor="npw2" className="mb-1 block text-sm font-medium text-slate-400">
+                Confirm password
+              </label>
+              <input
+                id="npw2"
+                type="password"
+                value={confirm}
+                onChange={(ev) => setConfirm(ev.target.value)}
+                autoComplete="new-password"
+                required
+                className={inputCls}
+              />
+            </div>
+            {error ? (
+              <p className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>
+            ) : null}
+            <Button
+              type="submit"
+              disabled={working}
+              className="w-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50"
+            >
+              {working ? "Updating…" : "Update password"}
+            </Button>
+          </form>
+        ) : null}
+
+        <p className="mt-6 text-sm text-slate-400">
+          <Link href="/auth/login" className="font-semibold text-white hover:text-neutral-300 transition">
+            Sign in instead
+          </Link>
+        </p>
+      </div>
+    </main>
   );
 }

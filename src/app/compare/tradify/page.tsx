@@ -57,7 +57,7 @@ export default function CompareTradifyPage() {
   const servloWins    = SERVLO_TEAM <= tradify.price;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-[#0A0A0A] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
       <LandingHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-16 md:px-6">

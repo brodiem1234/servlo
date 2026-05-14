@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -17,92 +17,90 @@ export function LandingHeader() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   const close = () => setOpen(false);
 
-  const navLinkClass =
-    "rounded-md px-2 py-2 text-[#334155] hover:bg-slate-100 hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-blue-400 md:py-0 md:hover:bg-transparent";
-
   return (
-    <header className="sticky top-0 z-50 border-b border-t-2 border-blue-500 border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#0A0A0A]/95">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2" onClick={close}>
-          <Image src="/servlo-master-dark.svg" alt="SERVLO" width={120} height={32} unoptimized className="block dark:hidden h-8 w-auto" />
-          <Image src="/servlo-master-white.svg" alt="SERVLO" width={120} height={32} unoptimized className="hidden dark:block drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-8 w-auto" />
+    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0A0A0A]/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4 md:px-6">
+        {/* Logo */}
+        <Link href="/" className="shrink-0" onClick={close}>
+          <Image
+            src="/servlo-master-white.svg"
+            alt="SERVLO"
+            width={120}
+            height={32}
+            priority
+            unoptimized
+            className="drop-shadow-[0_0_28px_rgba(255,255,255,0.15)] h-8 w-auto"
+          />
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm md:flex">
-          <a href="#features" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-blue-400">
-            Features
-          </a>
-          <a href="#pricing" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-blue-400">
-            Pricing
-          </a>
-          <a href="#about" className="text-[#334155] hover:text-[var(--accent-color)] dark:text-slate-200 dark:hover:text-blue-400">
-            About
-          </a>
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-7 text-sm font-medium text-slate-400 md:flex">
+          <Link href="/#pricing" className="transition hover:text-white">Pricing</Link>
+          <Link href="/compare" className="transition hover:text-white">Compare</Link>
+          <Link href="/guarantee" className="transition hover:text-white">Guarantee</Link>
+          <Link href="/status" className="transition hover:text-white">Status</Link>
         </nav>
 
-        <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-2 md:flex">
-            <Link
-              href="/auth/login"
-              className="rounded-md border border-[var(--accent-color)]/45 px-3 py-2 text-sm text-[#1e3a5f] hover:bg-slate-100 dark:border-blue-500/40 dark:text-white dark:hover:bg-white/10"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="rounded-md bg-[var(--accent-color)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-blue-500 dark:text-white dark:hover:bg-blue-400"
-            >
-              Start Free Trial
-            </Link>
-          </div>
+        {/* Right side */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link
+            href="/auth/login"
+            className="text-sm font-medium text-white/70 transition hover:text-white"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/auth/signup"
+            className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-black transition hover:bg-neutral-100 md:px-4 md:py-2 md:text-sm"
+          >
+            Start free trial
+          </Link>
 
+          {/* Hamburger — mobile only */}
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 text-[#1e3a5f] hover:bg-slate-100 md:hidden dark:border-white/15 dark:text-white dark:hover:bg-white/10"
-            aria-expanded={open}
-            aria-controls="landing-mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="landing-header-mobile-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white transition hover:bg-white/5 md:hidden"
           >
-            {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+            {open ? <X size={18} aria-hidden /> : <Menu size={18} aria-hidden />}
           </button>
         </div>
       </div>
 
+      {/* Mobile menu */}
       {open ? (
         <div
-          id="landing-mobile-nav"
-          className="border-t border-slate-200 bg-white px-4 py-4 shadow-lg md:hidden dark:border-white/10 dark:bg-[#0A0A0A]"
+          id="landing-header-mobile-menu"
+          className="border-t border-white/[0.06] bg-[#0A0A0A] px-4 py-3 shadow-lg md:hidden"
         >
-          <nav className="flex flex-col gap-1 text-sm font-medium">
-            <a href="#features" className={navLinkClass} onClick={close}>
-              Features
-            </a>
-            <a href="#pricing" className={navLinkClass} onClick={close}>
+          <nav className="flex flex-col gap-0.5 text-base font-medium text-slate-300">
+            <Link href="/#pricing" onClick={close} className="rounded-lg px-3 py-3 transition hover:bg-white/5 hover:text-white">
               Pricing
-            </a>
-            <a href="#about" className={navLinkClass} onClick={close}>
-              About
-            </a>
+            </Link>
+            <Link href="/compare" onClick={close} className="rounded-lg px-3 py-3 transition hover:bg-white/5 hover:text-white">
+              Compare
+            </Link>
+            <Link href="/guarantee" onClick={close} className="rounded-lg px-3 py-3 transition hover:bg-white/5 hover:text-white">
+              Guarantee
+            </Link>
+            <Link href="/status" onClick={close} className="rounded-lg px-3 py-3 transition hover:bg-white/5 hover:text-white">
+              Status
+            </Link>
           </nav>
-          <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-white/10">
-            <Link
-              href="/auth/login"
-              className="rounded-md border border-[var(--accent-color)]/45 px-3 py-2.5 text-center text-sm font-semibold text-[#1e3a5f] hover:bg-slate-50 dark:border-blue-500/40 dark:text-white dark:hover:bg-white/10"
-              onClick={close}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="rounded-md bg-[var(--accent-color)] px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-[var(--accent-hover)] dark:bg-blue-500 dark:text-white dark:hover:bg-blue-400"
-              onClick={close}
-            >
-              Start Free Trial
-            </Link>
-          </div>
         </div>
       ) : null}
     </header>
