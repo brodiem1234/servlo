@@ -165,7 +165,7 @@ export function LoginExperience({
         </div>
 
         <h1 className="text-2xl font-bold leading-tight text-zinc-900 dark:text-white sm:text-[32px]">Welcome back</h1>
-        <p className="mt-2 text-sm text-zinc-500">Continue your business from where you left off.</p>
+        <p className="mt-2 text-sm text-neutral-400">Continue your business from where you left off.</p>
 
         {flashSuccess && (
           <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">

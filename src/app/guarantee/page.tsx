@@ -31,12 +31,12 @@ export default function GuaranteePage() {
       {/* Nav */}
       <nav className="border-b border-gray-200 dark:border-white/10 px-4 py-4">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link href="/" className="text-xl font-black tracking-tight text-blue-500">
+          <Link href="/" className="text-xl font-black tracking-tight text-white">
             SERVLO
           </Link>
           <Link
             href="/auth/signup"
-            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-neutral-200"
           >
             Start free trial
           </Link>
@@ -47,7 +47,7 @@ export default function GuaranteePage() {
         {/* Hero */}
         <div className="text-center mb-14">
           <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20">
-            <Shield size={36} className="text-blue-500" />
+            <Shield size={36} className="text-white" />
           </div>
           <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white sm:text-5xl">
             The SERVLO Guarantee
@@ -83,7 +83,7 @@ export default function GuaranteePage() {
               key={p.title}
               className="flex gap-4 rounded-xl border border-gray-200 dark:border-white/10 p-5"
             >
-              <CheckCircle size={20} className="mt-0.5 shrink-0 text-blue-500" />
+              <CheckCircle size={20} className="mt-0.5 shrink-0 text-white" />
               <div>
                 <h3 className="font-bold text-gray-900 dark:text-white">{p.title}</h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{p.desc}</p>
@@ -100,7 +100,7 @@ export default function GuaranteePage() {
             I believe the product speaks for itself.&rdquo;
           </p>
           <div className="mt-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+            <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-black font-bold text-sm">
               B
             </div>
             <div>
@@ -114,7 +114,7 @@ export default function GuaranteePage() {
         <div className="text-center">
           <Link
             href="/auth/signup"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-4 text-base font-semibold text-white hover:bg-blue-600 transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-black hover:bg-neutral-200 transition"
           >
             Start free trial. 30 days free
             <ArrowRight size={18} />

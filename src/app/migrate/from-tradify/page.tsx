@@ -12,23 +12,23 @@ export default function MigrateFromTradifyPage() {
         <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
-      <h1 style={{ fontSize: 32, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>
+      <h1 style={{ fontSize: 32, fontWeight: 800, color: "#ffffff", marginBottom: 8 }}>
         Switching from Tradify to SERVLO
       </h1>
-      <p style={{ fontSize: 16, color: "#64748b", marginBottom: 40 }}>
+      <p style={{ fontSize: 16, color: "#a3a3a3", marginBottom: 40 }}>
         A simple, clear guide to migrating your business data.
       </p>
 
       {/* Step 1 */}
       <section style={{ marginBottom: 36 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Step 1: Export your Tradify data
         </h2>
-        <p style={{ color: "#334155", lineHeight: 1.7, marginBottom: 12 }}>
+        <p style={{ color: "#e5e5e5", lineHeight: 1.7, marginBottom: 12 }}>
           From your Tradify account, go to <strong>Settings &rarr; Export Data</strong>.
           You can download your customers, jobs, and invoices as CSV files.
         </p>
-        <p style={{ color: "#64748b", fontSize: 14 }}>
+        <p style={{ color: "#a3a3a3", fontSize: 14 }}>
           If you can&apos;t find the export option, contact Tradify support directly.
           All SaaS providers are required to provide your data on request.
         </p>
@@ -36,19 +36,19 @@ export default function MigrateFromTradifyPage() {
 
       {/* Step 2 */}
       <section style={{ marginBottom: 36 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Step 2: Import into SERVLO
         </h2>
-        <p style={{ color: "#334155", lineHeight: 1.7, marginBottom: 12 }}>
+        <p style={{ color: "#e5e5e5", lineHeight: 1.7, marginBottom: 12 }}>
           Here&apos;s what comes across easily and what to plan for:
         </p>
-        <ul style={{ color: "#334155", lineHeight: 2, paddingLeft: 20 }}>
+        <ul style={{ color: "#e5e5e5", lineHeight: 2, paddingLeft: 20 }}>
           <li><strong>Clients</strong>: import via CSV in Settings &rarr; Import/Export, or add them as they come up</li>
           <li><strong>Jobs</strong>: historical jobs can be imported as reference; active jobs are re-created in SERVLO</li>
           <li><strong>Quotes &amp; Invoices</strong>: we recommend a clean slate in SERVLO for billing clarity</li>
           <li><strong>Team members</strong>: re-invite from Team &rarr; Employees (takes 2 minutes each)</li>
         </ul>
-        <p style={{ color: "#64748b", fontSize: 14, marginTop: 12 }}>
+        <p style={{ color: "#a3a3a3", fontSize: 14, marginTop: 12 }}>
           <strong>Bulk Tradify import coming soon.</strong> Email{" "}
           <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a> for early access.
         </p>
@@ -56,10 +56,10 @@ export default function MigrateFromTradifyPage() {
 
       {/* Step 3 */}
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Step 3: Let us know what brought you here
         </h2>
-        <p style={{ color: "#334155", lineHeight: 1.7 }}>
+        <p style={{ color: "#e5e5e5", lineHeight: 1.7 }}>
           Understanding why you switched helps us build a better product. Reply to any of our emails
           or reach us at{" "}
           <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a>.
@@ -90,8 +90,8 @@ export default function MigrateFromTradifyPage() {
         </a>
       </div>
 
-      <div style={{ marginTop: 48, borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
-        <p style={{ color: "#94a3b8", fontSize: 13 }}>
+      <div style={{ marginTop: 48, borderTop: "1px solid #404040", paddingTop: 24 }}>
+        <p style={{ color: "#a3a3a3", fontSize: 13 }}>
           Also switching from another tool?{" "}
           <Link href="/migrate/from-servicem8" style={{ color: "#3B82F6" }}>ServiceM8</Link>
           {" "}&middot;{" "}

@@ -213,7 +213,7 @@ export default function CompareSM8Page() {
           </p>
           <Link
             href="/auth/signup"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-500 px-8 py-3.5 text-base font-semibold text-white transition hover:bg-blue-400"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-black transition hover:bg-neutral-200"
           >
             Start free trial
             <ArrowRight size={16} />

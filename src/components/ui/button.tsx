@@ -4,17 +4,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:opacity-90",
-        secondary: "bg-secondary text-secondary-foreground hover:opacity-90",
-        outline: "border bg-background hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        /** Auth shell, modals, dark panels — avoids `outline` / theme bg-background on dark surfaces */
+        // Primary: WHITE background, BLACK text (dark-mode launch spec)
+        default: "bg-white text-black hover:bg-neutral-100",
+        // Secondary: transparent with white border + white text
+        secondary: "border border-white bg-transparent text-white hover:bg-neutral-900",
+        // Outline: same visual as secondary
+        outline: "border border-white bg-transparent text-white hover:bg-neutral-900",
+        // Ghost: just hover state, white text on transparent
+        ghost: "text-white hover:bg-neutral-900",
+        // Destructive: red bg, white text
+        destructive: "bg-red-600 text-white hover:bg-red-700",
+        // Dark-ghost retained for back/cancel buttons on dark surfaces
         "dark-ghost":
-          "border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800/90 hover:text-white"
+          "border border-neutral-700 bg-transparent text-white hover:bg-neutral-900 hover:border-neutral-500"
       },
       size: {
         default: "h-10 px-4 py-2",

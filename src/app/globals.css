@@ -4,23 +4,26 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 210 52% 25%;
-    --card: 0 0% 100%;
-    --card-foreground: 210 52% 25%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 210 52% 25%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 20% 47%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 210 52% 25%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
+    /* Dark-mode tokens applied at :root because light mode is disabled for launch */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 8%;
+    --ring: 0 0% 100%;
     --radius: 0.75rem;
   }
 
@@ -39,20 +42,21 @@
   input,
   select,
   textarea {
-    @apply bg-white;
+    background-color: hsl(var(--input));
+    color: hsl(var(--foreground));
   }
 
   input:focus,
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: var(--brand-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-accent) 35%, transparent);
+    border-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
   }
 
   thead tr {
-    background: #f1f5f9;
-    color: var(--text-primary);
+    background-color: #18181b; /* neutral-900 */
+    color: #ffffff;
   }
 }
 

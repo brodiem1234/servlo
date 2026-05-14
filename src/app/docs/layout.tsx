@@ -50,19 +50,19 @@ const DOCS_NAV = [
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-neutral-950">
       {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-slate-50 lg:block">
+      <aside className="hidden w-64 shrink-0 border-r border-neutral-700 bg-neutral-900 lg:block">
         <div className="sticky top-0 overflow-y-auto p-6" style={{ maxHeight: "100vh" }}>
           <Link href="/" className="flex items-center gap-2 mb-8">
-            <span className="text-xl font-black tracking-tight text-slate-900">SERVLO</span>
+            <span className="text-xl font-black tracking-tight text-white">SERVLO</span>
             <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">Docs</span>
           </Link>
 
           <nav className="space-y-6">
             {DOCS_NAV.map((section) => (
               <div key={section.section}>
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-neutral-400">
                   {section.section}
                 </p>
                 <ul className="space-y-0.5">
@@ -70,7 +70,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="block rounded-md px-2 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        className="block rounded-md px-2 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
                       >
                         {item.label}
                       </Link>

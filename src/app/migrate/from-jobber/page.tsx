@@ -12,10 +12,10 @@ export default function MigrateFromJobberPage() {
         <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
-      <h1 style={{ fontSize: 32, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>
+      <h1 style={{ fontSize: 32, fontWeight: 800, color: "#ffffff", marginBottom: 8 }}>
         Switching from Jobber to SERVLO
       </h1>
-      <p style={{ fontSize: 16, color: "#64748b", marginBottom: 40 }}>
+      <p style={{ fontSize: 16, color: "#a3a3a3", marginBottom: 40 }}>
         Jobber is a solid tool, but it charges per user and is built for the North American market. SERVLO is built for Australian service businesses with flat pricing.
       </p>
 
@@ -35,14 +35,14 @@ export default function MigrateFromJobberPage() {
 
       {/* Comparison table */}
       <section style={{ marginBottom: 36 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 16 }}>
           Feature comparison
         </h2>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead>
-            <tr style={{ background: "#f8fafc" }}>
-              <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Feature</th>
-              <th style={{ textAlign: "center", padding: "10px 12px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Jobber</th>
+            <tr style={{ background: "#171717" }}>
+              <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "2px solid #404040", color: "#d4d4d4" }}>Feature</th>
+              <th style={{ textAlign: "center", padding: "10px 12px", borderBottom: "2px solid #404040", color: "#d4d4d4" }}>Jobber</th>
               <th style={{ textAlign: "center", padding: "10px 12px", borderBottom: "2px solid #3B82F6", color: "#3B82F6" }}>SERVLO</th>
             </tr>
           </thead>
@@ -62,8 +62,8 @@ export default function MigrateFromJobberPage() {
               ["Team timesheets", "✓", "✓"],
             ].map(([feature, jobber, servlo], i) => (
               <tr key={i} style={{ borderBottom: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-                <td style={{ padding: "10px 12px", color: "#334155" }}>{feature}</td>
-                <td style={{ padding: "10px 12px", textAlign: "center", color: jobber === "—" ? "#94a3b8" : "#334155" }}>{jobber}</td>
+                <td style={{ padding: "10px 12px", color: "#e5e5e5" }}>{feature}</td>
+                <td style={{ padding: "10px 12px", textAlign: "center", color: jobber === "—" ? "#a3a3a3" : "#e5e5e5" }}>{jobber}</td>
                 <td style={{ padding: "10px 12px", textAlign: "center", color: "#3B82F6", fontWeight: 600 }}>{servlo}</td>
               </tr>
             ))}
@@ -73,19 +73,19 @@ export default function MigrateFromJobberPage() {
 
       {/* Migration steps */}
       <section style={{ marginBottom: 36 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Step 1: Export from Jobber
         </h2>
-        <p style={{ color: "#334155", lineHeight: 1.7 }}>
+        <p style={{ color: "#e5e5e5", lineHeight: 1.7 }}>
           In Jobber, go to <strong>Settings &rarr; Data &rarr; Export</strong>. Download your client list, job history, and invoice records as CSV files.
         </p>
       </section>
 
       <section style={{ marginBottom: 36 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Step 2: Import into SERVLO
         </h2>
-        <ul style={{ color: "#334155", lineHeight: 2, paddingLeft: 20 }}>
+        <ul style={{ color: "#e5e5e5", lineHeight: 2, paddingLeft: 20 }}>
           <li>Clients import via CSV in <strong>Settings &rarr; Import/Export</strong></li>
           <li>Jobs can be recreated or imported from exported data</li>
           <li>Pricebook items can be entered in bulk from your existing rate card</li>
@@ -94,10 +94,10 @@ export default function MigrateFromJobberPage() {
       </section>
 
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Step 3: Start your free trial
         </h2>
-        <p style={{ color: "#334155", lineHeight: 1.7, marginBottom: 16 }}>
+        <p style={{ color: "#e5e5e5", lineHeight: 1.7, marginBottom: 16 }}>
           SERVLO offers a 30-day free trial. No credit card required. Run both systems side-by-side until you&apos;re confident, then cancel Jobber when you&apos;re ready.
         </p>
         <a
@@ -109,18 +109,18 @@ export default function MigrateFromJobberPage() {
       </section>
 
       {/* Need help */}
-      <section style={{ background: "#f8fafc", borderRadius: 12, padding: "20px 24px", marginBottom: 40 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+      <section style={{ background: "#171717", borderRadius: 12, padding: "20px 24px", marginBottom: 40 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
           Need migration help?
         </h2>
-        <p style={{ color: "#475569", fontSize: 14, margin: 0 }}>
+        <p style={{ color: "#d4d4d4", fontSize: 14, margin: 0 }}>
           Our team will help you migrate from Jobber for free. Email{" "}
           <a href="mailto:hello@servlo.com.au" style={{ color: "#3B82F6" }}>hello@servlo.com.au</a>{" "}
           with your Jobber export and we&apos;ll get you set up.
         </p>
       </section>
 
-      <p style={{ color: "#94a3b8", fontSize: 13 }}>
+      <p style={{ color: "#a3a3a3", fontSize: 13 }}>
         <a href="/migrate/from-servicem8" style={{ color: "#3B82F6" }}>Switching from ServiceM8?</a>
         {" · "}
         <a href="/migrate/from-tradify" style={{ color: "#3B82F6" }}>Switching from Tradify?</a>

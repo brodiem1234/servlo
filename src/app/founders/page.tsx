@@ -32,10 +32,10 @@ export default async function FoundersPage() {
         <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
       </div>
 
-      <h1 style={{ fontSize: 36, fontWeight: 900, color: "#0f172a", marginBottom: 8 }}>
+      <h1 style={{ fontSize: 36, fontWeight: 900, color: "#ffffff", marginBottom: 8 }}>
         Founding Members
       </h1>
-      <p style={{ fontSize: 17, color: "#64748b", marginBottom: 40, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 17, color: "#a3a3a3", marginBottom: 40, lineHeight: 1.6 }}>
         The first 100 businesses to subscribe to SERVLO. These are the early believers who help us shape the product.
       </p>
 
@@ -60,7 +60,7 @@ export default async function FoundersPage() {
       </div>
 
       {/* Benefits */}
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", marginBottom: 20 }}>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#ffffff", marginBottom: 20 }}>
         What you get as a Founding Member
       </h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 48 }}>
@@ -68,12 +68,12 @@ export default async function FoundersPage() {
           <div key={b.title} style={{
             display: "flex", gap: 16, alignItems: "flex-start",
             padding: "16px 20px", borderRadius: 12,
-            border: "1px solid #e2e8f0", background: "#fff"
+            border: "1px solid #404040", background: "#fff"
           }}>
             <span style={{ fontSize: 24, lineHeight: 1 }}>{b.emoji}</span>
             <div>
-              <p style={{ margin: 0, fontWeight: 700, color: "#0f172a", fontSize: 15 }}>{b.title}</p>
-              <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 14 }}>{b.desc}</p>
+              <p style={{ margin: 0, fontWeight: 700, color: "#ffffff", fontSize: 15 }}>{b.title}</p>
+              <p style={{ margin: "4px 0 0", color: "#a3a3a3", fontSize: 14 }}>{b.desc}</p>
             </div>
           </div>
         ))}
@@ -104,8 +104,8 @@ export default async function FoundersPage() {
         </div>
       )}
 
-      <footer style={{ borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
-        <p style={{ color: "#94a3b8", fontSize: 13 }}>
+      <footer style={{ borderTop: "1px solid #404040", paddingTop: 24 }}>
+        <p style={{ color: "#a3a3a3", fontSize: 13 }}>
           <a href="/" style={{ color: "#3B82F6" }}>Back to SERVLO</a>
         </p>
       </footer>
