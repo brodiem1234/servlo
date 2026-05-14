@@ -42,14 +42,26 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 // Note: price IDs here are used client-side for Stripe.js only.
 // The server (create-trial route) independently maps tier → price ID via env vars
 // and never trusts client-supplied price IDs.
-function getPriceId(tier: string): string | null {
-  const ids: Record<string, string> = {
+function getPriceId(tier: string, annual = false): string | null {
+  const monthly: Record<string, string> = {
     solo:     "price_1TWSCUK1tzStyRcJDK8SsYJK",
     team:     "price_1TWSG3K1tzStyRcJdZxYYK2z",
     business: "price_1TWSGwK1tzStyRcJ3cAmG86B",
   };
-  return ids[tier] ?? null;
+  const annualIds: Record<string, string> = {
+    solo:     "price_1TWThcK1tzStyRcJvL8BvkkO",
+    team:     "price_1TWSRdK1tzStyRcJNCIHsMT9",
+    business: "price_1TWSSrK1tzStyRcJp0PM9TBD",
+  };
+  return (annual ? annualIds : monthly)[tier] ?? null;
 }
+
+// Annual price display helpers
+const ANNUAL_DISPLAY: Record<string, { mo: string; yr: string }> = {
+  solo:     { mo: "$24.17", yr: "$290" },
+  team:     { mo: "$65.83", yr: "$790" },
+  business: { mo: "$124.17", yr: "$1,490" },
+};
 
 // ── Phone helpers (AU-only, E.164) ──────────────────────────────────────────
 
@@ -409,6 +421,22 @@ export function SignupForm() {
   const [selectedProductCombo] = useState("core");
   const [selectedPlanTier, setSelectedPlanTier] = useState("solo");
 
+  // Billing frequency — monthly or annual
+  const [billingFrequency, setBillingFrequency] = useState<"monthly" | "annual">("monthly");
+  const isAnnual = billingFrequency === "annual";
+
+  // Promo code state
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [appliedPromoCode, setAppliedPromoCode] = useState("");
+  const [promoResult, setPromoResult] = useState<{
+    valid: boolean;
+    discount?: string;
+    percentOff?: number;
+    error?: string;
+  } | null>(null);
+
   // Stripe refs
   const stripeRef = useRef<Stripe | null>(null);
   const cardElementRef = useRef<StripeCardElement | null>(null);
@@ -533,7 +561,7 @@ export function SignupForm() {
   useEffect(() => {
     if (step !== 5) return;
     const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
-    const priceId = getPriceId(selectedPlanTier);
+    const priceId = getPriceId(selectedPlanTier, isAnnual);
     if (!hasCore || !priceId) return;
 
     setStripeReady(false);
@@ -577,9 +605,9 @@ export function SignupForm() {
       cardElementRef.current = null;
       setStripeReady(false);
     };
-    // Re-mount if product/tier changes while on step 5.
+    // Re-mount if product/tier or billing frequency changes while on step 5.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, selectedProductCombo, selectedPlanTier]);
+  }, [step, selectedProductCombo, selectedPlanTier, isAnnual]);
 
   // ── Keyboard / input helpers ─────────────────────────────────────────────
 
@@ -714,6 +742,12 @@ export function SignupForm() {
       return;
     }
 
+    // EARLYACCESS is monthly-only — clear it if user tries to combine with annual
+    if (earlyAccessConflict) {
+      setError("The EARLYACCESS discount applies to monthly plans only. Please switch to monthly billing or remove the promo code.");
+      return;
+    }
+
     const gate = validateStep1();
     if (gate) { setError(gate); return; }
 
@@ -799,7 +833,8 @@ export function SignupForm() {
         ? new URLSearchParams(window.location.search)
         : new URLSearchParams();
       const referralCode = params.get("ref") ?? undefined;
-      const promoCode = params.get("code") ?? undefined;
+      // Use the UI-applied promo code (validated); fall back to URL param for legacy ?code= links
+      const effectivePromoCode = appliedPromoCode || params.get("code") || undefined;
 
       const setupBody = {
         userId,
@@ -814,7 +849,7 @@ export function SignupForm() {
         selectedProducts: selectedProductCombo,
         entityName: entityName || undefined,
         referralCode: referralCode || undefined,
-        promoCode: promoCode || undefined,
+        promoCode: effectivePromoCode,
       };
 
       let res = await fetch("/api/setup-business", {
@@ -879,7 +914,7 @@ export function SignupForm() {
 
       // Stripe trial (Core-containing products with a known price tier).
       const hasCore  = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
-      const priceId  = getPriceId(selectedPlanTier);
+      const priceId  = getPriceId(selectedPlanTier, isAnnual);
 
       if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
         try {
@@ -899,7 +934,8 @@ export function SignupForm() {
               paymentMethodId: paymentMethod!.id,
               selectedProductCombo,
               selectedPlanTier,
-              ...(promoCode ? { promoCode } : {}),
+              annual: isAnnual,
+              ...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
             }),
           });
 
@@ -940,8 +976,37 @@ export function SignupForm() {
     abnLookupLoading;
 
   const hasCore  = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
-  const priceId  = getPriceId(selectedPlanTier);
+  const priceId  = getPriceId(selectedPlanTier, isAnnual);
   const needsCard = hasCore && !!priceId;
+
+  // EARLYACCESS + annual conflict
+  const earlyAccessConflict = isAnnual && appliedPromoCode.toUpperCase() === "EARLYACCESS";
+
+  async function applyPromoCode() {
+    const code = promoCodeInput.trim();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoResult(null);
+    try {
+      const res = await fetch("/api/stripe/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json() as { valid: boolean; discount?: string; percentOff?: number; error?: string };
+      setPromoResult(data);
+      if (data.valid) {
+        setAppliedPromoCode(code);
+      } else {
+        setAppliedPromoCode("");
+      }
+    } catch {
+      setPromoResult({ valid: false, error: "Unable to validate code. Try again." });
+      setAppliedPromoCode("");
+    } finally {
+      setPromoLoading(false);
+    }
+  }
 
   const currentTiers = tiersForCore();
 
@@ -1455,10 +1520,40 @@ export function SignupForm() {
                 <p className="text-sm font-semibold text-white">SERVLO Core</p>
               </div>
 
+              {/* Billing frequency toggle */}
+              <div className="flex items-center justify-center gap-1 rounded-xl border border-neutral-600 bg-neutral-900 p-1 w-fit mx-auto">
+                <button
+                  type="button"
+                  onClick={() => setBillingFrequency("monthly")}
+                  className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+                    !isAnnual
+                      ? "bg-white text-black shadow"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingFrequency("annual")}
+                  className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+                    isAnnual
+                      ? "bg-white text-black shadow"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  Annual
+                  <span className="ml-1.5 rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-400">
+                    Save 17%
+                  </span>
+                </button>
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-2">
                 {currentTiers.map((tier) => {
                   const on = selectedPlanTier === tier.id;
                   const isEnterprise = tier.id === "enterprise";
+                  const annualInfo = ANNUAL_DISPLAY[tier.id];
                   if (isEnterprise) {
                     return (
                       <button
@@ -1498,10 +1593,20 @@ export function SignupForm() {
                           Most popular
                         </span>
                       ) : null}
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-bold text-slate-100">{tier.price}</span>
-                        <span className="text-xs text-slate-400">/ month</span>
-                      </div>
+                      {isAnnual && annualInfo ? (
+                        <div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-bold text-slate-100">{annualInfo.mo}</span>
+                            <span className="text-xs text-slate-400">/ month</span>
+                          </div>
+                          <p className="text-xs text-slate-500">{annualInfo.yr}/yr billed annually</p>
+                        </div>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-slate-100">{tier.price}</span>
+                          <span className="text-xs text-slate-400">/ month</span>
+                        </div>
+                      )}
                       <p className="text-sm font-semibold text-slate-200">{tier.name}</p>
                       <p className="text-xs text-slate-400">{tier.description}</p>
                       <ul className="mt-1 space-y-0.5">
@@ -1536,15 +1641,57 @@ export function SignupForm() {
                 </p>
               </div>
 
+              {/* Annual billing toggle (repeated on payment step) */}
+              {needsCard && (
+                <div className="flex items-center justify-center gap-1 rounded-xl border border-neutral-600 bg-neutral-900 p-1 w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setBillingFrequency("monthly")}
+                    className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+                      !isAnnual
+                        ? "bg-white text-black shadow"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingFrequency("annual")}
+                    className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+                      isAnnual
+                        ? "bg-white text-black shadow"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    Annual
+                    <span className="ml-1.5 rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-400">
+                      Save 17%
+                    </span>
+                  </button>
+                </div>
+              )}
+
               {/* Summary */}
               <div className="rounded-lg border-2 border-neutral-600 bg-slate-800/60 px-4 py-3">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-200">SERVLO Core</p>
-                    <p className="text-xs text-slate-400 capitalize">{selectedPlanTier} plan</p>
+                    <p className="text-xs text-slate-400 capitalize">
+                      {selectedPlanTier} · {isAnnual ? "Annual" : "Monthly"}
+                    </p>
                   </div>
                   <div className="text-right">
                     {(() => {
+                      const annualInfo = ANNUAL_DISPLAY[selectedPlanTier];
+                      if (isAnnual && annualInfo) {
+                        return (
+                          <>
+                            <p className="text-sm font-bold text-slate-100">{annualInfo.mo}<span className="text-xs font-normal text-slate-400">/mo</span></p>
+                            <p className="text-xs text-slate-500">{annualInfo.yr}/yr billed annually</p>
+                          </>
+                        );
+                      }
                       const tier = currentTiers.find((t) => t.id === selectedPlanTier);
                       const tierPrice = tier?.price ?? "TBA";
                       const hasUnit = tierPrice.includes("/");
@@ -1559,9 +1706,19 @@ export function SignupForm() {
                     ) : (
                       <p className="text-xs text-slate-400">Reserve. No charge.</p>
                     )}
+                    {promoResult?.valid && appliedPromoCode && (
+                      <p className="text-xs text-emerald-400 mt-0.5">+ {promoResult.discount}</p>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {/* EARLYACCESS + annual conflict warning */}
+              {earlyAccessConflict && (
+                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-300">
+                  The EARLYACCESS founding member discount applies to monthly plans only. Switch to monthly to use EARLYACCESS, or continue with annual pricing without the discount.
+                </div>
+              )}
 
               {/* Stripe card element (Core + known price only) */}
               {needsCard ? (
@@ -1589,6 +1746,53 @@ export function SignupForm() {
                   <p className="mt-1.5 text-xs text-slate-500">
                     Secured by Stripe. Your card will not be charged during the trial.
                   </p>
+
+                  {/* Promo code */}
+                  {!promoOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setPromoOpen(true)}
+                      className="mt-2 text-xs text-slate-400 hover:text-slate-200 underline"
+                    >
+                      Have a promo code?
+                    </button>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={promoCodeInput}
+                          onChange={(e) => {
+                            setPromoCodeInput(e.target.value.toUpperCase());
+                            setPromoResult(null);
+                            if (appliedPromoCode) setAppliedPromoCode("");
+                          }}
+                          placeholder="PROMO CODE"
+                          className="flex-1 rounded-md border border-neutral-600 bg-slate-800 px-3 py-2 text-sm font-mono uppercase text-slate-200 placeholder:text-slate-500 focus:border-white focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={applyPromoCode}
+                          disabled={promoLoading || !promoCodeInput.trim()}
+                          className="rounded-md border border-neutral-500 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-neutral-800 disabled:opacity-50"
+                        >
+                          {promoLoading ? "…" : "Apply"}
+                        </button>
+                      </div>
+                      {promoResult && (
+                        <p className={`text-xs ${promoResult.valid ? "text-emerald-400" : "text-red-400"}`}>
+                          {promoResult.valid
+                            ? `✓ ${promoResult.discount}`
+                            : promoResult.error ?? "Invalid code"}
+                        </p>
+                      )}
+                      {earlyAccessConflict && promoResult?.valid && (
+                        <p className="text-xs text-amber-400">
+                          EARLYACCESS only works with monthly billing. Switch to monthly above to apply this discount.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : null}
 

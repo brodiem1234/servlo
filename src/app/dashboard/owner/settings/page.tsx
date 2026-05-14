@@ -121,13 +121,13 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     supabase
       .from("profiles")
       .select(
-        "plan, subscription_status, subscription_tier, stripe_customer_id, email_digest_enabled, industry_tags, trial_start, trial_end"
+        "plan, subscription_status, subscription_tier, stripe_customer_id, email_digest_enabled, industry_tags, trial_start, trial_end, cancellation_pending, cancellation_takes_effect_at"
       )
       .eq("id", user.id)
       .maybeSingle(),
     supabase
       .from("businesses")
-      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered, email_provider, email_connected_address, grow_addon_enabled")
+      .select("business_name, abn, phone, address, suburb, state, postcode, accent_colour, industries, entity_name, gst_registered, email_provider, email_connected_address, grow_addon_enabled, is_founding_member, commitment_end_date")
       .eq("owner_id", user.id)
       .maybeSingle()
   ]);
@@ -145,6 +145,8 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
     industry_tags?: unknown;
     trial_start?: string | null;
     trial_end?: string | null;
+    cancellation_pending?: boolean | null;
+    cancellation_takes_effect_at?: string | null;
   } | null);
 
   const businessRow = businessResult.data;
@@ -577,6 +579,12 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             success={resolvedParams?.success === "true"}
             growAddonEnabled={(businessRow as { grow_addon_enabled?: boolean } | null)?.grow_addon_enabled ?? false}
             growPriceAvailable={Boolean(process.env.STRIPE_GROW_PRICE_ID)}
+            isFoundingMember={(businessRow as { is_founding_member?: boolean } | null)?.is_founding_member ?? false}
+            trialEndDate={profile?.trial_end ?? null}
+            subscriptionStatus={profile?.subscription_status ?? null}
+            commitmentEndDate={(businessRow as { commitment_end_date?: string | null } | null)?.commitment_end_date ?? null}
+            cancellationPending={profile?.cancellation_pending ?? false}
+            cancellationTakesEffectAt={profile?.cancellation_takes_effect_at ?? null}
           />
         </div>
       ) : null}
