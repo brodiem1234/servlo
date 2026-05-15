@@ -14,6 +14,9 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
+          // HSTS — force HTTPS for 2 years across all subdomains, eligible for preload list.
+          // Vercel terminates TLS, so this is safe to set unconditionally on the production deploy.
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           {
             key: 'Content-Security-Policy',
             value: [
