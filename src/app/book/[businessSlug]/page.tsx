@@ -13,15 +13,27 @@ export default async function BookingPage({ params }: Props) {
   const { businessSlug } = await params;
   const admin = createAdminClient();
 
-  // Look up business by booking_slug or owner_id (booking_slug may not exist yet — fall back to id)
+  // Look up by booking_slug first. If that misses AND the slug looks like a
+  // UUID, fall back to matching on the business id directly — used for embed
+  // links generated before the owner picks a friendly slug.
   const { data: business } = await admin
     .from("businesses")
     .select("id, owner_id, business_name, phone, email, accent_colour, booking_enabled, booking_service_types")
     .eq("booking_slug", businessSlug)
     .maybeSingle();
 
-  // Fallback: try owner_id directly (for embed use)
-  const resolvedBusiness = business;
+  const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(businessSlug);
+
+  let resolvedBusiness = business;
+  if (!resolvedBusiness && looksLikeUuid) {
+    const { data: businessById } = await admin
+      .from("businesses")
+      .select("id, owner_id, business_name, phone, email, accent_colour, booking_enabled, booking_service_types")
+      .eq("id", businessSlug)
+      .maybeSingle();
+    resolvedBusiness = businessById ?? null;
+  }
+
   if (!resolvedBusiness) return notFound();
 
   const bookingEnabled = (resolvedBusiness as { booking_enabled?: boolean | null }).booking_enabled !== false;

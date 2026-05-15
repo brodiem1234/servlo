@@ -75,21 +75,43 @@ export async function POST(req: NextRequest) {
       userId = newUser.user.id;
     }
 
+    // Normalise role — the app only understands owner | employee | client.
+    // Anything else (manager, contractor, admin, etc) collapses to employee
+    // until those roles exist as first-class concepts.
+    const normalisedRole = inv.role === 'admin'
+      ? 'owner'
+      : inv.role === 'owner'
+        ? 'owner'
+        : 'employee';
+
     // Update profile: set role and business_id
-    await admin
+    const { error: profileError } = await admin
       .from('profiles')
       .update({
-        role: inv.role === 'manager' ? 'employee' : inv.role, // map manager → employee role for now
+        role: normalisedRole,
         business_id: inv.business_id,
         ...(name && !existingUser ? { full_name: name } : {}),
       })
       .eq('id', userId);
 
+    if (profileError) {
+      console.error('[invite/accept] profile update failed:', profileError);
+      return NextResponse.json(
+        { error: `Failed to set up profile: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
+
     // Mark invitation accepted
-    await admin
+    const { error: invitationError } = await admin
       .from('team_invitations')
       .update({ status: 'accepted', accepted_at: new Date().toISOString() })
       .eq('id', inv.id);
+
+    if (invitationError) {
+      console.error('[invite/accept] invitation update failed:', invitationError);
+      // Profile is already updated; don't fail the whole flow — just log.
+    }
 
     // Get display name for notification
     const { data: acceptedProfile } = await admin

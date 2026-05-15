@@ -32,6 +32,88 @@ function hasGrowAddon(
   return items.some((item) => item.price?.id === growId);
 }
 
+/**
+ * Idempotent founding-member assignment. Source of truth is profiles.
+ * Safe to call from both `checkout.session.completed` and
+ * `customer.subscription.created` — the early-return on existing flag means
+ * it never double-assigns.
+ *
+ * Caps at 50. If 50 are already taken, this is a no-op.
+ *
+ * NOTE: This still has a small race window if two checkouts complete within
+ * the same ~100ms — both see count=49 and both write count=50. Acceptable for
+ * launch volume; if it ever matters, move into a Postgres function with
+ * SELECT ... FOR UPDATE.
+ */
+async function assignFoundingMemberIfEligible(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+): Promise<void> {
+  // Already flagged? Stop.
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("id, email, is_founding_member")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profile || profile.is_founding_member) return;
+
+  // Count current founders (source of truth: profiles.is_founding_member).
+  const { count } = await admin
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("is_founding_member", true);
+
+  const founderCount = count ?? 0;
+  if (founderCount >= 50) return;
+
+  const founderNumber = founderCount + 1;
+  await admin
+    .from("profiles")
+    .update({
+      is_founding_member: true,
+      founder_number: founderNumber,
+      founding_joined_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  // Mirror to businesses so any code that reads from there stays consistent.
+  await admin
+    .from("businesses")
+    .update({ is_founding_member: true, founder_number: founderNumber })
+    .eq("owner_id", userId);
+
+  // Welcome email
+  try {
+    const { sendEmail } = await import("@/lib/email");
+    await sendEmail(
+      profile.email ?? "",
+      `Welcome, SERVLO Founding Member #${founderNumber}`,
+      `<div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;background:#fff;color:#0f172a">
+        <h2 style="font-size:22px;font-weight:800;margin:0 0 16px">You're Founding Member #${founderNumber}</h2>
+        <p style="font-size:15px;line-height:1.6;color:#334155">
+          Thank you for being one of the first 50 businesses to back SERVLO. As a Founding Member you get:
+        </p>
+        <ul style="font-size:15px;line-height:1.7;color:#334155">
+          <li>Founder badge on your dashboard</li>
+          <li>Direct input into the roadmap — your requests get priority</li>
+          <li>Early access to every new tool as it ships</li>
+          <li>Your plan rate stays locked at the founding price</li>
+          <li>Permanent recognition on the Founders page</li>
+        </ul>
+        <p style="font-size:15px;line-height:1.6;color:#334155;margin-top:16px">
+          Reply to this email any time — your feedback shapes what gets built next.
+        </p>
+        <p style="color:#94a3b8;font-size:12px;margin-top:32px">
+          SERVLO — operated by Brodie McDonald, ABN 88 688 301 684
+        </p>
+      </div>`
+    );
+  } catch (err) {
+    console.error("[webhook] founding welcome email failed:", err);
+  }
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("stripe-signature");
@@ -97,34 +179,53 @@ export async function POST(req: Request) {
       }
       const plan = getPlanFromPriceId(priceId);
 
-      if (customerEmail) {
-        await admin
-          .from("profiles")
-          .update({
-            subscription_status: "active",
-            stripe_customer_id: customerId,
-            plan,
-            subscription_tier: plan
-          })
-          .eq("email", customerEmail);
+      // Prefer matching by client_reference_id / metadata.user_id (set in our
+      // checkout route). Fall back to email match for legacy sessions.
+      const userIdFromMetadata =
+        session.client_reference_id || session.metadata?.user_id || null;
 
-        // Also update businesses table with stripe customer id and plan
+      let matchedUserId: string | null = userIdFromMetadata;
+      if (!matchedUserId && customerEmail) {
         const { data: prof } = await admin
           .from("profiles")
           .select("id")
           .eq("email", customerEmail)
           .maybeSingle();
-        if (prof?.id) {
-          await admin
-            .from("businesses")
-            .update({
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscriptionId,
-              plan,
-              subscription_status: "active",
-            })
-            .eq("owner_id", prof.id);
-        }
+        matchedUserId = prof?.id ?? null;
+      }
+
+      if (matchedUserId) {
+        // Update profile — INCLUDING stripe_subscription_id so cancel/pause/
+        // resume routes can find the subscription. This was the missing piece
+        // that broke every billing action for Checkout-flow signups.
+        await admin
+          .from("profiles")
+          .update({
+            subscription_status: "active",
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscriptionId,
+            plan,
+            subscription_tier: plan,
+          })
+          .eq("id", matchedUserId);
+
+        // Mirror to businesses for analytics and feature gating.
+        await admin
+          .from("businesses")
+          .update({
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscriptionId,
+            plan,
+            subscription_status: "active",
+          })
+          .eq("owner_id", matchedUserId);
+
+        // ── Founding 50 — atomic-ish assignment ──────────────────────────
+        // Done here (on checkout.session.completed) AND on
+        // customer.subscription.created so it fires regardless of which
+        // event your Stripe webhook config subscribes to. Idempotent — only
+        // assigns if the profile isn't already flagged as founding.
+        await assignFoundingMemberIfEligible(admin, matchedUserId);
       }
     }
 
@@ -184,55 +285,21 @@ export async function POST(req: Request) {
       }
     }
 
-    // Founding Member 50 check — on first subscription, assign founder number if < 50 slots filled
+    // Founding Member 50 — fallback path for direct subscription creation
+    // (not via Checkout). The Checkout handler already calls
+    // assignFoundingMemberIfEligible above; the helper is idempotent so this
+    // is safe to call regardless of which event fires first.
     if (event.type === "customer.subscription.created") {
       const subscription = event.data.object;
       const customerId = typeof subscription.customer === "string" ? subscription.customer : null;
       if (customerId) {
-        // Find the user by stripe_customer_id
         const { data: profile } = await admin
           .from("profiles")
-          .select("id, email, is_founding_member")
+          .select("id")
           .eq("stripe_customer_id", customerId)
           .maybeSingle();
-
-        if (profile && !profile.is_founding_member) {
-          // Count existing founders
-          const { count } = await admin
-            .from("profiles")
-            .select("id", { count: "exact", head: true })
-            .eq("is_founding_member", true);
-
-          const founderCount = count ?? 0;
-          if (founderCount < 50) {
-            const founderNumber = founderCount + 1;
-            await admin.from("profiles").update({
-              is_founding_member: true,
-              founder_number: founderNumber,
-              founding_joined_at: new Date().toISOString(),
-            }).eq("id", profile.id);
-
-            // Send "Welcome Founder #N" email
-            const { sendEmail } = await import("@/lib/email");
-            await sendEmail(
-              profile.email ?? "",
-              `Welcome, SERVLO Founding Member #${founderNumber}!`,
-              `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
-                <h2 style="color:#d97706">🏅 You are Founding Member #${founderNumber}</h2>
-                <p>Thank you for being one of the first 50 businesses to subscribe to SERVLO.</p>
-                <p>As a Founding Member, you receive:</p>
-                <ul>
-                  <li>Founder badge on your dashboard</li>
-                  <li>Direct input into our roadmap — your requests get priority</li>
-                  <li>Early access to every new feature</li>
-                  <li>Locked-in pricing for life (your plan rate never increases)</li>
-                  <li>Permanent recognition in our Founders page</li>
-                </ul>
-                <p>We are building SERVLO with you. Thank you for believing in us early.</p>
-                <p style="color:#64748b">— The SERVLO team</p>
-              </div>`
-            );
-          }
+        if (profile?.id) {
+          await assignFoundingMemberIfEligible(admin, profile.id);
         }
       }
     }

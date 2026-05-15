@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { LandingHeader } from "@/components/landing-header";
+import { SiteHeader } from "@/components/site-header";
 
 export default function ComparePage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
-      <LandingHeader />
+      <SiteHeader />
 
       <main className="mx-auto max-w-3xl px-4 py-16 md:py-24 md:px-6">
         <div className="mb-12 text-center">

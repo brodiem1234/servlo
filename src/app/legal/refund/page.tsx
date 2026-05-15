@@ -25,7 +25,7 @@ export default function RefundPage() {
         New accounts get a free trial. You won&rsquo;t be charged during the
         trial. If you cancel before it ends, you owe nothing and there&rsquo;s
         nothing to refund. Cancel from your billing settings or email{" "}
-        <a href="mailto:[CONTACT_EMAIL]">[CONTACT_EMAIL]</a>.
+        <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a>.
       </p>
 
       <h2>Monthly subscriptions</h2>
@@ -64,7 +64,7 @@ export default function RefundPage() {
 
       <h2>How to request a refund</h2>
       <p>
-        Email <a href="mailto:[CONTACT_EMAIL]">[CONTACT_EMAIL]</a> with:
+        Email <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a> with:
       </p>
       <ul>
         <li>The email on your account.</li>
@@ -86,13 +86,13 @@ export default function RefundPage() {
 
       <h2>Contact</h2>
       <p>
-        Email <a href="mailto:[CONTACT_EMAIL]">[CONTACT_EMAIL]</a>. Reach out
+        Email <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a>. Reach out
         and we&rsquo;ll get it sorted.
       </p>
 
       <p className="mt-12 rounded-lg border border-amber-900/40 bg-amber-950/20 p-4 text-sm text-amber-200/80">
         <strong>Draft.</strong> This document is a working draft pending review
-        by [BUSINESS NAME]&rsquo;s lawyer. Replace bracketed placeholders
+        by Brodie McDonald&rsquo;s lawyer. Replace bracketed placeholders
         before publishing.
       </p>
     </>

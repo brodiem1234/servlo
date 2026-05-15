@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <p className="text-sm text-neutral-500">Last updated: {LAST_UPDATED}</p>
 
       <p>
-        This policy explains how [BUSINESS NAME] (ABN [ABN]), the operator of
+        This policy explains how Brodie McDonald (ABN 88 688 301 684), the operator of
         SERVLO, collects, uses, stores, and shares personal information. We
         comply with the Australian Privacy Principles in the Privacy Act 1988
         (Cth).
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
       </ul>
       <p>
         To do any of this, email{" "}
-        <a href="mailto:[CONTACT_EMAIL]">[CONTACT_EMAIL]</a>. We&rsquo;ll
+        <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a>. We&rsquo;ll
         respond within 30 days.
       </p>
 
@@ -186,14 +186,12 @@ export default function PrivacyPage() {
       <h2>Contact</h2>
       <p>
         Privacy questions or requests:{" "}
-        <a href="mailto:[CONTACT_EMAIL]">[CONTACT_EMAIL]</a>.
-        <br />
-        Mail: [BUSINESS NAME], [POSTAL ADDRESS].
+        <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a>.
       </p>
 
       <p className="mt-12 rounded-lg border border-amber-900/40 bg-amber-950/20 p-4 text-sm text-amber-200/80">
         <strong>Draft.</strong> This document is a working draft pending
-        review by [BUSINESS NAME]&rsquo;s lawyer. Replace bracketed
+        review by Brodie McDonald&rsquo;s lawyer. Replace bracketed
         placeholders before publishing.
       </p>
     </>

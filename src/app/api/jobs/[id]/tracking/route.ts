@@ -36,9 +36,11 @@ export async function GET(
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
-  // If a tracking token is set on the job, require it to match
-  if (job.tracking_token && token !== job.tracking_token) {
-    return NextResponse.json({ error: "Invalid tracking token" }, { status: 403 });
+  // A tracking token must exist AND match. Treating a null token as
+  // "not shareable" — previously a null token bypassed the check and the
+  // endpoint leaked job + client + employee names to anyone with the UUID.
+  if (!job.tracking_token || !token || token !== job.tracking_token) {
+    return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
   // Fetch client name

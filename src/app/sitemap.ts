@@ -19,11 +19,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "" ? 1.0 : 0.8,
   }));
 
-  // Legal pages
+  // Legal pages (canonical URLs — /legal/* redirect here)
   const legal: MetadataRoute.Sitemap = [
-    "/legal/terms",
-    "/legal/privacy",
-    "/legal/refund",
+    "/terms",
+    "/privacy",
+    "/refund",
   ].map((path) => ({
     url: `${BASE_URL}${path}`,
     lastModified: now,

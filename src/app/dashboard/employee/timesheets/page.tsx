@@ -22,7 +22,7 @@ export default async function EmployeeTimesheetsPage() {
 
   const { data: rows } = await sb
     .from("timesheets")
-    .select("id, clock_in, clock_out, worked_hours, created_at")
+    .select("id, clock_in, clock_out, total_hours, created_at")
     .eq("employee_id", user.id)
     .gte("created_at", from.toISOString())
     .order("clock_in", { ascending: false });
@@ -31,11 +31,11 @@ export default async function EmployeeTimesheetsPage() {
     id: string;
     clock_in: string;
     clock_out: string | null;
-    worked_hours: number | null;
+    total_hours: number | null;
     created_at: string;
   }>;
 
-  const totalHours = entries.reduce((s, e) => s + Number(e.worked_hours ?? 0), 0);
+  const totalHours = entries.reduce((s, e) => s + Number(e.total_hours ?? 0), 0);
   const completedEntries = entries.filter((e) => e.clock_out != null);
 
   return (
@@ -96,9 +96,9 @@ export default async function EmployeeTimesheetsPage() {
                 </p>
               </div>
               <div className="text-right">
-                {e.worked_hours != null ? (
+                {e.total_hours != null ? (
                   <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-                    {Number(e.worked_hours).toFixed(2)}h
+                    {Number(e.total_hours).toFixed(2)}h
                   </p>
                 ) : (
                   <span className="text-xs font-medium text-emerald-600 px-2 py-1 rounded-full bg-emerald-50">Active</span>

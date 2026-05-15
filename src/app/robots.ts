@@ -7,7 +7,22 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/legal/", "/docs/", "/book/", "/track/", "/q/", "/refer/", "/portal/"],
+        allow: [
+          "/",
+          "/terms",
+          "/privacy",
+          "/refund",
+          "/guarantee",
+          "/compare",
+          "/contact",
+          "/status",
+          "/docs/",
+          "/book/",
+          "/track/",
+          "/q/",
+          "/refer/",
+          "/portal/",
+        ],
         disallow: [
           "/dashboard/",
           "/api/",
@@ -16,6 +31,7 @@ export default function robots(): MetadataRoute.Robots {
           "/onboarding/",
           "/invite/",
           "/offline",
+          "/legal/", // redirected — no need to crawl
         ],
       },
     ],

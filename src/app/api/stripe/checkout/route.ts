@@ -1,14 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 
+/**
+ * Hosted Checkout flow for existing users (e.g. upgrading from settings).
+ * Differences from /api/stripe/create-trial:
+ *  - User confirms payment on Stripe-hosted page (no card iframe in our app)
+ *  - Uses client_reference_id so the webhook can match back to our user
+ *  - Enables Stripe Tax + asks Stripe to collect tax IDs (ABN)
+ */
 export async function POST(req: NextRequest) {
   try {
     if (!stripe) {
       console.error("Stripe checkout error: STRIPE_SECRET_KEY is not configured");
       return NextResponse.json({ error: "STRIPE_SECRET_KEY is not configured" }, { status: 500 });
+    }
+
+    // Verify the caller is authenticated so we can pass their user.id to Stripe.
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "").trim();
+    let userId: string | null = null;
+    if (token) {
+      const admin = createAdminClient();
+      const { data: { user } } = await admin.auth.getUser(token);
+      userId = user?.id ?? null;
     }
 
     const { priceId, email } = await req.json();
@@ -24,6 +42,16 @@ export async function POST(req: NextRequest) {
       customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
+      // GST handled automatically by Stripe Tax. Configure rates in Stripe Dashboard → Tax.
+      automatic_tax: { enabled: true },
+      // Ask Stripe Checkout to collect the customer's ABN.
+      tax_id_collection: { enabled: true },
+      // Match-back keys so the webhook doesn't have to guess by email.
+      ...(userId ? { client_reference_id: userId } : {}),
+      metadata: { user_id: userId ?? "", email },
+      subscription_data: {
+        metadata: { user_id: userId ?? "", email },
+      },
       success_url: `${appUrl}/dashboard/owner/settings?success=true`,
       cancel_url: `${appUrl}/dashboard/owner/settings`
     });
@@ -34,4 +62,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
-

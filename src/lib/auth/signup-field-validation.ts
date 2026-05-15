@@ -55,12 +55,16 @@ export function abnDigitsFromInput(value: string): string {
 export const TEST_ABN_DIGITS = "00000000000";
 
 /**
- * True only in non-production builds. Used to gate the test ABN bypass so
- * `00 000 000 000` is rejected in production. `process.env.NODE_ENV` is inlined
- * at build time by Next.js for both server and client code, so this dead-codes
- * out of the production bundle.
+ * Test-ABN bypass is gated by explicit opt-in via NEXT_PUBLIC_ENABLE_TEST_ABN.
+ * Default: OFF in every environment. Only set this to "true" in your local
+ * .env.local if you need to test signup without hitting the ABR API. NEVER set
+ * it in Vercel env vars — production, preview, or otherwise.
+ *
+ * `process.env.NEXT_PUBLIC_*` is inlined at build time by Next.js for client
+ * and server code, so when this is unset it dead-codes out of the bundle.
  */
-export const IS_TEST_ABN_BYPASS_ENABLED = process.env.NODE_ENV !== "production";
+export const IS_TEST_ABN_BYPASS_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_TEST_ABN === "true";
 
 /**
  * Validates an ABN using the official Australian checksum algorithm.

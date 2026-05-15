@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Check, X, ArrowRight, Minus } from "lucide-react";
-import { LandingHeader } from "@/components/landing-header";
+import { SiteHeader } from "@/components/site-header";
 
 // Tradify plan pricing (approximate as of 2026)
 function getTradifyPlan(users: number): { name: string; price: number } {
@@ -58,7 +58,7 @@ export default function CompareTradifyPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
-      <LandingHeader />
+      <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-16 md:px-6">
 

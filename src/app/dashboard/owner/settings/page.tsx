@@ -239,11 +239,14 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       postcode: postcode || null,
       gst_registered: formData.get("gst_registered") === "true",
     };
+    // Don't include accent_colour in this upsert — it has its own dedicated
+    // form (brand-accent-form.tsx). Previously this wiped the saved accent
+    // back to "" every time the profile tab was saved.
     const upsert = await sb
       .from("businesses")
       .upsert(
         {
-          ...businessesRowForOwner(owner.id, { accent_colour: normalizeAccentColour("") }),
+          ...businessesRowForOwner(owner.id),
           ...businessPayload
         },
         { onConflict: BUSINESSES_UPSERT_ON_CONFLICT }

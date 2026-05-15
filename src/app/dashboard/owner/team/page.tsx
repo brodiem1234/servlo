@@ -50,21 +50,28 @@ export default async function TeamPage({ searchParams }: Props) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      [employees, timesheets, jobs] = await Promise.all([
-        safeFetch(() =>
-          supabase.from("employees")
-            .select("id, full_name, email, role, status, hourly_rate, created_at")
-            .eq("owner_id", user.id)
-            .is("deleted_at", null)
-            .order("full_name")
-        ),
-        safeFetch(() =>
-          supabase.from("timesheets")
-            .select("id, employee_id, clock_in, clock_out, total_hours, date, notes")
-            .eq("owner_id", user.id)
-            .is("deleted_at", null)
-            .gte("clock_in", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
-        ),
+      // Fetch employees first so we have their IDs for the timesheets join.
+      // Timesheets table has no `owner_id` column — must filter via employee.
+      employees = await safeFetch(() =>
+        supabase.from("employees")
+          .select("id, full_name, email, role, status, hourly_rate, created_at")
+          .eq("owner_id", user.id)
+          .is("deleted_at", null)
+          .order("full_name")
+      );
+      const employeeIds = (employees ?? []).map((e: { id: string }) => e.id);
+
+      [timesheets, jobs] = await Promise.all([
+        employeeIds.length > 0
+          ? safeFetch(() =>
+              supabase.from("timesheets")
+                // Note: no `date` column exists — derive from clock_in on client.
+                .select("id, employee_id, clock_in, clock_out, total_hours, notes")
+                .in("employee_id", employeeIds)
+                .is("deleted_at", null)
+                .gte("clock_in", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
+            )
+          : Promise.resolve([]),
         safeFetch(() =>
           supabase.from("jobs")
             .select("id, employee_id, status, scheduled_start")

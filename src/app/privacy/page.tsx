@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LandingHeader } from "@/components/landing-header";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata = {
   title: "Privacy Policy | SERVLO",
@@ -9,8 +9,8 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0f172a] dark:text-white">
-      <LandingHeader />
+    <main className="min-h-screen bg-[#0A0A0A] text-[#1e3a5f] [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif] dark:bg-[#0A0A0A] dark:text-white">
+      <SiteHeader />
 
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-4xl font-extrabold text-[#1e3a5f] dark:text-white">Privacy Policy</h1>

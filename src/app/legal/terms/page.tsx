@@ -16,7 +16,7 @@ export default function TermsPage() {
       <p>
         These terms govern your use of SERVLO (the platform, the website, the
         mobile app, anything we publish under the SERVLO name). SERVLO is
-        operated by [BUSINESS NAME], ABN [ABN], an Australian business
+        operated by Brodie McDonald, ABN 88 688 301 684, an Australian business
         (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;).
       </p>
       <p>
@@ -39,7 +39,7 @@ export default function TermsPage() {
         You need to be at least 18 and running (or working at) a real business
         to sign up. You&rsquo;re responsible for keeping your password secure.
         If something dodgy happens on your account, tell us straight away at
-        [CONTACT_EMAIL].
+        hello@servlo.com.au.
       </p>
       <p>
         You can have multiple users on one account (owners, employees,
@@ -156,18 +156,18 @@ export default function TermsPage() {
 
       <h2>12. Governing law</h2>
       <p>
-        These terms are governed by the laws of [STATE], Australia. Any dispute
-        goes to the courts of [STATE].
+        These terms are governed by the laws of South Australia, Australia. Any dispute
+        goes to the courts of South Australia.
       </p>
 
       <h2>13. Contact</h2>
       <p>
-        Questions, complaints, suggestions: [CONTACT_EMAIL].
+        Questions, complaints, suggestions: hello@servlo.com.au.
       </p>
 
       <p className="mt-12 rounded-lg border border-amber-900/40 bg-amber-950/20 p-4 text-sm text-amber-200/80">
         <strong>Draft.</strong> This document is a working draft pending review
-        by [BUSINESS NAME]&rsquo;s lawyer. Replace bracketed placeholders
+        by Brodie McDonald&rsquo;s lawyer. Replace bracketed placeholders
         before publishing.
       </p>
     </>

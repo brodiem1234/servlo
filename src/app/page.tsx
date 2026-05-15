@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingPricing } from "@/components/landing/landing-pricing";
-import { LandingNav } from "@/components/landing/landing-nav";
+import { SiteHeader } from "@/components/site-header";
 
 async function getFounderCount(): Promise<number> {
   try {
@@ -51,7 +51,7 @@ export default async function HomePage() {
     <div className="min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-[#0A0A0A] dark:text-white [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,sans-serif]">
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <LandingNav />
+      <SiteHeader />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-36 md:pt-32">

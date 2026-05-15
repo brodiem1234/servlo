@@ -3,8 +3,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * GET /api/founding-100/count
- * Returns count of founding members from businesses table.
- * Public endpoint — no auth required.
+ *
+ * DEPRECATED route name — kept for compatibility with anything that still
+ * calls it. Source of truth is `profiles.is_founding_member` (matches
+ * `/api/founders/count`). Always returns the same count as that endpoint.
+ *
+ * Brodie: once nothing references this URL, you can delete the file. The
+ * canonical endpoint is /api/founders/count.
  */
 const FOUNDING_LIMIT = 50;
 
@@ -12,13 +17,12 @@ export async function GET(_req: NextRequest) {
   try {
     const admin = createAdminClient();
 
-    // Try businesses.is_founding_member first, fall back to profiles
-    const { count: bizCount } = await admin
-      .from("businesses")
+    const { count } = await admin
+      .from("profiles")
       .select("id", { count: "exact", head: true })
       .eq("is_founding_member", true);
 
-    const founderCount = bizCount ?? 0;
+    const founderCount = count ?? 0;
     const remaining = Math.max(0, FOUNDING_LIMIT - founderCount);
 
     return NextResponse.json(
