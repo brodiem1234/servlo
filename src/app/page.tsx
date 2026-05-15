@@ -355,10 +355,7 @@ export default async function HomePage() {
               <div className="flex flex-1 flex-col p-5 md:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="relative h-8 w-8 shrink-0">
-                    {/* Filter: desaturate the legacy colored product icons (blue/purple/amber)
-                        and brighten so they read on the pure-black background.
-                        Replace these PNGs with monochrome versions when you re-shoot the brand. */}
-                    <Image src={logo} alt={name} fill sizes="32px" className="object-contain [filter:grayscale(100%)_brightness(2)_contrast(1.1)]" unoptimized />
+                    <Image src={logo} alt={name} fill sizes="32px" className="object-contain" unoptimized />
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
                     {badge}

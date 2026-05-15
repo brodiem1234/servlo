@@ -80,16 +80,20 @@ export function SiteHeader() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-[#0A0A0A]/90 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:h-16 md:px-6">
         {/* Logo */}
-        <Link href="/" className="shrink-0" onClick={closeAll}>
+        <Link href="/" className="shrink-0 flex items-center gap-2" onClick={closeAll}>
           <Image
             src="/servlo-master-white.svg"
-            alt="SERVLO"
-            width={120}
+            alt=""
+            aria-hidden
+            width={32}
             height={32}
             priority
             unoptimized
-            className="h-8 w-auto drop-shadow-[0_0_28px_rgba(255,255,255,0.15)]"
+            className="h-7 w-7"
           />
+          <span className="text-lg font-bold tracking-tight text-white">
+            SERVLO
+          </span>
         </Link>
 
         {/* Desktop nav */}
