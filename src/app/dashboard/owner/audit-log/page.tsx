@@ -19,17 +19,25 @@ export default async function AuditLogPage() {
 
   const businessId = business?.id ?? null;
 
-  const admin = createAdminClient();
-  const { data: entries, error: auditError } = await admin
-    .from("audit_log")
-    .select("id, user_id, table_name, record_id, action, changed_fields, ip_address, created_at")
-    .eq("business_id", businessId)
-    .order("created_at", { ascending: false })
-    .limit(200);
+  // If the owner hasn't completed business setup yet there's nothing to show.
+  // Previously this fired a query with business_id = null which would either
+  // return rows for null business_id (cross-org leak risk) or all rows
+  // depending on RLS behaviour.
+  let entries: Array<Record<string, unknown>> = [];
+  if (businessId) {
+    const admin = createAdminClient();
+    const { data, error: auditError } = await admin
+      .from("audit_log")
+      .select("id, user_id, table_name, record_id, action, changed_fields, ip_address, created_at")
+      .eq("business_id", businessId)
+      .order("created_at", { ascending: false })
+      .limit(200);
 
-  // Table may not exist yet — treat as empty
-  if (auditError && (auditError as { code?: string }).code !== "42P01") {
-    console.error("[audit-log] fetch error:", auditError.message);
+    entries = (data ?? []) as Array<Record<string, unknown>>;
+
+    if (auditError && (auditError as { code?: string }).code !== "42P01") {
+      console.error("[audit-log] fetch error:", auditError.message);
+    }
   }
 
   return (
@@ -42,7 +50,7 @@ export default async function AuditLogPage() {
           A record of all significant actions taken in your SERVLO workspace. Useful for compliance and dispute resolution.
         </p>
       </div>
-      <AuditLogClient entries={(entries ?? []) as Parameters<typeof AuditLogClient>[0]["entries"]} />
+      <AuditLogClient entries={entries as Parameters<typeof AuditLogClient>[0]["entries"]} />
     </div>
   );
 }

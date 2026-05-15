@@ -524,13 +524,12 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
             </div>
             <div className="sm:col-span-2">
               <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                Logo upload coming soon — contact{" "}
-                <a href="mailto:hello@servlo.com.au" className="text-[var(--product-accent)] hover:underline">
-                  hello@servlo.com.au
-                </a>{" "}
-                to update your logo.
+                <strong className="text-[var(--text-primary)]">Logo</strong> &middot; manage your business logo (used on quotes, invoices, and your client portal) from the{" "}
+                <a href="/dashboard/owner/settings/brand" className="font-semibold text-[var(--text-primary)] underline underline-offset-2 hover:opacity-80">
+                  Brand settings page
+                </a>.
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Shown on client-facing documents. The SERVLO logo always appears in the dashboard sidebar.</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Shown on client-facing documents. The SERVLO logo always appears in the dashboard sidebar.</p>
             </div>
             <div className="sm:col-span-2">
               <button

@@ -1,16 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/require-admin";
 import AdminBugQueue from "./admin-bug-queue";
 
 export const dynamic = "force-dynamic";
 
-const ADMIN_EMAIL = "brodies.mcdonald@gmail.com";
-
 export default async function AdminBugsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.email !== ADMIN_EMAIL) redirect("/dashboard/owner");
+  // Role-based admin guard — replaces the hardcoded email check.
+  // Centralised in require-admin so adding new admins is a single DB update.
+  await requireAdmin();
 
   const admin = createAdminClient();
 
@@ -37,24 +34,38 @@ export default async function AdminBugsPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    // Enrich with owner info
     const bugData = data ?? [];
-    const ownerIds = [...new Set(bugData.map(b => b.owner_id))];
+    const ownerIds = [...new Set(bugData.map((b) => b.owner_id))];
 
     const ownerMap: Record<string, { email?: string; business?: string }> = {};
 
     if (ownerIds.length > 0) {
+      // Business name (from businesses table)
       const { data: bizData } = await admin
         .from("businesses")
         .select("owner_id, business_name")
         .in("owner_id", ownerIds);
 
-      (bizData ?? []).forEach(b => {
-        ownerMap[b.owner_id] = { business: b.business_name };
+      (bizData ?? []).forEach((b) => {
+        ownerMap[b.owner_id] = { ...ownerMap[b.owner_id], business: b.business_name };
+      });
+
+      // Email (from profiles.email — was never populated before, now is)
+      const { data: profileData } = await admin
+        .from("profiles")
+        .select("id, email")
+        .in("id", ownerIds);
+
+      (profileData ?? []).forEach((p) => {
+        const profile = p as { id: string; email?: string | null };
+        ownerMap[profile.id] = {
+          ...ownerMap[profile.id],
+          email: profile.email ?? undefined,
+        };
       });
     }
 
-    bugs = bugData.map(b => ({
+    bugs = bugData.map((b) => ({
       ...b,
       owner_email: ownerMap[b.owner_id]?.email,
       owner_business: ownerMap[b.owner_id]?.business,
