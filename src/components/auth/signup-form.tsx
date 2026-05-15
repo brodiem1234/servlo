@@ -15,6 +15,7 @@ import {
   formatAbnDigits,
   validateAbnChecksum,
   TEST_ABN_DIGITS,
+  IS_TEST_ABN_BYPASS_ENABLED,
   type PasswordRequirementState,
   type PasswordRuleKey
 } from "@/lib/auth/signup-field-validation";
@@ -490,8 +491,8 @@ export function SignupForm() {
   // ABN lookup: fires whenever abnDigits changes and the checksum is valid.
   useEffect(() => {
     if (!abnValid) return;
-    // Test ABN bypass — skip the real lookup entirely.
-    if (abnDigits === TEST_ABN_DIGITS) return;
+    // Test ABN bypass — DEV ONLY. Skip the real lookup. Stripped from prod builds.
+    if (IS_TEST_ABN_BYPASS_ENABLED && abnDigits === TEST_ABN_DIGITS) return;
     let cancelled = false;
     setAbnLookupLoading(true);
     setAbnLookup(null);

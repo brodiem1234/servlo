@@ -51,8 +51,16 @@ export function abnDigitsFromInput(value: string): string {
   return value.replace(/\D/g, "");
 }
 
-/** Test ABN that bypasses real validation (all zeros). */
+/** Test ABN that bypasses real validation (all zeros). DEV ONLY. */
 export const TEST_ABN_DIGITS = "00000000000";
+
+/**
+ * True only in non-production builds. Used to gate the test ABN bypass so
+ * `00 000 000 000` is rejected in production. `process.env.NODE_ENV` is inlined
+ * at build time by Next.js for both server and client code, so this dead-codes
+ * out of the production bundle.
+ */
+export const IS_TEST_ABN_BYPASS_ENABLED = process.env.NODE_ENV !== "production";
 
 /**
  * Validates an ABN using the official Australian checksum algorithm.
@@ -62,8 +70,8 @@ export const TEST_ABN_DIGITS = "00000000000";
 export function validateAbnChecksum(abn: string): boolean {
   const digits = abn.replace(/\D/g, "");
   if (digits.length !== 11) return false;
-  // Test bypass — accepts 00 000 000 000 without real checksum validation.
-  if (digits === TEST_ABN_DIGITS) return true;
+  // Test bypass — DEV ONLY. Stripped from production builds.
+  if (IS_TEST_ABN_BYPASS_ENABLED && digits === TEST_ABN_DIGITS) return true;
   const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
   const d = digits.split("").map(Number);
   d[0] -= 1;
