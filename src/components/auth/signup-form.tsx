@@ -1630,6 +1630,29 @@ export function SignupForm() {
  </p>
  </div>
 
+ {/* Founder auto-apply banner — surfaces the discount up front so the user
+     knows they got the deal without having to dig through the promo code
+     section. Renders only when the promo validated successfully. */}
+ {needsCard && appliedPromoCode === "EARLYACCESS" && promoResult?.valid ? (
+ <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+ <div className="flex items-start gap-3">
+ <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/30">
+ <Check size={12} className="text-emerald-300" strokeWidth={3} aria-hidden />
+ </div>
+ <div className="flex-1">
+ <p className="text-sm font-bold text-emerald-200">
+ Founding 50 discount applied
+ </p>
+ <p className="mt-0.5 text-xs text-emerald-300/90">
+ <span className="font-mono font-semibold">EARLYACCESS</span> auto-applied
+ {promoResult.discount ? <> &middot; {promoResult.discount}</> : null}
+ . Your founding rate is locked in for life.
+ </p>
+ </div>
+ </div>
+ </div>
+ ) : null}
+
  {/* Annual billing toggle (repeated on payment step) */}
  {needsCard && (
  <div className="flex items-center justify-center gap-1 rounded-xl border border-neutral-600 bg-neutral-900 p-1 w-fit">
