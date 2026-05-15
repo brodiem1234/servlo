@@ -871,7 +871,7 @@ export function SignupForm() {
         // Send them to the onboarding recovery page instead so they can
         // confirm their data and we get a clean record.
         console.error("[signup/owner] setup-business failed after retry, sending to onboarding recovery", parsed);
-        setError("We had trouble setting up your workspace. We've got your account — just confirm a few details on the next page.");
+        setError("We had trouble setting up your workspace. We've got your account. Just confirm a few details on the next page.");
         router.push("/onboarding/complete-profile");
         router.refresh();
         return;
@@ -1621,7 +1621,7 @@ export function SignupForm() {
             <div className={step === 5 ? "space-y-5" : "hidden"} aria-hidden={step !== 5}>
               <div>
                 <h2 className="text-lg font-semibold text-white">
-                  {needsCard ? "Almost there — payment details" : "Reserve your spot"}
+                  {needsCard ? "Almost there. Payment details" : "Reserve your spot"}
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
                   {needsCard
@@ -1733,7 +1733,7 @@ export function SignupForm() {
                     </div>
                   )}
                   <p className="mt-1.5 text-xs text-slate-500">
-                    Secured by Stripe. Cancel anytime — full refund in the first 30 days.
+                    Secured by Stripe. Cancel anytime, full refund in the first 30 days.
                   </p>
 
                   {/* Promo code */}

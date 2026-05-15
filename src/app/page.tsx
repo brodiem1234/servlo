@@ -302,7 +302,7 @@ export default async function HomePage() {
               badge: "Available now",
               badgeStyle: "bg-white/10 text-white ring-white/20",
               perfectFor: "Sole traders, small crews, growing trade businesses",
-              desc: "The complete job management platform — scheduling, invoicing, quoting, clients, timesheets and more.",
+              desc: "The complete job management platform. Scheduling, invoicing, quoting, clients, timesheets and more.",
               features: [
                 "Jobs & scheduling",
                 "GST invoices & quotes",
@@ -321,7 +321,7 @@ export default async function HomePage() {
               badge: "Coming Soon",
               badgeStyle: "bg-white/[0.06] text-zinc-400 ring-white/10",
               perfectFor: "Businesses wanting more jobs without paying for ads manually",
-              desc: "AI-powered marketing — ads, review automation and social content so your phone keeps ringing.",
+              desc: "AI-powered marketing. Ads, review automation and social content so your phone keeps ringing.",
               features: [
                 "AI Google/Meta ads",
                 "Review request automation",
@@ -337,7 +337,7 @@ export default async function HomePage() {
               badge: "Coming Soon",
               badgeStyle: "bg-white/[0.06] text-zinc-400 ring-white/10",
               perfectFor: "Tradies who want a steady flow of qualified work",
-              desc: "Verified local job leads sent directly to you — only pay for leads that match your trade and area.",
+              desc: "Verified local job leads sent directly to you. Only pay for leads that match your trade and area.",
               features: [
                 "Verified homeowner leads",
                 "Trade & area filters",
@@ -571,7 +571,7 @@ export default async function HomePage() {
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Refer a tradie, earn a free month</h3>
             <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 flex-1">
-              Every business you refer that subscribes earns you both 1 free month. No cap — refer 12 businesses, get a whole year free.
+              Every business you refer that subscribes earns you both 1 free month. No cap. Refer 12 businesses, get a whole year free.
             </p>
             <Link
               href="/auth/signup"
@@ -626,7 +626,7 @@ export default async function HomePage() {
               href="/auth/signup?plan=solo&code=EARLYACCESS"
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.04] px-6 py-4 text-base font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] sm:w-auto sm:px-8"
             >
-              Lock in Founding 50 — From $29/mo for life
+              Lock in Founding 50. From $29/mo for life
             </Link>
           </div>
           {spotsRemaining > 0 && (
