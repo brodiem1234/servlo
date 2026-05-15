@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  * single down service doesn't drag out the page response. Returns
  * "operational" if reachable, "down" otherwise.
  */
-async function probeWithTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+async function probeWithTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
   return Promise.race([
     promise,
     new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
