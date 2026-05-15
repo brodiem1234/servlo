@@ -72,7 +72,12 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#0A0A0A]/90 backdrop-blur-xl">
+    <>
+    {/* Spacer matches header height so content starts below it on mount.
+        Header is fixed (not sticky) because some pages wrap children in
+        overflow-x-hidden, which silently breaks position: sticky. */}
+    <div aria-hidden className="h-14 md:h-16" />
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-[#0A0A0A]/90 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:h-16 md:px-6">
         {/* Logo */}
         <Link href="/" className="shrink-0" onClick={closeAll}>
@@ -200,5 +205,6 @@ export function SiteHeader() {
         </div>
       ) : null}
     </header>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 const DOCS_NAV = [
   {
@@ -10,7 +11,7 @@ const DOCS_NAV = [
     ],
   },
   {
-    section: "CORE — Business Management",
+    section: "Core — Business Management",
     items: [
       { href: "/docs/jobs", label: "Jobs & Scheduling" },
       { href: "/docs/clients", label: "Client Management" },
@@ -22,9 +23,9 @@ const DOCS_NAV = [
     ],
   },
   {
-    section: "GROW — Marketing",
+    section: "Grow — Marketing",
     items: [
-      { href: "/docs/grow-overview", label: "GROW Overview" },
+      { href: "/docs/grow-overview", label: "Grow Overview" },
       { href: "/docs/local-seo", label: "Local SEO" },
       { href: "/docs/reviews", label: "Review Requests" },
       { href: "/docs/email-marketing", label: "Email Marketing" },
@@ -50,19 +51,53 @@ const DOCS_NAV = [
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-neutral-950">
-      {/* Sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-neutral-700 bg-neutral-900 lg:block">
-        <div className="sticky top-0 overflow-y-auto p-6" style={{ maxHeight: "100vh" }}>
-          <Link href="/" className="flex items-center gap-2 mb-8">
-            <span className="text-xl font-black tracking-tight text-white">SERVLO</span>
-            <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">Docs</span>
-          </Link>
+    <div className="min-h-screen bg-[#0A0A0A] text-neutral-200 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
+      <SiteHeader />
 
-          <nav className="space-y-6">
+      <div className="flex">
+        {/* Sidebar — desktop only. Sticks just below the fixed header (h-16 = 4rem). */}
+        <aside className="hidden w-64 shrink-0 border-r border-white/10 lg:block">
+          <div
+            className="sticky top-16 overflow-y-auto p-6"
+            style={{ maxHeight: "calc(100vh - 4rem)" }}
+          >
+            <div className="mb-8 flex items-center gap-2">
+              <span className="text-base font-bold tracking-tight text-white">Documentation</span>
+            </div>
+
+            <nav className="space-y-6">
+              {DOCS_NAV.map((section) => (
+                <div key={section.section}>
+                  <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                    {section.section}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {section.items.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="block rounded-md px-2 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Mobile docs nav drawer — shown above content on small screens */}
+        <details className="border-b border-white/10 lg:hidden">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-white">
+            Documentation menu
+          </summary>
+          <nav className="space-y-5 px-4 pb-5">
             {DOCS_NAV.map((section) => (
               <div key={section.section}>
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                   {section.section}
                 </p>
                 <ul className="space-y-0.5">
@@ -70,7 +105,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="block rounded-md px-2 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
+                        className="block rounded-md px-2 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
                       >
                         {item.label}
                       </Link>
@@ -80,15 +115,15 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               </div>
             ))}
           </nav>
-        </div>
-      </aside>
+        </details>
 
-      {/* Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-3xl px-6 py-12">
-          {children}
-        </div>
-      </main>
+        {/* Content */}
+        <main className="flex-1 overflow-auto">
+          <article className="prose prose-invert mx-auto max-w-3xl px-6 py-12 prose-headings:text-white prose-headings:font-bold prose-h1:text-3xl prose-h1:mb-3 prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-3 prose-p:text-neutral-300 prose-p:leading-relaxed prose-a:text-white prose-a:font-bold prose-a:underline hover:prose-a:text-neutral-300 prose-strong:text-white prose-code:text-white prose-code:bg-white/10 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-pre:bg-[#111111] prose-pre:border prose-pre:border-white/10 prose-li:text-neutral-300">
+            {children}
+          </article>
+        </main>
+      </div>
     </div>
   );
 }
