@@ -65,21 +65,21 @@ export default async function UpgradePage() {
             {isExpired ? (
               <>
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-4 py-1.5 text-sm font-medium text-red-500">
-                  Trial expired
+                  Subscription inactive
                 </div>
-                <h1 className="text-3xl font-bold text-[var(--text-primary)]">Your free trial has ended</h1>
+                <h1 className="text-3xl font-bold text-[var(--text-primary)]">Pick up where you left off</h1>
                 <p className="mt-2 text-[var(--text-secondary)]">
                   Choose a plan to restore access to your jobs, clients, invoices, and all your business data.
                 </p>
               </>
             ) : (
               <>
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/20 px-4 py-1.5 text-sm font-medium text-amber-500">
-                  Trial ending {trialEndDate ? `on ${trialEndDate}` : "soon"}
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/[0.06] border border-white/15 px-4 py-1.5 text-sm font-medium text-white">
+                  Choose your plan
                 </div>
-                <h1 className="text-3xl font-bold text-[var(--text-primary)]">Choose a plan to keep going</h1>
+                <h1 className="text-3xl font-bold text-[var(--text-primary)]">Pick the plan that fits your business</h1>
                 <p className="mt-2 text-[var(--text-secondary)]">
-                  All your data is safe. Subscribe to keep uninterrupted access.
+                  All plans include a 30-day money-back guarantee. Cancel anytime from Settings.
                 </p>
               </>
             )}

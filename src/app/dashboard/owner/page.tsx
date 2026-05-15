@@ -280,15 +280,18 @@ export default async function OwnerDashboardPage({
         </div>
       )}
       <OnboardingChecklist />
-      {/* Trial banner */}
+      {/* Money-back guarantee banner — shows during the first 30 days only.
+          Legacy `trialDaysRemaining` variable is reused as days-since-signup
+          for new accounts; the variable name will be cleaned up in a later
+          refactor. */}
       {trialDaysRemaining > 0 ? (
-        <div className="rounded-lg border border-[color-mix(in_srgb,var(--accent-color)_42%,var(--border))] bg-[color-mix(in_srgb,var(--accent-color)_10%,var(--bg-card))] px-4 py-3 text-sm text-[var(--text-primary)]">
-          {trialDaysRemaining} days remaining in your free trial —{" "}
+        <div className="rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-[var(--text-primary)]">
+          {trialDaysRemaining} day{trialDaysRemaining === 1 ? "" : "s"} left in your 30-day money-back window —{" "}
           <a
             href="/dashboard/owner/settings"
-            className="font-semibold text-[var(--accent-color)] underline decoration-[color-mix(in_srgb,var(--accent-color)_50%,var(--border))] underline-offset-2 hover:opacity-90"
+            className="font-semibold text-white underline underline-offset-2 hover:opacity-80"
           >
-            Upgrade now
+            Manage subscription
           </a>
         </div>
       ) : (

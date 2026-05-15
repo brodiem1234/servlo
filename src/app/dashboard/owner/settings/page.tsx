@@ -547,16 +547,18 @@ export default async function OwnerSettingsPage({ searchParams }: SettingsPagePr
       {activeTab === "billing" ? (
         <div className="space-y-5">
           {isOnTrial && trialDaysRemaining !== null ? (
-            <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+            <Card className="border-white/15 bg-white/[0.04]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-base font-semibold text-amber-900 dark:text-amber-200">
-                    {trialDaysRemaining === 0 ? "Your trial has ended" : `${trialDaysRemaining} day${trialDaysRemaining === 1 ? "" : "s"} remaining on your trial`}
-                  </p>
-                  <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-300">
+                  <p className="text-base font-semibold text-white">
                     {trialDaysRemaining === 0
-                      ? "Choose a plan to keep your data and continue using SERVLO."
-                      : "Upgrade now to keep uninterrupted access after your trial ends."}
+                      ? "Subscription required"
+                      : `${trialDaysRemaining} day${trialDaysRemaining === 1 ? "" : "s"} left in your 30-day money-back window`}
+                  </p>
+                  <p className="mt-0.5 text-sm text-neutral-300">
+                    {trialDaysRemaining === 0
+                      ? "Choose a plan below to keep your data and continue using SERVLO."
+                      : "If SERVLO isn't a fit, request a full refund from billing before this window closes."}
                   </p>
                 </div>
                 <a
