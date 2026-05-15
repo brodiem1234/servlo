@@ -16,8 +16,19 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent"
   },
   icons: {
+    // Browser tab + bookmark — uses the S-mark SVG directly. Vector means
+    // it stays sharp at any tab pixel density.
+    icon: [
+      { url: "/servlo-master-white.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }
+    ],
+    // iOS home screen / Add to Home Screen
     apple: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }
+    ],
+    // Pinned tabs (Safari macOS)
+    other: [
+      { rel: "mask-icon", url: "/servlo-master-white.svg", color: "#FFFFFF" }
     ]
   }
 };

@@ -79,19 +79,24 @@ export function SiteHeader() {
     <div aria-hidden className="h-14 md:h-16" />
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-[#0A0A0A]/90 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:h-16 md:px-6">
-        {/* Logo — single wordmark image. The SVG at /servlo-master-white.svg
-            contains the full SERVLO wordmark. Sized 120×32 because that's the
-            wordmark's natural aspect ratio. */}
-        <Link href="/" className="shrink-0" onClick={closeAll}>
+        {/* Logo — S mark + SERVLO wordmark text. The SVG at
+            /servlo-master-white.svg is the standalone circular S monogram;
+            we pair it with the wordmark text here so the header reads as
+            full SERVLO branding. */}
+        <Link href="/" className="flex shrink-0 items-center gap-2" onClick={closeAll}>
           <Image
             src="/servlo-master-white.svg"
-            alt="SERVLO"
-            width={120}
+            alt=""
+            aria-hidden
+            width={32}
             height={32}
             priority
             unoptimized
-            className="h-8 w-auto drop-shadow-[0_0_28px_rgba(255,255,255,0.15)]"
+            className="h-7 w-7 md:h-8 md:w-8 drop-shadow-[0_0_24px_rgba(255,255,255,0.15)]"
           />
+          <span className="text-lg font-black tracking-tight text-white md:text-xl">
+            SERVLO
+          </span>
         </Link>
 
         {/* Desktop nav */}
