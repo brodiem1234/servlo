@@ -1,4 +1,7 @@
-const CACHE_NAME = 'servlo-v1';
+// Bump this version any time you change public assets (logos, icons, etc).
+// Older versions get nuked in the `activate` handler below, forcing browsers
+// to refetch fresh assets from the network.
+const CACHE_NAME = 'servlo-v3-2026-05-15';
 const SHELL_URLS = [
   '/',
   '/offline',
