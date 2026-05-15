@@ -35,7 +35,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.stripe.com https://api.resend.com https://challenges.cloudflare.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.stripe.com https://js.stripe.com https://m.stripe.com https://m.stripe.network https://api.resend.com https://challenges.cloudflare.com",
               "frame-src https://challenges.cloudflare.com https://js.stripe.com",
               "worker-src 'self' blob:",
             ].join('; '),

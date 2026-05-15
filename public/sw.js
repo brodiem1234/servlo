@@ -24,8 +24,25 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  // Skip Supabase and API calls
-  if (url.hostname.includes('supabase') || url.pathname.startsWith('/api/')) return;
+  // Skip third-party services + API routes — the service worker should not
+  // intercept Stripe, Supabase, Resend, Cloudflare Turnstile, etc. Letting
+  // those go straight to the network avoids CSP/cache mismatches and the
+  // "Failed to convert value to Response" errors in DevTools.
+  const passthroughHosts = [
+    'supabase',
+    'stripe.com',
+    'js.stripe.com',
+    'm.stripe.com',
+    'm.stripe.network',
+    'resend.com',
+    'cloudflare.com',
+  ];
+  if (
+    passthroughHosts.some((h) => url.hostname.includes(h)) ||
+    url.pathname.startsWith('/api/')
+  ) {
+    return;
+  }
 
   event.respondWith(
     fetch(event.request)
