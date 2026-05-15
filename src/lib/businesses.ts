@@ -1,8 +1,19 @@
-/** `businesses.owner_id` is canonical for workspace ownership. */
-export function businessesRowForOwner(ownerUserId: string, fields: { accent_colour: string }) {
+/** `businesses.owner_id` is canonical for workspace ownership.
+ *
+ * The `fields` arg is optional. Callers that explicitly want to set an accent
+ * colour (e.g. signup bootstrap, /api/update-accent-colour) pass it. The
+ * Profile-tab save in settings deliberately omits it so an existing accent
+ * isn't reset every time the user updates their address.
+ */
+export function businessesRowForOwner(
+  ownerUserId: string,
+  fields?: { accent_colour?: string }
+) {
   return {
     owner_id: ownerUserId,
-    accent_colour: fields.accent_colour
+    ...(fields?.accent_colour !== undefined
+      ? { accent_colour: fields.accent_colour }
+      : {}),
   };
 }
 
