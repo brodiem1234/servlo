@@ -171,7 +171,7 @@ export function LandingPricing() {
                     : "border border-white/20 text-white hover:border-white/40 hover:bg-white/5"
                 }`}
               >
-                Start free trial
+                Sign Up
               </Link>
             </div>
           );

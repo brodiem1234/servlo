@@ -83,12 +83,12 @@ export default function ResetPasswordPage() {
     "focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20";
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16">
+    <main className="relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
       <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm font-medium text-white/50 transition hover:text-white">
         <ArrowLeft size={15} />
         Back to homepage
       </Link>
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-none backdrop-blur-xl sm:p-8">
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-800 bg-[#111111] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:p-8">
         <div className="mb-6 flex justify-center">
           <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} priority unoptimized
             className="drop-shadow-[0_0_28px_rgba(255,255,255,0.2)] h-10 w-auto" />

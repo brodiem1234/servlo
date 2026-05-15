@@ -98,9 +98,9 @@ export default function GuaranteePage() {
         <div className="text-center">
           <Link
             href="/auth/signup"
-            className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-white px-8 py-4 text-base font-semibold text-white dark:text-black transition hover:bg-zinc-800 dark:hover:bg-neutral-100"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-black transition hover:bg-neutral-100"
           >
-            Start free trial. 30 days free
+            Sign Up Free
             <ArrowRight size={18} />
           </Link>
           <p className="mt-3 text-sm text-gray-400 dark:text-slate-500">

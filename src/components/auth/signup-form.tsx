@@ -921,9 +921,8 @@ export function SignupForm() {
 
   // Input styling — matches sign-in page
   const inputBase = "h-11 w-full rounded-lg border px-3 text-sm transition focus:outline-none " +
-    "bg-zinc-50 dark:bg-white/[0.06] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500";
-  const inputOk = "border-zinc-200 dark:border-white/15 focus:border-zinc-900 dark:focus:border-white " +
-    "focus:ring-2 focus:ring-zinc-900/20 dark:focus:ring-white/20";
+    "bg-white/[0.06] text-white placeholder-zinc-500";
+  const inputOk = "border-neutral-700 focus:border-white focus:ring-2 focus:ring-white/20";
   const inputErr = "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20";
 
   const step1Disabled =
@@ -981,14 +980,14 @@ export function SignupForm() {
     <>
       <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
       <main
-        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16"
+        className="auth-theme relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]"
       >
         <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-neutral-400 transition hover:text-white">
           <ArrowLeft size={15} />
           Back to homepage
         </Link>
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 shadow-none backdrop-blur-xl sm:p-8"
+          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-neutral-800 bg-[#111111] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:p-10"
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} unoptimized
@@ -998,7 +997,7 @@ export function SignupForm() {
             Create your account
           </h1>
           <p className="mt-2 text-sm text-slate-400">
-            Start your 30-day free trial and set up your business in minutes.
+            Create your account and set up your business in minutes.
           </p>
 
           {/* Step indicator: 5 segments */}
@@ -1113,7 +1112,7 @@ export function SignupForm() {
                       `${inputBase} pr-9`,
                       abnHas11
                         ? abnValid ? "border-emerald-500" : "border-red-500"
-                        : "border-zinc-200 dark:border-white/15 focus:border-zinc-900 dark:focus:border-white"
+                        : "border-neutral-700 focus:border-white"
                     ].join(" ")}
                     required
                   />
@@ -1189,8 +1188,8 @@ export function SignupForm() {
                 <label htmlFor="phone_number" className="mb-1 block text-sm font-medium text-zinc-300">
                   Phone number
                 </label>
-                <div className={`flex h-11 items-center overflow-hidden rounded-lg border bg-zinc-50 dark:bg-white/[0.06] transition ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-zinc-200 dark:border-white/15 focus-within:border-zinc-900 dark:focus-within:border-white"}`}>
-                  <span className="select-none border-r border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/[0.08] px-3 text-sm text-zinc-600 dark:text-zinc-300 h-full flex items-center gap-1.5 shrink-0">
+                <div className={`flex h-11 items-center overflow-hidden rounded-lg border bg-white/[0.06] transition ${fieldErrors.phone ? "border-red-500 focus-within:border-red-500" : "border-neutral-700 focus-within:border-white"}`}>
+                  <span className="select-none border-r border-white/15 bg-white/[0.08] px-3 text-sm text-zinc-300 h-full flex items-center gap-1.5 shrink-0">
                     🇦🇺 +61
                   </span>
                   <input
@@ -1205,7 +1204,7 @@ export function SignupForm() {
                     }}
                     onBlur={handlePhoneBlur}
                     required
-                    className="h-full flex-1 bg-transparent px-3 text-sm text-zinc-900 dark:text-white outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                    className="h-full flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-zinc-500"
                   />
                 </div>
                 {fieldErrors.phone ? (
@@ -1255,7 +1254,7 @@ export function SignupForm() {
               ) : null}
 
               {/* Categorised chip grid */}
-              <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-50 dark:bg-white/[0.03] p-4">
+              <div className="max-h-72 space-y-4 overflow-y-auto rounded-lg border border-neutral-700 bg-white/[0.03] p-4">
                 {filteredCategories.length === 0 ? (
                   <p className="text-sm text-slate-500">No industries match your search.</p>
                 ) : (
@@ -1274,8 +1273,8 @@ export function SignupForm() {
                               onClick={() => toggleChip(chip.id)}
                               className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-medium transition ${
                                 on
-                                  ? "border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-black"
-                                  : "border-zinc-200 dark:border-white/20 bg-white dark:bg-white/[0.04] text-zinc-700 dark:text-slate-300 hover:border-zinc-400 dark:hover:border-white/40"
+                                  ? "border-white bg-white text-black"
+                                  : "border-white/20 bg-white/[0.04] text-slate-300 hover:border-white/40"
                               }`}
                             >
                               {on ? <Check size={10} strokeWidth={3} aria-hidden /> : null}
@@ -1300,7 +1299,7 @@ export function SignupForm() {
                     value={otherNote}
                     onChange={(e) => setOtherNote(e.target.value)}
                     rows={3}
-                    className={`w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none bg-zinc-50 dark:bg-white/[0.06] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 ${inputOk}`}
+                    className={`w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none bg-white/[0.06] text-white placeholder-zinc-500 ${inputOk}`}
                     placeholder="e.g. Plumbing and gas fitting across Adelaide"
                   />
                 </div>
@@ -1589,11 +1588,11 @@ export function SignupForm() {
               )}
 
               {/* Summary */}
-              <div className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.04] px-4 py-3">
+              <div className="rounded-lg border border-neutral-800 bg-white/[0.04] px-4 py-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">SERVLO Core</p>
-                    <p className="text-xs text-zinc-500 dark:text-slate-400 capitalize">
+                    <p className="text-sm font-semibold text-white">SERVLO Core</p>
+                    <p className="text-xs text-slate-400 capitalize">
                       {selectedPlanTier} · {isAnnual ? "Annual" : "Monthly"}
                     </p>
                   </div>
@@ -1603,8 +1602,8 @@ export function SignupForm() {
                       if (isAnnual && annualInfo) {
                         return (
                           <>
-                            <p className="text-sm font-bold text-zinc-900 dark:text-white">{annualInfo.mo}<span className="text-xs font-normal text-zinc-500 dark:text-slate-400">/mo</span></p>
-                            <p className="text-xs text-zinc-500 dark:text-slate-500">{annualInfo.yr}/yr billed annually</p>
+                            <p className="text-sm font-bold text-white">{annualInfo.mo}<span className="text-xs font-normal text-slate-400">/mo</span></p>
+                            <p className="text-xs text-slate-500">{annualInfo.yr}/yr billed annually</p>
                           </>
                         );
                       }
@@ -1612,8 +1611,8 @@ export function SignupForm() {
                       const tierPrice = tier?.price ?? "TBA";
                       const hasUnit = tierPrice.includes("/");
                       return (
-                        <p className="text-sm font-bold text-zinc-900 dark:text-white">
-                          {tierPrice}{!hasUnit ? <span className="text-xs font-normal text-zinc-500 dark:text-slate-400">/mo</span> : null}
+                        <p className="text-sm font-bold text-white">
+                          {tierPrice}{!hasUnit ? <span className="text-xs font-normal text-slate-400">/mo</span> : null}
                         </p>
                       );
                     })()}
@@ -1649,7 +1648,7 @@ export function SignupForm() {
                     <div className="relative">
                       <div
                         ref={cardMountRef}
-                        className="rounded-lg border border-zinc-200 dark:border-white/15 bg-zinc-50 dark:bg-white/[0.06] px-3 py-3.5 focus-within:border-zinc-900 dark:focus-within:border-white transition"
+                        className="rounded-lg border border-neutral-700 bg-white/[0.06] px-3 py-3.5 focus-within:border-white transition"
                         style={{ minHeight: "44px" }}
                       />
                       {!stripeReady && (
@@ -1684,7 +1683,7 @@ export function SignupForm() {
                             if (appliedPromoCode) setAppliedPromoCode("");
                           }}
                           placeholder="PROMO CODE"
-                          className={`flex-1 rounded-lg border px-3 py-2 text-sm font-mono uppercase transition focus:outline-none bg-zinc-50 dark:bg-white/[0.06] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 ${inputOk}`}
+                          className={`flex-1 rounded-lg border px-3 py-2 text-sm font-mono uppercase transition focus:outline-none bg-white/[0.06] text-white placeholder:text-zinc-500 ${inputOk}`}
                         />
                         <button
                           type="button"
@@ -1713,7 +1712,7 @@ export function SignupForm() {
               ) : null}
 
               {/* Terms of Service + Privacy Policy checkbox */}
-              <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] px-3 py-2.5">
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-neutral-800 bg-white/[0.03] px-3 py-2.5">
                 <input
                   type="checkbox"
                   checked={termsAccepted}
@@ -1746,7 +1745,7 @@ export function SignupForm() {
                   {ownerSubmitting
                     ? "Setting up..."
                     : needsCard
-                      ? "Start 30-Day Free Trial"
+                      ? "Sign Up"
                       : "Reserve My Spot"}
                 </Button>
               </div>
