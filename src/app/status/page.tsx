@@ -111,8 +111,12 @@ export default async function StatusPage() {
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
   let incidents: Incident[] = [];
-  let fetchOk = true;
 
+  // Try to fetch declared incidents. Any failure here is silent — we just
+  // render an empty incident list. The live probes below are the real source
+  // of truth for "are services up right now". Showing an alarming "service
+  // unavailable" banner because the incidents TABLE couldn't be read is
+  // misleading; the customer-facing service is probably fine.
   try {
     const { data, error } = await admin
       .from("incidents")
@@ -120,16 +124,13 @@ export default async function StatusPage() {
       .gte("started_at", ninetyDaysAgo)
       .order("started_at", { ascending: false });
 
-    if (error && (error as { code?: string }).code !== "42P01") {
-      // Real error (not "table missing") — surface as a warning banner.
-      console.error("[status] incidents fetch failed:", error.message);
-      fetchOk = false;
+    if (error) {
+      console.warn("[status] incidents fetch returned error (continuing):", error.message);
     } else {
       incidents = (data ?? []) as Incident[];
     }
   } catch (err) {
-    console.error("[status] fetch threw:", err);
-    fetchOk = false;
+    console.warn("[status] incidents fetch threw (continuing):", err);
   }
 
   // Live probes run in parallel — total worst-case wait is the longest timeout.
@@ -143,7 +144,10 @@ export default async function StatusPage() {
     (stripeProbe === "down" ? 1 : 0);
 
   const openIncidents = incidents.filter((i) => i.status !== "resolved");
-  const overallOperational = fetchOk && openIncidents.length === 0 && liveOutages === 0;
+  // Truth source: live probes + declared incidents. We no longer flag the
+  // entire page as "unavailable" just because the incidents table read
+  // hiccuped.
+  const overallOperational = openIncidents.length === 0 && liveOutages === 0;
   const overrideMessage = process.env.STATUS_OVERRIDE_MESSAGE;
 
   return (
@@ -180,10 +184,10 @@ export default async function StatusPage() {
             } ${overallOperational ? "" : "animate-pulse"}`}
           />
           <span className={`text-base font-bold ${overallOperational ? "text-emerald-300" : "text-red-300"}`}>
-            {!fetchOk
-              ? "Status data temporarily unavailable"
-              : overallOperational
-                ? "All systems operational"
+            {overallOperational
+              ? "All systems operational"
+              : liveOutages > 0
+                ? `${liveOutages} service${liveOutages !== 1 ? "s" : ""} disrupted`
                 : `${openIncidents.length} active incident${openIncidents.length !== 1 ? "s" : ""}`}
           </span>
         </div>

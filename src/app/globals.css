@@ -633,32 +633,8 @@ a[data-destructive="true"]:hover,
   background-color: rgba(248,113,113,0.1) !important;
 }
 
-/* ── Legacy product icon de-blueing ────────────────────────────────────────
- * The product icons in /public (core.png, grow.png, leads.png, etc) were
- * created with the OLD coloured-brand palette (blue Core, purple Grow,
- * amber Leads, teal Answer, etc). The site is now pure-black monochrome,
- * so desaturate them on the fly until the PNGs are re-shot in mono.
- * When Brodie re-exports the icons, delete this rule.
- */
-img[src$="/core.png"],
-img[src$="/grow.png"],
-img[src$="/leads.png"],
-img[src$="/pay.png"],
-img[src$="/fleet.png"],
-img[src$="/hire.png"],
-img[src$="/answer.png"],
-img[src$="/finance.png"],
-img[src$="/safe.png"],
-img[src$="/books.png"],
-img[src$="/connect.png"],
-img[src$="/insurance.png"],
-img[src$="/academy.png"],
-img[src$="/core-leads.png"],
-img[src$="/core-grow.png"],
-img[src$="/grow-leads.png"],
-img[src$="/core-grow-leads.png"] {
-  filter: grayscale(100%) brightness(2) contrast(1.1);
-}
+/* (Legacy product-icon desaturating filter removed — the PNGs are now
+   regenerated in monochrome by scripts/generate-product-icons.mjs.) */
 
 /* ── Global text-color brightening ─────────────────────────────────────────
  * Push all "muted" Tailwind text utilities much closer to white so secondary

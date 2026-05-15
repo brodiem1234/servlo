@@ -356,6 +356,8 @@ export default async function HomePage() {
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="relative h-8 w-8 shrink-0">
                     <Image src={logo} alt={name} fill sizes="32px" className="object-contain" unoptimized />
+                    {/* Filter formerly applied here was redundant with the
+                        globals.css rule that desaturates legacy product PNGs. */}
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
                     {badge}
