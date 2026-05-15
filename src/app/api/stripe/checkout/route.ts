@@ -42,10 +42,11 @@ export async function POST(req: NextRequest) {
       customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
-      // GST handled automatically by Stripe Tax. Configure rates in Stripe Dashboard → Tax.
-      automatic_tax: { enabled: true },
-      // Ask Stripe Checkout to collect the customer's ABN.
-      tax_id_collection: { enabled: true },
+      // Stripe Tax opt-in via env var. Off by default — enabling before tax
+      // registrations are configured causes every checkout to reject.
+      ...(process.env.STRIPE_AUTOMATIC_TAX_ENABLED === "true"
+        ? { automatic_tax: { enabled: true } as const, tax_id_collection: { enabled: true } as const }
+        : {}),
       // Match-back keys so the webhook doesn't have to guess by email.
       ...(userId ? { client_reference_id: userId } : {}),
       metadata: { user_id: userId ?? "", email },

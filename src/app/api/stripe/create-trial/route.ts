@@ -118,13 +118,20 @@ export async function POST(request: Request) {
       }
     }
 
+    // Stripe Tax is opt-in via env var. Default OFF because enabling it before
+    // you've configured tax registrations in the Stripe dashboard causes
+    // subscriptions.create to reject every signup. Set
+    // `STRIPE_AUTOMATIC_TAX_ENABLED=true` once you've gone through
+    // Stripe → Tax → Registrations and added AU.
+    const automaticTaxEnabled =
+      process.env.STRIPE_AUTOMATIC_TAX_ENABLED === "true";
+
     // Create subscription — billed from day 1, NO free trial.
-    // Stripe Tax computes GST automatically. ABN on customer keeps invoices compliant.
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
-      automatic_tax: { enabled: true },
+      ...(automaticTaxEnabled ? { automatic_tax: { enabled: true } } : {}),
       ...(resolvedPromoCodeId ? { discounts: [{ promotion_code: resolvedPromoCodeId }] } : {}),
       metadata: {
         supabase_user_id: user.id,

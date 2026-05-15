@@ -61,7 +61,7 @@ export default async function HomePage() {
         >
           <span className="text-white/60">First 50 only ·</span>{" "}
           <span className="font-bold text-white">{spotsRemaining} of 50</span> founding spots left ·{" "}
-          <span className="text-white/60">Lock in $29/mo for life</span>{" "}
+          <span className="text-white/60">Lock in pricing for life from $29/mo</span>{" "}
           <span className="font-semibold text-white">→</span>
         </Link>
       ) : null}
@@ -624,7 +624,7 @@ export default async function HomePage() {
               href="/auth/signup?plan=solo&code=EARLYACCESS"
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.04] px-6 py-4 text-base font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] sm:w-auto sm:px-8"
             >
-              Lock in Founding 50 — $29/mo for life
+              Lock in Founding 50 — From $29/mo for life
             </Link>
           </div>
           {spotsRemaining > 0 && (
@@ -662,7 +662,7 @@ export default async function HomePage() {
               </p>
               <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">ABN: 88 688 301 684</p>
               <p className="mt-4 text-xs leading-relaxed text-gray-400 dark:text-slate-500">
-                Plans from $29/mo. 30-day free trial.<br />
+                Plans from $29/mo. 30-day money-back guarantee.<br />
                 Founding members: use code <span className="font-mono font-semibold text-amber-500 dark:text-amber-400">EARLYACCESS</span> for 75% off first 3 months.
               </p>
             </div>
@@ -694,7 +694,7 @@ export default async function HomePage() {
             <div className="col-span-2 md:col-span-1">
               <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Get started</p>
               <ul className="space-y-2.5 text-sm text-gray-500 dark:text-slate-400">
-                <li><Link href="/auth/signup" className="transition hover:text-gray-900 dark:hover:text-white">Start free trial</Link></li>
+                <li><Link href="/auth/signup" className="transition hover:text-gray-900 dark:hover:text-white">Sign up</Link></li>
                 <li><Link href="/auth/login" className="transition hover:text-gray-900 dark:hover:text-white">Log in</Link></li>
               </ul>
               <div className="mt-5">

@@ -972,6 +972,46 @@ export function SignupForm() {
   // EARLYACCESS + annual conflict
   const earlyAccessConflict = isAnnual && appliedPromoCode.toUpperCase() === "EARLYACCESS";
 
+  // ── Auto-apply founding-50 promo ─────────────────────────────────────────
+  // When fewer than 50 founders have joined, every signup is eligible. Fetch
+  // the count on mount and auto-apply the founding promo so users don't have
+  // to type "EARLYACCESS" — they get the deal automatically. If the count is
+  // already 50, this is a no-op and they pay full price.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/founders/count", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { remaining?: number; isFull?: boolean };
+        if (cancelled) return;
+        if ((data.remaining ?? 0) > 0 && !data.isFull) {
+          // Validate the founding promo code server-side then store it.
+          // Wrapped in try so a temporary Stripe error never blocks signup.
+          try {
+            const promoRes = await fetch("/api/stripe/validate-promo", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: "EARLYACCESS" }),
+            });
+            const promoData = (await promoRes.json()) as { valid: boolean; discount?: string; percentOff?: number };
+            if (!cancelled && promoData.valid) {
+              setAppliedPromoCode("EARLYACCESS");
+              setPromoResult(promoData);
+              setPromoCodeInput("EARLYACCESS");
+              setPromoOpen(true);
+            }
+          } catch (err) {
+            console.warn("[signup] auto-apply EARLYACCESS validate failed", err);
+          }
+        }
+      } catch (err) {
+        console.warn("[signup] founder count fetch failed", err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   async function applyPromoCode() {
     const code = promoCodeInput.trim();
     if (!code) return;
