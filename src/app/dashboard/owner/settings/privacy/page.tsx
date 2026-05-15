@@ -92,7 +92,7 @@ export default function PrivacySettingsPage() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold bg-white text-black hover:bg-neutral-100 disabled:opacity-60 transition-colors"
         >
           {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           {exporting ? "Exporting..." : "Download my data"}

@@ -85,12 +85,12 @@ export default async function InviteAcceptPage({ params }: Props) {
   const ownerName = (ownerProfile as { full_name?: string | null } | null)?.full_name ?? "Your team owner";
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16" style={{ background: "#0a0f1e" }}>
-      <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-[#111827] p-8 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16" style={{ background: "#0A0A0A" }}>
+      <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-[#111111] p-8 shadow-xl">
         {/* Logo */}
         <div className="mb-6 text-center">
           <span className="text-3xl font-black tracking-tight text-white">
-            SERV<span className="text-blue-400">LO</span>
+            SERVLO
           </span>
         </div>
 
@@ -110,7 +110,7 @@ export default async function InviteAcceptPage({ params }: Props) {
 
         <p className="mt-6 text-center text-xs text-slate-500">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-blue-400 hover:underline">
+          <Link href="/auth/login" className="text-white hover:underline">
             Sign in
           </Link>
         </p>

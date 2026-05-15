@@ -233,7 +233,7 @@ export default function ComplianceManager({ initialDocs }: Props) {
         <div className="flex gap-1 overflow-x-auto">
           {(["documents", "templates"] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`shrink-0 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? "border-blue-500 text-blue-400" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+              className={`shrink-0 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? "border-white text-white" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
             >
               {tab === "documents" ? `My Documents (${docs.length})` : `Templates (${TEMPLATES.length})`}
             </button>
@@ -241,7 +241,7 @@ export default function ComplianceManager({ initialDocs }: Props) {
         </div>
         {activeTab === "documents" && (
           <button onClick={() => setActiveTab("templates")}
-            className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 mb-0.5">
+            className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-neutral-100 mb-0.5">
             + New Document
           </button>
         )}

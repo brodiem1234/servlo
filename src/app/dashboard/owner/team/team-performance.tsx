@@ -223,7 +223,7 @@ export function TeamPerformance({ employees, timesheets, jobs }: Props) {
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? "border-blue-500 text-blue-400" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? "border-white text-white" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
           >
             {label}
             {id === "leave" && leaveRequests.filter((r) => r.status === "pending").length > 0 && (
@@ -244,7 +244,7 @@ export function TeamPerformance({ employees, timesheets, jobs }: Props) {
                 <button
                   key={opt.label}
                   onClick={() => setPeriodIdx(i)}
-                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${periodIdx === i ? "bg-blue-600 text-white" : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"}`}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${periodIdx === i ? "bg-white text-black" : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]"}`}
                 >
                   {opt.label}
                 </button>
@@ -361,7 +361,7 @@ export function TeamPerformance({ employees, timesheets, jobs }: Props) {
             <h3 className="font-semibold text-[var(--text-primary)]">Leave Requests</h3>
             <button
               onClick={() => setShowLeaveForm(true)}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-neutral-100 transition-colors"
             >
               + New Request
             </button>
@@ -494,7 +494,7 @@ export function TeamPerformance({ employees, timesheets, jobs }: Props) {
               </button>
               <button
                 onClick={addLeave}
-                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-neutral-100"
               >
                 Submit Request
               </button>

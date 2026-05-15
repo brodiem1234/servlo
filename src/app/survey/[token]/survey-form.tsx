@@ -126,7 +126,7 @@ export function SurveyForm({ jobId, token }: SurveyFormProps) {
       <button
         type="submit"
         disabled={!rating || submitting}
-        className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-black shadow-sm transition-opacity hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting ? "Submitting…" : "Submit feedback"}
       </button>

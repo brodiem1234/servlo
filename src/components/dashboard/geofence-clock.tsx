@@ -240,10 +240,10 @@ export function GeofenceClock({ jobId, jobAddress, jobLat, jobLng }: GeofenceClo
           type="button"
           onClick={onManualAction}
           disabled={loading || isClockedOut}
-          className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity disabled:opacity-50 ${
+          className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-opacity disabled:opacity-50 ${
             isClockedIn
-              ? "bg-red-500 hover:bg-red-600 active:bg-red-700"
-              : "bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
+              ? "bg-red-500 hover:bg-red-600 active:bg-red-700 text-white"
+              : "bg-white hover:bg-neutral-100 active:bg-neutral-200 text-black"
           }`}
         >
           {loading ? "…" : buttonLabel}

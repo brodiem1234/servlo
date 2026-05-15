@@ -148,7 +148,7 @@ export function JobHistoryPanel({ jobId, jobTitle, onClose }: Props) {
                 <span className="text-[10px] text-[var(--text-muted)]">⌘↵ to save · Esc to cancel</span>
                 <div className="flex gap-2">
                   <button onClick={() => { setAdding(false); setNoteText(""); }} className="rounded px-2 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]">Cancel</button>
-                  <button onClick={addNote} disabled={!noteText.trim() || saving} className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+                  <button onClick={addNote} disabled={!noteText.trim() || saving} className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-black hover:bg-neutral-100 disabled:opacity-60">
                     {saving ? "Saving…" : "Add Note"}
                   </button>
                 </div>

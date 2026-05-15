@@ -40,8 +40,8 @@ export default function DocsIndex() {
   return (
     <article className="prose prose-slate max-w-none">
       <div className="not-prose mb-10">
-        <h1 className="text-4xl font-black text-slate-900">SERVLO Documentation</h1>
-        <p className="mt-3 text-lg text-slate-500">
+        <h1 className="text-4xl font-black text-white">SERVLO Documentation</h1>
+        <p className="mt-3 text-lg text-neutral-400">
           Everything you need to run your service business — jobs, invoicing, marketing, and more.
         </p>
       </div>
@@ -52,11 +52,11 @@ export default function DocsIndex() {
           <Link
             key={card.name}
             href={card.href}
-            className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+            className="group flex flex-col gap-2 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-white/20"
           >
             <span className="text-2xl">{card.emoji}</span>
-            <span className="font-bold text-slate-900 group-hover:text-blue-600">{card.name}</span>
-            <span className="text-xs text-slate-500">{card.tagline}</span>
+            <span className="font-bold text-white">{card.name}</span>
+            <span className="text-xs text-neutral-400">{card.tagline}</span>
           </Link>
         ))}
       </div>
@@ -102,7 +102,7 @@ export default function DocsIndex() {
       <p>
         New accounts are seeded with demo data (jobs, clients, invoices) so you can explore the interface
         before entering real data. Demo records are clearly labelled with a{" "}
-        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 not-italic">DEMO</span>{" "}
+        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold text-white not-italic">DEMO</span>{" "}
         badge and are excluded from all financial totals and reports.
       </p>
 

@@ -10,9 +10,9 @@ export default function QuickStartPage() {
       <h1>Quick Start</h1>
       <p className="lead">Get from sign-up to your first paid invoice in 5 minutes.</p>
 
-      <div className="not-prose mb-8 rounded-xl border border-blue-200 bg-blue-50 p-5">
-        <p className="text-sm font-semibold text-blue-800">⏱ Estimated time: 5 minutes</p>
-        <p className="mt-1 text-sm text-blue-700">
+      <div className="not-prose mb-8 rounded-xl border border-neutral-700 bg-neutral-900 p-5">
+        <p className="text-sm font-semibold text-white">⏱ Estimated time: 5 minutes</p>
+        <p className="mt-1 text-sm text-neutral-300">
           Follow these steps in order. Each one unlocks the next.
         </p>
       </div>

@@ -568,7 +568,7 @@ function GrowAddonCard({
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base font-semibold text-[var(--text-primary)]">SERVLO Grow</h2>
             {growAddonEnabled ? (
-              <span className="inline-flex items-center rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-800 dark:bg-violet-900/40 dark:text-violet-300">
+              <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold text-white">
                 Active
               </span>
             ) : (
@@ -613,7 +613,7 @@ function GrowAddonCard({
                 type="button"
                 onClick={handleAdd}
                 disabled={loading}
-                className="rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
+                className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-neutral-100 disabled:opacity-50"
               >
                 {loading ? "Adding…" : "Add Grow — $15/mo"}
               </button>
@@ -1500,7 +1500,7 @@ function DemoDataSection() {
         type="button"
         onClick={handleSeed}
         disabled={loading}
-        className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium bg-white hover:bg-neutral-100 disabled:opacity-50 text-black transition-colors"
       >
         {loading ? "Loading…" : "Load demo data"}
       </button>

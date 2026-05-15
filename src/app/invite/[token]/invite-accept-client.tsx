@@ -154,7 +154,7 @@ export function InviteAcceptClient({
       <button
         onClick={handleAccept}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 text-sm font-semibold text-black transition hover:bg-neutral-100 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading ? (
           <>

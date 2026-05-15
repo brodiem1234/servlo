@@ -71,7 +71,7 @@ export default async function ReferralLandingPage({ params }: Props) {
 
         {/* Referral badge */}
         <div className="mb-6 text-center">
-          <span className="inline-block rounded-full bg-violet-500/20 border border-violet-400/30 px-4 py-1.5 text-sm font-medium text-violet-300">
+          <span className="inline-block rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-sm font-medium text-white">
             Referred by {referrerLabel}
           </span>
         </div>
@@ -95,7 +95,7 @@ export default async function ReferralLandingPage({ params }: Props) {
             "No lock-in. Cancel any time",
           ].map((feat) => (
             <li key={feat} className="flex items-start gap-3 text-sm text-slate-200">
-              <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-violet-500/30 border border-violet-400/40 flex items-center justify-center text-violet-300 text-xs">
+              <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white text-xs">
                 ✓
               </span>
               {feat}
@@ -106,7 +106,7 @@ export default async function ReferralLandingPage({ params }: Props) {
         {/* CTA */}
         <Link
           href={signupUrl}
-          className="block w-full text-center rounded-xl bg-violet-600 hover:bg-violet-500 transition-colors text-white font-semibold py-3.5 text-base shadow-lg shadow-violet-900/40"
+          className="block w-full text-center rounded-xl bg-white hover:bg-neutral-100 transition-colors text-black font-semibold py-3.5 text-base shadow-lg"
         >
           Start my SERVLO subscription →
         </Link>

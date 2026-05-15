@@ -153,7 +153,7 @@ export default async function StatusPage() {
       <main className="mx-auto max-w-3xl px-6 py-12">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">System Status</h1>
         <p className="mt-2 text-sm text-neutral-400">
-          Live operational status for SERVLO services. Subscribed to{" "}
+          Live operational status for SERVLO services. Subscribe to{" "}
           <a href="https://servlo.app/status" className="font-bold text-white underline underline-offset-4 hover:text-neutral-300">
             this page
           </a>{" "}

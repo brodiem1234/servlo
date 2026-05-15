@@ -197,7 +197,7 @@ export function PwaInstallPrompt() {
 
             <button
               onClick={installAndroid}
-              className="mt-6 w-full rounded-xl bg-blue-500 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-400"
+              className="mt-6 w-full rounded-xl bg-white py-3.5 text-sm font-semibold text-black transition hover:bg-neutral-100"
             >
               Install app
             </button>

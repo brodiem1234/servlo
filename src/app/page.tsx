@@ -90,7 +90,7 @@ export default async function HomePage() {
                 href="/auth/signup"
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto"
               >
-                Sign Up Free
+                Sign Up
                 <ArrowRight size={16} />
               </Link>
               <a
@@ -620,7 +620,7 @@ export default async function HomePage() {
               href="/auth/signup"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto sm:px-8"
             >
-              Sign Up Free
+              Sign Up
               <ArrowRight size={16} />
             </Link>
             <Link

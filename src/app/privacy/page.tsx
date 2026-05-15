@@ -111,12 +111,11 @@ export default function PrivacyPage() {
                 Your data is stored using Supabase, which provides a managed PostgreSQL database and authentication service. Our infrastructure is configured as follows:
               </p>
               <ul className="ml-5 list-disc space-y-2">
-                <li><strong className="text-[#1e3a5f] dark:text-white">Primary servers</strong>:US-East region (Virginia, United States).</li>
-                <li><strong className="text-[#1e3a5f] dark:text-white">Backup servers</strong>:AU-East region (Sydney, Australia).</li>
-                <li><strong className="text-[#1e3a5f] dark:text-white">Encryption</strong>:all data is encrypted at rest and in transit. Connections to the platform are secured using TLS.</li>
+                <li><strong className="text-[#1e3a5f] dark:text-white">Primary servers</strong>: Sydney, Australia (ap-southeast-2) — your data stays in Australia.</li>
+                <li><strong className="text-[#1e3a5f] dark:text-white">Encryption</strong>: all data is encrypted at rest and in transit. Connections to the platform are secured using TLS.</li>
               </ul>
               <p>
-                By using SERVLO, you acknowledge that some of your data may be stored and processed in the United States. We take reasonable steps to ensure that any overseas transfer of personal information is handled in accordance with the APPs, including ensuring that recipients are subject to comparable privacy protections.
+                Your primary data is stored in Australia. Some sub-processors (Stripe for payments, Resend for email, Sentry for error monitoring) may process limited data overseas. We take reasonable steps to ensure any overseas handling of personal information complies with the APPs, including ensuring recipients maintain comparable privacy protections.
               </p>
             </div>
           </section>

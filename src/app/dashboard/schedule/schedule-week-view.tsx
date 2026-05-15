@@ -273,7 +273,7 @@ export function ScheduleWeekView({ jobs: initialJobs, weekStart }: Props) {
             <div className="mt-5 flex gap-2">
               <a
                 href={`/dashboard/owner/jobs?highlight=${selectedJob.id}`}
-                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white text-center hover:bg-blue-700"
+                className="flex-1 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black text-center hover:bg-neutral-100"
               >
                 Open Job
               </a>
