@@ -20,7 +20,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(__dirname, "../public");
 const iconsDir = join(publicDir, "icons");
 
-const BG_COLOUR = { r: 10, g: 15, b: 35, alpha: 1 }; // dark navy #0a0f23
+// Pure black to match the rest of the site (#0A0A0A). Was slate-navy
+// (#0a0f23) before the monochrome theme sweep.
+const BG_COLOUR = { r: 10, g: 10, b: 10, alpha: 1 };
 
 async function generateIcon(svgPath, outputPath, size) {
   const svgBuffer = readFileSync(svgPath);

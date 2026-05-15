@@ -703,8 +703,16 @@ export function SignupForm() {
       return;
     }
 
+    // If any step-1 invariant fails (most commonly: password no longer meets
+    // requirements because of `noPersonal` after a name change), auto-navigate
+    // back to step 1 so the user can fix it in context. Previously they had
+    // to click Back five times.
     const gate = validateStep1();
-    if (gate) { setError(gate); return; }
+    if (gate) {
+      setError(gate);
+      setStep(1);
+      return;
+    }
 
     setOwnerSubmitting(true);
 
@@ -991,7 +999,8 @@ export function SignupForm() {
           Back to homepage
         </Link>
         <div
-          className="auth-card mx-auto w-full max-w-2xl rounded-2xl border border-neutral-800 bg-[#111111] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:p-10"
+          className="auth-card mx-auto flex w-full max-w-2xl flex-col rounded-2xl border border-neutral-800 bg-[#111111] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:p-10"
+          style={{ minHeight: "640px" }}
         >
           <div className="mb-4 flex justify-center">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={140} height={40} unoptimized

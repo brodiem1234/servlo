@@ -227,7 +227,7 @@ export default function CompareSM8Page() {
           <Link href="/">
             <Image src="/servlo-master-white.svg" alt="SERVLO" width={80} height={22} unoptimized
               className="opacity-60 h-5 w-auto hidden dark:block" />
-            <Image src="/servlo-master-dark.svg" alt="SERVLO" width={80} height={22} unoptimized
+            <Image src="/servlo-master-white.svg" alt="SERVLO" width={80} height={22} unoptimized
               className="opacity-60 h-5 w-auto block dark:hidden" />
           </Link>
           <p>&copy; 2026 SERVLO Pty Ltd &nbsp;&middot;&nbsp; ABN: 88 688 301 684 &nbsp;&middot;&nbsp; ServiceM8 pricing sourced from servicem8.com</p>
