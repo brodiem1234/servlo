@@ -51,6 +51,9 @@ export function abnDigitsFromInput(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/** Test ABN that bypasses real validation (all zeros). */
+export const TEST_ABN_DIGITS = "00000000000";
+
 /**
  * Validates an ABN using the official Australian checksum algorithm.
  * Subtract 1 from the first digit, multiply each digit by its weight
@@ -59,6 +62,8 @@ export function abnDigitsFromInput(value: string): string {
 export function validateAbnChecksum(abn: string): boolean {
   const digits = abn.replace(/\D/g, "");
   if (digits.length !== 11) return false;
+  // Test bypass — accepts 00 000 000 000 without real checksum validation.
+  if (digits === TEST_ABN_DIGITS) return true;
   const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
   const d = digits.split("").map(Number);
   d[0] -= 1;
