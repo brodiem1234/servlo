@@ -11,14 +11,14 @@ export default async function UpgradePage() {
       price: "$29/mo",
       priceId: process.env.STRIPE_SOLO_PRICE_ID ?? "",
       features: ["1 user", "Unlimited clients", "AI (50 uses/mo)", "Jobs, invoices, quotes"],
-      accent: "#3B82F6",
+      accent: "#FFFFFF",
     },
     {
       name: "Team",
       price: "$79/mo",
       priceId: process.env.STRIPE_TEAM_PRICE_ID ?? "",
       features: ["Unlimited users", "Unlimited clients", "AI (200 uses/mo)", "SMS automation"],
-      accent: "#7c3aed",
+      accent: "#FFFFFF",
       popular: true,
     },
     {
@@ -26,7 +26,7 @@ export default async function UpgradePage() {
       price: "$149/mo",
       priceId: process.env.STRIPE_BUSINESS_PRICE_ID ?? "",
       features: ["Unlimited users", "AI (500 uses/mo)", "BAS prep", "Xero/MYOB", "White-label"],
-      accent: "#059669",
+      accent: "#FFFFFF",
     },
   ];
   const supabase = await createClient();

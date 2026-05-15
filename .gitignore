@@ -1,4 +1,42 @@
 node_modules/
 .next/
 .env.local
+.env*.local
 STRIPE_PRICE_IDS.md
+
+# Build artefacts
+out/
+build/
+dist/
+tsconfig.tsbuildinfo
+
+# Dev / debug logs
+*.log
+.next-dev.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE / editor scratch
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Vercel CLI scratch
+.vercel/
+
+# Claude Code / Cursor worktrees (internal session state, not source)
+.claude/worktrees/
+.claire/
+.cursor/
+
+# One-off migration / utility scratch files (we have proper ones in scripts/)
+all-migrations.sql
+run-migration.js
+
+# OS clutter
+$RECYCLE.BIN/
+ehthumbs.db

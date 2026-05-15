@@ -82,7 +82,7 @@ export default async function HomePage() {
  Run your trade business like a pro.
  </h1>
  <p className="mt-5 max-w-lg text-base leading-relaxed text-gray-500 dark:text-slate-400 md:mt-6 md:text-lg">
- Jobs. Quotes. Invoices. Team. Marketing. Leads. All in one place &mdash; built for Australian tradies,
+ Jobs. Quotes. Invoices. Team. Marketing. Leads. All in one place, built for Australian tradies,
  cleaners, landscapers, and field service businesses.
  </p>
  <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -164,7 +164,7 @@ export default async function HomePage() {
  <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-200 ring-1 ring-inset ring-emerald-500/30 md:text-[11px]">
  In Progress
  </span>
- <h3 className="mt-2 truncate text-sm font-bold text-white">Install GPOs &mdash; Mike&rsquo;s Plumbing</h3>
+ <h3 className="mt-2 truncate text-sm font-bold text-white">Install GPOs . Mike&rsquo;s Plumbing</h3>
  <p className="truncate text-xs text-slate-400">Norwood, SA &nbsp;&middot;&nbsp; 9:00 AM &ndash; 2:00 PM</p>
  </div>
  <div className="shrink-0 text-right">
@@ -487,7 +487,7 @@ export default async function HomePage() {
  Simple pricing. No surprises.
  </h2>
  <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500 dark:text-slate-400 md:text-base">
- Early adopters lock in the founding rate &mdash; your price never increases while your subscription is active.
+ Early adopters lock in the founding rate . your price never increases while your subscription is active.
  </p>
  <div className="mt-10 md:mt-12">
  <LandingPricing />

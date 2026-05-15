@@ -300,7 +300,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
  : "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
  }`}
  >
- {isFree ? "Start free" : "Start Free Trial"}
+ {isFree ? "Get started" : "Sign up"}
  </Link>
  )}
  </div>
@@ -409,7 +409,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
  : "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
  }`}
  >
- {isFree ? "Start free" : "Start Free Trial"}
+ {isFree ? "Get started" : "Sign up"}
  </Link>
  )}
  </div>
@@ -541,7 +541,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
  : "bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] dark:bg-cyan-400 dark:text-[#0f172a]"
  }`}
  >
- Start Free Trial
+ Sign up
  </Link>
  )}
  </div>

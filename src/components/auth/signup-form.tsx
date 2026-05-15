@@ -972,41 +972,70 @@ export function SignupForm() {
  // EARLYACCESS + annual conflict
  const earlyAccessConflict = isAnnual && appliedPromoCode.toUpperCase() === "EARLYACCESS";
 
- // ── Auto-apply founding-50 promo ─────────────────────────────────────────
- // When fewer than 50 founders have joined, every signup is eligible. Fetch
- // the count on mount and auto-apply the founding promo so users don't have
- // to type "EARLYACCESS". They get the deal automatically. If the count is
- // already 50, this is a no-op and they pay full price.
+ // ── Auto-apply promo code (founder default + URL override) ───────────────
+ // Priority:
+ //   1. ?code=XXX URL param → validate + apply whatever the link says
+ //   2. Otherwise, if founding spots remain, auto-apply EARLYACCESS
+ //   3. If founding spots are gone, no-op (full price)
  useEffect(() => {
  let cancelled = false;
  (async () => {
  try {
- const res = await fetch("/api/founders/count", { cache: "no-store" });
- if (!res.ok) return;
- const data = (await res.json()) as { remaining?: number; isFull?: boolean };
- if (cancelled) return;
- if ((data.remaining ?? 0) > 0 && !data.isFull) {
- // Validate the founding promo code server-side then store it.
- // Wrapped in try so a temporary Stripe error never blocks signup.
+ // Read URL param first
+ const params = typeof window !== "undefined"
+ ? new URLSearchParams(window.location.search)
+ : new URLSearchParams();
+ const urlCode = params.get("code")?.trim().toUpperCase();
+
+ let codeToApply: string | null = null;
+
+ if (urlCode) {
+ // URL takes priority — always try whatever the link supplied
+ codeToApply = urlCode;
+ } else {
+ // No URL override — check if founding spots remain
  try {
- const promoRes = await fetch("/api/stripe/validate-promo", {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({ code: "EARLYACCESS" }),
- });
- const promoData = (await promoRes.json()) as { valid: boolean; discount?: string; percentOff?: number };
- if (!cancelled && promoData.valid) {
- setAppliedPromoCode("EARLYACCESS");
- setPromoResult(promoData);
- setPromoCodeInput("EARLYACCESS");
- setPromoOpen(true);
- }
- } catch (err) {
- console.warn("[signup] auto-apply EARLYACCESS validate failed", err);
+ const res = await fetch("/api/founders/count", { cache: "no-store" });
+ if (res.ok) {
+ const data = (await res.json()) as { remaining?: number; isFull?: boolean };
+ if ((data.remaining ?? 0) > 0 && !data.isFull) {
+ codeToApply = "EARLYACCESS";
  }
  }
  } catch (err) {
  console.warn("[signup] founder count fetch failed", err);
+ }
+ }
+
+ if (!codeToApply || cancelled) return;
+
+ // Validate whichever code we picked.
+ try {
+ const promoRes = await fetch("/api/stripe/validate-promo", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ code: codeToApply }),
+ });
+ const promoData = (await promoRes.json()) as { valid: boolean; discount?: string; percentOff?: number };
+ if (cancelled) return;
+ if (promoData.valid) {
+ setAppliedPromoCode(codeToApply);
+ setPromoResult(promoData);
+ setPromoCodeInput(codeToApply);
+ setPromoOpen(true);
+ } else {
+ // Code didn't validate. Pre-fill input so the user can see what we
+ // tried; show the validation result so the red error renders. They
+ // can edit or remove it.
+ setPromoCodeInput(codeToApply);
+ setPromoResult(promoData);
+ setPromoOpen(true);
+ }
+ } catch (err) {
+ console.warn("[signup] promo code validate failed", err);
+ }
+ } catch (err) {
+ console.warn("[signup] auto-apply promo flow failed", err);
  }
  })();
  return () => { cancelled = true; };

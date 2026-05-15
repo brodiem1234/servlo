@@ -313,7 +313,7 @@ export default async function OwnerDashboardPage({
             Good morning, {firstName}
           </h1>
           <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
-            {formatDateLong(new Date())} &mdash;{" "}
+            {formatDateLong(new Date())}.{" "}
             <span className="font-semibold text-[var(--accent-color)]">SERVLO CORE</span>
           </p>
         </div>
