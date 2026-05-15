@@ -100,13 +100,57 @@ export default async function OwnerClientDetailPage({ params }: Props) {
     "use server";
     const { supabase: sb, user: u } = await requireOwnerWorkspaceFeatures();
     const qid = formData.get("quote_id") as string;
+
+    // Match the quotes/page.tsx behaviour: accepting a quote should also
+    // auto-create the matching job (idempotently — don't create a duplicate
+    // if one already exists for this quote).
+    const { data: quote } = await sb
+      .from("quotes")
+      .select("id, quote_number, client_id, is_demo, notes")
+      .eq("id", qid)
+      .eq("owner_id", u.id)
+      .maybeSingle();
+
+    if (!quote) return { ok: false, message: "Quote not found" };
+    if (quote.is_demo) {
+      // Don't spawn real jobs from demo quotes.
+      await sb.from("quotes").update({ status: "accepted" }).eq("id", qid).eq("owner_id", u.id);
+      revalidatePath(`/dashboard/owner/clients/${clientId}`);
+      return { ok: true, message: "Demo quote accepted" };
+    }
+
+    // Idempotency: don't create a second job if one already references this quote.
+    const { data: existingJob } = await sb
+      .from("jobs")
+      .select("id")
+      .eq("quote_id", quote.id)
+      .eq("owner_id", u.id)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (!existingJob) {
+      await sb.from("jobs").insert({
+        owner_id: u.id,
+        client_id: quote.client_id,
+        title: quote.quote_number ?? "Quote Job",
+        description: (quote as { notes?: string | null }).notes ?? "",
+        status: "scheduled",
+        priority: "normal",
+        is_demo: false,
+        quote_id: quote.id,
+      });
+    }
+
     const { error } = await sb
       .from("quotes")
       .update({ status: "accepted" })
       .eq("id", qid)
       .eq("owner_id", u.id);
     if (error) return { ok: false, message: error.message };
+
     revalidatePath(`/dashboard/owner/clients/${clientId}`);
+    revalidatePath("/dashboard/owner/jobs");
+    revalidatePath("/dashboard/owner/quotes");
     return { ok: true, message: "Quote accepted" };
   }
 

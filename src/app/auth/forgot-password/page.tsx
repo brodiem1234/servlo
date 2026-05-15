@@ -7,10 +7,20 @@ import { Button } from "@/components/ui/button";
 import { authUrl } from "@/lib/auth/site-origin";
 import { ArrowLeft } from "lucide-react";
 
+/**
+ * Forgot-password request handler. Returns the SAME success message
+ * regardless of whether the email exists. Prevents user-existence leak
+ * (attackers can't enumerate registered emails by submitting the form).
+ *
+ * Real errors (rate limit, network) still get logged server-side but the
+ * user sees the generic message.
+ */
 async function requestReset(formData: FormData) {
   "use server";
   const email = String(formData.get("email") ?? "").trim();
-  if (!email) redirect("/auth/forgot-password?error=Enter%20your%20email");
+  if (!email) {
+    redirect("/auth/forgot-password?error=Enter%20your%20email");
+  }
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -26,25 +36,37 @@ async function requestReset(formData: FormData) {
         },
         remove(name: string, options: Record<string, unknown>) {
           cookieStore.set({ name, value: "", ...options });
-        }
-      }
+        },
+      },
     }
   );
 
   const redirectTo = authUrl("/auth/reset-password");
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+  // Log server-side so we can debug, but never surface to the user — that
+  // would reveal whether the email exists in the DB.
   if (error) {
-    redirect(`/auth/forgot-password?error=${encodeURIComponent(error.message)}&email=${encodeURIComponent(email)}`);
+    console.warn("[forgot-password] resetPasswordForEmail error:", error.message);
   }
-  redirect(`/auth/forgot-password?success=${encodeURIComponent("Check your email for a reset link.")}&email=${encodeURIComponent(email)}`);
+
+  // Always show the same success message. If the email exists, Supabase
+  // sends the reset link. If it doesn't, nothing happens — but the attacker
+  // can't tell the difference.
+  redirect(
+    `/auth/forgot-password?success=${encodeURIComponent(
+      "If an account exists for that email, we've sent a reset link. Check your inbox."
+    )}&email=${encodeURIComponent(email)}`
+  );
 }
 
 type Props = {
-  searchParams?: { error?: string; success?: string; email?: string };
+  searchParams?: Promise<{ error?: string; success?: string; email?: string }>;
 };
 
-export default function ForgotPasswordPage({ searchParams }: Props) {
-  const emailValue = searchParams?.email ?? "";
+export default async function ForgotPasswordPage({ searchParams }: Props) {
+  const sp = (await searchParams) ?? {};
+  const emailValue = sp.email ?? "";
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
       <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm font-medium text-white/50 transition hover:text-white">
@@ -61,11 +83,11 @@ export default function ForgotPasswordPage({ searchParams }: Props) {
           Enter your email and we&apos;ll send a reset link.
         </p>
 
-        {searchParams?.success ? (
-          <p className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{searchParams.success}</p>
+        {sp.success ? (
+          <p className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{sp.success}</p>
         ) : null}
-        {searchParams?.error ? (
-          <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{searchParams.error}</p>
+        {sp.error ? (
+          <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{sp.error}</p>
         ) : null}
 
         <form action={requestReset} className="mt-6 space-y-4">

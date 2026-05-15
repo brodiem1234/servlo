@@ -258,21 +258,35 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
       .single();
     if (quote?.is_demo) return {};
     if (quote) {
-      const { data: newJob } = await sb.from("jobs").insert({
-        owner_id: owner.id,
-        client_id: quote.client_id,
-        title: quote.quote_number ?? "Quote Job",
-        description: (quote as { notes?: string | null }).notes ?? "",
-        status: "scheduled",
-        priority: "normal",
-        is_demo: false,
-        quote_id: quote.id
-      }).select("id").single();
+      // Idempotency: if a job already exists for this quote, don't create a
+      // duplicate. Accepting twice (e.g. double-click) was creating extra jobs.
+      const { data: existingJob } = await sb
+        .from("jobs")
+        .select("id")
+        .eq("quote_id", quote.id)
+        .eq("owner_id", owner.id)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      let jobId: string | undefined = existingJob?.id;
+      if (!existingJob) {
+        const { data: newJob } = await sb.from("jobs").insert({
+          owner_id: owner.id,
+          client_id: quote.client_id,
+          title: quote.quote_number ?? "Quote Job",
+          description: (quote as { notes?: string | null }).notes ?? "",
+          status: "scheduled",
+          priority: "normal",
+          is_demo: false,
+          quote_id: quote.id
+        }).select("id").single();
+        jobId = newJob?.id;
+      }
       await sb.from("quotes").update({ status: "accepted" }).eq("id", quote.id).eq("owner_id", owner.id);
       revalidatePath("/dashboard/owner/quotes");
       revalidatePath("/dashboard/owner/jobs");
       revalidatePath("/dashboard/owner");
-      return { jobId: newJob?.id };
+      return { jobId };
     }
     return {};
   }

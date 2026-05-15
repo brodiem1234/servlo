@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
       if (existing) clientId = existing.id;
     }
 
-    // Insert the enquiry
+    // Insert the enquiry. If this fails the booking is lost — bail out
+    // with a 500 so the widget can show a real error to the visitor rather
+    // than pretending success.
     const { error: insertError } = await admin.from("client_enquiries").insert({
       owner_id,
       client_id: clientId,
@@ -58,10 +60,13 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       console.error("[booking/request] insert error:", insertError);
-      // If column doesn't exist yet, fail gracefully
+      return NextResponse.json(
+        { error: "Couldn't save your request. Please try again or call the business directly." },
+        { status: 500 }
+      );
     }
 
-    // Notify the owner by email
+    // Notify the owner by email (only after the row was successfully saved).
     try {
       const brand = await getBusinessBrand(owner_id);
       const { data: ownerAuth } = await admin.auth.admin.getUserById(owner_id);

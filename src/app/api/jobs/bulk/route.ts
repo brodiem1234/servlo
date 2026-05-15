@@ -58,6 +58,24 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "assign_employee") {
+    // Verify the employee actually belongs to this owner before assigning.
+    // Previously an owner could attach another business's employee_id.
+    if (body.employee_id) {
+      const { data: employee, error: employeeError } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("id", body.employee_id)
+        .eq("owner_id", user.id)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (employeeError || !employee) {
+        return NextResponse.json(
+          { error: "Employee not found or doesn't belong to your business" },
+          { status: 403 }
+        );
+      }
+    }
+
     const { error } = await supabase
       .from("jobs")
       .update({ employee_id: body.employee_id ?? null })
