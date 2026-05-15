@@ -96,7 +96,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="font-bold text-white underline underline-offset-4 transition hover:text-white/80"
+              className="text-white transition hover:text-white/70"
             >
               {item.label}
             </Link>
@@ -109,7 +109,7 @@ export function SiteHeader() {
               onClick={() => setMoreOpen((v) => !v)}
               aria-expanded={moreOpen}
               aria-haspopup="menu"
-              className="inline-flex items-center gap-1 font-bold text-white underline underline-offset-4 transition hover:text-white/80"
+              className="inline-flex items-center gap-1 text-white transition hover:text-white/70"
             >
               More
               <ChevronDown size={14} aria-hidden className={moreOpen ? "rotate-180 transition" : "transition"} />
@@ -125,7 +125,7 @@ export function SiteHeader() {
                     href={item.href}
                     role="menuitem"
                     onClick={closeAll}
-                    className="block px-3 py-2 text-sm font-bold text-white underline underline-offset-4 transition hover:bg-white/5"
+                    className="block px-3 py-2 text-sm text-white transition hover:bg-white/5"
                   >
                     {item.label}
                   </Link>
@@ -139,7 +139,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 md:gap-4">
           <Link
             href="/auth/login"
-            className="text-sm font-bold text-white underline underline-offset-4 transition hover:text-white/80"
+            className="text-sm font-medium text-white transition hover:text-white/70"
             onClick={closeAll}
           >
             Log in
@@ -172,13 +172,13 @@ export function SiteHeader() {
           id="site-header-mobile-menu"
           className="border-t border-white/[0.06] bg-[#0A0A0A] px-4 py-3 shadow-lg md:hidden"
         >
-          <nav aria-label="Mobile" className="flex flex-col gap-0.5 text-base font-bold text-white">
+          <nav aria-label="Mobile" className="flex flex-col gap-0.5 text-base font-medium text-white">
             {PRIMARY_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={closeAll}
-                className="rounded-lg px-3 py-3 underline underline-offset-4 transition hover:bg-white/5"
+                className="rounded-lg px-3 py-3 transition hover:bg-white/5"
               >
                 {item.label}
               </Link>
@@ -191,7 +191,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 onClick={closeAll}
-                className="rounded-lg px-3 py-3 underline underline-offset-4 transition hover:bg-white/5"
+                className="rounded-lg px-3 py-3 transition hover:bg-white/5"
               >
                 {item.label}
               </Link>

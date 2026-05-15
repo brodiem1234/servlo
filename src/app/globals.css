@@ -83,32 +83,37 @@
   }
 }
 
-/* Brand + sidebar tokens — dark mode only */
+/* ── Brand + sidebar tokens (pure-black dark theme) ────────────────────────
+ * One palette across marketing AND dashboard. White as the accent so the
+ * brand reads consistently from landing → signup → dashboard. Destructive
+ * actions keep red; status badges keep their semantic colours.
+ */
 :root {
-  --brand-accent: #3B82F6;
-  --brand-accent-hover: color-mix(in srgb, var(--brand-accent) 82%, black);
+  --brand-accent: #FFFFFF;
+  --brand-accent-hover: #E5E5E5;
   --accent-color: var(--brand-accent);
   --accent-hover: var(--brand-accent-hover);
-  --bg-primary: #080d18;
-  --bg-secondary: #0f1623;
-  --bg-card: #0f1623;
-  --card-bg: #0f1623;
-  --text-primary: #CBD5E1;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --border: rgba(255,255,255,0.15);
-  --input-bg: #0d1420;
-  --sidebar-bg: #0f1623;
-  --sidebar-text: #f8fafc;
-  --sidebar-text-muted: #cbd5e1;
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #111111;
+  --bg-card: #111111;
+  --card-bg: #111111;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A3A3A3;
+  --text-muted: #737373;
+  --border: rgba(255,255,255,0.12);
+  --input-bg: #0d0d0d;
+  --sidebar-bg: #0A0A0A;
+  --sidebar-text: #FAFAFA;
+  --sidebar-text-muted: #A3A3A3;
   --sidebar-divider: rgba(255,255,255,0.08);
-  --sidebar-hover-bg: rgba(255,255,255,0.05);
-  --sidebar-active-bg: var(--brand-accent);
-  --sidebar-active-text: #ffffff;
+  --sidebar-hover-bg: rgba(255,255,255,0.04);
+  --sidebar-active-bg: rgba(255,255,255,0.08);
+  --sidebar-active-text: #FFFFFF;
   --sidebar-ring: var(--brand-accent);
-  /* Core product blue (used ONLY for Core product card) */
-  --core-blue: #2563eb;
-  --core-blue-bg: #1e3a8a;
+  /* Legacy product blue — kept as fallback for any remaining inline references.
+     New code should use --brand-accent. */
+  --core-blue: #FFFFFF;
+  --core-blue-bg: #1a1a1a;
 }
 
 .dashboard-theme {
@@ -335,137 +340,32 @@
   border-color: rgba(255,255,255,0.15) !important;
 }
 
-/* ── Monochromatic product theme tokens ─────────────────────────────────── */
-[data-product="core"] {
-  --product-rgb: 59,130,246;
-  --product-accent: #3B82F6;
-  --product-accent-light: #93C5FD;
-  --product-muted: #1a2e4a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(199deg) brightness(103%) contrast(96%) drop-shadow(0 0 10px #3B82F6) drop-shadow(0 0 20px rgba(59,130,246,0.4));
-}
-[data-product="grow"] {
-  --product-rgb: 124,58,237;
-  --product-accent: #7C3AED;
-  --product-accent-light: #A78BFA;
-  --product-muted: #1a0a2e;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(24%) sepia(97%) saturate(1900%) hue-rotate(258deg) brightness(90%) contrast(95%) drop-shadow(0 0 10px #7C3AED) drop-shadow(0 0 20px rgba(124,58,237,0.4));
-}
-[data-product="leads"] {
-  --product-rgb: 245,158,11;
-  --product-accent: #F59E0B;
-  --product-accent-light: #FCD34D;
-  --product-muted: #3d2000;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(70%) sepia(90%) saturate(900%) hue-rotate(5deg) brightness(102%) drop-shadow(0 0 10px #F59E0B) drop-shadow(0 0 20px rgba(245,158,11,0.4));
-}
-[data-product="answer"] {
-  --product-rgb: 20,184,166;
-  --product-accent: #14B8A6;
-  --product-accent-light: #5EEAD4;
-  --product-muted: #003d36;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(57%) sepia(85%) saturate(400%) hue-rotate(140deg) brightness(95%) drop-shadow(0 0 10px #14B8A6) drop-shadow(0 0 20px rgba(20,184,166,0.4));
-}
-[data-product="pay"] {
-  --product-rgb: 16,185,129;
-  --product-accent: #10B981;
-  --product-accent-light: #6EE7B7;
-  --product-muted: #003d1a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(57%) sepia(85%) saturate(500%) hue-rotate(120deg) brightness(95%) drop-shadow(0 0 10px #10B981) drop-shadow(0 0 20px rgba(16,185,129,0.4));
-}
-[data-product="hire"] {
-  --product-rgb: 234,88,12;
-  --product-accent: #EA580C;
-  --product-accent-light: #FB923C;
-  --product-muted: #3d1500;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(40%) sepia(90%) saturate(1200%) hue-rotate(10deg) brightness(100%) drop-shadow(0 0 10px #EA580C) drop-shadow(0 0 20px rgba(234,88,12,0.4));
-}
-[data-product="fleet"] {
-  --product-rgb: 249,115,22;
-  --product-accent: #F97316;
-  --product-accent-light: #FDBA74;
-  --product-muted: #3d1500;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(55%) sepia(90%) saturate(700%) hue-rotate(355deg) brightness(105%) drop-shadow(0 0 10px #F97316) drop-shadow(0 0 20px rgba(249,115,22,0.4));
-}
-[data-product="finance-hub"] {
-  --product-rgb: 6,182,212;
-  --product-accent: #06B6D4;
-  --product-accent-light: #67E8F9;
-  --product-muted: #003d4a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(100%) invert(55%) sepia(90%) saturate(700%) hue-rotate(170deg) brightness(100%) drop-shadow(0 0 10px #06B6D4) drop-shadow(0 0 20px rgba(6,182,212,0.4));
-}
-[data-product="insurance"] {
-  --product-rgb: 107,114,128;
-  --product-accent: #6B7280;
-  --product-accent-light: #9CA3AF;
-  --product-muted: #1a1a1a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
-}
-[data-product="safe"] {
-  --product-rgb: 107,114,128;
-  --product-accent: #6B7280;
-  --product-accent-light: #9CA3AF;
-  --product-muted: #1a1a1a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
-}
-[data-product="books"] {
-  --product-rgb: 107,114,128;
-  --product-accent: #6B7280;
-  --product-accent-light: #9CA3AF;
-  --product-muted: #1a1a1a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
-}
-[data-product="academy"] {
-  --product-rgb: 107,114,128;
-  --product-accent: #6B7280;
-  --product-accent-light: #9CA3AF;
-  --product-muted: #1a1a1a;
-  --product-sidebar: #0A0A0A;
-  --product-main: #0A0A0A;
-  background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
-}
-
+/* ── Unified product theme — pure-black, white-accent ───────────────────────
+ * All products share the same colour palette so the brand reads consistently
+ * across Core, Grow, Leads, Fleet, etc. The only thing that changes between
+ * products is the page title and feature set.
+ */
+[data-product="core"],
+[data-product="grow"],
+[data-product="leads"],
+[data-product="answer"],
+[data-product="pay"],
+[data-product="hire"],
+[data-product="fleet"],
+[data-product="finance-hub"],
+[data-product="insurance"],
+[data-product="safe"],
+[data-product="books"],
+[data-product="academy"],
 [data-product="connect"] {
-  --product-rgb: 107,114,128;
-  --product-accent: #6B7280;
-  --product-accent-light: #9CA3AF;
+  --product-rgb: 255,255,255;
+  --product-accent: #FFFFFF;
+  --product-accent-light: #E5E5E5;
   --product-muted: #1a1a1a;
   --product-sidebar: #0A0A0A;
   --product-main: #0A0A0A;
   background-color: #0A0A0A !important;
-  --logo-filter: brightness(0) saturate(0%) invert(50%) drop-shadow(0 0 10px #6B7280) drop-shadow(0 0 20px rgba(107,114,128,0.4));
+  --logo-filter: brightness(0) saturate(100%) invert(100%) drop-shadow(0 0 8px rgba(255,255,255,0.25)) drop-shadow(0 0 16px rgba(255,255,255,0.15));
 }
 
 /* Product shells — dark mode only */
@@ -618,15 +518,110 @@
   align-items: center;
 }
 .badge-progress, .badge-sent, .badge-in-progress {
-  background: rgba(59,130,246,0.15);
-  color: #3B82F6;
-  border: 1px solid rgba(59,130,246,0.3);
+  background: rgba(255,255,255,0.08);
+  color: #FAFAFA;
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 9999px;
   padding: 2px 8px;
   font-size: 11px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
+}
+
+/* ── Monochrome utility overrides ──────────────────────────────────────────
+ * Catches Tailwind blue / cyan / sky / indigo / emerald / violet / purple
+ * utilities that linger inside dashboard pages and forces them to monochrome.
+ * Semantic destructive (red/rose) and warning (amber/orange) are preserved.
+ * Status badges with explicit `.badge-*` classes are also preserved.
+ */
+.dashboard-theme [class*="bg-blue-"],
+.dashboard-theme [class*="bg-cyan-"],
+.dashboard-theme [class*="bg-sky-"],
+.dashboard-theme [class*="bg-indigo-"],
+.dashboard-theme [class*="bg-violet-"],
+.dashboard-theme [class*="bg-purple-"],
+.dashboard-theme [class*="bg-teal-"],
+.auth-theme [class*="bg-blue-"],
+.auth-theme [class*="bg-cyan-"],
+.auth-theme [class*="bg-sky-"],
+.auth-theme [class*="bg-indigo-"] {
+  background-color: #FFFFFF !important;
+  color: #0A0A0A !important;
+}
+
+.dashboard-theme [class*="text-blue-"],
+.dashboard-theme [class*="text-cyan-"],
+.dashboard-theme [class*="text-sky-"],
+.dashboard-theme [class*="text-indigo-"],
+.dashboard-theme [class*="text-violet-"],
+.dashboard-theme [class*="text-purple-"],
+.dashboard-theme [class*="text-teal-"],
+.auth-theme [class*="text-blue-"],
+.auth-theme [class*="text-cyan-"],
+.auth-theme [class*="text-sky-"],
+.auth-theme [class*="text-indigo-"] {
+  color: #FFFFFF !important;
+}
+
+.dashboard-theme [class*="border-blue-"],
+.dashboard-theme [class*="border-cyan-"],
+.dashboard-theme [class*="border-sky-"],
+.dashboard-theme [class*="border-indigo-"],
+.dashboard-theme [class*="border-violet-"],
+.dashboard-theme [class*="border-purple-"],
+.dashboard-theme [class*="border-teal-"] {
+  border-color: rgba(255,255,255,0.2) !important;
+}
+
+/* Emerald success colour: dial it down. Still readable, no longer brand-loud. */
+.dashboard-theme [class*="bg-emerald-"]:not(.badge-active):not(.badge-paid):not(.badge-completed),
+.dashboard-theme [class*="bg-green-"]:not(.badge-active):not(.badge-paid):not(.badge-completed) {
+  background-color: rgba(34,197,94,0.12) !important;
+  color: #22C55E !important;
+}
+.dashboard-theme [class*="text-emerald-"]:not(.badge-active):not(.badge-paid):not(.badge-completed),
+.dashboard-theme [class*="text-green-"]:not(.badge-active):not(.badge-paid):not(.badge-completed) {
+  color: #22C55E !important;
+}
+
+/* ── Destructive buttons — modern red outline ──────────────────────────────
+ * Mark destructive buttons with `data-destructive` or `.btn-destructive` for
+ * a consistent danger affordance that fits the dark theme.
+ */
+button[data-destructive="true"],
+a[data-destructive="true"],
+.btn-destructive {
+  background-color: transparent !important;
+  color: #F87171 !important;
+  border: 1px solid #F87171 !important;
+}
+button[data-destructive="true"]:hover,
+a[data-destructive="true"]:hover,
+.btn-destructive:hover {
+  background-color: rgba(248,113,113,0.1) !important;
+}
+
+/* ── Marketing content links — inline body links get underline + bold ──────
+ * Targets links inside <p> tags or <article> content. Excludes anything that
+ * looks like a button (rounded backgrounds, role=button, .btn class).
+ *
+ * NAV LINKS DON'T MATCH — they live in <header> + <nav> which are not
+ * <p>/<article>. So Pricing/Compare/Docs/Status stay clean.
+ */
+article p a:not([role="button"]):not(.btn):not([class*="rounded"]),
+article li a:not([role="button"]):not(.btn):not([class*="rounded"]),
+main p a:not([role="button"]):not(.btn):not([class*="rounded"]):not([class*="bg-"]),
+main li a:not([role="button"]):not(.btn):not([class*="rounded"]):not([class*="bg-"]) {
+  color: #FFFFFF;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+article p a:hover,
+main p a:hover {
+  color: #E5E5E5;
 }
 .badge-coming-soon, .badge-locked {
   background: rgba(255,255,255,0.06);
