@@ -11,7 +11,7 @@ const initial: CompleteProfileState = { error: null };
 function RetryButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] sm:w-auto" disabled={pending}>
+    <Button type="submit" className="w-full bg-white text-black hover:bg-neutral-100 sm:w-auto" disabled={pending}>
       {pending ? "Retrying…" : "Retry setup"}
     </Button>
   );
@@ -54,7 +54,7 @@ export function CompleteProfileClient({ flash, signedIn, email }: Props) {
           </form>
         ) : (
           <div className="mt-6 space-y-3">
-            <Button asChild className="w-full bg-[var(--accent-color)] text-white hover:bg-[var(--accent-hover)] sm:w-auto">
+            <Button asChild className="w-full bg-white text-black hover:bg-neutral-100 sm:w-auto">
               <Link href="/auth/login">Sign in</Link>
             </Button>
             <p className="text-sm text-slate-400">
@@ -65,7 +65,7 @@ export function CompleteProfileClient({ flash, signedIn, email }: Props) {
 
         <p className="mt-8 text-sm text-slate-400">
           Wrong place?{" "}
-          <Link href="/auth/signup" className="font-semibold text-[var(--accent-color)] hover:underline">
+          <Link href="/auth/signup" className="font-semibold text-white hover:underline">
             Back to signup
           </Link>
         </p>
