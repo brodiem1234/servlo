@@ -854,8 +854,16 @@ export function SignupForm() {
           setFieldErrors((prev) => ({ ...prev, abn: parsed.error ?? "ABN already registered" }));
           return;
         }
-        console.error("[signup/owner] setup-business failed after retry, continuing to dashboard", parsed);
-        router.push("/dashboard/owner");
+        // Both setup-business attempts failed. The immediateOwnerUpsert pass
+        // (above) may or may not have persisted the data — if it didn't, the
+        // dashboard will render with empty business/profile rows and the user
+        // would have to re-enter everything in Settings.
+        //
+        // Send them to the onboarding recovery page instead so they can
+        // confirm their data and we get a clean record.
+        console.error("[signup/owner] setup-business failed after retry, sending to onboarding recovery", parsed);
+        setError("We had trouble setting up your workspace. We've got your account — just confirm a few details on the next page.");
+        router.push("/onboarding/complete-profile");
         router.refresh();
         return;
       }
@@ -898,6 +906,10 @@ export function SignupForm() {
               selectedProductCombo,
               selectedPlanTier,
               annual: isAnnual,
+              // ABN passed so the create-trial route can run the dedup check
+              // (one active subscription per ABN) and attach the ABN to the
+              // Stripe customer as a tax ID.
+              abn: abnRaw,
               ...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
             }),
           });

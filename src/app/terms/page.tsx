@@ -13,10 +13,46 @@ export default function TermsPage() {
       <SiteHeader />
 
       <div className="mx-auto max-w-4xl px-4 py-16">
-        <h1 className="text-4xl font-extrabold text-[#1e3a5f] dark:text-white">Terms of Service</h1>
-        <p className="mt-2 text-sm text-[#64748b] dark:text-slate-400">Last updated: May 2026</p>
+        <h1 className="text-4xl font-extrabold text-white">Terms of Service</h1>
+        <p className="mt-2 text-sm text-neutral-400">Last updated: May 2026</p>
 
-        <div className="mt-10 space-y-10 text-[#334155] dark:text-slate-300">
+        {/* ── TL;DR — skim-friendly summary ─────────────────────────────── */}
+        <div className="mt-8 rounded-2xl border border-white/15 bg-white/[0.04] p-6 sm:p-7">
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
+            The short version
+          </p>
+          <ul className="space-y-3 text-base leading-relaxed text-white">
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>SERVLO is a subscription.</strong> You pay monthly or annually. Plans start at $29/mo. Cancel anytime from your billing settings.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>30-day money-back guarantee.</strong> If it&apos;s not for you in the first month, email us and we&apos;ll refund.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>You own your data.</strong> Export it anytime. After cancellation we keep it 30 days, then delete.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>Don&apos;t do anything illegal or abusive</strong> with the platform — no spam, no malware, no scraping, no reselling without our okay.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>We aim for 99.9% uptime</strong> but can&apos;t guarantee it. Status updates at <Link href="/status" className="font-bold underline">/status</Link>.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>Australian Consumer Law always applies.</strong> Your statutory rights aren&apos;t cut by anything below.</span>
+            </li>
+          </ul>
+          <p className="mt-5 text-xs leading-relaxed text-neutral-400">
+            This summary is here so you can skim. It is <em>not</em> legally binding — the full terms below are. But the short version is the spirit of what you&apos;re agreeing to.
+          </p>
+        </div>
+
+        <div className="mt-10 space-y-10 text-white">
 
           {/* 1. Acceptance of Terms */}
           <section>

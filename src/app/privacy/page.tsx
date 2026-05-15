@@ -13,13 +13,49 @@ export default function PrivacyPage() {
       <SiteHeader />
 
       <div className="mx-auto max-w-4xl px-4 py-16">
-        <h1 className="text-4xl font-extrabold text-[#1e3a5f] dark:text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#64748b] dark:text-slate-400">Last updated: May 2026</p>
-        <p className="mt-4 text-base leading-relaxed text-[#334155] dark:text-slate-300">
+        <h1 className="text-4xl font-extrabold text-white">Privacy Policy</h1>
+        <p className="mt-2 text-sm text-neutral-400">Last updated: May 2026</p>
+        <p className="mt-4 text-base leading-relaxed text-white">
           SERVLO (ABN 88 688 301 684) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information in accordance with the <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs).
         </p>
 
-        <div className="mt-10 space-y-10 text-[#334155] dark:text-slate-300">
+        {/* ── TL;DR — skim-friendly summary ─────────────────────────────── */}
+        <div className="mt-8 rounded-2xl border border-white/15 bg-white/[0.04] p-6 sm:p-7">
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
+            The short version
+          </p>
+          <ul className="space-y-3 text-base leading-relaxed text-white">
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>You own your data.</strong> We process it on your behalf so SERVLO can do its job. We never sell it.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>Hosted in Sydney</strong> on Supabase (ap-southeast-2). Some sub-processors (Stripe, Resend, Sentry) handle limited data overseas under standard cross-border safeguards.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>You can export, correct, or delete</strong> your data anytime. Email us and we&apos;ll action it within 30 days.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>30 days after cancellation we delete everything,</strong> except records the ATO requires us to keep for 5 years (invoices, payments).</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>Marketing emails are opt-in only.</strong> Service emails (password resets, billing) you can&apos;t opt out of unless you cancel the account.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+              <span><strong>Notifiable data breach scheme:</strong> if a breach could cause you serious harm we&apos;ll notify you and the OAIC within 30 days as required.</span>
+            </li>
+          </ul>
+          <p className="mt-5 text-xs leading-relaxed text-neutral-400">
+            This summary is here so you can skim. It is <em>not</em> legally binding — the full policy below is. But it&apos;s the spirit of how we handle your data.
+          </p>
+        </div>
+
+        <div className="mt-10 space-y-10 text-white">
 
           {/* 1. Information We Collect */}
           <section>
