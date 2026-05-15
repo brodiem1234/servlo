@@ -769,23 +769,32 @@ export function SignupForm() {
       }
 
       // Immediately upsert profiles + businesses using service-role so data is
-      // persisted even if /api/setup-business fails or times out.
-      try {
-        await immediateOwnerUpsert({
-          userId,
-          fullName: nameInput.trim(),
-          email: emailInput.trim(),
-          phone: phoneE164,
-          businessName: businessNameInput.trim(),
-          abn: abnRaw,
-          entityName: entityName || null,
-          selectedIndustries: selected,
-          selectedPlan: selectedPlanTier,
-          selectedProducts: selectedProductCombo,
-        });
-      } catch (upsertErr) {
-        // Non-fatal: /api/setup-business will also upsert as a second pass.
-        console.error("[signup/owner] immediateOwnerUpsert threw (non-fatal)", upsertErr);
+      // persisted even if /api/setup-business fails or times out. The helper
+      // never throws — it returns a structured result we inspect for
+      // diagnostics. The second-pass /api/setup-business below covers any
+      // gaps; if BOTH fail the user is routed to /onboarding/complete-profile.
+      const upsertResult = await immediateOwnerUpsert({
+        userId,
+        fullName: nameInput.trim(),
+        email: emailInput.trim(),
+        phone: phoneE164,
+        businessName: businessNameInput.trim(),
+        abn: abnRaw,
+        entityName: entityName || null,
+        selectedIndustries: selected,
+        selectedPlan: selectedPlanTier,
+        selectedProducts: selectedProductCombo,
+      });
+
+      if (!upsertResult.ok) {
+        console.warn(
+          "[signup/owner] immediateOwnerUpsert partial:",
+          {
+            profileWritten: upsertResult.profileWritten,
+            businessWritten: upsertResult.businessWritten,
+            errors: upsertResult.errors,
+          }
+        );
       }
 
       // Module toggles are no longer chosen during signup, so we initialise the

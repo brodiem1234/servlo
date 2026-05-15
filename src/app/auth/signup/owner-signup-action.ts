@@ -17,23 +17,47 @@ export type OwnerSignupPayload = {
   selectedProducts: string;
 };
 
+export type OwnerSignupResult = {
+  ok: boolean;
+  profileWritten: boolean;
+  businessWritten: boolean;
+  errors: string[];
+};
+
 /**
- * Immediately upserts profiles + businesses rows right after auth.signUp() succeeds.
- * Uses service-role to bypass RLS — called from signup-form.tsx.
- * Non-fatal: logs errors but never throws so the signup flow can continue.
+ * Immediately upserts profiles + businesses rows right after auth.signUp().
+ * Uses service-role to bypass RLS.
+ *
+ * Returns a structured result so the caller (signup-form) can verify both
+ * writes succeeded and decide whether to fall back to the /api/setup-business
+ * pass or route the user to /onboarding/complete-profile for recovery.
+ *
+ * Never throws — errors are captured in the returned `errors` array.
  */
-export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise<void> {
+export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise<OwnerSignupResult> {
+  const result: OwnerSignupResult = {
+    ok: false,
+    profileWritten: false,
+    businessWritten: false,
+    errors: [],
+  };
+
   let admin;
   try {
     admin = createAdminClient();
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "admin client unavailable";
     console.error("[immediateOwnerUpsert] admin client unavailable", e);
-    return;
+    result.errors.push(`admin_client: ${msg}`);
+    return result;
   }
 
-  const { userId, fullName, email, phone, businessName, abn, entityName, selectedIndustries, selectedPlan, selectedProducts } = payload;
+  const {
+    userId, fullName, email, phone, businessName, abn,
+    entityName, selectedIndustries, selectedPlan, selectedProducts
+  } = payload;
 
-  // Upsert profile
+  // ── Profile ──────────────────────────────────────────────────────────────
   try {
     const { error } = await admin.from("profiles").upsert(
       {
@@ -54,12 +78,17 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
         message: error.message,
         details: error.details,
       });
+      result.errors.push(`profiles: ${error.message}`);
+    } else {
+      result.profileWritten = true;
     }
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "unknown profile upsert error";
     console.error("[immediateOwnerUpsert] profiles upsert threw", e);
+    result.errors.push(`profiles_threw: ${msg}`);
   }
 
-  // Upsert business
+  // ── Business ─────────────────────────────────────────────────────────────
   try {
     const { error } = await admin.from("businesses").upsert(
       {
@@ -80,8 +109,16 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
         message: error.message,
         details: error.details,
       });
+      result.errors.push(`businesses: ${error.message}`);
+    } else {
+      result.businessWritten = true;
     }
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "unknown business upsert error";
     console.error("[immediateOwnerUpsert] businesses upsert threw", e);
+    result.errors.push(`businesses_threw: ${msg}`);
   }
+
+  result.ok = result.profileWritten && result.businessWritten;
+  return result;
 }
