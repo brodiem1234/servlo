@@ -28,10 +28,8 @@ function mapSignInError(raw: string): string {
 }
 
 const inputCls =
-  "h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 transition " +
-  "focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 " +
-  "dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:placeholder-zinc-500 " +
-  "dark:focus:border-white dark:focus:ring-white/20";
+  "h-11 w-full rounded-lg border border-neutral-700 bg-white/[0.06] px-3 text-sm text-white transition " +
+  "placeholder-zinc-500 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20";
 
 export function LoginExperience({
   emailValue,
@@ -88,12 +86,12 @@ export function LoginExperience({
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-[#F4F4F5] px-4 py-10 dark:bg-[#0A0A0A] sm:py-16">
-      <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-neutral-400 transition hover:text-white">
+    <main className="relative flex min-h-screen items-center justify-center bg-[#0A0A0A] px-4 py-10 sm:py-16 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
+      <Link href="/" className="absolute left-4 top-4 flex items-center gap-1.5 text-sm text-white/50 transition hover:text-white">
         <ArrowLeft size={15} />
         Back to homepage
       </Link>
-      <div className="mx-auto w-full max-w-[480px] rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-xl sm:p-10">
+      <div className="mx-auto w-full max-w-[480px] rounded-2xl border border-neutral-800 bg-[#111111] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:p-10">
 
         {/* Logo */}
         <div className="mb-8 flex justify-center">
@@ -108,11 +106,11 @@ export function LoginExperience({
           />
         </div>
 
-        <h1 className="text-2xl font-bold leading-tight text-zinc-900 dark:text-white sm:text-[32px]">Welcome back</h1>
-        <p className="mt-2 text-sm text-neutral-400">Continue your business from where you left off.</p>
+        <h1 className="text-2xl font-bold leading-tight text-white sm:text-[32px]">Welcome back</h1>
+        <p className="mt-2 text-sm text-slate-400">Continue your business from where you left off.</p>
 
         {flashSuccess && (
-          <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <p className="mt-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
             {flashSuccess}
           </p>
         )}
@@ -122,7 +120,7 @@ export function LoginExperience({
             {/* Email/password form */}
             <form onSubmit={handleEmailSignIn} className="mt-7 space-y-4">
               <div>
-                <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-zinc-300">
                   Email
                 </label>
                 <input
@@ -138,13 +136,13 @@ export function LoginExperience({
               </div>
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => { setMode("reset"); setResetStatus(null); }}
-                    className="text-xs font-semibold text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-neutral-300"
+                    className="text-xs font-semibold text-white hover:text-neutral-300 transition"
                   >
                     Forgot password?
                   </button>
@@ -162,7 +160,7 @@ export function LoginExperience({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 transition"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -170,18 +168,18 @@ export function LoginExperience({
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <label className="flex items-center gap-2 text-sm text-zinc-400">
                 <input
                   name="remember_me"
                   type="checkbox"
                   defaultChecked={rememberMeChecked}
-                  className="h-4 w-4 rounded border-zinc-300 accent-black dark:accent-white dark:border-zinc-600"
+                  className="h-4 w-4 rounded accent-white"
                 />
                 Remember me
               </label>
 
               {inlineError && (
-                <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:border-red-700/40 dark:bg-red-900/20 dark:text-red-300">
+                <div className="flex items-start gap-2.5 rounded-lg border border-red-700/40 bg-red-900/20 px-3 py-2.5 text-sm text-red-300">
                   <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
                   <span>{inlineError}</span>
                 </div>
@@ -202,16 +200,16 @@ export function LoginExperience({
             <button
               type="button"
               onClick={() => { setMode("login"); setResetStatus(null); }}
-              className="text-sm font-semibold text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-neutral-300"
+              className="text-sm font-semibold text-white hover:text-neutral-300 transition"
             >
               &larr; Back to sign in
             </button>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-slate-400">
               Enter your email address and we&apos;ll send you a link to reset your password.
             </p>
             <form onSubmit={submitResetEmail} className="space-y-4">
               <div>
-                <label htmlFor="reset-email" className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label htmlFor="reset-email" className="mb-1.5 block text-sm font-medium text-zinc-300">
                   Email
                 </label>
                 <input
@@ -225,7 +223,7 @@ export function LoginExperience({
                 />
               </div>
               {resetStatus && (
-                <p className={`text-sm ${resetStatus.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                <p className={`text-sm ${resetStatus.ok ? "text-emerald-400" : "text-red-400"}`}>
                   {resetStatus.message}
                 </p>
               )}
@@ -239,9 +237,9 @@ export function LoginExperience({
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
+        <p className="mt-6 text-center text-xs text-zinc-400 sm:text-sm">
           New to SERVLO?{" "}
-          <Link href="/auth/signup" className="font-semibold text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-neutral-300">
+          <Link href="/auth/signup" className="font-semibold text-white hover:text-neutral-300 transition">
             Create an account
           </Link>
         </p>

@@ -70,7 +70,7 @@ export function LandingNav() {
             href="/auth/signup"
             className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 md:px-4 md:py-2 md:text-sm"
           >
-            Start free trial
+            Sign Up
           </Link>
 
           {/* Hamburger — mobile only */}

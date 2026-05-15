@@ -199,9 +199,9 @@ export default function CompareTradifyPage() {
           </p>
           <Link
             href="/auth/signup"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-white px-8 py-3.5 text-base font-semibold text-white dark:text-black transition hover:bg-zinc-800 dark:hover:bg-neutral-100"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-black transition hover:bg-neutral-100"
           >
-            Start free
+            Sign Up
             <ArrowRight size={16} />
           </Link>
           <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">

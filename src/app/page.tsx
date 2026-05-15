@@ -77,14 +77,14 @@ export default async function HomePage() {
                 href="/auth/signup"
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto"
               >
-                Start free &mdash; 30 days
+                Sign Up Free
                 <ArrowRight size={16} />
               </Link>
               <a
                 href="#platform"
                 className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-white/15 px-6 py-3.5 text-base font-semibold text-gray-700 dark:text-white transition hover:border-gray-400 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 sm:w-auto"
               >
-                See the platform
+                See how it works
               </a>
             </div>
             <div className="mt-3">
@@ -604,7 +604,7 @@ export default async function HomePage() {
               href="/auth/signup"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-black/15 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 dark:shadow-white/10 sm:w-auto sm:px-8"
             >
-              Start free, 30 days
+              Sign Up Free
               <ArrowRight size={16} />
             </Link>
             <Link
@@ -689,7 +689,7 @@ export default async function HomePage() {
                   href="/auth/signup"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
                 >
-                  Start free trial
+                  Sign Up
                   <ArrowRight size={14} />
                 </Link>
               </div>
