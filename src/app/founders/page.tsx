@@ -1,11 +1,15 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { SiteHeader } from "@/components/site-header";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "SERVLO Founding Members",
-  description: "The first 100 businesses to join SERVLO: locked-in pricing, early access, and a direct line to the team.",
+  title: "Founding Members | SERVLO",
+  description: "The first 50 businesses to join SERVLO: locked-in pricing for life, early access, and a direct line to the team.",
 };
+
+const FOUNDING_LIMIT = 50;
 
 export default async function FoundersPage() {
   const admin = createAdminClient();
@@ -15,100 +19,102 @@ export default async function FoundersPage() {
     .eq("is_founding_member", true);
 
   const founderCount = count ?? 0;
-  const remaining = Math.max(0, 100 - founderCount);
-  const pct = Math.min(100, Math.round((founderCount / 100) * 100));
+  const remaining = Math.max(0, FOUNDING_LIMIT - founderCount);
+  const pct = Math.min(100, Math.round((founderCount / FOUNDING_LIMIT) * 100));
 
   const benefits = [
-    { emoji: "💰", title: "Locked-in pricing for life", desc: "Your plan rate never increases, ever." },
-    { emoji: "🗺️", title: "Priority roadmap input", desc: "Your feature requests go to the top of the list." },
-    { emoji: "🚀", title: "Early access to everything", desc: "First to try every new feature before public launch." },
-    { emoji: "🏅", title: "Permanent recognition", desc: "Your business listed on this page forever." },
-    { emoji: "📞", title: "Direct line to the team", desc: "Email us anytime. We respond personally." },
+    { title: "Locked-in pricing for life", desc: "Your plan rate never increases. Solo at $29/mo, Team at $79/mo, Business at $149/mo — whatever you sign up at, that's what you pay forever." },
+    { title: "Priority roadmap input", desc: "Your feature requests go to the top of the list. We're building SERVLO with you, not at you." },
+    { title: "Early access to everything", desc: "First to try every new feature (GROW, Leads, Fleet, Hire, etc) before public launch." },
+    { title: "Permanent recognition", desc: "Your business listed on this page forever as one of the first 50 to back SERVLO." },
+    { title: "Direct line to the team", desc: "Email us anytime. We respond personally — no support ticket queues." },
   ];
 
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
-      <div style={{ marginBottom: 32 }}>
-        <a href="/" style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>SERVLO</a>
-      </div>
+    <div className="min-h-screen bg-[#0A0A0A] text-neutral-200 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
+      <SiteHeader />
 
-      <h1 style={{ fontSize: 36, fontWeight: 900, color: "#ffffff", marginBottom: 8 }}>
-        Founding Members
-      </h1>
-      <p style={{ fontSize: 17, color: "#a3a3a3", marginBottom: 40, lineHeight: 1.6 }}>
-        The first 100 businesses to subscribe to SERVLO. These are the early believers who help us shape the product.
-      </p>
-
-      {/* Counter */}
-      <div style={{
-        background: "linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%)",
-        border: "1px solid #fde68a", borderRadius: 16, padding: "28px 32px", marginBottom: 40
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#92400e" }}>Founding spots claimed</span>
-          <span style={{ fontSize: 20, fontWeight: 900, color: "#b45309" }}>{founderCount} / 100</span>
-        </div>
-        <div style={{ height: 10, borderRadius: 999, background: "#fde68a", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: "#d97706", borderRadius: 999, transition: "width 0.5s" }} />
-        </div>
-        <p style={{ margin: "10px 0 0", fontSize: 14, color: "#92400e" }}>
-          {remaining > 0
-            ? <><strong>{remaining} spots remaining.</strong> Once these are taken, the program is closed.</>
-            : <strong>The Founding Member program is now closed. Thank you to all 50 members!</strong>
-          }
+      <main className="mx-auto max-w-3xl px-6 py-16">
+        <h1 className="text-4xl font-extrabold text-white sm:text-5xl">Founding Members</h1>
+        <p className="mt-3 text-lg text-neutral-300">
+          The first {FOUNDING_LIMIT} businesses to subscribe to SERVLO. These are the early
+          believers who help us shape the product.
         </p>
-      </div>
 
-      {/* Benefits */}
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#ffffff", marginBottom: 20 }}>
-        What you get as a Founding Member
-      </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 48 }}>
-        {benefits.map((b) => (
-          <div key={b.title} style={{
-            display: "flex", gap: 16, alignItems: "flex-start",
-            padding: "16px 20px", borderRadius: 12,
-            border: "1px solid #404040", background: "#fff"
-          }}>
-            <span style={{ fontSize: 24, lineHeight: 1 }}>{b.emoji}</span>
-            <div>
-              <p style={{ margin: 0, fontWeight: 700, color: "#ffffff", fontSize: 15 }}>{b.title}</p>
-              <p style={{ margin: "4px 0 0", color: "#a3a3a3", fontSize: 14 }}>{b.desc}</p>
-            </div>
+        {/* Counter */}
+        <div className="mt-8 rounded-2xl border border-white/15 bg-white/[0.04] p-6 sm:p-7">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold uppercase tracking-widest text-neutral-400">
+              Spots claimed
+            </span>
+            <span className="text-2xl font-extrabold text-white">
+              {founderCount} <span className="text-neutral-500">/ {FOUNDING_LIMIT}</span>
+            </span>
           </div>
-        ))}
-      </div>
-
-      {/* CTA */}
-      {remaining > 0 && (
-        <div style={{
-          background: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
-          borderRadius: 16, padding: "32px 40px", textAlign: "center", marginBottom: 48
-        }}>
-          <h3 style={{ color: "#fff", fontSize: 22, fontWeight: 800, margin: "0 0 8px" }}>
-            Become a Founding Member
-          </h3>
-          <p style={{ color: "rgba(255,255,255,0.9)", marginBottom: 20, fontSize: 15 }}>
-            Subscribe to any paid plan and secure your founding member spot.
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-white transition-[width] duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-neutral-300">
+            {remaining > 0 ? (
+              <>
+                <strong className="text-white">{remaining} spots remaining.</strong>{" "}
+                Once these are taken, the program is closed and prices return to standard.
+              </>
+            ) : (
+              <strong className="text-white">
+                The Founding Member program is now closed. Thank you to all {FOUNDING_LIMIT} members.
+              </strong>
+            )}
           </p>
-          <a
-            href="/auth/signup"
-            style={{
-              display: "inline-block", background: "#fff", color: "#d97706",
-              padding: "14px 32px", borderRadius: 8, fontWeight: 800,
-              textDecoration: "none", fontSize: 16
-            }}
-          >
-            Claim your spot: {remaining} left
-          </a>
         </div>
-      )}
 
-      <footer style={{ borderTop: "1px solid #404040", paddingTop: 24 }}>
-        <p style={{ color: "#a3a3a3", fontSize: 13 }}>
-          <a href="/" style={{ color: "#3B82F6" }}>Back to SERVLO</a>
-        </p>
-      </footer>
-    </main>
+        {/* Benefits */}
+        <h2 className="mt-12 text-2xl font-bold text-white">
+          What you get as a Founding Member
+        </h2>
+        <div className="mt-5 space-y-3">
+          {benefits.map((b) => (
+            <div
+              key={b.title}
+              className="rounded-xl border border-white/10 bg-[#111111] p-5"
+            >
+              <p className="text-base font-bold text-white">{b.title}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-neutral-300">{b.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        {remaining > 0 ? (
+          <div className="mt-12 rounded-2xl border border-white/20 bg-white/[0.04] p-8 text-center">
+            <h3 className="text-2xl font-extrabold text-white">
+              Become a Founding Member
+            </h3>
+            <p className="mt-2 text-base text-neutral-300">
+              Subscribe and the EARLYACCESS code is auto-applied — your founding rate is
+              locked for life.
+            </p>
+            <Link
+              href="/auth/signup?plan=solo&code=EARLYACCESS"
+              className="mt-6 inline-block rounded-lg bg-white px-6 py-3 text-sm font-bold text-black transition hover:bg-neutral-200"
+            >
+              Claim your spot — {remaining} left
+            </Link>
+            <p className="mt-3 text-xs text-neutral-400">
+              30-day money-back guarantee. Cancel anytime.
+            </p>
+          </div>
+        ) : null}
+
+        <footer className="mt-16 border-t border-white/10 pt-6 text-xs text-neutral-500">
+          <p>
+            SERVLO — operated by Brodie McDonald, ABN 88 688 301 684.
+          </p>
+        </footer>
+      </main>
+    </div>
   );
 }

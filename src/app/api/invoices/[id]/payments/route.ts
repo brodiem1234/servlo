@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { assertSubscriptionActive } from "@/lib/pause-check";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,8 @@ export async function POST(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  const subBlock = await assertSubscriptionActive(user.id);
+  if (subBlock) return subBlock;
 
   const body = await req.json().catch(() => ({}));
   const { amount, payment_date, payment_method, reference, notes } = body;

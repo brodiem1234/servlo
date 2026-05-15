@@ -539,9 +539,10 @@ export function trialEndingEmailHtml(args: {
   let mainContent = "";
 
   if (d >= 7) {
-    // Day 7 — friendly, value-focused
-    heading = `Your free trial ends in ${d} day${d === 1 ? "" : "s"}`;
-    intro = `Hi ${escHtml(args.firstName)}, we hope you have been enjoying SERVLO! Your 30-day free trial wraps up in <strong>${d} days</strong>. Here is everything you keep when you upgrade to a paid plan:`;
+    // Day 7 — friendly, value-focused. Reused for legacy trial users + any
+    // future Stripe grace-period (past_due) scenarios.
+    heading = `Your SERVLO access ends in ${d} day${d === 1 ? "" : "s"}`;
+    intro = `Hi ${escHtml(args.firstName)}, your SERVLO subscription needs attention. Access wraps up in <strong>${d} days</strong> unless you update your billing. Here's everything you keep when you continue:`;
     mainContent = `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
         <tr><td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-family:Arial,sans-serif;font-size:13px;color:#334155;">&#x2714; All your client records and contact history</td></tr>
@@ -554,10 +555,10 @@ export function trialEndingEmailHtml(args: {
     // Day 3 — moderate urgency
     urgencyBanner = `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:#fef3c7;border-radius:6px;border:1px solid #fde68a;">
-        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#92400e;">Your trial ends in ${d} days — upgrade to keep your data.</td></tr>
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#92400e;">Access ends in ${d} days — update your billing to keep your data.</td></tr>
       </table>`;
-    heading = `Your trial ends in ${d} days`;
-    intro = `Hi ${escHtml(args.firstName)}, your SERVLO free trial ends in <strong>${d} days</strong>. After that, you will lose access to:`;
+    heading = `Access ends in ${d} days`;
+    intro = `Hi ${escHtml(args.firstName)}, your SERVLO subscription needs your attention. In <strong>${d} days</strong> you'll lose access to:`;
     mainContent = `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;border:1px solid #fecaca;border-radius:8px;overflow:hidden;background:#fef2f2;">
         <tr><td style="padding:12px 16px;border-bottom:1px solid #fee2e2;font-family:Arial,sans-serif;font-size:13px;color:#dc2626;">&#x2715; Your client records and contact history</td></tr>
@@ -570,13 +571,13 @@ export function trialEndingEmailHtml(args: {
     // Day 1 — direct
     urgencyBanner = `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca;">
-        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#dc2626;">Your trial ends tomorrow. Upgrade now to keep access.</td></tr>
+        <tr><td style="padding:12px 16px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:#dc2626;">Access ends tomorrow. Update billing now to keep going.</td></tr>
       </table>`;
-    heading = "Your trial ends tomorrow";
-    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder. Your SERVLO free trial expires <strong>tomorrow</strong>.`;
+    heading = "Access ends tomorrow";
+    intro = `Hi ${escHtml(args.firstName)}, this is your final reminder. Your SERVLO access expires <strong>tomorrow</strong> unless you update your billing.`;
     mainContent = `
-      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Upgrade now to keep access to all your SERVLO data: clients, jobs, invoices, quotes, and everything you have built over your trial.</p>
-      <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Plans start from a low monthly fee with no lock-in contract.</p>`;
+      <p style="margin:16px 0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Update billing now to keep access to all your SERVLO data: clients, jobs, invoices, quotes, and everything you've built so far.</p>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;color:#334155;">Plans from $29/mo. No lock-in. Cancel anytime.</p>`;
   }
 
   const body = `

@@ -126,8 +126,8 @@ function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
           <span style="color:#fff;font-size:20px;font-weight:bold;">SERVLO</span>
         </td></tr>
         <tr><td style="padding:32px;">
-          <h2 style="margin:0 0 16px;color:#0f172a;">Hi ${name}, your trial ends in 3 days</h2>
-          <p style="color:#475569;line-height:1.6;">Your SERVLO free trial expires on <strong>${trialEndDate}</strong>. After that, you'll need a subscription to keep accessing your jobs, clients, invoices, and all your business data.</p>
+          <h2 style="margin:0 0 16px;color:#0f172a;">Hi ${name}, your access ends in 3 days</h2>
+          <p style="color:#475569;line-height:1.6;">Your SERVLO subscription needs attention by <strong>${trialEndDate}</strong>. Update billing to keep accessing your jobs, clients, invoices, and all your business data.</p>
           <p style="color:#475569;line-height:1.6;">Choose a plan and keep growing your business:</p>
           <div style="text-align:center;margin:24px 0;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/upgrade" style="background:#3B82F6;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
@@ -155,8 +155,8 @@ function trialExpiry1DayEmail(name: string, trialEndDate: string): string {
           <span style="color:#fff;font-size:20px;font-weight:bold;">SERVLO</span>
         </td></tr>
         <tr><td style="padding:32px;">
-          <h2 style="margin:0 0 16px;color:#0f172a;">Hi ${name}, today is the last day of your trial</h2>
-          <p style="color:#475569;line-height:1.6;">Your SERVLO free trial expires today, <strong>${trialEndDate}</strong>. Subscribe now to keep uninterrupted access to all your business data.</p>
+          <h2 style="margin:0 0 16px;color:#0f172a;">Hi ${name}, your access ends today</h2>
+          <p style="color:#475569;line-height:1.6;">Your SERVLO subscription expires today, <strong>${trialEndDate}</strong>. Update billing now to keep uninterrupted access to all your business data.</p>
           <div style="text-align:center;margin:24px 0;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/upgrade" style="background:#dc2626;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
               Subscribe now →

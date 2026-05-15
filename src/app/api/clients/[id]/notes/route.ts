@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { assertSubscriptionActive } from "@/lib/pause-check";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  const subBlock = await assertSubscriptionActive(user.id);
+  if (subBlock) return subBlock;
   const { data: client } = await supabase.from("clients").select("id").eq("id", clientId).eq("owner_id", user.id).is("deleted_at", null).maybeSingle();
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
   const body = await req.json().catch(() => ({}));

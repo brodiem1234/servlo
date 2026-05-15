@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { stripe } from "@/lib/stripe";
 
 export const metadata: Metadata = {
   title: "Status | SERVLO",
@@ -8,6 +9,43 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Lightweight per-service health probes. Each runs with a short timeout so a
+ * single down service doesn't drag out the page response. Returns
+ * "operational" if reachable, "down" otherwise.
+ */
+async function probeWithTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]) as Promise<T | null>;
+}
+
+async function probeDatabase(): Promise<"operational" | "down"> {
+  try {
+    const admin = createAdminClient();
+    const result = await probeWithTimeout(
+      admin.from("plan_ai_limits").select("plan").limit(1).maybeSingle(),
+      2500
+    );
+    if (!result) return "down";
+    if ((result as { error?: unknown }).error) return "down";
+    return "operational";
+  } catch {
+    return "down";
+  }
+}
+
+async function probeStripe(): Promise<"operational" | "down" | "unknown"> {
+  if (!process.env.STRIPE_SECRET_KEY) return "unknown";
+  try {
+    const result = await probeWithTimeout(stripe.balance.retrieve(), 3000);
+    return result ? "operational" : "down";
+  } catch {
+    return "down";
+  }
+}
 
 type Incident = {
   id: string;
@@ -38,10 +76,23 @@ const COMPONENTS = [
   { id: "api", label: "API & integrations" },
 ];
 
-function componentStatus(componentId: string, openIncidents: Incident[]): {
+function componentStatus(
+  componentId: string,
+  openIncidents: Incident[],
+  liveProbes: { database: string; stripe: string }
+): {
   state: "operational" | "degraded" | "down";
   label: string;
 } {
+  // Live probes override declared status — if Supabase or Stripe is failing
+  // right now, show "down" regardless of what the incidents table says.
+  if (componentId === "database" && liveProbes.database === "down") {
+    return { state: "down", label: "Outage" };
+  }
+  if (componentId === "billing" && liveProbes.stripe === "down") {
+    return { state: "down", label: "Outage" };
+  }
+
   const affecting = openIncidents.filter(
     (i) => (i.component ?? "").toLowerCase() === componentId
   );
@@ -81,8 +132,18 @@ export default async function StatusPage() {
     fetchOk = false;
   }
 
+  // Live probes run in parallel — total worst-case wait is the longest timeout.
+  const [databaseProbe, stripeProbe] = await Promise.all([
+    probeDatabase(),
+    probeStripe(),
+  ]);
+  const liveProbes = { database: databaseProbe, stripe: stripeProbe };
+  const liveOutages =
+    (databaseProbe === "down" ? 1 : 0) +
+    (stripeProbe === "down" ? 1 : 0);
+
   const openIncidents = incidents.filter((i) => i.status !== "resolved");
-  const overallOperational = fetchOk && openIncidents.length === 0;
+  const overallOperational = fetchOk && openIncidents.length === 0 && liveOutages === 0;
   const overrideMessage = process.env.STATUS_OVERRIDE_MESSAGE;
 
   return (
@@ -134,7 +195,7 @@ export default async function StatusPage() {
           </h2>
           <div className="overflow-hidden rounded-xl border border-white/10 bg-[#111111]">
             {COMPONENTS.map((c, idx) => {
-              const s = componentStatus(c.id, openIncidents);
+              const s = componentStatus(c.id, openIncidents, liveProbes);
               return (
                 <div
                   key={c.id}

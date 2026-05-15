@@ -32,6 +32,7 @@ function checkEnvVars(): AutoCheck[] {
     ["RESEND_API_KEY", "Resend API Key"],
     ["RESEND_FROM_EMAIL", "Resend From Email"],
     ["CRON_SECRET", "Cron Secret"],
+    ["NEXT_PUBLIC_SENTRY_DSN", "Sentry DSN (error monitoring)"],
   ] as const;
 
   return required.map(([key, label]) => {
