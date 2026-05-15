@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
+import { SiteHeader } from "@/components/site-header";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+export const metadata: Metadata = {
+  title: "Status | SERVLO",
+  description: "Current operational status of SERVLO services.",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +17,7 @@ type Incident = {
   severity: "minor" | "major" | "critical";
   started_at: string;
   resolved_at: string | null;
+  component?: string | null;
 };
 
 const STATUS_LABELS: Record<Incident["status"], string> = {
@@ -19,124 +27,231 @@ const STATUS_LABELS: Record<Incident["status"], string> = {
   resolved: "Resolved",
 };
 
-const SEVERITY_COLORS: Record<Incident["severity"], string> = {
-  minor: "#d97706",   // amber
-  major: "#dc2626",   // red
-  critical: "#7c3aed", // purple
-};
+// Components shown on the status page. Each is "operational" unless an
+// active (unresolved) incident references it by name.
+const COMPONENTS = [
+  { id: "app", label: "Web application" },
+  { id: "auth", label: "Sign in & accounts" },
+  { id: "database", label: "Database" },
+  { id: "billing", label: "Billing (Stripe)" },
+  { id: "email", label: "Email delivery" },
+  { id: "api", label: "API & integrations" },
+];
+
+function componentStatus(componentId: string, openIncidents: Incident[]): {
+  state: "operational" | "degraded" | "down";
+  label: string;
+} {
+  const affecting = openIncidents.filter(
+    (i) => (i.component ?? "").toLowerCase() === componentId
+  );
+  if (affecting.length === 0) return { state: "operational", label: "Operational" };
+  const worst = affecting.reduce<Incident["severity"]>(
+    (max, i) => (i.severity === "critical" ? "critical" : i.severity === "major" && max !== "critical" ? "major" : max),
+    "minor"
+  );
+  if (worst === "critical") return { state: "down", label: "Outage" };
+  if (worst === "major") return { state: "down", label: "Degraded" };
+  return { state: "degraded", label: "Investigating" };
+}
 
 export default async function StatusPage() {
   const admin = createAdminClient();
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: incidents } = await admin
-    .from("incidents")
-    .select("id, title, description, status, severity, started_at, resolved_at")
-    .gte("started_at", ninetyDaysAgo)
-    .order("started_at", { ascending: false });
+  let incidents: Incident[] = [];
+  let fetchOk = true;
 
-  const openIncidents = (incidents ?? []).filter((i: Incident) => i.status !== "resolved");
-  const isOperational = openIncidents.length === 0;
+  try {
+    const { data, error } = await admin
+      .from("incidents")
+      .select("id, title, description, status, severity, started_at, resolved_at, component")
+      .gte("started_at", ninetyDaysAgo)
+      .order("started_at", { ascending: false });
 
-  // Optional env-based override message
+    if (error && (error as { code?: string }).code !== "42P01") {
+      // Real error (not "table missing") — surface as a warning banner.
+      console.error("[status] incidents fetch failed:", error.message);
+      fetchOk = false;
+    } else {
+      incidents = (data ?? []) as Incident[];
+    }
+  } catch (err) {
+    console.error("[status] fetch threw:", err);
+    fetchOk = false;
+  }
+
+  const openIncidents = incidents.filter((i) => i.status !== "resolved");
+  const overallOperational = fetchOk && openIncidents.length === 0;
   const overrideMessage = process.env.STATUS_OVERRIDE_MESSAGE;
 
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 700, margin: "0 auto", padding: "48px 24px" }}>
-      <div style={{ marginBottom: 40 }}>
-        <a href="/" style={{ fontSize: 20, fontWeight: 700, color: "#3B82F6", textDecoration: "none" }}>
-          SERVLO
-        </a>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0f172a", marginTop: 24, marginBottom: 8 }}>
-          System Status
-        </h1>
+    <div className="min-h-screen bg-[#0A0A0A] text-neutral-200 [font-family:Montserrat,ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,sans-serif]">
+      <SiteHeader />
 
-        {overrideMessage && (
-          <div style={{ background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
-            <p style={{ margin: 0, color: "#92400e", fontWeight: 600 }}>{overrideMessage}</p>
+      <main className="mx-auto max-w-3xl px-6 py-12">
+        <h1 className="text-3xl font-bold text-white sm:text-4xl">System Status</h1>
+        <p className="mt-2 text-sm text-neutral-400">
+          Live operational status for SERVLO services. Subscribed to{" "}
+          <a href="https://servlo.app/status" className="font-bold text-white underline underline-offset-4 hover:text-neutral-300">
+            this page
+          </a>{" "}
+          for ongoing updates.
+        </p>
+
+        {overrideMessage ? (
+          <div className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            {overrideMessage}
           </div>
-        )}
+        ) : null}
 
-        {/* Overall status */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 10, padding: "16px 20px",
-          borderRadius: 10, marginBottom: 32,
-          background: isOperational ? "#f0fdf4" : "#fef2f2",
-          border: `1px solid ${isOperational ? "#bbf7d0" : "#fecaca"}`
-        }}>
-          <div style={{
-            width: 12, height: 12, borderRadius: "50%",
-            background: isOperational ? "#16a34a" : "#dc2626"
-          }} />
-          <span style={{ fontWeight: 700, color: isOperational ? "#15803d" : "#dc2626" }}>
-            {isOperational ? "All systems operational" : `${openIncidents.length} active incident${openIncidents.length !== 1 ? "s" : ""}`}
+        {/* Overall status pill */}
+        <div
+          className={`mt-6 flex items-center gap-3 rounded-xl border px-5 py-4 ${
+            overallOperational
+              ? "border-emerald-500/30 bg-emerald-500/10"
+              : "border-red-500/30 bg-red-500/10"
+          }`}
+        >
+          <span
+            className={`inline-block h-3 w-3 rounded-full ${
+              overallOperational ? "bg-emerald-500" : "bg-red-500"
+            } ${overallOperational ? "" : "animate-pulse"}`}
+          />
+          <span className={`text-base font-bold ${overallOperational ? "text-emerald-300" : "text-red-300"}`}>
+            {!fetchOk
+              ? "Status data temporarily unavailable"
+              : overallOperational
+                ? "All systems operational"
+                : `${openIncidents.length} active incident${openIncidents.length !== 1 ? "s" : ""}`}
           </span>
         </div>
-      </div>
 
-      {/* Incidents list */}
-      <section>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 16 }}>
-          Recent incidents (last 90 days)
-        </h2>
-
-        {(incidents ?? []).length === 0 ? (
-          <p style={{ color: "#64748b", fontSize: 15 }}>No incidents reported in the last 90 days.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {(incidents as Incident[]).map((incident) => (
-              <div key={incident.id} style={{
-                border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 20px",
-                background: incident.status === "resolved" ? "#f8fafc" : "#fff"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
-                    {incident.title}
-                  </h3>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
-                      background: SEVERITY_COLORS[incident.severity] + "20",
-                      color: SEVERITY_COLORS[incident.severity], textTransform: "uppercase"
-                    }}>
-                      {incident.severity}
-                    </span>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
-                      background: incident.status === "resolved" ? "#f0fdf4" : "#fef3c7",
-                      color: incident.status === "resolved" ? "#15803d" : "#92400e",
-                      textTransform: "uppercase"
-                    }}>
-                      {STATUS_LABELS[incident.status]}
-                    </span>
-                  </div>
+        {/* Components list */}
+        <section className="mt-10">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">
+            Components
+          </h2>
+          <div className="overflow-hidden rounded-xl border border-white/10 bg-[#111111]">
+            {COMPONENTS.map((c, idx) => {
+              const s = componentStatus(c.id, openIncidents);
+              return (
+                <div
+                  key={c.id}
+                  className={`flex items-center justify-between px-5 py-3 ${
+                    idx > 0 ? "border-t border-white/[0.06]" : ""
+                  }`}
+                >
+                  <span className="text-sm text-white">{c.label}</span>
+                  <span
+                    className={`inline-flex items-center gap-2 text-xs font-semibold ${
+                      s.state === "operational"
+                        ? "text-emerald-400"
+                        : s.state === "degraded"
+                          ? "text-amber-400"
+                          : "text-red-400"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-2 w-2 rounded-full ${
+                        s.state === "operational"
+                          ? "bg-emerald-500"
+                          : s.state === "degraded"
+                            ? "bg-amber-500"
+                            : "bg-red-500"
+                      }`}
+                    />
+                    {s.label}
+                  </span>
                 </div>
-                {incident.description && (
-                  <p style={{ margin: "8px 0 0", color: "#475569", fontSize: 14, lineHeight: 1.5 }}>
-                    {incident.description}
-                  </p>
-                )}
-                <p style={{ margin: "10px 0 0", fontSize: 12, color: "#94a3b8" }}>
-                  Started: {new Date(incident.started_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}
-                  {incident.resolved_at && (
-                    <> &middot; Resolved: {new Date(incident.resolved_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}</>
-                  )}
-                  {!incident.resolved_at && incident.status !== "resolved" && (
-                    <> &middot; <span style={{ color: "#dc2626", fontWeight: 600 }}>Ongoing</span></>
-                  )}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        )}
-      </section>
+        </section>
 
-      <footer style={{ marginTop: 60, borderTop: "1px solid #e2e8f0", paddingTop: 24 }}>
-        <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>
-          &copy; {new Date().getFullYear()} SERVLO &mdash; Business management software for Australian service businesses.
-          {" "}<a href="/" style={{ color: "#3B82F6" }}>Back to SERVLO</a>
-        </p>
-      </footer>
-    </main>
+        {/* Incidents list */}
+        <section className="mt-10">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">
+            Recent incidents (last 90 days)
+          </h2>
+
+          {incidents.length === 0 ? (
+            <p className="rounded-xl border border-white/10 bg-[#111111] px-5 py-6 text-sm text-neutral-400">
+              No incidents reported in the last 90 days.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {incidents.map((incident) => (
+                <article
+                  key={incident.id}
+                  className={`rounded-xl border border-white/10 px-5 py-4 ${
+                    incident.status === "resolved" ? "bg-[#0d0d0d]" : "bg-[#111111]"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-base font-semibold text-white">{incident.title}</h3>
+                    <div className="flex gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                          incident.severity === "critical"
+                            ? "bg-red-500/15 text-red-300"
+                            : incident.severity === "major"
+                              ? "bg-amber-500/15 text-amber-300"
+                              : "bg-white/10 text-white"
+                        }`}
+                      >
+                        {incident.severity}
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                          incident.status === "resolved"
+                            ? "bg-emerald-500/15 text-emerald-300"
+                            : "bg-amber-500/15 text-amber-300"
+                        }`}
+                      >
+                        {STATUS_LABELS[incident.status]}
+                      </span>
+                    </div>
+                  </div>
+                  {incident.description ? (
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                      {incident.description}
+                    </p>
+                  ) : null}
+                  <p className="mt-3 text-xs text-neutral-500">
+                    Started:{" "}
+                    {new Date(incident.started_at).toLocaleString("en-AU", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                    {incident.resolved_at ? (
+                      <>
+                        {" "}&middot; Resolved:{" "}
+                        {new Date(incident.resolved_at).toLocaleString("en-AU", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </>
+                    ) : incident.status !== "resolved" ? (
+                      <> &middot; <span className="font-semibold text-red-400">Ongoing</span></>
+                    ) : null}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <footer className="mt-16 border-t border-white/10 pt-6 text-xs text-neutral-500">
+          <p>
+            SERVLO — operated by Brodie McDonald, ABN 88 688 301 684. For urgent
+            issues during an outage, email{" "}
+            <a href="mailto:hello@servlo.com.au" className="font-bold text-neutral-300 underline">
+              hello@servlo.com.au
+            </a>.
+          </p>
+        </footer>
+      </main>
+    </div>
   );
 }

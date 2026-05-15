@@ -384,21 +384,37 @@ export default async function OwnerQuotesPage({ searchParams }: QuotesPageProps)
     const subtotal = Number(quote.subtotal ?? 0);
     const gst = Number(quote.gst ?? 0);
     const total = Number(quote.total ?? 0);
-    await sendEmail(
-      client.email,
-      `Quote ${quote.quote_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
-      quoteSentEmailTemplate({
-        clientName: client.full_name ?? "there",
-        businessName: biz?.business_name ?? "SERVLO",
-        quoteNumber: quote.quote_number ?? "Quote",
-        subtotal: `$${subtotal.toFixed(2)}`,
-        gst: `$${gst.toFixed(2)}`,
-        total: `$${total.toFixed(2)}`,
-        accentHex: biz?.accent_colour ?? undefined,
-        appUrl
-      }),
-      "SERVLO <hello@servlo.com.au>"
-    );
+    // Only flip the quote to "sent" if the email actually went out.
+    // Resend down → throw a user-readable error, don't change status.
+    try {
+      const result = await sendEmail(
+        client.email,
+        `Quote ${quote.quote_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
+        quoteSentEmailTemplate({
+          clientName: client.full_name ?? "there",
+          businessName: biz?.business_name ?? "SERVLO",
+          quoteNumber: quote.quote_number ?? "Quote",
+          subtotal: `$${subtotal.toFixed(2)}`,
+          gst: `$${gst.toFixed(2)}`,
+          total: `$${total.toFixed(2)}`,
+          accentHex: biz?.accent_colour ?? undefined,
+          appUrl
+        }),
+        "SERVLO <hello@servlo.com.au>"
+      );
+      if (!result.ok) {
+        throw new Error(
+          "Couldn't send the quote email. Email service may be down — try again in a minute."
+        );
+      }
+    } catch (err) {
+      console.error("[sendQuoteEmail] failed:", err);
+      throw new Error(
+        err instanceof Error && err.message
+          ? err.message
+          : "Couldn't send the quote email. Try again in a minute."
+      );
+    }
     await sb.from("quotes").update({ status: "sent" }).eq("id", quote.id).eq("owner_id", owner.id);
     revalidatePath("/dashboard/owner/quotes");
   }

@@ -304,23 +304,38 @@ export default async function OwnerInvoicesPage({ searchParams }: InvoicesPagePr
     const subtotal = Number(inv.subtotal ?? 0);
     const gst = Number(inv.gst ?? 0);
     const total = Number(inv.total ?? 0);
-    await sendEmail(
-      client.email,
-      `Invoice ${inv.invoice_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
-      invoiceSentEmailTemplate({
-        clientName: client.full_name ?? "there",
-        businessName: biz?.business_name ?? "SERVLO",
-        invoiceNumber: inv.invoice_number ?? "Invoice",
-        dueDate: inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-AU") : "-",
-        subtotal: `$${subtotal.toFixed(2)}`,
-        gst: `$${gst.toFixed(2)}`,
-        total: `$${total.toFixed(2)}`,
-        accentHex: biz?.accent_colour ?? undefined,
-        appUrl,
-        payNowUrl: (inv as { stripe_payment_link?: string | null }).stripe_payment_link ?? null
-      }),
-      "SERVLO <hello@servlo.com.au>"
-    );
+    // Catch Resend outages so the user sees a clean error instead of a 500.
+    try {
+      const result = await sendEmail(
+        client.email,
+        `Invoice ${inv.invoice_number ?? ""} from ${biz?.business_name ?? "SERVLO"}`,
+        invoiceSentEmailTemplate({
+          clientName: client.full_name ?? "there",
+          businessName: biz?.business_name ?? "SERVLO",
+          invoiceNumber: inv.invoice_number ?? "Invoice",
+          dueDate: inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-AU") : "-",
+          subtotal: `$${subtotal.toFixed(2)}`,
+          gst: `$${gst.toFixed(2)}`,
+          total: `$${total.toFixed(2)}`,
+          accentHex: biz?.accent_colour ?? undefined,
+          appUrl,
+          payNowUrl: (inv as { stripe_payment_link?: string | null }).stripe_payment_link ?? null
+        }),
+        "SERVLO <hello@servlo.com.au>"
+      );
+      if (!result.ok) {
+        throw new Error(
+          "Couldn't send the invoice email. Email service may be down — try again in a minute."
+        );
+      }
+    } catch (err) {
+      console.error("[sendInvoiceEmail] failed:", err);
+      throw new Error(
+        err instanceof Error && err.message
+          ? err.message
+          : "Couldn't send the invoice email. Try again in a minute."
+      );
+    }
     revalidatePath("/dashboard/owner/invoices");
   }
 

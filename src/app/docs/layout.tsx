@@ -22,16 +22,18 @@ const DOCS_NAV = [
       { href: "/docs/compliance", label: "Compliance Documents" },
     ],
   },
-  {
-    section: "Grow — Marketing",
-    items: [
-      { href: "/docs/grow-overview", label: "Grow Overview" },
-      { href: "/docs/local-seo", label: "Local SEO" },
-      { href: "/docs/reviews", label: "Review Requests" },
-      { href: "/docs/email-marketing", label: "Email Marketing" },
-      { href: "/docs/referrals", label: "Referral Program" },
-    ],
-  },
+  // Grow section temporarily hidden — feature is still in build. Restore the
+  // block here once Grow is ready to ship.
+  // {
+  //   section: "Grow — Marketing",
+  //   items: [
+  //     { href: "/docs/grow-overview", label: "Grow Overview" },
+  //     { href: "/docs/local-seo", label: "Local SEO" },
+  //     { href: "/docs/reviews", label: "Review Requests" },
+  //     { href: "/docs/email-marketing", label: "Email Marketing" },
+  //     { href: "/docs/referrals", label: "Referral Program" },
+  //   ],
+  // },
   {
     section: "Client Portal",
     items: [
@@ -117,11 +119,14 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </details>
 
-        {/* Content */}
+        {/* Content — each docs page provides its own <article className="prose ...">.
+            Wrapping with another article would nest invalidly, so we just
+            constrain width + padding here. Typography rules live in
+            globals.css and target article.prose globally. */}
         <main className="flex-1 overflow-auto">
-          <article className="prose prose-invert mx-auto max-w-3xl px-6 py-12 prose-headings:text-white prose-headings:font-bold prose-h1:text-3xl prose-h1:mb-3 prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-3 prose-p:text-neutral-300 prose-p:leading-relaxed prose-a:text-white prose-a:font-bold prose-a:underline hover:prose-a:text-neutral-300 prose-strong:text-white prose-code:text-white prose-code:bg-white/10 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-pre:bg-[#111111] prose-pre:border prose-pre:border-white/10 prose-li:text-neutral-300">
+          <div className="mx-auto max-w-3xl px-6 py-10 md:px-8 md:py-14">
             {children}
-          </article>
+          </div>
         </main>
       </div>
     </div>

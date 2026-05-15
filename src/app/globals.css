@@ -37,6 +37,36 @@
 
   html {
     scroll-behavior: smooth;
+    /* Reserve the scrollbar gutter on every page so pages without overflow
+       don't shift horizontally compared to pages with overflow. Stops the
+       fixed header (and centred content) jumping to the right when navigating
+       between short and long pages. */
+    scrollbar-gutter: stable;
+    background-color: #0A0A0A;
+  }
+
+  /* Global dark scrollbar — matches the theme on every page */
+  html {
+    scrollbar-color: rgba(255, 255, 255, 0.18) #0A0A0A;
+    scrollbar-width: thin;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0A0A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 9999px;
+    border: 2px solid #0A0A0A;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
+  ::-webkit-scrollbar-corner {
+    background: #0A0A0A;
   }
 
   input,
@@ -97,9 +127,10 @@
   --bg-secondary: #111111;
   --bg-card: #111111;
   --card-bg: #111111;
-  --text-primary: #FAFAFA;
-  --text-secondary: #A3A3A3;
-  --text-muted: #737373;
+  /* Stronger contrast — closer to white on every text token. */
+  --text-primary: #FFFFFF;
+  --text-secondary: #E5E5E5;
+  --text-muted: #B3B3B3;
   --border: rgba(255,255,255,0.12);
   --input-bg: #0d0d0d;
   --sidebar-bg: #0A0A0A;
@@ -600,6 +631,99 @@ button[data-destructive="true"]:hover,
 a[data-destructive="true"]:hover,
 .btn-destructive:hover {
   background-color: rgba(248,113,113,0.1) !important;
+}
+
+/* ── Global text-color brightening ─────────────────────────────────────────
+ * Push all "muted" Tailwind text utilities much closer to white so secondary
+ * copy across the marketing pages reads as part of the same colour family.
+ * Stops the older slate/neutral/zinc shades looking washed-out on the
+ * pure-black background.
+ */
+[class*="text-neutral-400"],
+[class*="text-neutral-500"],
+[class*="text-slate-400"],
+[class*="text-slate-500"],
+[class*="text-zinc-400"],
+[class*="text-zinc-500"],
+[class*="text-gray-400"],
+[class*="text-gray-500"] {
+  color: #E5E5E5;
+}
+
+[class*="text-neutral-300"],
+[class*="text-slate-300"],
+[class*="text-zinc-300"],
+[class*="text-gray-300"] {
+  color: #F5F5F5;
+}
+
+[class*="text-neutral-200"],
+[class*="text-slate-200"],
+[class*="text-zinc-200"],
+[class*="text-gray-200"] {
+  color: #FAFAFA;
+}
+
+/* ── Documentation typography — readable + breathing room ─────────────────
+ * The docs use Tailwind prose. Add explicit overrides so paragraphs aren't
+ * cramped. Also force all body copy white for consistency with the rest of
+ * the site.
+ */
+article.prose,
+article.prose p,
+article.prose li,
+article.prose td,
+article.prose th {
+  color: #F5F5F5;
+}
+
+article.prose {
+  --tw-prose-body: #F5F5F5;
+  --tw-prose-headings: #FFFFFF;
+  --tw-prose-lead: #E5E5E5;
+  --tw-prose-bold: #FFFFFF;
+  --tw-prose-counters: #E5E5E5;
+  --tw-prose-bullets: #E5E5E5;
+  --tw-prose-quotes: #FFFFFF;
+  --tw-prose-quote-borders: rgba(255, 255, 255, 0.2);
+  --tw-prose-captions: #E5E5E5;
+  --tw-prose-code: #FFFFFF;
+}
+
+article.prose h1,
+article.prose h2,
+article.prose h3,
+article.prose h4 {
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+article.prose h1 { margin-top: 0; margin-bottom: 0.5em; }
+article.prose h2 { margin-top: 2.5em; margin-bottom: 0.75em; }
+article.prose h3 { margin-top: 2em; margin-bottom: 0.5em; }
+
+article.prose p {
+  margin-top: 1em;
+  margin-bottom: 1.25em;
+  line-height: 1.75;
+}
+
+article.prose ul,
+article.prose ol {
+  margin-top: 1em;
+  margin-bottom: 1.5em;
+  padding-left: 1.5em;
+}
+
+article.prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.7;
+}
+
+article.prose hr {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin-top: 3em;
+  margin-bottom: 3em;
 }
 
 /* ── Marketing content links — inline body links get underline + bold ──────

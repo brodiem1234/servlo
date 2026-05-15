@@ -36,6 +36,9 @@ export default function ResetPasswordPage() {
       }
     });
 
+    // 6s gives slow mobile networks enough time to complete the session
+    // exchange. Was 2.4s, which was falsely flagging valid links as "invalid"
+    // on patchy connections.
     const t = window.setTimeout(() => {
       if (cancelled || settledRef.current) return;
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -46,7 +49,7 @@ export default function ResetPasswordPage() {
         }
         setPhase((p) => (p === "checking" ? "invalid" : p));
       });
-    }, 2400);
+    }, 6000);
 
     return () => {
       cancelled = true;

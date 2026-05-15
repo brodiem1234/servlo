@@ -53,6 +53,19 @@ export default async function HomePage() {
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
       <SiteHeader />
 
+      {/* ── FOUNDING 50 ANNOUNCEMENT STRIP ───────────────────────────────── */}
+      {spotsRemaining > 0 ? (
+        <Link
+          href="/auth/signup?plan=solo&code=EARLYACCESS"
+          className="block border-b border-white/10 bg-white/[0.03] py-2.5 text-center text-xs font-medium text-white transition hover:bg-white/5 sm:text-sm"
+        >
+          <span className="text-white/60">First 50 only ·</span>{" "}
+          <span className="font-bold text-white">{spotsRemaining} of 50</span> founding spots left ·{" "}
+          <span className="text-white/60">Lock in $29/mo for life</span>{" "}
+          <span className="font-semibold text-white">→</span>
+        </Link>
+      ) : null}
+
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 pb-16 pt-12 md:px-6 md:pb-36 md:pt-32">
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -609,14 +622,14 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/auth/signup?plan=solo&code=EARLYACCESS"
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-6 py-4 text-base font-semibold text-amber-600 dark:text-amber-300 transition hover:bg-amber-500/20 sm:w-auto sm:px-8"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.04] px-6 py-4 text-base font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.08] sm:w-auto sm:px-8"
             >
-              Claim 75% off, Founding 50
+              Lock in Founding 50 — $29/mo for life
             </Link>
           </div>
           {spotsRemaining > 0 && (
             <p className="mt-5 text-sm font-medium text-gray-500 dark:text-slate-400">
-              <span className="font-bold text-amber-500 dark:text-amber-300">{spotsRemaining} of 50</span> founding spots remain.
+              <span className="font-bold text-white">{spotsRemaining} of 50</span> founding spots remain.
               After that, full price only.
             </p>
           )}

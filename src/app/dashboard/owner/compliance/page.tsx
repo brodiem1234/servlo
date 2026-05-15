@@ -41,5 +41,18 @@ export default async function CompliancePage() {
     docs = data ?? [];
   }
 
-  return <ComplianceManager initialDocs={docs} />;
+  return (
+    <div className="space-y-5">
+      {/* Preview-mode banner — file upload isn't built yet, this surface is
+          metadata-only for now. Stops customers expecting full PDF storage. */}
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+        <strong className="text-amber-100">Preview feature.</strong> Document
+        records and statuses are tracked here for compliance reference. PDF
+        upload + signed-copy storage is coming in a future update — for now,
+        store your master copy in your own filesystem and link it via the
+        notes field.
+      </div>
+      <ComplianceManager initialDocs={docs} />
+    </div>
+  );
 }

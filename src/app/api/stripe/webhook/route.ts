@@ -126,6 +126,26 @@ export async function POST(req: Request) {
     const event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
     const admin = createAdminClient();
 
+    // ── Idempotency guard ──────────────────────────────────────────────────
+    // Stripe retries on 5xx and can deliver the same event twice. The unique
+    // constraint on event_id rejects duplicates; if we see that error we know
+    // we've already processed this event and return 200 without re-running
+    // any side effects (founder assignment, email sends, etc.).
+    const { error: dedupError } = await admin
+      .from("stripe_webhook_events")
+      .insert({ event_id: event.id, event_type: event.type });
+
+    if (dedupError) {
+      // Postgres unique_violation code = 23505. Anything else = real problem
+      // (table missing, RLS misconfigured) but we still want to process the
+      // event rather than drop it — log and continue.
+      if ((dedupError as { code?: string }).code === "23505") {
+        console.log(`[webhook] skipping duplicate event ${event.id} (${event.type})`);
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+      console.warn("[webhook] idempotency table insert failed, processing anyway:", dedupError);
+    }
+
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
 
