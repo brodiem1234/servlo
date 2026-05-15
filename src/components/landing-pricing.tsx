@@ -88,7 +88,7 @@ const FEATURE_SECTIONS: FeatureSection[] = [
     section: "Support",
     rows: [
       { label: "Support tier",      values: ["Community", "Email", "Priority", "Dedicated", "24/7"] },
-      { label: "30-day free trial", values: [false, true, true, true, true] },
+      { label: "30-day money-back",  values: [false, true, true, true, true] },
     ],
   },
 ];
@@ -119,16 +119,16 @@ const BUNDLES: BundleCard[] = [
 
 const FAQ_ITEMS = [
   {
-    q: "Is there really no credit card required for the free trial?",
-    a: "Correct. You start your 30-day trial the moment you sign up. We only ask for payment details when you're ready to continue after the trial ends.",
+    q: "Do I need a credit card to sign up?",
+    a: "Yes. SERVLO is a paid subscription from day one — your card is charged for your first billing period when you sign up. If it's not for you, request a full refund within 30 days, no questions asked.",
   },
   {
     q: "Can I switch plans at any time?",
     a: "Yes. Upgrade or downgrade at any time from your account settings. Upgrades take effect immediately; downgrades apply at the next billing cycle.",
   },
   {
-    q: "What happens after the 30-day trial?",
-    a: "You'll receive a reminder before your trial ends. If you don't add payment details your account is paused: your data stays safe and you can resume whenever you're ready.",
+    q: "What's the Founding 50 offer?",
+    a: "The first 50 businesses to sign up lock in their plan price for life. Solo at $29/mo, Team at $79/mo, Business at $149/mo — that rate never increases for you. The EARLYACCESS code is auto-applied while spots remain. After 50 founders, plans go to standard pricing.",
   },
   {
     q: "Is annual billing cheaper?",
@@ -419,7 +419,7 @@ export function LandingPricing({ onEnterpriseContact }: LandingPricingProps) {
       </div>
 
       <p className="mt-3 text-center text-sm text-[#64748b] dark:text-slate-400">
-        All paid plans include a 30-day free trial. No credit card required.
+        All plans include a 30-day money-back guarantee. Founding 50 lock in their price for life.
       </p>
 
       {/* ── Why upgrade from Solo? ───────────────────────────────────────── */}

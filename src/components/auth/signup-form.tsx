@@ -1497,7 +1497,7 @@ export function SignupForm() {
                   Choose your plan
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  All plans include a 30-day free trial. No charge until your trial ends.
+                  Founding 50 members lock in their price for life. 30-day money-back guarantee on every plan.
                 </p>
               </div>
 
@@ -1621,11 +1621,11 @@ export function SignupForm() {
             <div className={step === 5 ? "space-y-5" : "hidden"} aria-hidden={step !== 5}>
               <div>
                 <h2 className="text-lg font-semibold text-white">
-                  {needsCard ? "Start your 30-day free trial" : "Reserve your spot"}
+                  {needsCard ? "Almost there — payment details" : "Reserve your spot"}
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
                   {needsCard
-                    ? "Enter your card details. You won't be charged until your trial ends."
+                    ? "You'll be charged today. 30-day money-back guarantee if it's not for you."
                     : "This product is coming soon. Reserve your spot and we'll notify you at launch."}
                 </p>
               </div>
@@ -1691,7 +1691,7 @@ export function SignupForm() {
                       );
                     })()}
                     {needsCard ? (
-                      <p className="text-xs text-emerald-400">30-day trial free</p>
+                      <p className="text-xs text-emerald-400">30-day money-back</p>
                     ) : (
                       <p className="text-xs text-slate-400">Reserve. No charge.</p>
                     )}
@@ -1733,7 +1733,7 @@ export function SignupForm() {
                     </div>
                   )}
                   <p className="mt-1.5 text-xs text-slate-500">
-                    Secured by Stripe. Your card will not be charged during the trial.
+                    Secured by Stripe. Cancel anytime — full refund in the first 30 days.
                   </p>
 
                   {/* Promo code */}

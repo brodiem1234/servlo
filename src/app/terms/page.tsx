@@ -119,7 +119,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-[#1e3a5f] dark:text-white">4. Payment and Billing</h2>
             <div className="mt-4 space-y-3 text-base leading-relaxed">
               <p>
-                <strong className="text-[#1e3a5f] dark:text-white">Free Trial.</strong> New accounts receive a 30-day free trial with full access to the platform. No credit card is required to start your trial. At the end of the trial period, you must subscribe to a paid plan to continue using the Service.
+                <strong className="text-white">Subscription &amp; money-back.</strong> SERVLO is a paid subscription from day one. You provide a credit card at signup and are charged immediately for your first billing period. You have 30 days from your initial payment to request a full refund if SERVLO is not a fit (see the <Link href="/refund" className="font-bold underline hover:text-neutral-300">Refund Policy</Link> for details). After 30 days, standard refund terms apply.
               </p>
               <p>
                 <strong className="text-[#1e3a5f] dark:text-white">Subscription Billing.</strong> Paid plans are billed on a monthly or annual basis, as selected at the time of purchase. All prices are displayed in Australian dollars (AUD) and are inclusive of GST where applicable. Billing is processed securely through Stripe.

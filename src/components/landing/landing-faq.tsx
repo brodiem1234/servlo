@@ -9,8 +9,8 @@ const FAQS = [
     a: "No contracts, no minimum terms. Cancel any time from Settings → Billing in one click. Your data exports as a full ZIP file whenever you want it. We even have migration guides to competing platforms. We're that confident you'll stay."
   },
   {
-    q: "What's the difference between the 30-day trial and early adopter pricing?",
-    a: "30-day trial: start free, card charged on day 31 at full price. Early adopter: pay $7.25/mo now (75% off), that rate is locked for 3 months then goes to $29/mo. If you want to try first, do the trial. If you're ready to commit and want the cheapest total cost, do early adopter."
+    q: "What's the Founding 50 offer?",
+    a: "The first 50 paying SERVLO businesses lock in their plan price for life. Solo at $29/mo, Team at $79/mo, Business at $149/mo — that rate never goes up, even as we add new features and raise prices for everyone else. You pay from day one. If it's not for you, full refund within 30 days (no questions asked). The EARLYACCESS code is auto-applied at signup while spots remain."
   },
   {
     q: "Does it work on mobile?",

@@ -29,7 +29,7 @@ export default function MigrateFromSimproPage() {
           <li>SERVLO is designed for 1 to 30 person service businesses, not enterprise contractors</li>
           <li>Flat monthly pricing with no per-user fees or module add-ons</li>
           <li>Modern mobile-first interface. No training required for your team</li>
-          <li>30-day free trial with demo data pre-loaded so you can evaluate immediately</li>
+          <li>30-day money-back guarantee with demo data pre-loaded so you can evaluate immediately</li>
         </ul>
       </section>
 
@@ -76,16 +76,16 @@ export default function MigrateFromSimproPage() {
 
       <section style={{ marginBottom: 40 }}>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
-          Step 3: Run a 30-day trial
+          Step 3: Sign up and explore
         </h2>
         <p style={{ color: "#e5e5e5", lineHeight: 1.7, marginBottom: 16 }}>
-          Start a free 30-day trial with no credit card required. Your demo data is pre-loaded so you can explore everything before committing. Most businesses are fully set up within a day.
+          Sign up with a 30-day money-back guarantee. Your demo data is pre-loaded so you can explore everything before committing. Most businesses are fully set up within a day. If SERVLO isn&apos;t a fit, full refund within 30 days.
         </p>
         <a
           href="/auth/signup"
-          style={{ display: "inline-block", background: "#3B82F6", color: "#fff", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
+          style={{ display: "inline-block", background: "#fff", color: "#0A0A0A", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
         >
-          Start free trial
+          Sign up — Founding 50 lock for life
         </a>
       </section>
 

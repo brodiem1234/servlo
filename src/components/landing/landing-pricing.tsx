@@ -193,7 +193,7 @@ export function LandingPricing() {
       </div>
 
       <p className="mt-5 text-center text-xs text-slate-400 md:mt-6 md:text-sm">
-        All plans include a 30-day free trial &nbsp;&middot;&nbsp; No credit card required &nbsp;&middot;&nbsp; Cancel anytime
+        Founding 50 lock in for life &nbsp;&middot;&nbsp; 30-day money-back &nbsp;&middot;&nbsp; Cancel anytime
       </p>
     </div>
   );

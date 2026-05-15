@@ -141,7 +141,7 @@ function ReferBusinessModal({
             <CheckCheck size={36} style={{ color: "#10B981" }} />
             <p className="font-semibold" style={{ color: "var(--text-primary)" }}>Invite sent!</p>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {name.trim() || email} will receive an email with your referral link and a 30-day free trial offer.
+              {name.trim() || email} will receive an email with your referral link and SERVLO&apos;s 30-day money-back guarantee.
             </p>
             <button
               type="button"

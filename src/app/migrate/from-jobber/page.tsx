@@ -95,16 +95,16 @@ export default function MigrateFromJobberPage() {
 
       <section style={{ marginBottom: 40 }}>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#ffffff", marginBottom: 8 }}>
-          Step 3: Start your free trial
+          Step 3: Sign up and run side-by-side
         </h2>
         <p style={{ color: "#e5e5e5", lineHeight: 1.7, marginBottom: 16 }}>
-          SERVLO offers a 30-day free trial. No credit card required. Run both systems side-by-side until you&apos;re confident, then cancel Jobber when you&apos;re ready.
+          SERVLO has a 30-day money-back guarantee. Sign up, run both systems side-by-side until you&apos;re confident, then cancel Jobber when you&apos;re ready. Full refund within 30 days if SERVLO isn&apos;t a fit.
         </p>
         <a
           href="/auth/signup"
-          style={{ display: "inline-block", background: "#3B82F6", color: "#fff", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
+          style={{ display: "inline-block", background: "#fff", color: "#0A0A0A", padding: "14px 28px", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: 15 }}
         >
-          Start free trial
+          Sign up — Founding 50 lock for life
         </a>
       </section>
 

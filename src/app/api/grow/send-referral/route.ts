@@ -53,11 +53,11 @@ export async function POST(req: Request) {
             SERVLO helps tradies and service businesses manage jobs, quotes, invoices, clients, and team — all in one place. No more spreadsheets, no more chasing payments.
           </p>
           <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:20px 0;">
-            <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#0f172a;">🎁 30-day free trial — no credit card required</p>
-            <p style="margin:0;font-size:13px;color:#64748b;">Sign up via the link below to get your full 30-day free trial.</p>
+            <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#0f172a;">Founding 50 — lock in pricing for life</p>
+            <p style="margin:0;font-size:13px;color:#64748b;">Sign up via the link below. 30-day money-back guarantee, no risk.</p>
           </div>
           <p style="text-align:center;margin:24px 0;">
-            <a href="${referralLink}" style="display:inline-block;background:#8B5CF6;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Start my free trial →</a>
+            <a href="${referralLink}" style="display:inline-block;background:#0A0A0A;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Start my SERVLO subscription →</a>
           </p>
           <p style="color:#64748b;font-size:12px;margin:0;">Or copy this link: ${referralLink}</p>
         </div>

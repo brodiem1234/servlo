@@ -104,7 +104,7 @@ export default function GuaranteePage() {
             <ArrowRight size={18} />
           </Link>
           <p className="mt-3 text-sm text-gray-400 dark:text-slate-500">
-            No credit card required. Starts at $29/mo after trial. Cancel any time.
+            From $29/mo with a 30-day money-back guarantee. Cancel any time.
           </p>
         </div>
 

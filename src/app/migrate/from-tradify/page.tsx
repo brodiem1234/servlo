@@ -76,17 +76,17 @@ export default function MigrateFromTradifyPage() {
           Ready to try SERVLO?
         </h3>
         <p style={{ color: "rgba(255,255,255,0.85)", marginBottom: 20 }}>
-          30-day free trial. No credit card required. Your data, always yours.
+          30-day money-back guarantee. Your data, always yours.
         </p>
         <a
           href="/auth/signup"
           style={{
-            display: "inline-block", background: "#fff", color: "#3B82F6",
+            display: "inline-block", background: "#fff", color: "#0A0A0A",
             padding: "14px 32px", borderRadius: 8, fontWeight: 700,
             textDecoration: "none", fontSize: 16
           }}
         >
-          Start your free trial
+          Sign up — Founding 50 lock for life
         </a>
       </div>
 

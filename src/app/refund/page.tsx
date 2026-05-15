@@ -25,12 +25,14 @@ export default function RefundPage() {
             and in any conflict, the ACL wins.
           </p>
 
-          <h2>The free trial</h2>
+          <h2>30-day money-back guarantee</h2>
           <p>
-            New accounts get a free trial. You won&rsquo;t be charged during the
-            trial. If you cancel before it ends, you owe nothing and there&rsquo;s
-            nothing to refund. Cancel from your billing settings or email{" "}
-            <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a>.
+            SERVLO is a paid subscription from day one — there is no free trial.
+            New accounts are charged for their first billing period immediately
+            after signup. If SERVLO isn&apos;t a fit, email{" "}
+            <a href="mailto:hello@servlo.com.au">hello@servlo.com.au</a>{" "}
+            within 30 days of your first charge and we&apos;ll refund you in
+            full, no questions asked. Cancel anytime from your billing settings.
           </p>
 
           <h2>Monthly subscriptions</h2>

@@ -108,10 +108,10 @@ export default async function ReferralLandingPage({ params }: Props) {
           href={signupUrl}
           className="block w-full text-center rounded-xl bg-violet-600 hover:bg-violet-500 transition-colors text-white font-semibold py-3.5 text-base shadow-lg shadow-violet-900/40"
         >
-          Start my 30-day free trial →
+          Start my SERVLO subscription →
         </Link>
         <p className="mt-3 text-center text-xs text-slate-500">
-          No credit card required · Cancel any time
+          30-day money-back · Cancel any time
         </p>
       </div>
 

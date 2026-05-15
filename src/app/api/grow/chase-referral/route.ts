@@ -40,11 +40,11 @@ export async function POST(req: Request) {
             SERVLO is the all-in-one business management platform for Australian tradies and service businesses. Manage jobs, quotes, invoices, and your team — all in one place.
           </p>
           <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:20px 0;">
-            <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#0f172a;">🎁 Your 30-day free trial is still waiting</p>
-            <p style="margin:0;font-size:13px;color:#64748b;">No credit card required. Cancel anytime.</p>
+            <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#0f172a;">Founding 50 spots still open</p>
+            <p style="margin:0;font-size:13px;color:#64748b;">Lock in pricing for life. 30-day money-back. Cancel anytime.</p>
           </div>
           <p style="text-align:center;margin:24px 0;">
-            <a href="${referralLink}" style="display:inline-block;background:#8B5CF6;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Claim my free trial →</a>
+            <a href="${referralLink}" style="display:inline-block;background:#0A0A0A;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">Start my SERVLO subscription →</a>
           </p>
           <p style="color:#64748b;font-size:12px;margin:0;">Or copy this link: ${referralLink}</p>
         </div>

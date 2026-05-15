@@ -207,7 +207,7 @@ export default function CompareSM8Page() {
         <section className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] p-10 text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Try SERVLO free. Cancel anytime in one click</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-gray-500 dark:text-slate-400">
-            Free plan up to 5 jobs. Paid from $29/mo with a 30-day free trial. If you don&apos;t love it, cancel from Settings.
+            Paid from $29/mo with a 30-day money-back guarantee. Cancel anytime from Settings.
           </p>
           <Link
             href="/auth/signup"

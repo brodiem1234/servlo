@@ -65,7 +65,7 @@ export function LandingNav() {
             Log in
           </Link>
 
-          {/* Start free trial — compact on mobile, full on desktop */}
+          {/* Start sign up — compact on mobile, full on desktop */}
           <Link
             href="/auth/signup"
             className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 md:px-4 md:py-2 md:text-sm"
@@ -88,7 +88,7 @@ export function LandingNav() {
         </div>
       </div>
 
-      {/* Mobile dropdown — nav links ONLY (Log in + Start free trial stay in top bar) */}
+      {/* Mobile dropdown — nav links ONLY (Log in + Start sign up stay in top bar) */}
       {open ? (
         <div
           id="landing-mobile-menu"
