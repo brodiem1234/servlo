@@ -1,10 +1,12 @@
 "use server";
 
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { IndustrySlug } from "@/lib/industries";
 import { DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
 
 export type OwnerSignupPayload = {
+  accessToken: string;
   userId: string;
   fullName: string;
   email: string;
@@ -24,6 +26,45 @@ export type OwnerSignupResult = {
   errors: string[];
 };
 
+async function verifyAccessTokenMatchesUserId(
+  accessToken: string,
+  expectedUserId: string
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (!url || !anon) {
+    return { ok: false, message: "Server misconfiguration: missing Supabase URL or anon key." };
+  }
+
+  const verificationClient = createSupabaseClient(url, anon, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+  });
+
+  const {
+    data: { user },
+    error
+  } = await verificationClient.auth.getUser();
+
+  if (error || !user?.id) {
+    return { ok: false, message: error?.message ?? "Invalid or expired session." };
+  }
+
+  if (user.id !== expectedUserId) {
+    return { ok: false, message: "Token does not match user." };
+  }
+
+  return { ok: true };
+}
+
 /**
  * Immediately upserts profiles + businesses rows right after auth.signUp().
  * Uses service-role to bypass RLS.
@@ -42,6 +83,18 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
     errors: [],
   };
 
+  const {
+    accessToken, userId, fullName, email, phone, businessName, abn,
+    entityName, selectedIndustries, selectedPlan, selectedProducts
+  } = payload;
+
+  const verified = await verifyAccessTokenMatchesUserId(accessToken, userId);
+  if (!verified.ok) {
+    console.error("[immediateOwnerUpsert] auth verification failed", verified.message);
+    result.errors.push(`auth: ${verified.message}`);
+    return result;
+  }
+
   let admin;
   try {
     admin = createAdminClient();
@@ -51,11 +104,6 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
     result.errors.push(`admin_client: ${msg}`);
     return result;
   }
-
-  const {
-    userId, fullName, email, phone, businessName, abn,
-    entityName, selectedIndustries, selectedPlan, selectedProducts
-  } = payload;
 
   // ── Profile ──────────────────────────────────────────────────────────────
   try {

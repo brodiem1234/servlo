@@ -774,6 +774,7 @@ export function SignupForm() {
  // diagnostics. The second-pass /api/setup-business below covers any
  // gaps; if BOTH fail the user is routed to /onboarding/complete-profile.
  const upsertResult = await immediateOwnerUpsert({
+ accessToken,
  userId,
  fullName: nameInput.trim(),
  email: emailInput.trim(),
