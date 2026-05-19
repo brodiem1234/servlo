@@ -4,11 +4,19 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const PRICE_IDS: Record<string, string | undefined> = {
+const MONTHLY_PRICE_IDS: Record<string, string | undefined> = {
   solo:     process.env.STRIPE_SOLO_PRICE_ID,
   team:     process.env.STRIPE_TEAM_PRICE_ID,
   business: process.env.STRIPE_BUSINESS_PRICE_ID,
 };
+
+const ANNUAL_PRICE_IDS: Record<string, string | undefined> = {
+  solo:     process.env.STRIPE_SOLO_ANNUAL_PRICE_ID,
+  team:     process.env.STRIPE_TEAM_ANNUAL_PRICE_ID,
+  business: process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID,
+};
+
+const VALID_PLANS = new Set(["solo", "team", "business"]);
 
 const PLAN_ORDER: Record<string, number> = {
   free: 0, trial: 0, solo: 1, team: 2, business: 3, enterprise: 4,
@@ -31,8 +39,7 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); } catch { body = {}; }
 
   const targetPlan = (body.targetPlan ?? "").toLowerCase();
-  const targetPriceId = PRICE_IDS[targetPlan];
-  if (!targetPriceId) {
+  if (!VALID_PLANS.has(targetPlan)) {
     return NextResponse.json(
       { error: "targetPlan must be one of: solo, team, business" },
       { status: 400 }
@@ -62,10 +69,25 @@ export async function POST(req: NextRequest) {
   try {
     // Retrieve current subscription to get the item ID
     const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id);
-    const subscriptionItemId = subscription.items.data[0]?.id;
+    const growPriceId = process.env.STRIPE_GROW_PRICE_ID;
+    const baseItem =
+      subscription.items.data.find((item) => item.price.id !== growPriceId) ??
+      subscription.items.data[0];
+    const subscriptionItemId = baseItem?.id;
 
     if (!subscriptionItemId) {
       return NextResponse.json({ error: "Could not find subscription item" }, { status: 500 });
+    }
+
+    const currentInterval =
+      baseItem?.price.recurring?.interval === "year" ? "annual" : "monthly";
+    const targetPriceId =
+      (currentInterval === "annual" ? ANNUAL_PRICE_IDS : MONTHLY_PRICE_IDS)[targetPlan];
+    if (!targetPriceId) {
+      return NextResponse.json(
+        { error: `No ${currentInterval} Stripe price configured for ${targetPlan}.` },
+        { status: 503 }
+      );
     }
 
     let effectiveDate: string;

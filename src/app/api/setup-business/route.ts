@@ -287,7 +287,7 @@ export async function POST(request: Request) {
       trial_start: trialStart.toISOString(),
       trial_end: trialEnd.toISOString(),
       subscription_status: "trialing",
-      subscription_tier: "solo"
+      subscription_tier: planTier
     })
     .eq("id", userId);
 

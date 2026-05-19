@@ -926,9 +926,13 @@ export function SignupForm() {
  if (!trialRes.ok) {
  const trialErr = (await trialRes.json()) as { error?: string };
  console.warn("[signup/owner] trial setup failed", trialErr);
+ setError(trialErr.error ?? "Payment could not be completed. Please check your card details and try again.");
+ return;
  }
  } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
+ console.warn("[signup/owner] stripe subscription setup failed", stripeErr);
+ setError(stripeErr instanceof Error ? stripeErr.message : "Payment could not be completed. Please check your card details and try again.");
+ return;
  }
  }
 
