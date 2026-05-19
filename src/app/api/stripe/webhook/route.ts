@@ -5,9 +5,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 function getPlanFromPriceId(priceId: string | null | undefined) {
   if (!priceId) return "trial";
-  if (priceId === process.env.STRIPE_SOLO_PRICE_ID) return "solo";
-  if (priceId === process.env.STRIPE_TEAM_PRICE_ID) return "team";
-  if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) return "business";
+  if (
+    priceId === process.env.STRIPE_SOLO_PRICE_ID ||
+    priceId === process.env.STRIPE_SOLO_ANNUAL_PRICE_ID
+  ) return "solo";
+  if (
+    priceId === process.env.STRIPE_TEAM_PRICE_ID ||
+    priceId === process.env.STRIPE_TEAM_ANNUAL_PRICE_ID
+  ) return "team";
+  if (
+    priceId === process.env.STRIPE_BUSINESS_PRICE_ID ||
+    priceId === process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID
+  ) return "business";
   return "trial";
 }
 
