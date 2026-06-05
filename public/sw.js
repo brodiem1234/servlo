@@ -52,9 +52,13 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         // Network failed
         if (event.request.mode === 'navigate') {
-          return caches.match('/offline') || new Response('Offline', { status: 503 });
+          return caches.match('/offline').then((cached) => (
+            cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' })
+          ));
         }
-        return caches.match(event.request);
+        return caches.match(event.request).then((cached) => (
+          cached || new Response('', { status: 504, statusText: 'Gateway Timeout' })
+        ));
       })
   );
 });

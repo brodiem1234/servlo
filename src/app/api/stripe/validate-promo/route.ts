@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * POST /api/stripe/validate-promo
@@ -14,6 +15,26 @@ export async function POST(request: Request) {
     const code = body.code?.trim();
     if (!code) {
       return NextResponse.json({ valid: false, error: "No promo code provided" });
+    }
+
+    if (code.toUpperCase() === "EARLYACCESS") {
+      const admin = createAdminClient();
+      const { count, error } = await admin
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("is_founding_member", true);
+
+      if (error) {
+        console.error("[validate-promo] founding count check failed", error);
+        return NextResponse.json(
+          { valid: false, error: "Unable to verify founding member availability" },
+          { status: 503 }
+        );
+      }
+
+      if ((count ?? 0) >= 50) {
+        return NextResponse.json({ valid: false, error: "The founding member offer is now full" });
+      }
     }
 
     const promoCodes = await stripe.promotionCodes.list({

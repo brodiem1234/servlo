@@ -714,6 +714,11 @@ export function SignupForm() {
  return;
  }
 
+ if (needsCard && (stripeInitError || !stripeReady || !stripeRef.current || !cardElementRef.current)) {
+ setError("Card input is still loading. Please wait a moment, then try again.");
+ return;
+ }
+
  setOwnerSubmitting(true);
 
  try {
@@ -805,8 +810,9 @@ export function SignupForm() {
  ? new URLSearchParams(window.location.search)
  : new URLSearchParams();
  const referralCode = params.get("ref") ?? undefined;
- // Use the UI-applied promo code (validated); fall back to URL param for legacy ?code= links
- const effectivePromoCode = appliedPromoCode || params.get("code") || undefined;
+ // Only submit promo codes that the UI has validated. Raw URL params are
+ // validated by the auto-apply flow before they reach this state.
+ const effectivePromoCode = appliedPromoCode || undefined;
 
  const setupBody = {
  userId,
@@ -896,11 +902,17 @@ export function SignupForm() {
  const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
  const priceId = getPriceId(selectedPlanTier, isAnnual);
 
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
+ if (hasCore && priceId) {
+ const stripeInstance = stripeRef.current;
+ const cardElement = cardElementRef.current;
+ if (!stripeInstance || !cardElement) {
+ setError("Card input is still loading. Please wait a moment, then try again.");
+ return;
+ }
  try {
- const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
+ const { paymentMethod, error: pmError } = await stripeInstance.createPaymentMethod({
  type: "card",
- card: cardElementRef.current,
+ card: cardElement,
  });
  if (pmError) throw new Error(pmError.message);
 
@@ -924,11 +936,20 @@ export function SignupForm() {
  });
 
  if (!trialRes.ok) {
- const trialErr = (await trialRes.json()) as { error?: string };
+ let trialErr: { error?: string };
+ try {
+ trialErr = (await trialRes.json()) as { error?: string };
+ } catch {
+ trialErr = { error: "Payment setup failed." };
+ }
  console.warn("[signup/owner] trial setup failed", trialErr);
+ setError(trialErr.error ?? "Payment setup failed. Please check your card details and try again.");
+ return;
  }
  } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
+ console.warn("[signup/owner] stripe trial error", stripeErr);
+ setError(stripeErr instanceof Error ? stripeErr.message : "Payment setup failed. Please try again.");
+ return;
  }
  }
 

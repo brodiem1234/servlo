@@ -44,6 +44,9 @@ export async function GET(req: NextRequest) {
     );
   } catch (err) {
     console.error("[founders/count] error:", err);
-    return NextResponse.json({ count: 0, remaining: FOUNDING_LIMIT, isFull: false }, { status: 200 });
+    return NextResponse.json(
+      { count: FOUNDING_LIMIT, remaining: 0, isFull: true, error: "Unable to load founding member count" },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }
