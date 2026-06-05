@@ -118,6 +118,28 @@ export async function POST(request: Request) {
       }
     }
 
+    if (promoCode?.trim().toUpperCase() === "EARLYACCESS") {
+      const { count, error: foundingCountError } = await supabaseAdmin
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("is_founding_member", true);
+
+      if (foundingCountError) {
+        console.error("[create-trial] founding count check failed", foundingCountError);
+        return NextResponse.json(
+          { error: "Could not verify founding member availability. Please try again." },
+          { status: 503 }
+        );
+      }
+
+      if ((count ?? 0) >= 50) {
+        return NextResponse.json(
+          { error: "The founding member offer is now full. Remove EARLYACCESS to continue." },
+          { status: 409 }
+        );
+      }
+    }
+
     // Stripe Tax is opt-in via env var. Default OFF because enabling it before
     // you've configured tax registrations in the Stripe dashboard causes
     // subscriptions.create to reject every signup. Set
@@ -141,15 +163,19 @@ export async function POST(request: Request) {
         signup_date: new Date().toISOString(),
       },
     });
+    const subscriptionStatus = subscription.status === "active" ? "active" : subscription.status;
 
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileUpdate = await supabaseAdmin
       .from("profiles")
       .update({
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
+        subscription_status: subscriptionStatus,
+        plan: selectedPlanTier,
+        subscription_tier: selectedPlanTier,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
         trial_started_at: new Date().toISOString(),
@@ -157,6 +183,22 @@ export async function POST(request: Request) {
         card_brand,
       })
       .eq("id", user.id);
+    if (profileUpdate.error) {
+      console.error("[create-trial] profile subscription update failed", profileUpdate.error);
+    }
+
+    const businessUpdate = await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        subscription_status: subscriptionStatus,
+        plan: selectedPlanTier,
+      })
+      .eq("owner_id", user.id);
+    if (businessUpdate.error) {
+      console.error("[create-trial] business subscription update failed", businessUpdate.error);
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {

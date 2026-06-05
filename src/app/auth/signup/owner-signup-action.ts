@@ -99,7 +99,6 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
         entity_name: entityName ?? null,
         industries: selectedIndustries ?? [],
         accent_colour: DEFAULT_ACCENT_HEX,
-        feature_flags: { enabled: [] },
       },
       { onConflict: "owner_id" }
     );
