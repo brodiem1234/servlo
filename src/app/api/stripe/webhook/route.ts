@@ -3,11 +3,17 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const PLAN_PRICE_IDS: Record<"solo" | "team" | "business", Array<string | undefined>> = {
+  solo: [process.env.STRIPE_SOLO_PRICE_ID, process.env.STRIPE_SOLO_ANNUAL_PRICE_ID],
+  team: [process.env.STRIPE_TEAM_PRICE_ID, process.env.STRIPE_TEAM_ANNUAL_PRICE_ID],
+  business: [process.env.STRIPE_BUSINESS_PRICE_ID, process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID],
+};
+
 function getPlanFromPriceId(priceId: string | null | undefined) {
   if (!priceId) return "trial";
-  if (priceId === process.env.STRIPE_SOLO_PRICE_ID) return "solo";
-  if (priceId === process.env.STRIPE_TEAM_PRICE_ID) return "team";
-  if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) return "business";
+  for (const [plan, ids] of Object.entries(PLAN_PRICE_IDS)) {
+    if (ids.some((id) => id && id === priceId)) return plan;
+  }
   return "trial";
 }
 

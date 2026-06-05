@@ -3,9 +3,7 @@
 // to refetch fresh assets from the network.
 const CACHE_NAME = 'servlo-v3-2026-05-15';
 const SHELL_URLS = [
-  '/',
   '/offline',
-  '/auth/login',
 ];
 
 self.addEventListener('install', (event) => {
@@ -50,7 +48,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .catch(() => {
-        // Network failed
+        // Network failed. For navigations, show the offline page instead of
+        // cached HTML from an older Next.js build whose chunk URLs may 404.
         if (event.request.mode === 'navigate') {
           return caches.match('/offline') || new Response('Offline', { status: 503 });
         }

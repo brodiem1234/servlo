@@ -497,8 +497,14 @@ export function SignupForm() {
  setAbnLookupLoading(true);
  setAbnLookup(null);
  setEntityName("");
+ const fallbackTimer = window.setTimeout(() => {
+ if (cancelled) return;
+ setAbnLookup({ status: "skipped" });
+ setAbnLookupLoading(false);
+ }, 9000);
  lookupABN(abnDigits).then((result) => {
  if (cancelled) return;
+ window.clearTimeout(fallbackTimer);
  setAbnLookup(result);
  setAbnLookupLoading(false);
  if (result.status === "active" || result.status === "inactive") {
@@ -506,10 +512,14 @@ export function SignupForm() {
  }
  }).catch(() => {
  if (cancelled) return;
+ window.clearTimeout(fallbackTimer);
  setAbnLookup({ status: "error", message: "Lookup failed" });
  setAbnLookupLoading(false);
  });
- return () => { cancelled = true; };
+ return () => {
+ cancelled = true;
+ window.clearTimeout(fallbackTimer);
+ };
  }, [abnDigits, abnValid]); // eslint-disable-line react-hooks/exhaustive-deps
 
  // Mount Stripe card element when reaching step 5 (trial) for Core-containing products.
@@ -697,8 +707,14 @@ export function SignupForm() {
  return;
  }
 
+const params = typeof window !== "undefined"
+? new URLSearchParams(window.location.search)
+: new URLSearchParams();
+const urlPromoCode = params.get("code")?.trim() ?? "";
+const promoCodeForConflict = (appliedPromoCode || urlPromoCode).toUpperCase();
+
  // EARLYACCESS is monthly-only. Clear it if user tries to combine with annual
- if (earlyAccessConflict) {
+if (isAnnual && promoCodeForConflict === "EARLYACCESS") {
  setError("The EARLYACCESS discount applies to monthly plans only. Please switch to monthly billing or remove the promo code.");
  return;
  }
@@ -801,9 +817,6 @@ export function SignupForm() {
  // workspace with the industry-recommended default set (no optional extras).
  const workspaceFeaturesEnabled = buildInitialEnabledFeatures(signupPrimaryIndustry, new Set());
 
- const params = typeof window !== "undefined"
- ? new URLSearchParams(window.location.search)
- : new URLSearchParams();
  const referralCode = params.get("ref") ?? undefined;
  // Use the UI-applied promo code (validated); fall back to URL param for legacy ?code= links
  const effectivePromoCode = appliedPromoCode || params.get("code") || undefined;
@@ -892,45 +905,61 @@ export function SignupForm() {
  }
  }
 
- // Stripe trial (Core-containing products with a known price tier).
- const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
- const priceId = getPriceId(selectedPlanTier, isAnnual);
+// Stripe subscription (Core-containing products must complete payment before access).
+const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
+const priceId = getPriceId(selectedPlanTier, isAnnual);
 
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
- try {
- const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
- type: "card",
- card: cardElementRef.current,
- });
- if (pmError) throw new Error(pmError.message);
+if (hasCore && !priceId) {
+setError("This plan is not configured for signup yet. Please choose another plan or contact support.");
+return;
+}
 
- const trialRes = await fetch("/api/stripe/create-trial", {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- Authorization: `Bearer ${accessToken}`,
- },
- body: JSON.stringify({
- paymentMethodId: paymentMethod!.id,
- selectedProductCombo,
- selectedPlanTier,
- annual: isAnnual,
- // ABN passed so the create-trial route can run the dedup check
- // (one active subscription per ABN) and attach the ABN to the
- // Stripe customer as a tax ID.
- abn: abnRaw,
- ...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
- }),
- });
+if (hasCore) {
+if (!stripeRef.current || !cardElementRef.current) {
+setError("Secure card entry is still loading. Please wait a moment and try again.");
+return;
+}
 
- if (!trialRes.ok) {
- const trialErr = (await trialRes.json()) as { error?: string };
- console.warn("[signup/owner] trial setup failed", trialErr);
- }
- } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
- }
- }
+try {
+const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
+type: "card",
+card: cardElementRef.current,
+});
+if (pmError || !paymentMethod?.id) {
+setError(pmError?.message ?? "We could not verify that card. Please check the details and try again.");
+return;
+}
+
+const trialRes = await fetch("/api/stripe/create-trial", {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+Authorization: `Bearer ${accessToken}`,
+},
+body: JSON.stringify({
+paymentMethodId: paymentMethod.id,
+selectedProductCombo,
+selectedPlanTier,
+annual: isAnnual,
+// ABN passed so the create-trial route can run the dedup check
+// (one active subscription per ABN) and attach the ABN to the
+// Stripe customer as a tax ID.
+abn: abnRaw,
+...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
+}),
+});
+
+const trialData = (await trialRes.json().catch(() => ({}))) as { success?: boolean; error?: string };
+if (!trialRes.ok || trialData.success !== true) {
+setError(trialData.error ?? "Payment did not complete. Please try another card or contact support.");
+return;
+}
+} catch (stripeErr) {
+console.warn("[signup/owner] stripe subscription error", stripeErr);
+setError(stripeErr instanceof Error ? stripeErr.message : "Payment did not complete. Please try again.");
+return;
+}
+}
 
  router.push("/dashboard/owner");
  router.refresh();

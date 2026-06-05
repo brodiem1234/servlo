@@ -31,8 +31,11 @@ export async function lookupABN(abn: string): Promise<AbnLookupResult> {
   const cleanAbn = abn.replace(/\D/g, "");
   const url = `https://abr.business.gov.au/json/AbnDetails.aspx?abn=${cleanAbn}&callback=callback&guid=${encodeURIComponent(guid)}`;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, { cache: "no-store", signal: controller.signal });
     if (!res.ok) {
       return { status: "error", message: `ABR API returned ${res.status}` };
     }
@@ -65,9 +68,14 @@ export async function lookupABN(abn: string): Promise<AbnLookupResult> {
     }
     return { status: "inactive", entityName };
   } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return { status: "skipped" };
+    }
     return {
       status: "error",
       message: err instanceof Error ? err.message : "ABR lookup failed",
     };
+  } finally {
+    clearTimeout(timeout);
   }
 }

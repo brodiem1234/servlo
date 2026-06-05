@@ -148,10 +148,10 @@ export async function bootstrapSignupProfiles(
   const extendedPayload: Record<string, unknown> = {
     email: params.email,
     phone: params.phoneNumber || null,
-    trial_start: trialStart.toISOString(),
-    trial_end: trialEnd.toISOString(),
-    subscription_status: "trialing",
-    subscription_tier: "solo"
+    trial_start: role === "owner" ? null : trialStart.toISOString(),
+    trial_end: role === "owner" ? null : trialEnd.toISOString(),
+    subscription_status: role === "owner" ? "incomplete" : "trialing",
+    subscription_tier: role === "owner" ? params.planTier ?? "solo" : "solo"
   };
 
   if (role === "owner") {

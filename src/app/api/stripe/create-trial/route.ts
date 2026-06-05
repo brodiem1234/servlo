@@ -131,6 +131,7 @@ export async function POST(request: Request) {
       customer: customer.id,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
+      payment_behavior: "error_if_incomplete",
       ...(automaticTaxEnabled ? { automatic_tax: { enabled: true } } : {}),
       ...(resolvedPromoCodeId ? { discounts: [{ promotion_code: resolvedPromoCodeId }] } : {}),
       metadata: {
@@ -142,6 +143,22 @@ export async function POST(request: Request) {
       },
     });
 
+    if (subscription.status !== "active" && subscription.status !== "trialing") {
+      await supabaseAdmin
+        .from("profiles")
+        .update({
+          stripe_customer_id: customer.id,
+          stripe_subscription_id: subscription.id,
+          subscription_status: subscription.status,
+        })
+        .eq("id", user.id);
+
+      return NextResponse.json(
+        { error: "Payment did not complete. Please try another card or contact support." },
+        { status: 402 }
+      );
+    }
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
@@ -150,6 +167,9 @@ export async function POST(request: Request) {
       .update({
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
+        subscription_status: subscription.status,
+        plan: selectedPlanTier,
+        subscription_tier: selectedPlanTier,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
         trial_started_at: new Date().toISOString(),
@@ -157,6 +177,16 @@ export async function POST(request: Request) {
         card_brand,
       })
       .eq("id", user.id);
+
+    await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        subscription_status: subscription.status,
+        plan: selectedPlanTier,
+      })
+      .eq("owner_id", user.id);
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {
