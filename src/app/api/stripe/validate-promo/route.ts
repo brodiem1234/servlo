@@ -20,7 +20,12 @@ export async function POST(request: Request) {
 
     if (isEarlyAccessPromoCode(code)) {
       const admin = createAdminClient();
-      const hasCapacity = await hasFoundingMemberCapacity(admin);
+      let hasCapacity = false;
+      try {
+        hasCapacity = await hasFoundingMemberCapacity(admin);
+      } catch (err) {
+        console.error("[validate-promo] founder cap check failed; rejecting EARLYACCESS", err);
+      }
       if (!hasCapacity) {
         return NextResponse.json({ valid: false, error: "The EARLYACCESS founder offer is full" });
       }

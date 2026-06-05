@@ -38,6 +38,9 @@ export async function GET(req: NextRequest) {
     );
   } catch (err) {
     console.error("[founders/count] error:", err);
-    return NextResponse.json({ count: 0, remaining: FOUNDING_MEMBER_LIMIT, isFull: false }, { status: 200 });
+    return NextResponse.json(
+      { count: FOUNDING_MEMBER_LIMIT, remaining: 0, isFull: true },
+      { status: 200 }
+    );
   }
 }

@@ -29,7 +29,7 @@ export async function GET(_req: NextRequest) {
   } catch (err) {
     console.error("[founding-100/count] error:", err);
     return NextResponse.json(
-      { count: 0, remaining: FOUNDING_MEMBER_LIMIT, isFull: false, limit: FOUNDING_MEMBER_LIMIT },
+      { count: FOUNDING_MEMBER_LIMIT, remaining: 0, isFull: true, limit: FOUNDING_MEMBER_LIMIT },
       { status: 200 }
     );
   }
