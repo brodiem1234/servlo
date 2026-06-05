@@ -278,7 +278,13 @@ export async function POST(req: Request) {
         if (prof?.id) {
           await admin
             .from("businesses")
-            .update({ grow_addon_enabled: growEnabled })
+            .update({
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscription.id,
+              plan,
+              subscription_status: status,
+              grow_addon_enabled: growEnabled,
+            })
             .eq("owner_id", prof.id);
         }
       }

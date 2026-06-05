@@ -102,6 +102,34 @@ export async function POST(request: Request) {
       invoice_settings: { default_payment_method: paymentMethodId },
     });
 
+    const preSubscriptionProfile = await supabaseAdmin
+      .from("profiles")
+      .update({
+        stripe_customer_id: customer.id,
+        selected_products: selectedProductCombo,
+        plan_tier: selectedPlanTier,
+        subscription_status: "incomplete",
+        subscription_tier: selectedPlanTier,
+      })
+      .eq("id", user.id);
+
+    if (preSubscriptionProfile.error) {
+      throw new Error(`Could not prepare billing profile: ${preSubscriptionProfile.error.message}`);
+    }
+
+    const preSubscriptionBusiness = await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        plan: selectedPlanTier,
+        subscription_status: "incomplete",
+      })
+      .eq("owner_id", user.id);
+
+    if (preSubscriptionBusiness.error) {
+      console.error("[create-trial] pre-subscription business sync failed:", preSubscriptionBusiness.error);
+    }
+
     // Retrieve card details for display
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
     const card_last4 = pm.card?.last4 ?? null;
@@ -131,6 +159,7 @@ export async function POST(request: Request) {
       customer: customer.id,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
+      payment_behavior: "error_if_incomplete",
       ...(automaticTaxEnabled ? { automatic_tax: { enabled: true } } : {}),
       ...(resolvedPromoCodeId ? { discounts: [{ promotion_code: resolvedPromoCodeId }] } : {}),
       metadata: {
@@ -145,18 +174,46 @@ export async function POST(request: Request) {
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileSync = await supabaseAdmin
       .from("profiles")
       .update({
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
+        plan: selectedPlanTier,
+        subscription_status: subscription.status,
+        subscription_tier: selectedPlanTier,
         trial_started_at: new Date().toISOString(),
         card_last4,
         card_brand,
       })
       .eq("id", user.id);
+
+    if (profileSync.error) {
+      throw new Error(`Could not save subscription entitlement: ${profileSync.error.message}`);
+    }
+
+    const businessSync = await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        plan: selectedPlanTier,
+        subscription_status: subscription.status,
+      })
+      .eq("owner_id", user.id);
+
+    if (businessSync.error) {
+      console.error("[create-trial] business subscription sync failed:", businessSync.error);
+    }
+
+    if (subscription.status !== "active" && subscription.status !== "trialing") {
+      return NextResponse.json(
+        { error: "Payment did not complete. Please check your card details and try again." },
+        { status: 402 }
+      );
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {
