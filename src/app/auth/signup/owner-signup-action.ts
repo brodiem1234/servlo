@@ -3,6 +3,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { IndustrySlug } from "@/lib/industries";
 import { DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
+import {
+  buildInitialEnabledFeatures,
+  primaryIndustrySlug,
+  serializeFeatureFlags,
+} from "@/lib/workspace-features";
 
 export type OwnerSignupPayload = {
   userId: string;
@@ -56,6 +61,9 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
     userId, fullName, email, phone, businessName, abn,
     entityName, selectedIndustries, selectedPlan, selectedProducts
   } = payload;
+  const initialFeatures = serializeFeatureFlags(
+    new Set(buildInitialEnabledFeatures(primaryIndustrySlug(selectedIndustries.length ? selectedIndustries : ["other"]), new Set()))
+  );
 
   // ── Profile ──────────────────────────────────────────────────────────────
   try {
@@ -66,6 +74,10 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
         email,
         phone,
         role: "owner",
+        trial_start: null,
+        trial_end: null,
+        subscription_status: "incomplete",
+        subscription_tier: selectedPlan ?? "solo",
         plan_tier: selectedPlan ?? "solo",
         selected_products: selectedProducts ?? "core",
         onboarding_completed: false,
@@ -99,7 +111,9 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
         entity_name: entityName ?? null,
         industries: selectedIndustries ?? [],
         accent_colour: DEFAULT_ACCENT_HEX,
-        feature_flags: { enabled: [] },
+        plan: selectedPlan ?? "solo",
+        subscription_status: "incomplete",
+        feature_flags: initialFeatures,
       },
       { onConflict: "owner_id" }
     );

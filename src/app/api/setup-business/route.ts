@@ -32,7 +32,7 @@ type SetupBusinessBody = {
   entityName?: string;
   /** grow_referral code — marks the referral as signed_up when provided */
   referralCode?: string;
-  /** promo code e.g. EARLYACCESS — marks user as founding member */
+  /** promo code e.g. EARLYACCESS — accepted for request compatibility; billing/webhook owns benefits */
   promoCode?: string;
 };
 
@@ -206,9 +206,6 @@ export async function POST(request: Request) {
     typeof body.entityName === "string" ? body.entityName.trim() : null;
   const referralCode =
     typeof body.referralCode === "string" ? body.referralCode.trim() : null;
-  const promoCode =
-    typeof body.promoCode === "string" ? body.promoCode.trim().toUpperCase() : null;
-  const isFoundingMember = promoCode === "EARLYACCESS";
   const planTier =
     typeof body.selectedPlan === "string" && body.selectedPlan.trim()
       ? body.selectedPlan.trim()
@@ -284,10 +281,10 @@ export async function POST(request: Request) {
   const trialReinforce = await supabaseAdmin
     .from("profiles")
     .update({
-      trial_start: trialStart.toISOString(),
-      trial_end: trialEnd.toISOString(),
-      subscription_status: "trialing",
-      subscription_tier: "solo"
+      trial_start: null,
+      trial_end: null,
+      subscription_status: "incomplete",
+      subscription_tier: planTier
     })
     .eq("id", userId);
 
@@ -303,11 +300,8 @@ export async function POST(request: Request) {
     industries,
     entity_name: entityName || null,
     accent_colour: accentHex,
-    ...(isFoundingMember ? {
-      is_founding_member: true,
-      founding_started_at: new Date().toISOString(),
-      commitment_end_date: new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-    } : {}),
+    plan: planTier,
+    subscription_status: "incomplete",
     ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
   });
 
@@ -337,6 +331,8 @@ export async function POST(request: Request) {
         {
           owner_id: userId,
           accent_colour: accent_colour,
+          plan: planTier,
+          subscription_status: "incomplete",
           ...(featureFlagsPayload ? { feature_flags: featureFlagsPayload } : {})
         },
         { onConflict: "owner_id" }

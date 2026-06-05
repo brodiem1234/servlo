@@ -11,6 +11,7 @@
  *   if (block) return block;
  *
  * Blocking states:
+ *  - "incomplete" — first payment has not completed
  *  - "cancelled" — subscription ended, read-only
  *  - "paused" — pause_collection active, write-locked
  *  - "incomplete_expired" — never paid first invoice
@@ -27,6 +28,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const BLOCKED_STATUSES = new Set([
+  "incomplete",
   "cancelled",
   "canceled",
   "paused",
