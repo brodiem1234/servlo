@@ -142,21 +142,46 @@ export async function POST(request: Request) {
       },
     });
 
+    const subscriptionStatus = subscription.status === "active" ? "active" : subscription.status;
+    const subscriptionStartedAt = new Date().toISOString();
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileUpdate = await supabaseAdmin
       .from("profiles")
       .update({
+        subscription_status: subscriptionStatus,
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
         selected_products: selectedProductCombo,
+        plan: selectedPlanTier,
         plan_tier: selectedPlanTier,
-        trial_started_at: new Date().toISOString(),
+        subscription_tier: selectedPlanTier,
+        trial_started_at: subscriptionStartedAt,
         card_last4,
         card_brand,
       })
       .eq("id", user.id);
+    if (profileUpdate.error) {
+      throw new Error(`Could not persist subscription on profile: ${profileUpdate.error.message}`);
+    }
+
+    const businessUpdate = await supabaseAdmin
+      .from("businesses")
+      .upsert(
+        {
+          owner_id: user.id,
+          stripe_customer_id: customer.id,
+          stripe_subscription_id: subscription.id,
+          plan: selectedPlanTier,
+          subscription_status: subscriptionStatus,
+        },
+        { onConflict: "owner_id" }
+      );
+    if (businessUpdate.error) {
+      throw new Error(`Could not persist subscription on business: ${businessUpdate.error.message}`);
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {
