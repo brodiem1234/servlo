@@ -497,8 +497,14 @@ export function SignupForm() {
  setAbnLookupLoading(true);
  setAbnLookup(null);
  setEntityName("");
+ const fallbackTimer = window.setTimeout(() => {
+ if (cancelled) return;
+ setAbnLookup({ status: "skipped" });
+ setAbnLookupLoading(false);
+ }, 9000);
  lookupABN(abnDigits).then((result) => {
  if (cancelled) return;
+ window.clearTimeout(fallbackTimer);
  setAbnLookup(result);
  setAbnLookupLoading(false);
  if (result.status === "active" || result.status === "inactive") {
@@ -506,10 +512,14 @@ export function SignupForm() {
  }
  }).catch(() => {
  if (cancelled) return;
+ window.clearTimeout(fallbackTimer);
  setAbnLookup({ status: "error", message: "Lookup failed" });
  setAbnLookupLoading(false);
  });
- return () => { cancelled = true; };
+ return () => {
+ cancelled = true;
+ window.clearTimeout(fallbackTimer);
+ };
  }, [abnDigits, abnValid]); // eslint-disable-line react-hooks/exhaustive-deps
 
  // Mount Stripe card element when reaching step 5 (trial) for Core-containing products.
