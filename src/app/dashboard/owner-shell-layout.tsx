@@ -15,10 +15,14 @@ async function signOut() {
 
 /** Shared wrapper for owner-facing routes that use the sidebar shell (owner home + contractors, etc.). */
 export default async function DashboardOwnerShellLayout({ children }: { children: React.ReactNode }) {
-  const { user, businessName } = await getOwnerContext();
+  const { user, businessName, hasPaidDashboardAccess } = await getOwnerContext();
 
   if (!user) {
     redirect("/auth/login");
+  }
+
+  if (!hasPaidDashboardAccess) {
+    redirect("/dashboard/upgrade?reason=subscription_required");
   }
 
   const supabase = await createClient();

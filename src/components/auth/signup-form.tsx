@@ -892,12 +892,15 @@ export function SignupForm() {
  }
  }
 
- // Stripe trial (Core-containing products with a known price tier).
+ // Paid subscription (Core-containing products with a known price tier).
  const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
  const priceId = getPriceId(selectedPlanTier, isAnnual);
 
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
- try {
+ if (hasCore && priceId) {
+ if (!stripeRef.current || !cardElementRef.current) {
+ throw new Error("The payment form is still loading. Please wait a moment and try again.");
+ }
+
  const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
  type: "card",
  card: cardElementRef.current,
@@ -923,12 +926,15 @@ export function SignupForm() {
  }),
  });
 
+ const trialPayload = await trialRes.json().catch(() => ({} as { error?: string; success?: boolean }));
  if (!trialRes.ok) {
- const trialErr = (await trialRes.json()) as { error?: string };
- console.warn("[signup/owner] trial setup failed", trialErr);
+ console.warn("[signup/owner] subscription setup failed", trialPayload);
+ throw new Error(trialPayload.error ?? "We could not start your subscription. Please check your card details and try again.");
  }
- } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
+
+ if (trialPayload.success !== true) {
+ console.warn("[signup/owner] subscription setup returned unexpected payload", trialPayload);
+ throw new Error("We could not confirm your subscription. Please try again or contact support.");
  }
  }
 
