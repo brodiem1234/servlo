@@ -805,8 +805,8 @@ export function SignupForm() {
  ? new URLSearchParams(window.location.search)
  : new URLSearchParams();
  const referralCode = params.get("ref") ?? undefined;
- // Use the UI-applied promo code (validated); fall back to URL param for legacy ?code= links
- const effectivePromoCode = appliedPromoCode || params.get("code") || undefined;
+// Only submit a promo that the UI validated. Raw URL codes are not trusted.
+const effectivePromoCode = appliedPromoCode || undefined;
 
  const setupBody = {
  userId,

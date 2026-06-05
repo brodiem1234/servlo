@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { hasFoundingMemberCapacity, isEarlyAccessPromoCode } from "@/lib/founding-members";
 
 /**
  * POST /api/stripe/validate-promo
@@ -14,6 +16,19 @@ export async function POST(request: Request) {
     const code = body.code?.trim();
     if (!code) {
       return NextResponse.json({ valid: false, error: "No promo code provided" });
+    }
+
+    if (isEarlyAccessPromoCode(code)) {
+      const admin = createAdminClient();
+      let hasCapacity = false;
+      try {
+        hasCapacity = await hasFoundingMemberCapacity(admin);
+      } catch (err) {
+        console.error("[validate-promo] founder cap check failed; rejecting EARLYACCESS", err);
+      }
+      if (!hasCapacity) {
+        return NextResponse.json({ valid: false, error: "The EARLYACCESS founder offer is full" });
+      }
     }
 
     const promoCodes = await stripe.promotionCodes.list({

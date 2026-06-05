@@ -22,11 +22,11 @@ async function getFounderCount(): Promise<number> {
  const res = await fetch(`${base}/api/founders/count`, {
  next: { revalidate: 60 }
  });
- if (!res.ok) return 0;
+ if (!res.ok) return 50;
  const json = await res.json();
  return Number(json.count ?? json.total ?? 0);
  } catch {
- return 0;
+ return 50;
  }
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { FOUNDING_MEMBER_LIMIT, getFoundingMemberCount } from "@/lib/founding-members";
 
 /**
  * GET /api/founding-100/count
@@ -11,22 +12,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * Brodie: once nothing references this URL, you can delete the file. The
  * canonical endpoint is /api/founders/count.
  */
-const FOUNDING_LIMIT = 50;
-
 export async function GET(_req: NextRequest) {
   try {
     const admin = createAdminClient();
-
-    const { count } = await admin
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("is_founding_member", true);
-
-    const founderCount = count ?? 0;
-    const remaining = Math.max(0, FOUNDING_LIMIT - founderCount);
+    const founderCount = await getFoundingMemberCount(admin);
+    const remaining = Math.max(0, FOUNDING_MEMBER_LIMIT - founderCount);
 
     return NextResponse.json(
-      { count: founderCount, remaining, isFull: founderCount >= FOUNDING_LIMIT, limit: FOUNDING_LIMIT },
+      { count: founderCount, remaining, isFull: founderCount >= FOUNDING_MEMBER_LIMIT, limit: FOUNDING_MEMBER_LIMIT },
       {
         headers: {
           "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
@@ -36,7 +29,7 @@ export async function GET(_req: NextRequest) {
   } catch (err) {
     console.error("[founding-100/count] error:", err);
     return NextResponse.json(
-      { count: 0, remaining: FOUNDING_LIMIT, isFull: false, limit: FOUNDING_LIMIT },
+      { count: FOUNDING_MEMBER_LIMIT, remaining: 0, isFull: true, limit: FOUNDING_MEMBER_LIMIT },
       { status: 200 }
     );
   }

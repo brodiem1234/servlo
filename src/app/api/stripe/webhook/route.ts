@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { FOUNDING_MEMBER_LIMIT, getFoundingMemberCount } from "@/lib/founding-members";
 
 function getPlanFromPriceId(priceId: string | null | undefined) {
   if (!priceId) return "trial";
@@ -38,7 +39,7 @@ function hasGrowAddon(
  * `customer.subscription.created` — the early-return on existing flag means
  * it never double-assigns.
  *
- * Caps at 50. If 50 are already taken, this is a no-op.
+ * Caps at the configured founder limit. If spots are already taken, this is a no-op.
  *
  * NOTE: This still has a small race window if two checkouts complete within
  * the same ~100ms — both see count=49 and both write count=50. Acceptable for
@@ -59,28 +60,33 @@ async function assignFoundingMemberIfEligible(
   if (!profile || profile.is_founding_member) return;
 
   // Count current founders (source of truth: profiles.is_founding_member).
-  const { count } = await admin
-    .from("profiles")
-    .select("id", { count: "exact", head: true })
-    .eq("is_founding_member", true);
-
-  const founderCount = count ?? 0;
-  if (founderCount >= 50) return;
+  const founderCount = await getFoundingMemberCount(admin);
+  if (founderCount >= FOUNDING_MEMBER_LIMIT) return;
 
   const founderNumber = founderCount + 1;
+  const joinedAt = new Date();
+  const commitmentEndDate = new Date(Date.now() + 3 * 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
   await admin
     .from("profiles")
     .update({
       is_founding_member: true,
       founder_number: founderNumber,
-      founding_joined_at: new Date().toISOString(),
+      founding_joined_at: joinedAt.toISOString(),
     })
     .eq("id", userId);
 
   // Mirror to businesses so any code that reads from there stays consistent.
   await admin
     .from("businesses")
-    .update({ is_founding_member: true, founder_number: founderNumber })
+    .update({
+      is_founding_member: true,
+      founder_number: founderNumber,
+      founding_started_at: joinedAt.toISOString(),
+      commitment_end_date: commitmentEndDate,
+    })
     .eq("owner_id", userId);
 
   // Welcome email
