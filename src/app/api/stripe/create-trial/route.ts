@@ -126,11 +126,14 @@ export async function POST(request: Request) {
     const automaticTaxEnabled =
       process.env.STRIPE_AUTOMATIC_TAX_ENABLED === "true";
 
-    // Create subscription — billed from day 1, NO free trial.
+    // Create subscription — billed from day 1, NO free trial. If the initial
+    // invoice cannot be paid immediately, Stripe throws and signup stays put
+    // instead of opening a workspace with an unpaid/incomplete subscription.
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
+      payment_behavior: "error_if_incomplete",
       ...(automaticTaxEnabled ? { automatic_tax: { enabled: true } } : {}),
       ...(resolvedPromoCodeId ? { discounts: [{ promotion_code: resolvedPromoCodeId }] } : {}),
       metadata: {
@@ -142,21 +145,47 @@ export async function POST(request: Request) {
       },
     });
 
+    const subscriptionStatus = subscription.status === "active" ? "active" : subscription.status;
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileUpdate = await supabaseAdmin
       .from("profiles")
       .update({
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
+        plan: selectedPlanTier,
+        subscription_status: subscriptionStatus,
+        subscription_tier: selectedPlanTier,
         trial_started_at: new Date().toISOString(),
         card_last4,
         card_brand,
       })
       .eq("id", user.id);
+
+    if (profileUpdate.error) {
+      console.error("[create-trial] profile billing update failed:", profileUpdate.error);
+      throw new Error("Subscription was created but billing details could not be saved. Please contact support.");
+    }
+
+    const businessUpdate = await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        plan: selectedPlanTier,
+        subscription_status: subscriptionStatus,
+        grow_addon_enabled: selectedProductCombo.includes("grow"),
+      })
+      .eq("owner_id", user.id);
+
+    if (businessUpdate.error) {
+      console.error("[create-trial] business billing update failed:", businessUpdate.error);
+      throw new Error("Subscription was created but workspace billing details could not be saved. Please contact support.");
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {

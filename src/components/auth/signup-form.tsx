@@ -892,12 +892,22 @@ export function SignupForm() {
  }
  }
 
- // Stripe trial (Core-containing products with a known price tier).
+// Paid Core signup. Do not let the workspace open until Stripe has accepted
+// the first payment; otherwise the user can land in the app on a free/trial row.
  const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
  const priceId = getPriceId(selectedPlanTier, isAnnual);
 
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
+if (hasCore && !priceId) {
+setError("This plan is not available right now. Please contact support and we can finish setup for you.");
+return;
+}
+
+if (hasCore && priceId) {
  try {
+if (!stripeRef.current || !cardElementRef.current) {
+throw new Error("Payment form is still loading. Please wait a moment and try again.");
+}
+
  const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
  type: "card",
  card: cardElementRef.current,
@@ -925,10 +935,12 @@ export function SignupForm() {
 
  if (!trialRes.ok) {
  const trialErr = (await trialRes.json()) as { error?: string };
- console.warn("[signup/owner] trial setup failed", trialErr);
+throw new Error(trialErr.error ?? "Payment setup failed. Please check your card details and try again.");
  }
  } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
+console.error("[signup/owner] stripe signup payment failed", stripeErr);
+setError(stripeErr instanceof Error ? stripeErr.message : "Payment setup failed. Please check your card details and try again.");
+return;
  }
  }
 
