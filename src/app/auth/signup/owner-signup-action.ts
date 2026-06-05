@@ -3,6 +3,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { IndustrySlug } from "@/lib/industries";
 import { DEFAULT_ACCENT_HEX } from "@/lib/brand-accent";
+import {
+  buildInitialEnabledFeatures,
+  primaryIndustrySlug,
+  serializeFeatureFlags
+} from "@/lib/workspace-features";
 
 export type OwnerSignupPayload = {
   userId: string;
@@ -89,6 +94,11 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
   }
 
   // ── Business ─────────────────────────────────────────────────────────────
+  const primaryIndustry = primaryIndustrySlug(selectedIndustries?.length ? selectedIndustries : ["other"]);
+  const featureFlags = serializeFeatureFlags(
+    new Set(buildInitialEnabledFeatures(primaryIndustry, new Set()))
+  );
+
   try {
     const { error } = await admin.from("businesses").upsert(
       {
@@ -99,7 +109,7 @@ export async function immediateOwnerUpsert(payload: OwnerSignupPayload): Promise
         entity_name: entityName ?? null,
         industries: selectedIndustries ?? [],
         accent_colour: DEFAULT_ACCENT_HEX,
-        feature_flags: { enabled: [] },
+        feature_flags: featureFlags,
       },
       { onConflict: "owner_id" }
     );

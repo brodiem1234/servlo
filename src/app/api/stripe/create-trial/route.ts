@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  buildPaidSubscriptionBusinessUpdate,
+  buildPaidSubscriptionProfileUpdate,
+  normalizeCorePlan
+} from "@/lib/billing/subscription-state";
 
 /** Server-side price ID maps — never trust client-supplied IDs */
 const CORE_PRICE_IDS_MONTHLY: Record<string, string | undefined> = {
@@ -53,9 +58,10 @@ export async function POST(request: Request) {
 
     const { paymentMethodId, selectedProductCombo, selectedPlanTier, promoCode, annual, abn } = body;
 
+    const selectedCorePlan = normalizeCorePlan(selectedPlanTier);
     const priceMap = annual ? CORE_PRICE_IDS_ANNUAL : CORE_PRICE_IDS_MONTHLY;
-    const priceId = priceMap[selectedPlanTier];
-    if (!priceId) {
+    const priceId = selectedCorePlan ? priceMap[selectedCorePlan] : undefined;
+    if (!selectedCorePlan || !priceId) {
       return NextResponse.json(
         { error: `No ${annual ? "annual" : "monthly"} price configured for plan "${selectedPlanTier}".` },
         { status: 400 }
@@ -142,21 +148,48 @@ export async function POST(request: Request) {
       },
     });
 
+    if (subscription.status !== "active") {
+      return NextResponse.json(
+        { error: `Subscription payment did not complete. Stripe returned status "${subscription.status}".` },
+        { status: 402 }
+      );
+    }
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const subscriptionStartedAt = new Date().toISOString();
+    const profileUpdate = await supabaseAdmin
       .from("profiles")
-      .update({
-        stripe_customer_id: customer.id,
-        stripe_subscription_id: subscription.id,
-        selected_products: selectedProductCombo,
-        plan_tier: selectedPlanTier,
-        trial_started_at: new Date().toISOString(),
-        card_last4,
-        card_brand,
-      })
+      .update(buildPaidSubscriptionProfileUpdate({
+        customerId: customer.id,
+        subscriptionId: subscription.id,
+        selectedProductCombo,
+        selectedPlanTier: selectedCorePlan,
+        startedAtIso: subscriptionStartedAt,
+        cardLast4: card_last4,
+        cardBrand: card_brand,
+      }))
       .eq("id", user.id);
+
+    if (profileUpdate.error) {
+      console.error("[create-trial] profile billing sync failed", profileUpdate.error);
+      return NextResponse.json({ error: "Subscription created, but account billing state could not be saved." }, { status: 500 });
+    }
+
+    const businessUpdate = await supabaseAdmin
+      .from("businesses")
+      .update(buildPaidSubscriptionBusinessUpdate({
+        customerId: customer.id,
+        subscriptionId: subscription.id,
+        selectedPlanTier: selectedCorePlan,
+      }))
+      .eq("owner_id", user.id);
+
+    if (businessUpdate.error) {
+      console.error("[create-trial] business billing sync failed", businessUpdate.error);
+      return NextResponse.json({ error: "Subscription created, but workspace billing state could not be saved." }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {

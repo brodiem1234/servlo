@@ -2,14 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-function getPlanFromPriceId(priceId: string | null | undefined) {
-  if (!priceId) return "trial";
-  if (priceId === process.env.STRIPE_SOLO_PRICE_ID) return "solo";
-  if (priceId === process.env.STRIPE_TEAM_PRICE_ID) return "team";
-  if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) return "business";
-  return "trial";
-}
+import { getPlanFromPriceId } from "@/lib/billing/subscription-state";
 
 /** Returns the base plan price ID from a list of subscription items (ignores Grow add-on). */
 function getBasePriceId(
