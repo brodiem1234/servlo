@@ -142,21 +142,59 @@ export async function POST(request: Request) {
       },
     });
 
+    const subscriptionStatus = subscription.status === "active" ? "active" : subscription.status;
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileUpdate = await supabaseAdmin
       .from("profiles")
       .update({
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
+        plan: selectedPlanTier,
+        subscription_tier: selectedPlanTier,
+        subscription_status: subscriptionStatus,
         trial_started_at: new Date().toISOString(),
         card_last4,
         card_brand,
       })
       .eq("id", user.id);
+
+    if (profileUpdate.error) {
+      console.error("[create-trial] profile subscription sync failed", profileUpdate.error);
+      return NextResponse.json(
+        { error: "Subscription was created, but we could not activate your workspace. Please contact support." },
+        { status: 500 }
+      );
+    }
+
+    const businessUpdate = await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        plan: selectedPlanTier,
+        subscription_status: subscriptionStatus,
+      })
+      .eq("owner_id", user.id);
+
+    if (businessUpdate.error) {
+      console.error("[create-trial] business subscription sync failed", businessUpdate.error);
+      return NextResponse.json(
+        { error: "Subscription was created, but we could not activate your workspace. Please contact support." },
+        { status: 500 }
+      );
+    }
+
+    if (subscriptionStatus !== "active") {
+      return NextResponse.json(
+        { error: "Your subscription is not active yet. Please use a card that can complete payment now, or contact support." },
+        { status: 402 }
+      );
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {

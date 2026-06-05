@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { excludeDemoFinancial, filterDemoEntities } from "@/lib/demo/visibility";
+import { hasActivePaidSubscription } from "@/lib/billing/subscription-access";
 
 export type OwnerMetric = {
   revenueThisMonth: number;
@@ -121,7 +122,8 @@ export async function getOwnerContext() {
     user,
     businessName: businessRow?.business_name ?? "SERVLO Core",
     trialEnd,
-    subscriptionTier: profile?.subscription_tier ?? "solo"
+    subscriptionTier: profile?.subscription_tier ?? "solo",
+    hasPaidDashboardAccess: hasActivePaidSubscription(profile)
   };
 }
 
