@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  hasFoundingMemberCapacity,
+  isEarlyAccessPromoCode,
+  normalizePromoCode,
+} from "@/lib/founding-members";
 
 /** Server-side price ID maps — never trust client-supplied IDs */
 const CORE_PRICE_IDS_MONTHLY: Record<string, string | undefined> = {
@@ -83,6 +88,42 @@ export async function POST(request: Request) {
       }
     }
 
+    // Resolve promotion code before creating Stripe side effects. EARLYACCESS is
+    // limited to monthly plans while founding spots remain; never trust the
+    // client-supplied promo code for that cap.
+    let resolvedPromoCodeId: string | undefined;
+    const normalizedPromoCode = normalizePromoCode(promoCode);
+    if (normalizedPromoCode) {
+      let canApplyPromo = true;
+
+      if (isEarlyAccessPromoCode(normalizedPromoCode)) {
+        if (annual) {
+          canApplyPromo = false;
+          console.warn("[create-trial] EARLYACCESS ignored for annual subscription");
+        } else {
+          try {
+            canApplyPromo = await hasFoundingMemberCapacity(supabaseAdmin);
+          } catch (err) {
+            canApplyPromo = false;
+            console.error("[create-trial] founder cap check failed; ignoring EARLYACCESS", err);
+          }
+
+          if (!canApplyPromo) {
+            console.warn("[create-trial] EARLYACCESS ignored because founding spots are full");
+          }
+        }
+      }
+
+      if (canApplyPromo) {
+        const promoCodes = await stripe.promotionCodes.list({ code: normalizedPromoCode, active: true, limit: 1 });
+        if (promoCodes.data.length > 0) {
+          resolvedPromoCodeId = promoCodes.data[0].id;
+        } else {
+          console.warn(`[create-trial] promo code "${normalizedPromoCode}" not found or inactive — ignoring`);
+        }
+      }
+    }
+
     const email = user.email ?? "";
 
     // Create Stripe customer with ABN attached as tax ID
@@ -106,17 +147,6 @@ export async function POST(request: Request) {
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
     const card_last4 = pm.card?.last4 ?? null;
     const card_brand = pm.card?.brand ?? null;
-
-    // Resolve promotion code if provided (accept any active Stripe promo code)
-    let resolvedPromoCodeId: string | undefined;
-    if (promoCode) {
-      const promoCodes = await stripe.promotionCodes.list({ code: promoCode, active: true, limit: 1 });
-      if (promoCodes.data.length > 0) {
-        resolvedPromoCodeId = promoCodes.data[0].id;
-      } else {
-        console.warn(`[create-trial] promo code "${promoCode}" not found or inactive — ignoring`);
-      }
-    }
 
     // Stripe Tax is opt-in via env var. Default OFF because enabling it before
     // you've configured tax registrations in the Stripe dashboard causes
