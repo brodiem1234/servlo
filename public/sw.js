@@ -42,19 +42,22 @@ self.addEventListener('fetch', (event) => {
   ];
   if (
     passthroughHosts.some((h) => url.hostname.includes(h)) ||
-    url.pathname.startsWith('/api/')
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/_next/')
   ) {
     return;
   }
 
   event.respondWith(
     fetch(event.request)
-      .catch(() => {
+      .catch(async () => {
         // Network failed
         if (event.request.mode === 'navigate') {
-          return caches.match('/offline') || new Response('Offline', { status: 503 });
+          const offline = await caches.match('/offline');
+          return offline || new Response('Offline', { status: 503 });
         }
-        return caches.match(event.request);
+        const cached = await caches.match(event.request);
+        return cached || new Response('', { status: 504, statusText: 'Network unavailable' });
       })
   );
 });

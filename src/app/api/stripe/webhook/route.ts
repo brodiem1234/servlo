@@ -5,9 +5,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 function getPlanFromPriceId(priceId: string | null | undefined) {
   if (!priceId) return "trial";
-  if (priceId === process.env.STRIPE_SOLO_PRICE_ID) return "solo";
-  if (priceId === process.env.STRIPE_TEAM_PRICE_ID) return "team";
-  if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) return "business";
+  if (priceId === process.env.STRIPE_SOLO_PRICE_ID || priceId === process.env.STRIPE_SOLO_ANNUAL_PRICE_ID) return "solo";
+  if (priceId === process.env.STRIPE_TEAM_PRICE_ID || priceId === process.env.STRIPE_TEAM_ANNUAL_PRICE_ID) return "team";
+  if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID || priceId === process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID) return "business";
   return "trial";
 }
 
@@ -125,6 +125,7 @@ export async function POST(req: Request) {
   try {
     const event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
     const admin = createAdminClient();
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://servlo.app";
 
     // ── Idempotency guard ──────────────────────────────────────────────────
     // Stripe retries on 5xx and can deliver the same event twice. The unique
@@ -278,8 +279,58 @@ export async function POST(req: Request) {
         if (prof?.id) {
           await admin
             .from("businesses")
-            .update({ grow_addon_enabled: growEnabled })
+            .update({
+              subscription_status: status,
+              stripe_customer_id: customerId,
+              plan,
+              grow_addon_enabled: growEnabled,
+            })
             .eq("owner_id", prof.id);
+        }
+      }
+    }
+
+    if (event.type === "customer.subscription.created") {
+      const subscription = event.data.object;
+      const customerId = typeof subscription.customer === "string" ? subscription.customer : null;
+      const userIdFromMetadata = subscription.metadata?.supabase_user_id || subscription.metadata?.user_id || null;
+      const items = subscription.items.data as Array<{ price?: { id?: string } | null }>;
+      const basePriceId = getBasePriceId(items);
+      const plan = getPlanFromPriceId(basePriceId);
+      const status = subscription.status === "active" ? "active" : subscription.status;
+      const growEnabled = hasGrowAddon(items);
+
+      if (userIdFromMetadata || customerId) {
+        const profileUpdate = admin
+          .from("profiles")
+          .update({
+            subscription_status: status,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscription.id,
+            plan,
+            subscription_tier: plan,
+            trial_end: status === "active" ? null : undefined,
+            trial_expired_at: status === "active" ? null : undefined,
+          });
+
+        if (userIdFromMetadata) {
+          await profileUpdate.eq("id", userIdFromMetadata);
+        } else if (customerId) {
+          await profileUpdate.eq("stripe_customer_id", customerId);
+        }
+
+        const ownerId = userIdFromMetadata;
+        if (ownerId) {
+          await admin
+            .from("businesses")
+            .update({
+              subscription_status: status,
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscription.id,
+              plan,
+              grow_addon_enabled: growEnabled,
+            })
+            .eq("owner_id", ownerId);
         }
       }
     }
@@ -373,7 +424,7 @@ export async function POST(req: Request) {
               <p>We were unable to process your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong>.</p>
               <p>This sometimes happens when a card expires or has insufficient funds. Your access is still active while we retry.</p>
               <p><strong>What to do:</strong> Update your payment method in your billing portal to avoid any interruption to your service.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method</a></p>
+              <p><a href="${appUrl}/api/stripe/portal" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method</a></p>
               <p style="color:#64748b;font-size:13px">We will automatically retry in a few days. If the payment continues to fail, your subscription will be suspended.</p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`;
@@ -384,7 +435,7 @@ export async function POST(req: Request) {
               <p>Hi ${name},</p>
               <p>We tried again to collect your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong> but it was unsuccessful.</p>
               <p>Please update your payment details now to keep your account active.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method now</a></p>
+              <p><a href="${appUrl}/api/stripe/portal" style="display:inline-block;background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Update payment method now</a></p>
               <p style="color:#64748b;font-size:13px">One more retry remains. If this fails your subscription will be cancelled and you may lose access to your data.</p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`;
@@ -396,7 +447,7 @@ export async function POST(req: Request) {
               <p>Hi ${name},</p>
               <p>We have been unable to collect your SERVLO subscription payment of <strong>${currency} $${amountDue.toFixed(2)}</strong> after ${attemptCount} attempts.</p>
               <p>Your subscription is at immediate risk of cancellation. Update your payment method right now to avoid losing access to your business data.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/portal" style="display:inline-block;background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Restore my subscription</a></p>
+              <p><a href="${appUrl}/api/stripe/portal" style="display:inline-block;background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Restore my subscription</a></p>
               <p style="color:#64748b;font-size:13px">Need help? Reply to this email or contact <a href="mailto:support@servlo.com.au">support@servlo.com.au</a>.</p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`;
@@ -506,7 +557,7 @@ export async function POST(req: Request) {
               <h2 style="color:#16a34a">Payment received ✓</h2>
               <p>Hi ${profile.full_name || "there"},</p>
               <p>We have successfully processed your SERVLO subscription payment. Your account is fully active.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/owner" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
+              <p><a href="${appUrl}/dashboard/owner" style="display:inline-block;background:#3B82F6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Go to dashboard</a></p>
               <p style="color:#64748b">— The SERVLO team</p>
             </div>`
           );

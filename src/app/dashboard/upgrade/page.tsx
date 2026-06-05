@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import UpgradePlanCards from "./upgrade-plan-cards";
 
 export const dynamic = "force-dynamic";
 
 export default async function UpgradePage() {
-  const PLANS = [
+  const plans = [
     {
+      key: "solo",
       name: "Solo",
       price: "$29/mo",
       priceId: process.env.STRIPE_SOLO_PRICE_ID ?? "",
@@ -14,6 +16,7 @@ export default async function UpgradePage() {
       accent: "#FFFFFF",
     },
     {
+      key: "team",
       name: "Team",
       price: "$79/mo",
       priceId: process.env.STRIPE_TEAM_PRICE_ID ?? "",
@@ -22,6 +25,7 @@ export default async function UpgradePage() {
       popular: true,
     },
     {
+      key: "business",
       name: "Business",
       price: "$149/mo",
       priceId: process.env.STRIPE_BUSINESS_PRICE_ID ?? "",
@@ -86,43 +90,7 @@ export default async function UpgradePage() {
           </div>
 
           {/* Plan cards */}
-          <div className="grid gap-6 sm:grid-cols-3">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative rounded-2xl border p-6 flex flex-col gap-4 ${
-                  plan.popular
-                    ? "border-[var(--accent-color)] shadow-lg"
-                    : "border-[var(--border)]"
-                } bg-[var(--bg-card)]`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--accent-color)] px-3 py-0.5 text-[11px] font-bold text-white uppercase tracking-wide">
-                    Most popular
-                  </div>
-                )}
-                <div>
-                  <h2 className="text-lg font-bold text-[var(--text-primary)]">{plan.name}</h2>
-                  <p className="mt-1 text-2xl font-extrabold text-[var(--text-primary)]">{plan.price}</p>
-                </div>
-                <ul className="space-y-1.5 flex-1">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                      <span className="mt-0.5 text-green-500 shrink-0">✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href={`/api/billing/checkout?plan=${plan.name.toLowerCase()}&priceId=${plan.priceId}`}
-                  className="block w-full rounded-lg py-2.5 text-center text-sm font-semibold text-white transition hover:opacity-90"
-                  style={{ background: plan.accent }}
-                >
-                  Subscribe — {plan.price}
-                </a>
-              </div>
-            ))}
-          </div>
+          <UpgradePlanCards plans={plans} email={user.email ?? ""} />
 
           {/* Enterprise */}
           <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

@@ -10,13 +10,14 @@ import { sendEmail } from "@/lib/email";
  * Protect with CRON_SECRET header.
  */
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+  const secret = process.env.CRON_SECRET?.trim();
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = createAdminClient();
   const now = new Date();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://servlo.app";
 
   const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
   const oneDayFromNow = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString();
@@ -35,19 +36,26 @@ export async function GET(req: NextRequest) {
       .lte("trial_end", threeDaysFromNow)
       .gte("trial_end", nowISO)
       .eq("trial_expired_notified_3day", false)
+      .is("stripe_subscription_id", null)
       .neq("subscription_status", "active");
 
     for (const user of users3Day ?? []) {
-      if (!user.email) continue;
+      let email = user.email;
+      if (!email) {
+        const { data } = await admin.auth.admin.getUserById(user.id);
+        email = data.user?.email ?? null;
+      }
+      if (!email) continue;
       const name = user.full_name ?? "there";
       const trialEndDate = new Date(user.trial_end).toLocaleDateString("en-AU", {
         day: "numeric", month: "long", year: "numeric",
       });
-      await sendEmail(
-        user.email,
+      const result = await sendEmail(
+        email,
         "Your SERVLO trial ends in 3 days",
-        trialExpiry3DayEmail(name, trialEndDate)
+        trialExpiry3DayEmail(name, trialEndDate, appUrl)
       );
+      if (!result.ok) continue;
       await admin
         .from("profiles")
         .update({ trial_expired_notified_3day: true })
@@ -63,19 +71,26 @@ export async function GET(req: NextRequest) {
       .lte("trial_end", oneDayFromNow)
       .gte("trial_end", nowISO)
       .eq("trial_expired_notified_1day", false)
+      .is("stripe_subscription_id", null)
       .neq("subscription_status", "active");
 
     for (const user of users1Day ?? []) {
-      if (!user.email) continue;
+      let email = user.email;
+      if (!email) {
+        const { data } = await admin.auth.admin.getUserById(user.id);
+        email = data.user?.email ?? null;
+      }
+      if (!email) continue;
       const name = user.full_name ?? "there";
       const trialEndDate = new Date(user.trial_end).toLocaleDateString("en-AU", {
         day: "numeric", month: "long", year: "numeric",
       });
-      await sendEmail(
-        user.email,
+      const result = await sendEmail(
+        email,
         "Last day of your SERVLO trial — don't lose your data",
-        trialExpiry1DayEmail(name, trialEndDate)
+        trialExpiry1DayEmail(name, trialEndDate, appUrl)
       );
+      if (!result.ok) continue;
       await admin
         .from("profiles")
         .update({ trial_expired_notified_1day: true })
@@ -90,6 +105,7 @@ export async function GET(req: NextRequest) {
       .not("trial_end", "is", null)
       .lt("trial_end", nowISO)
       .is("trial_expired_at", null)
+      .is("stripe_subscription_id", null)
       .neq("subscription_status", "active");
 
     for (const user of expiredUsers ?? []) {
@@ -114,7 +130,7 @@ export async function GET(req: NextRequest) {
 
 // ── Email templates ──────────────────────────────────────────────────────────
 
-function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
+function trialExpiry3DayEmail(name: string, trialEndDate: string, appUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><title>Trial ending soon</title></head>
@@ -130,11 +146,11 @@ function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
           <p style="color:#475569;line-height:1.6;">Your SERVLO subscription needs attention by <strong>${trialEndDate}</strong>. Update billing to keep accessing your jobs, clients, invoices, and all your business data.</p>
           <p style="color:#475569;line-height:1.6;">Choose a plan and keep growing your business:</p>
           <div style="text-align:center;margin:24px 0;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/upgrade" style="background:#3B82F6;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+            <a href="${appUrl}/dashboard/upgrade" style="background:#3B82F6;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
               Choose a plan →
             </a>
           </div>
-          <p style="color:#94a3b8;font-size:13px;">Questions? Reply to this email or visit <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="color:#3B82F6;">servlo.app</a></p>
+          <p style="color:#94a3b8;font-size:13px;">Questions? Reply to this email or visit <a href="${appUrl}" style="color:#3B82F6;">servlo.app</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -143,7 +159,7 @@ function trialExpiry3DayEmail(name: string, trialEndDate: string): string {
 </html>`;
 }
 
-function trialExpiry1DayEmail(name: string, trialEndDate: string): string {
+function trialExpiry1DayEmail(name: string, trialEndDate: string, appUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><title>Last day of trial</title></head>
@@ -158,7 +174,7 @@ function trialExpiry1DayEmail(name: string, trialEndDate: string): string {
           <h2 style="margin:0 0 16px;color:#0f172a;">Hi ${name}, your access ends today</h2>
           <p style="color:#475569;line-height:1.6;">Your SERVLO subscription expires today, <strong>${trialEndDate}</strong>. Update billing now to keep uninterrupted access to all your business data.</p>
           <div style="text-align:center;margin:24px 0;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/upgrade" style="background:#dc2626;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
+            <a href="${appUrl}/dashboard/upgrade" style="background:#dc2626;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">
               Subscribe now →
             </a>
           </div>
