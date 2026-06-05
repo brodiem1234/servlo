@@ -1,13 +1,17 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 function getPlanFromPriceId(priceId: string | null | undefined) {
   if (!priceId) return "trial";
   if (priceId === process.env.STRIPE_SOLO_PRICE_ID) return "solo";
+  if (priceId === process.env.STRIPE_SOLO_ANNUAL_PRICE_ID) return "solo";
   if (priceId === process.env.STRIPE_TEAM_PRICE_ID) return "team";
+  if (priceId === process.env.STRIPE_TEAM_ANNUAL_PRICE_ID) return "team";
   if (priceId === process.env.STRIPE_BUSINESS_PRICE_ID) return "business";
+  if (priceId === process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID) return "business";
   return "trial";
 }
 
@@ -30,6 +34,94 @@ function hasGrowAddon(
   const growId = process.env.STRIPE_GROW_PRICE_ID;
   if (!growId) return false;
   return items.some((item) => item.price?.id === growId);
+}
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+function getCustomerId(customer: Stripe.Subscription["customer"]): string | null {
+  return typeof customer === "string" ? customer : customer?.id ?? null;
+}
+
+async function resolveSubscriptionUserId(
+  admin: AdminClient,
+  subscription: Stripe.Subscription,
+  customerId: string | null
+): Promise<string | null> {
+  const metadataUserId = subscription.metadata?.supabase_user_id;
+  if (metadataUserId) return metadataUserId;
+
+  if (!customerId) return null;
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle();
+  if (profile?.id) return profile.id;
+
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted) {
+      return customer.metadata?.supabase_user_id ?? null;
+    }
+  } catch (err) {
+    console.error("[webhook] failed to retrieve Stripe customer metadata:", err);
+  }
+
+  return null;
+}
+
+async function syncSubscriptionState(
+  admin: AdminClient,
+  subscription: Stripe.Subscription
+): Promise<string | null> {
+  const customerId = getCustomerId(subscription.customer);
+  const items = subscription.items.data as Array<{ price?: { id?: string } | null }>;
+  const basePriceId = getBasePriceId(items);
+  const plan = getPlanFromPriceId(basePriceId);
+  const status = subscription.status === "active" ? "active" : subscription.status;
+  const growEnabled = hasGrowAddon(items);
+  const userId = await resolveSubscriptionUserId(admin, subscription, customerId);
+
+  const subscriptionPayload = {
+    subscription_status: status,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscription.id,
+    plan,
+    subscription_tier: plan,
+  };
+
+  if (userId) {
+    const { error: profileError } = await admin
+      .from("profiles")
+      .update(subscriptionPayload)
+      .eq("id", userId);
+    if (profileError) throw profileError;
+
+    const { error: businessError } = await admin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
+        plan,
+        subscription_status: status,
+        grow_addon_enabled: growEnabled,
+      })
+      .eq("owner_id", userId);
+    if (businessError) throw businessError;
+
+    return userId;
+  }
+
+  if (customerId) {
+    const { error } = await admin
+      .from("profiles")
+      .update(subscriptionPayload)
+      .eq("stripe_customer_id", customerId);
+    if (error) throw error;
+  }
+
+  return null;
 }
 
 /**
@@ -249,39 +341,9 @@ export async function POST(req: Request) {
       }
     }
 
-    if (event.type === "customer.subscription.updated") {
-      const subscription = event.data.object;
-      const customerId = typeof subscription.customer === "string" ? subscription.customer : null;
-      const items = subscription.items.data as Array<{ price?: { id?: string } | null }>;
-      const basePriceId = getBasePriceId(items);
-      const plan = getPlanFromPriceId(basePriceId);
-      const status = subscription.status === "active" ? "active" : subscription.status;
-      const growEnabled = hasGrowAddon(items);
-
-      if (customerId) {
-        await admin
-          .from("profiles")
-          .update({
-            subscription_status: status,
-            stripe_customer_id: customerId,
-            plan,
-            subscription_tier: plan,
-          })
-          .eq("stripe_customer_id", customerId);
-
-        // Sync Grow add-on state to businesses table
-        const { data: prof } = await admin
-          .from("profiles")
-          .select("id")
-          .eq("stripe_customer_id", customerId)
-          .maybeSingle();
-        if (prof?.id) {
-          await admin
-            .from("businesses")
-            .update({ grow_addon_enabled: growEnabled })
-            .eq("owner_id", prof.id);
-        }
-      }
+    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as Stripe.Subscription;
+      await syncSubscriptionState(admin, subscription);
     }
 
     // Referral program — mark referral as subscribed when a new subscription is created

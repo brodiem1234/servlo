@@ -96,6 +96,32 @@ export async function POST(request: Request) {
         : {}),
     });
 
+    const preSubscriptionProfile = await supabaseAdmin
+      .from("profiles")
+      .update({ stripe_customer_id: customer.id })
+      .eq("id", user.id)
+      .select("id")
+      .maybeSingle();
+    if (preSubscriptionProfile.error || !preSubscriptionProfile.data?.id) {
+      throw new Error(
+        preSubscriptionProfile.error?.message ??
+          "Profile could not be linked to the Stripe customer before billing."
+      );
+    }
+
+    const preSubscriptionBusiness = await supabaseAdmin
+      .from("businesses")
+      .update({ stripe_customer_id: customer.id })
+      .eq("owner_id", user.id)
+      .select("owner_id")
+      .maybeSingle();
+    if (preSubscriptionBusiness.error || !preSubscriptionBusiness.data?.owner_id) {
+      throw new Error(
+        preSubscriptionBusiness.error?.message ??
+          "Business could not be linked to the Stripe customer before billing."
+      );
+    }
+
     // Attach payment method and set as default
     await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
     await stripe.customers.update(customer.id, {
@@ -142,21 +168,53 @@ export async function POST(request: Request) {
       },
     });
 
+    const subscriptionStatus = subscription.status === "active" ? "active" : subscription.status;
+    const subscriptionStartedAt = new Date().toISOString();
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileSubscriptionUpdate = await supabaseAdmin
       .from("profiles")
       .update({
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
-        trial_started_at: new Date().toISOString(),
+        plan: selectedPlanTier,
+        subscription_tier: selectedPlanTier,
+        subscription_status: subscriptionStatus,
+        trial_started_at: subscriptionStartedAt,
         card_last4,
         card_brand,
       })
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .select("id")
+      .maybeSingle();
+    if (profileSubscriptionUpdate.error || !profileSubscriptionUpdate.data?.id) {
+      throw new Error(
+        profileSubscriptionUpdate.error?.message ??
+          "Profile subscription state could not be saved after billing."
+      );
+    }
+
+    const businessSubscriptionUpdate = await supabaseAdmin
+      .from("businesses")
+      .update({
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        plan: selectedPlanTier,
+        subscription_status: subscriptionStatus,
+      })
+      .eq("owner_id", user.id)
+      .select("owner_id")
+      .maybeSingle();
+    if (businessSubscriptionUpdate.error || !businessSubscriptionUpdate.data?.owner_id) {
+      throw new Error(
+        businessSubscriptionUpdate.error?.message ??
+          "Business subscription state could not be saved after billing."
+      );
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {
