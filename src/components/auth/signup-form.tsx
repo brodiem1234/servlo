@@ -896,41 +896,53 @@ export function SignupForm() {
  const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
  const priceId = getPriceId(selectedPlanTier, isAnnual);
 
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
- try {
- const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
- type: "card",
- card: cardElementRef.current,
- });
- if (pmError) throw new Error(pmError.message);
+if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
+try {
+const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
+type: "card",
+card: cardElementRef.current,
+});
+if (pmError) throw new Error(pmError.message);
 
- const trialRes = await fetch("/api/stripe/create-trial", {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- Authorization: `Bearer ${accessToken}`,
- },
- body: JSON.stringify({
- paymentMethodId: paymentMethod!.id,
- selectedProductCombo,
- selectedPlanTier,
- annual: isAnnual,
- // ABN passed so the create-trial route can run the dedup check
- // (one active subscription per ABN) and attach the ABN to the
- // Stripe customer as a tax ID.
- abn: abnRaw,
- ...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
- }),
- });
+const trialRes = await fetch("/api/stripe/create-trial", {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+Authorization: `Bearer ${accessToken}`,
+},
+body: JSON.stringify({
+paymentMethodId: paymentMethod!.id,
+selectedProductCombo,
+selectedPlanTier,
+annual: isAnnual,
+// ABN passed so the create-trial route can run the dedup check
+// (one active subscription per ABN) and attach the ABN to the
+// Stripe customer as a tax ID.
+abn: abnRaw,
+...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
+}),
+});
 
- if (!trialRes.ok) {
- const trialErr = (await trialRes.json()) as { error?: string };
- console.warn("[signup/owner] trial setup failed", trialErr);
- }
- } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
- }
- }
+if (!trialRes.ok) {
+let trialMessage = "We couldn't start your subscription.";
+try {
+const trialErr = (await trialRes.json()) as { error?: string };
+trialMessage = trialErr.error ?? trialMessage;
+} catch {
+// Keep the generic message when the API response is not JSON.
+}
+throw new Error(trialMessage);
+}
+} catch (stripeErr) {
+console.warn("[signup/owner] stripe subscription setup failed", stripeErr);
+setError(
+stripeErr instanceof Error
+? `Your workspace was created, but subscription setup failed: ${stripeErr.message}`
+: "Your workspace was created, but subscription setup failed. Please try again or contact support."
+);
+return;
+}
+}
 
  router.push("/dashboard/owner");
  router.refresh();

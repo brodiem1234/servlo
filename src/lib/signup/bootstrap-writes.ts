@@ -3,6 +3,11 @@ import { seedOwnerDemoData } from "@/lib/demo/seed-owner-demo";
 import { normalizeAccentColour } from "@/lib/brand-accent";
 import type { IndustrySlug } from "@/lib/industries";
 import { businessesRowForOwner, BUSINESSES_UPSERT_ON_CONFLICT } from "@/lib/businesses";
+import {
+  buildInitialEnabledFeatures,
+  primaryIndustrySlug,
+  serializeFeatureFlags
+} from "@/lib/workspace-features";
 
 export function describeSupabaseError(prefix: string, err: { message?: string; code?: string; details?: string }) {
   const bits = [prefix, err.code ? `(${err.code})` : null, err.message, err.details].filter(Boolean);
@@ -212,6 +217,30 @@ export async function bootstrapSignupWrites(
     if (!biz.ok) {
       return { ok: false, step: "business", message: biz.message };
     }
+
+    const primaryIndustry = primaryIndustrySlug(params.industry_tags.length ? params.industry_tags : ["other"]);
+    const featureFlags = serializeFeatureFlags(
+      new Set(buildInitialEnabledFeatures(primaryIndustry, new Set()))
+    );
+    const businessDetails = await admin
+      .from("businesses")
+      .update({
+        business_name: params.businessName || null,
+        abn: params.abn ? params.abn.replace(/\s/g, "") : null,
+        phone: params.phoneNumber || null,
+        industries: params.industry_tags,
+        feature_flags: featureFlags,
+      })
+      .eq("owner_id", params.userId);
+
+    if (businessDetails.error) {
+      return {
+        ok: false,
+        step: "business",
+        message: describeSupabaseError("Business details setup failed:", businessDetails.error)
+      };
+    }
+
     await seedOwnerDemoNonFatal(admin, params.userId);
   }
 
