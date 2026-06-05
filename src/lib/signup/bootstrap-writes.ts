@@ -145,13 +145,17 @@ export async function bootstrapSignupProfiles(
     };
   }
 
+  const requiresPayment =
+    role === "owner" &&
+    ((params.selectedProducts ?? "core") === "core" || (params.selectedProducts ?? "core").startsWith("core+"));
+
   const extendedPayload: Record<string, unknown> = {
     email: params.email,
     phone: params.phoneNumber || null,
-    trial_start: trialStart.toISOString(),
-    trial_end: trialEnd.toISOString(),
-    subscription_status: "trialing",
-    subscription_tier: "solo"
+    trial_start: requiresPayment ? null : trialStart.toISOString(),
+    trial_end: requiresPayment ? null : trialEnd.toISOString(),
+    subscription_status: requiresPayment ? "incomplete" : "trialing",
+    subscription_tier: params.planTier ?? "solo"
   };
 
   if (role === "owner") {

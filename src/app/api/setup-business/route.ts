@@ -254,6 +254,8 @@ export async function POST(request: Request) {
 
   const trialStart = new Date();
   const trialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const requiresPayment =
+    selectedProducts === "core" || selectedProducts.startsWith("core+");
 
   const profileBootstrap = await bootstrapSignupProfiles(
     supabaseAdmin,
@@ -284,10 +286,10 @@ export async function POST(request: Request) {
   const trialReinforce = await supabaseAdmin
     .from("profiles")
     .update({
-      trial_start: trialStart.toISOString(),
-      trial_end: trialEnd.toISOString(),
-      subscription_status: "trialing",
-      subscription_tier: "solo"
+      trial_start: requiresPayment ? null : trialStart.toISOString(),
+      trial_end: requiresPayment ? null : trialEnd.toISOString(),
+      subscription_status: requiresPayment ? "incomplete" : "trialing",
+      subscription_tier: planTier ?? "solo"
     })
     .eq("id", userId);
 

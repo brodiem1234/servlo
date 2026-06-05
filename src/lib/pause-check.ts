@@ -13,6 +13,7 @@
  * Blocking states:
  *  - "cancelled" — subscription ended, read-only
  *  - "paused" — pause_collection active, write-locked
+ *  - "incomplete" — signup payment did not complete
  *  - "incomplete_expired" — never paid first invoice
  *  - "unpaid" — Stripe gave up after dunning
  *
@@ -30,6 +31,7 @@ const BLOCKED_STATUSES = new Set([
   "cancelled",
   "canceled",
   "paused",
+  "incomplete",
   "incomplete_expired",
   "unpaid",
 ]);

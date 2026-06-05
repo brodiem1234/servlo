@@ -703,6 +703,11 @@ export function SignupForm() {
  return;
  }
 
+ if (needsCard && (stripeInitError || !stripeReady || !stripeRef.current || !cardElementRef.current)) {
+ setError("Card input is still loading. Please wait a moment and try again.");
+ return;
+ }
+
  // If any step-1 invariant fails (most commonly: password no longer meets
  // requirements because of `noPersonal` after a name change), auto-navigate
  // back to step 1 so the user can fix it in context. Previously they had
@@ -892,17 +897,19 @@ export function SignupForm() {
  }
  }
 
- // Stripe trial (Core-containing products with a known price tier).
- const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
- const priceId = getPriceId(selectedPlanTier, isAnnual);
-
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
- try {
- const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
+ // Paid Core signups must finish Stripe setup before entering the dashboard.
+ if (needsCard) {
+ const stripeClient = stripeRef.current;
+ const cardElement = cardElementRef.current;
+ if (!stripeClient || !cardElement) {
+ throw new Error("Card input is still loading. Please wait a moment and try again.");
+ }
+ const { paymentMethod, error: pmError } = await stripeClient.createPaymentMethod({
  type: "card",
- card: cardElementRef.current,
+ card: cardElement,
  });
- if (pmError) throw new Error(pmError.message);
+ if (pmError) throw new Error(pmError.message ?? "Unable to validate card details.");
+ if (!paymentMethod?.id) throw new Error("Unable to validate card details.");
 
  const trialRes = await fetch("/api/stripe/create-trial", {
  method: "POST",
@@ -922,13 +929,10 @@ export function SignupForm() {
  ...(effectivePromoCode ? { promoCode: effectivePromoCode } : {}),
  }),
  });
+ const trialData = (await trialRes.json()) as { success?: boolean; error?: string };
 
- if (!trialRes.ok) {
- const trialErr = (await trialRes.json()) as { error?: string };
- console.warn("[signup/owner] trial setup failed", trialErr);
- }
- } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
+ if (!trialRes.ok || !trialData.success) {
+ throw new Error(trialData.error ?? "Unable to start your subscription. Please check your card details and try again.");
  }
  }
 
@@ -968,6 +972,7 @@ export function SignupForm() {
  const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
  const priceId = getPriceId(selectedPlanTier, isAnnual);
  const needsCard = hasCore && !!priceId;
+ const paymentInputUnavailable = needsCard && (stripeInitError || !stripeReady);
 
  // EARLYACCESS + annual conflict
  const earlyAccessConflict = isAnnual && appliedPromoCode.toUpperCase() === "EARLYACCESS";
@@ -1865,7 +1870,7 @@ export function SignupForm() {
  <Button
  type="button"
  onClick={() => doSignup()}
- disabled={ownerSubmitting || !termsAccepted}
+ disabled={ownerSubmitting || !termsAccepted || paymentInputUnavailable}
  className={`w-full sm:w-auto ${primaryBtn} disabled:pointer-events-none disabled:opacity-50`}
  >
  {ownerSubmitting

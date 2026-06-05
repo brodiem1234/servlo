@@ -131,6 +131,7 @@ export async function POST(request: Request) {
       customer: customer.id,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
+      payment_behavior: "error_if_incomplete",
       ...(automaticTaxEnabled ? { automatic_tax: { enabled: true } } : {}),
       ...(resolvedPromoCodeId ? { discounts: [{ promotion_code: resolvedPromoCodeId }] } : {}),
       metadata: {
@@ -142,21 +143,51 @@ export async function POST(request: Request) {
       },
     });
 
+    if (subscription.status !== "active") {
+      return NextResponse.json(
+        { error: "Subscription payment did not complete. Please try another card or contact support." },
+        { status: 402 }
+      );
+    }
+
     // Persist subscription + plan data on profiles.
     // trial_started_at is repurposed as "subscription_started_at" — used for
     // the 30-day money-back window in the refund policy.
-    await supabaseAdmin
+    const profileUpdate = await supabaseAdmin
       .from("profiles")
       .update({
+        subscription_status: "active",
         stripe_customer_id: customer.id,
         stripe_subscription_id: subscription.id,
+        plan: selectedPlanTier,
+        subscription_tier: selectedPlanTier,
         selected_products: selectedProductCombo,
         plan_tier: selectedPlanTier,
+        trial_end: null,
+        trial_expired_at: null,
+        trial_expired_notified_3day: false,
+        trial_expired_notified_1day: false,
         trial_started_at: new Date().toISOString(),
         card_last4,
         card_brand,
       })
       .eq("id", user.id);
+    if (profileUpdate.error) {
+      throw new Error(`Profile subscription sync failed: ${profileUpdate.error.message}`);
+    }
+
+    const businessUpdate = await supabaseAdmin
+      .from("businesses")
+      .update({
+        subscription_status: "active",
+        stripe_customer_id: customer.id,
+        stripe_subscription_id: subscription.id,
+        plan: selectedPlanTier,
+      })
+      .eq("owner_id", user.id);
+    if (businessUpdate.error) {
+      throw new Error(`Business subscription sync failed: ${businessUpdate.error.message}`);
+    }
 
     return NextResponse.json({ success: true, subscriptionId: subscription.id });
   } catch (err) {
