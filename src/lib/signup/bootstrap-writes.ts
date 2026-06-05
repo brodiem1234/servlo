@@ -150,8 +150,8 @@ export async function bootstrapSignupProfiles(
     phone: params.phoneNumber || null,
     trial_start: trialStart.toISOString(),
     trial_end: trialEnd.toISOString(),
-    subscription_status: "trialing",
-    subscription_tier: "solo"
+    subscription_status: "incomplete",
+    subscription_tier: params.planTier ?? "solo"
   };
 
   if (role === "owner") {

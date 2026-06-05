@@ -892,17 +892,23 @@ export function SignupForm() {
  }
  }
 
- // Stripe trial (Core-containing products with a known price tier).
+ // Stripe subscription (Core-containing products with a known price tier).
  const hasCore = selectedProductCombo === "core" || selectedProductCombo.startsWith("core+");
  const priceId = getPriceId(selectedPlanTier, isAnnual);
 
- if (hasCore && priceId && stripeRef.current && cardElementRef.current) {
+ if (hasCore && priceId) {
+ if (!stripeRef.current || !cardElementRef.current) {
+ setError("Payment details are still loading. Please wait a moment and try again.");
+ return;
+ }
+
  try {
  const { paymentMethod, error: pmError } = await stripeRef.current.createPaymentMethod({
  type: "card",
  card: cardElementRef.current,
  });
  if (pmError) throw new Error(pmError.message);
+ if (!paymentMethod) throw new Error("We couldn't verify your card details. Please try again.");
 
  const trialRes = await fetch("/api/stripe/create-trial", {
  method: "POST",
@@ -924,11 +930,20 @@ export function SignupForm() {
  });
 
  if (!trialRes.ok) {
- const trialErr = (await trialRes.json()) as { error?: string };
+ let trialErr: { error?: string } = {};
+ try {
+ trialErr = (await trialRes.json()) as { error?: string };
+ } catch {
+ // Keep the user on the payment step even if the server returned a non-JSON error page.
+ }
  console.warn("[signup/owner] trial setup failed", trialErr);
+ setError(trialErr.error ?? "We couldn't set up your subscription. Please check your card details and try again.");
+ return;
  }
  } catch (stripeErr) {
- console.warn("[signup/owner] stripe trial error, proceeding anyway", stripeErr);
+ console.warn("[signup/owner] stripe subscription error", stripeErr);
+ setError(stripeErr instanceof Error ? stripeErr.message : "We couldn't set up your subscription. Please try again.");
+ return;
  }
  }
 

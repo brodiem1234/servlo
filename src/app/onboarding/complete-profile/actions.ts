@@ -9,6 +9,12 @@ import {
   upsertOwnerBusinessRow
 } from "@/lib/signup/bootstrap-writes";
 import { industryTagsFromUserMeta } from "@/lib/industries";
+import {
+  buildInitialEnabledFeatures,
+  parseFeatureFlagsColumn,
+  primaryIndustrySlug,
+  serializeFeatureFlags
+} from "@/lib/workspace-features";
 
 import type { CompleteProfileState } from "./state";
 
@@ -70,6 +76,25 @@ export async function retryCompleteProfileSetup(
   if (profileRow?.role === "owner") {
     const bizRetry = await upsertOwnerBusinessRow(admin, user.id, accentColourRaw);
     if (bizRetry.ok) {
+      const { data: businessRow } = await admin
+        .from("businesses")
+        .select("feature_flags")
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      const parsedFlags = parseFeatureFlagsColumn(businessRow?.feature_flags ?? null);
+      if (parsedFlags && parsedFlags.size === 0) {
+        const featureFlags = serializeFeatureFlags(
+          new Set(buildInitialEnabledFeatures(primaryIndustrySlug(industry_tags), new Set()))
+        );
+        const featureRetry = await admin
+          .from("businesses")
+          .update({ feature_flags: featureFlags, industries: industry_tags })
+          .eq("owner_id", user.id);
+        if (featureRetry.error) {
+          console.warn("[onboarding] feature flag recovery failed", featureRetry.error);
+          return { error: "Workspace feature setup failed. Please try again." };
+        }
+      }
       await seedOwnerDemoNonFatal(admin, user.id);
       redirect("/dashboard/owner" as Parameters<typeof redirect>[0]);
     }
